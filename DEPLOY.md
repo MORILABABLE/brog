@@ -216,6 +216,16 @@ git push -u origin main
 > **Root directory を `site` にすること。** リポジトリのルートには
 > 収集パイプライン（別の package.json）があるため、指定しないとビルドに失敗する。
 
+> **Node のバージョン**は `site/.node-version` で 22.12.0 に固定済み。
+> Astro 7 は Node 22.12.0 以上を要求するが、Cloudflare の既定バージョンは
+> それより古いことがあり、指定しないと `Unsupported engine` でビルドが落ちる。
+> Cloudflare Pages はこのファイルを読んで自動でバージョンを合わせる。
+
+> **Private リポジトリなので、GitHub連携時にアクセス許可を明示的に与える必要がある。**
+> 連携画面で **Only select repositories** を選び、`brog` を選択する
+> （All repositories でもよい）。Public リポジトリと違い、この操作をしないと
+> Cloudflare 側の一覧にリポジトリが出てこない。
+
 4. **Save and Deploy**
 5. 数分で `https://<プロジェクト名>.pages.dev` で見られるようになる
 
