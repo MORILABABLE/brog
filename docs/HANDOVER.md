@@ -18,7 +18,8 @@
 | 邦題解決 | ✅ Wikidata経由・解決率73% |
 | サイト | ✅ 8ページ生成・型エラー0・JSなし |
 | 記事 | ✅ 実データから手書き1本を公開中 |
-| 記事の自動生成 | 🔶 配信終了タイプのみ実装。**実通信は未検証**（APIキー未設定） |
+| 記事の生成（セッション経由） | ✅ `/article` で実行。**API課金なし**。品質ゲートまで検証済み |
+| 記事の生成（API経由） | 🔶 実装済みだが**実通信は未検証**（APIキー未設定） |
 | 自動デプロイ | ✅ main への push で Cloudflare Pages が自動ビルド |
 | 定期実行 | ❌ 未着手（GitHub Actions は書いてあるが動作未確認） |
 
@@ -26,12 +27,25 @@
 
 ```bash
 npm run collect                 # 配信状況の変化を収集（API消費）
-npm run write -- --dry-run      # プロンプトだけ表示（無料・LLMを呼ばない）
+/article                        # このセッションで記事を執筆（API課金なし）
+npm run write -- --emit         #   ↑を手動でやる場合: プロンプト書き出し
+npm run write -- --apply        #   ↑ response.md を検証して記事にする
+npm run write -- --dry-run      # プロンプトだけ表示（無料）
 npm run preview                 # 収集データが記事としてどう見えるか（API消費なし）
 npm run catalogs                # 対象国のサービス一覧
 npm run typecheck
 cd site && npm run build        # サイトのビルド
 ```
+
+### 記事生成の2経路
+
+生成手段は2つあるが、**検証・frontmatter組み立て・書き出しは共通コード**（`finalize()`）を通る。
+生成手段だけが差し替わる設計なので、どちらを使っても品質ゲートは必ず効く。
+
+| 経路 | コマンド | 費用 | 使いどころ |
+|---|---|---|---|
+| セッション執筆 | `/article` | **0円** | 手動運用・テンプレ調整中 |
+| LLM API | `npm run write` | 約$0.11/本 | GitHub Actions での定期実行（P3） |
 
 ---
 
@@ -107,6 +121,10 @@ cd site && npm run build        # サイトのビルド
   LLMが書くのはタイトル・説明文・本文だけ。
 - **出力形式はJSONではなく区切り記号方式。** 長いMarkdownをJSON文字列に入れると
   エスケープ事故が起きる。
+- **BOM と CRLF は必ず剥がす。** Windowsのエディタや PowerShell の `Out-File` は
+  既定でBOMを付ける。付いていると `^TITLE:` が一致せず、内容は正しいのにパースが失敗する。
+  `\r` を残すとタイトル末尾に混入して frontmatter が壊れる。
+  → `parseArticle()` で正規化済み。他の入力を扱うときも同じ処理を入れること。
 
 ### インフラ
 

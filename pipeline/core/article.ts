@@ -53,13 +53,21 @@ export interface ParsedArticle {
 /**
  * LLMの出力を分解する。形式が崩れていれば null を返し、
  * 呼び出し側が記事化を中止できるようにする。
+ *
+ * 入力の正規化を先に行う理由:
+ * - **BOM**: Windowsのエディタや PowerShell の Out-File は既定でBOMを付ける。
+ *   付いていると `^TITLE:` が一致せず、正しい内容なのにパースに失敗する。
+ * - **CRLF**: `\r` を残すとタイトルや説明文の末尾に混入し、
+ *   そのまま frontmatter に書き込まれて壊れる。
  */
 export function parseArticle(raw: string): ParsedArticle | null {
-  const marker = raw.indexOf('---BODY---')
+  const text = raw.replace(/^﻿/, '').replace(/\r\n?/g, '\n')
+
+  const marker = text.indexOf('---BODY---')
   if (marker < 0) return null
 
-  const head = raw.slice(0, marker)
-  const body = raw.slice(marker + '---BODY---'.length).trim()
+  const head = text.slice(0, marker)
+  const body = text.slice(marker + '---BODY---'.length).trim()
 
   const title = head.match(/^TITLE:\s*(.+)$/m)?.[1]?.trim()
   const description = head.match(/^DESCRIPTION:\s*(.+)$/m)?.[1]?.trim()

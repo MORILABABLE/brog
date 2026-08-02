@@ -109,8 +109,11 @@ npm run collect -- --kinds new,expiring
 | コマンド | 内容 |
 |---|---|
 | `npm run collect` | 配信状況の変化を収集して記録 |
-| `npm run write -- --dry-run` | **プロンプトだけ表示（LLMを呼ばない・無料）** |
-| `npm run write` | 記事を生成して `site/src/content/posts/` に書き出す |
+| `/article` | **このセッションで記事を執筆（API課金なし）** |
+| `npm run write -- --emit` | プロンプトを `data/draft/prompt.md` に書き出す |
+| `npm run write -- --apply` | `data/draft/response.md` を検証して記事にする |
+| `npm run write` | LLM APIで生成して書き出す（課金あり） |
+| `npm run write -- --dry-run` | プロンプトだけ表示（無料） |
 | `npm run preview` | 収集済みデータが記事としてどう見えるかを表示（API消費なし） |
 | `npm run catalogs` | 対象国のサービス一覧と theme.yaml の解決結果 |
 | `npm run probe -- /changes country=jp ...` | APIの生レスポンスを表示（フィールド名の検証用） |
@@ -156,8 +159,36 @@ URLは `theme.yaml` の `search_links` にあり、ASPのディープリンク�
 
 ## 記事生成について
 
-**まず `npm run write -- --dry-run` を実行する。** LLMを呼ばずにプロンプトだけを表示するので、
-テンプレートを直すたびに課金せずに調整できる。
+生成手段は2つあり、**どちらも同じ品質ゲートを通る**。
+
+### A. このセッションで書く（API課金なし・推奨）
+
+```
+/article
+```
+
+Claude Code が素材を読んで執筆し、検証まで通す。API料金がかからない。
+手動でやる場合は同じことを3ステップで:
+
+```bash
+npm run write -- --emit     # data/draft/prompt.md を書き出す
+# prompt.md を読んで記事を書き、data/draft/response.md に保存
+npm run write -- --apply    # 検証して site/ に書き出す
+```
+
+### B. LLM API で生成する
+
+```bash
+npm run write
+```
+
+1記事あたり約$0.11（Claude Sonnet 5）。定期実行を自動化する場合はこちら。
+
+> **どちらの経路でも `verify` を必ず通る。** 生成手段だけが差し替わり、
+> 検証・frontmatter組み立て・書き出しは共通のコードを使う。
+
+**テンプレートを調整するときは `npm run write -- --dry-run`。**
+LLMを呼ばずにプロンプトだけ表示するので、何度試しても無料。
 
 記事の構成・文体・禁止事項は `theme-packs/streaming-jp/templates/leaving.md` にある。
 **このファイルを編集すれば全記事の構成が変わる。コードは触らなくてよい。**
