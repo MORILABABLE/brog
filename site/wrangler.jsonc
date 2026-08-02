@@ -1,0 +1,23 @@
+{
+  // Cloudflare Workers（静的アセット）の設定。
+  //
+  // Cloudflare は Pages を Workers に統合中で、Git連携は Workers Builds 経由になる。
+  // 完全な静的サイトなので Worker スクリプト（main）は不要で、
+  // ビルド成果物のディレクトリを指すだけでよい。
+  //
+  // ダッシュボード側の設定:
+  //   Root directory        : site
+  //   Build command         : npm run build
+  //   Deploy command        : npx wrangler deploy
+  //   Non-production branch : npx wrangler versions upload   ← PRプレビュー用
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "brog",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./dist",
+    // 拡張子なしのURL（/posts/xxx）で .html を返す。
+    // astro.config.mjs の build.format: 'file' と対になる設定。
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}
