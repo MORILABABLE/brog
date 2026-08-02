@@ -1,16 +1,17 @@
 {
-  // Cloudflare Workers（静的アセット）の設定。
+  // ★ 現在このファイルは使われていない。
+  //   本番は Cloudflare Pages で稼働しており、Pages はこの設定を読まない。
+  //   将来 Cloudflare が Pages を Workers に完全統合したときの移行先として残している。
+  //   （2026-08 時点で Cloudflare は Pages → Workers の統合を進めており、
+  //     新規作成のUIは Workers 側に誘導される。Pages の作成画面は
+  //     dash.cloudflare.com/?to=/:account/pages/new/provider/github から開ける）
   //
-  // Cloudflare は Pages を Workers に統合中で、Git連携は Workers Builds 経由になる。
-  // 完全な静的サイトなので Worker スクリプト（main）は不要で、
-  // ビルド成果物のディレクトリを指すだけでよい。
-  //
-  // ダッシュボード側の設定:
+  // Workers に移行する場合のダッシュボード設定:
   //   Root directory        : site
   //   Build command         : npm run build
   //   Deploy command        : npx wrangler deploy
   //   Non-production branch : npx wrangler versions upload   ← PRプレビュー用
-  "$schema": "node_modules/wrangler/config-schema.json",
+  //   ※ wrangler を devDependency に入れ直す必要がある（Pages では不要なので外してある）
   "name": "brog",
   "compatibility_date": "2026-08-01",
   "assets": {

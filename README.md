@@ -2,7 +2,12 @@
 
 テーマを差し替えられる自動ブログ基盤。第一作のテーマは動画配信（日本）。
 
-設計の全体像は **[DESIGN.md](./DESIGN.md)** を参照。
+| 目的 | 読むファイル |
+|---|---|
+| **作業を再開する / 引き継ぐ** | **[docs/HANDOVER.md](./docs/HANDOVER.md)** |
+| **他ジャンルでブログを増やす** | **[docs/NEW-THEME.md](./docs/NEW-THEME.md)** |
+| 設計の全体像・判断の理由 | [DESIGN.md](./DESIGN.md) |
+| ドメイン・GitHub・Cloudflare の操作 | [DEPLOY.md](./DEPLOY.md) |
 
 現在のフェーズ: **P1（サイト土台）完了** — 公開手順は **[DEPLOY.md](./DEPLOY.md)**
 
