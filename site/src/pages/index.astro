@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PostCard from '../components/PostCard.astro'
+import { SITE } from '../config'
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+)
+---
+
+<BaseLayout title={SITE.name} description={SITE.description}>
+  <section class="hero">
+    <h1>{SITE.tagline}</h1>
+    <p>{SITE.description}</p>
+  </section>
+
+  {
+    posts.length === 0 ? (
+      <p class="muted">まだ記事がありません。</p>
+    ) : (
+      <div>
+        {posts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: 2rem 0 1rem;
+  }
+  .hero p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+</style>

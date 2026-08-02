@@ -1,0 +1,55 @@
+name: collect
+
+# 配信状況の変化を収集する。
+#
+# 無料枠は 500リクエスト/月。週2回の実行で月あたり約250リクエストに収まる。
+# 全カタログを走査する必要がないのは /changes エンドポイントのおかげ。
+on:
+  schedule:
+    # 毎週 火・金 の 04:00 JST (= 前日 19:00 UTC)
+    - cron: '0 19 * * 1,4'
+  workflow_dispatch:
+    inputs:
+      days:
+        description: '何日前までの変化を取るか'
+        default: '7'
+      kinds:
+        description: '取得する変化の種類（カンマ区切り）'
+        default: 'new,removed,expiring'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: 変化を収集
+        run: npm run collect -- --days "${{ inputs.days || '7' }}" --kinds "${{ inputs.kinds || 'new,removed,expiring' }}"
+        env:
+          STREAMING_API_KEY: ${{ secrets.STREAMING_API_KEY }}
+
+      - name: 結果をコミット
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "変化なし"
+          else
+            git commit -m "chore(collect): $(date -u +%Y-%m-%d)"
+            git push
+          fi

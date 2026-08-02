@@ -1,0 +1,112 @@
+---
+import { getCollection, render } from 'astro:content'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AdSlot from '../../components/AdSlot.astro'
+import { CATEGORIES } from '../../config'
+import { formatDate, isoDate } from '../../utils/date'
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft)
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }))
+}
+
+const { post } = Astro.props
+const { Content } = await render(post)
+const cat = CATEGORIES[post.data.category]
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  publishedAt={post.data.pubDate}
+  updatedAt={post.data.updatedDate}
+>
+  <article>
+    <nav class="breadcrumb" aria-label="パンくず">
+      <a href="/">ホーム</a> ›
+      <a href={`/category/${cat.slug}`}>{cat.label}</a>
+    </nav>
+
+    <h1>{post.data.title}</h1>
+
+    <div class="meta">
+      <time datetime={isoDate(post.data.pubDate)}>公開 {formatDate(post.data.pubDate)}</time>
+      {
+        post.data.updatedDate && (
+          <time datetime={isoDate(post.data.updatedDate)}>
+            更新 {formatDate(post.data.updatedDate)}
+          </time>
+        )
+      }
+    </div>
+
+    {/* 配信状況は変わるため、基準日を必ず明示する */}
+    <p class="notice">
+      配信情報は <strong>{formatDate(post.data.dataAsOf)}時点</strong>のものです。
+      各サービスの都合により変更される場合があります。ご視聴前に公式サイトでご確認ください。
+    </p>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <AdSlot />
+
+    <section class="sources">
+      <h2>出典</h2>
+      <ul>
+        {
+          post.data.sources.map((s) => (
+            <li>
+              <a href={s.url} rel="noopener noreferrer" target="_blank">
+                {s.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      post.data.tags.length > 0 && (
+        <ul class="tags">
+          {post.data.tags.map((t) => (
+            <li>#{t}</li>
+          ))}
+        </ul>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+  }
+  .sources h2 {
+    font-size: 1rem;
+  }
+  .sources ul {
+    padding-left: 1.2rem;
+    font-size: 0.86rem;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+</style>

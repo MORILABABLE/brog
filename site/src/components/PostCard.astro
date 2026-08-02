@@ -1,0 +1,55 @@
+---
+import { CATEGORIES } from '../config'
+import { formatDate, isoDate } from '../utils/date'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  post: CollectionEntry<'posts'>
+}
+const { post } = Astro.props
+const cat = CATEGORIES[post.data.category]
+---
+
+<article class="card">
+  <div class="meta">
+    <span class="badge">{cat.label}</span>
+    <time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time>
+  </div>
+  <h2><a href={`/posts/${post.id}`}>{post.data.title}</a></h2>
+  <p class="desc">{post.data.description}</p>
+</article>
+
+<style>
+  .card {
+    padding: 1.2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  h2 {
+    margin: 0.5rem 0 0.4rem;
+    padding: 0;
+    border: none;
+    font-size: 1.15rem;
+    line-height: 1.5;
+  }
+  h2 a {
+    color: var(--text);
+    text-decoration: none;
+  }
+  h2 a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .desc {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+</style>

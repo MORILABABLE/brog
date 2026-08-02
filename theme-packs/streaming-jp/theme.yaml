@@ -1,0 +1,115 @@
+# =============================================================
+# テーマパック: streaming-jp（動画配信・日本）
+#
+# このファイルを差し替えれば別テーマのブログになる。
+# パイプライン側のコードはテーマの中身を一切知らない。
+# =============================================================
+
+key: streaming-jp
+label: 動画配信（日本）
+
+country: jp
+
+# ★ API の output_language は en / es / fr / tr / de のみ対応。日本語は非対応。
+#    したがってタイトル・あらすじは英語で返る。
+api_language: en
+
+# ブログを書く言語。Wikidata から正式な邦題を引くラベル言語にも使う。
+# 邦題は翻訳ではなく配給時に決まる固有名詞なので、推測せず権威あるソースから引く。
+#   Paul → ×ポール / ○宇宙人ポール
+site_language: ja
+
+# サイトの基準タイムゾーン（UTCからの分オフセット）。日本 = +9時間 = 540。
+# 開発機はJST・GitHub ActionsはUTCで動くため、日付表示と月別集計は必ずこれを経由する。
+# ここを通さないと「8月3日終了」の作品が環境によって8月4日と表示される。
+utc_offset_minutes: 540
+
+show_types:
+  - movie
+  - series
+
+# 対象配信サービス。
+#
+# `npm run catalogs` で確認した、日本で実際に取得可能な8社:
+#   apple / crunchyroll / curiosity / disney / mubi / netflix / prime / zee5
+#
+# ★ U-NEXT / Hulu / DMM TV はこのAPIの日本カバレッジに存在しない。
+#   高単価ASP案件の「この作品はU-NEXTで配信中」という導線は作れない。
+#   （アフィリエイトリンク自体は貼れるが、配信状況の裏付けは取れない）
+#
+# id に `.subscription` を付けると見放題のみに絞られ、レンタル・購入は除外される。
+# Apple TV と Prime Video は購入・レンタルが混在するため必須。
+#
+# supports_upcoming: 配信終了予定(expiring)・開始予定(upcoming)が取れるか。
+# API側の制約で Netflix / Prime Video / Disney+ / Apple TV / Max / Mubi のみ対応。
+# 幸い、日本の主要4社はすべて対応している。
+catalogs:
+  - key: netflix
+    label: Netflix
+    id: netflix.subscription
+    supports_upcoming: true
+
+  - key: prime-video
+    label: Amazon Prime Video
+    id: prime.subscription
+    supports_upcoming: true
+
+  - key: disney-plus
+    label: Disney+
+    id: disney.subscription
+    supports_upcoming: true
+
+  - key: apple-tv
+    label: Apple TV+
+    id: apple.subscription
+    supports_upcoming: true
+
+# =============================================================
+# 対象外サービスへの検索リンク
+#
+# U-NEXT / Hulu / DMM TV の作品別配信状況を取れるAPIは、個人ブログの予算では
+# 存在しない（TMDB商用 $149/月、Watchmode $349/月）。
+#
+# そこで「配信中」と主張せず、各社のサイト内検索へ作品名を渡すリンクだけを出す。
+#   - 他社データを使わないので規約上クリーン
+#   - 断定しないので誤情報にならない
+#   - 読者は1クリックで確認できる
+#
+# ★ URLは 2026-08-01 に実測で疎通確認済み。
+#   ASPのディープリンクを取得したら url_template を差し替えれば成果計測できる。
+search_links:
+  - key: u-next
+    label: U-NEXT
+    url_template: https://video.unext.jp/freeword?query={query}
+
+  - key: hulu-jp
+    label: Hulu
+    url_template: https://www.hulu.jp/search?q={query}
+
+  - key: dmm-tv
+    label: DMM TV
+    url_template: https://tv.dmm.com/search/?keyword={query}
+
+# 疎通確認済みだが未採用（リンクが増えすぎると記事が散らかるため）。
+# アフィリエイト導線を増やしたければコメントを外す。
+#  - key: lemino
+#    label: Lemino
+#    url_template: https://lemino.docomo.ne.jp/search?word={query}
+#  - key: abema
+#    label: ABEMA
+#    url_template: https://abema.tv/search?q={query}
+
+# --- 保留中のサービス ------------------------------------------------
+# 以下はAPI上は日本で利用可能とされているが、採否を保留している。
+#
+#  crunchyroll : 日本国内でサービス提供しているか要確認。
+#                日本の読者が契約できないサービスを記事にすると精度問題になる。
+#  mubi        : アート系映画特化。ニッチだが expiring 対応。
+#  curiosity   : ドキュメンタリー特化。ニッチ。
+#  zee5        : インド系コンテンツ。日本の読者層と合わない。
+#
+# 採用する場合はここに追加する:
+#  - key: crunchyroll
+#    label: Crunchyroll
+#    id: crunchyroll.subscription
+#    supports_upcoming: false

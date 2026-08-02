@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SITE } from '../config'
+
+/**
+ * お問い合わせ先。
+ *
+ * ★ 公開前に必ず実在する連絡先に差し替えること。
+ *   AdSense審査では「連絡が取れること」が確認される。
+ *   静的サイトなのでフォームは持てない。以下のどちらかを推奨:
+ *     1. 専用のメールアドレス（推奨。独自ドメインのメール転送で作れる）
+ *     2. Googleフォーム（無料・すぐ作れる。URLをここに貼る）
+ */
+const CONTACT = {
+  /** 例: 'contact@mitokou.com' 未設定なら注意書きが表示される */
+  email: '',
+  /** 例: 'https://forms.gle/xxxxxxxx' */
+  formUrl: '',
+}
+---
+
+<BaseLayout
+  title="お問い合わせ"
+  description={`${SITE.name}へのお問い合わせ方法をご案内しています。掲載内容の訂正依頼、権利関係のご連絡はこちらから。`}
+>
+  <h1>お問い合わせ</h1>
+  <div class="prose">
+    <p>
+      掲載内容の誤りのご指摘、権利関係のご連絡、その他のお問い合わせは以下よりお願いいたします。
+    </p>
+
+    {
+      CONTACT.formUrl && (
+        <p>
+          <a href={CONTACT.formUrl} rel="noopener noreferrer" target="_blank">
+            お問い合わせフォームを開く
+          </a>
+        </p>
+      )
+    }
+
+    {
+      CONTACT.email && (
+        <p>
+          メール: <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+        </p>
+      )
+    }
+
+    {
+      !CONTACT.formUrl && !CONTACT.email && (
+        <p class="notice">
+          <strong>【設定が必要です】</strong>
+          <br />
+          site/src/pages/contact.astro の CONTACT にメールアドレスまたは
+          Googleフォームの URL を設定してください。 AdSense
+          の審査では連絡手段があることが確認されるため、公開前に必須です。
+        </p>
+      )
+    }
+
+    <h2>掲載内容の訂正について</h2>
+    <p>
+      配信状況・配信終了日に誤りを見つけられた場合は、
+      作品名と該当記事のURLを添えてご連絡ください。確認のうえ速やかに訂正いたします。
+    </p>
+
+    <h2>権利者の方へ</h2>
+    <p>
+      当サイトの掲載内容に権利上の問題がある場合、ご連絡いただければ速やかに削除・修正の対応をいたします。
+    </p>
+  </div>
+</BaseLayout>

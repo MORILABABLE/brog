@@ -1,0 +1,8 @@
+# リポジトリ内は常に LF で保持する。
+# 開発は Windows、GitHub Actions は Linux で動くため、
+# 明示しておかないとワークフローのシェルスクリプトで改行コード事故が起きうる。
+* text=auto eol=lf
+
+# スナップショットは差分を見たいのでテキスト扱いのまま
+*.json text eol=lf
+*.jsonl text eol=lf

@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.local
+
+# Astro (P1 以降)
+dist/
+.astro/
+
+# OS
+Thumbs.db
+.DS_Store

@@ -1,0 +1,94 @@
+---
+import { SITE } from '../config'
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description: string
+  /** 記事ページなら published 日時（JSON-LD 用） */
+  publishedAt?: Date
+  updatedAt?: Date
+  /** 検索結果に出したくないページ（お問い合わせ等）は true */
+  noindex?: boolean
+}
+
+const { title, description, publishedAt, updatedAt, noindex = false } = Astro.props
+
+/**
+ * 公開URLの形にパスを正規化する。
+ *
+ * astro.config の build.format: 'file' により、ビルド中の pathname には
+ * `.html` が付く（トップは `/index.html`）。Cloudflare Pages は拡張子なしで
+ * 配信するため、canonical をそのまま出すと実在しないURLを正規URLとして
+ * 宣言してしまい、重複コンテンツ扱いになる。
+ */
+function toPublicPath(pathname: string): string {
+  if (pathname === '/index.html') return '/'
+  return pathname.replace(/index\.html$/, '').replace(/\.html$/, '')
+}
+
+const publicPath = toPublicPath(Astro.url.pathname)
+const canonical = new URL(publicPath, Astro.site ?? SITE.url).href
+
+// トップだけはタグラインを併記し、下層ページはサイト名を後置する
+const isHome = publicPath === '/'
+const fullTitle = isHome ? `${SITE.name}｜${SITE.tagline}` : `${title}｜${SITE.name}`
+
+// 記事なら Article、それ以外は WebSite として構造化データを出す
+const jsonLd = publishedAt
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: title,
+      description,
+      datePublished: publishedAt.toISOString(),
+      dateModified: (updatedAt ?? publishedAt).toISOString(),
+      author: { '@type': 'Organization', name: SITE.author },
+      publisher: { '@type': 'Organization', name: SITE.name },
+      mainEntityOfPage: canonical,
+    }
+  : {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: SITE.name,
+      description: SITE.description,
+      url: SITE.url,
+    }
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex,follow" />}
+
+    <meta property="og:type" content={publishedAt ? 'article' : 'website'} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {/* 構造化データはビルド時に加工されず、そのまま出力される必要がある */}
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">本文へスキップ</a>
+    <Header />
+    <main id="main" class="wrap">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

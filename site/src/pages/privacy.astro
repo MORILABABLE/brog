@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SITE, ATTRIBUTION } from '../config'
+---
+
+<BaseLayout
+  title="プライバシーポリシー"
+  description={`${SITE.name}における個人情報の取り扱い、広告配信、アクセス解析、免責事項について記載しています。`}
+>
+  <h1>プライバシーポリシー</h1>
+  <div class="prose">
+    <p>
+      {SITE.name}（以下「当サイト」）は、利用者の個人情報の取り扱いについて、以下のとおり定めます。
+    </p>
+
+    <h2>広告の配信について</h2>
+    <p>
+      当サイトは、第三者配信の広告サービス（Google
+      AdSense、各種アフィリエイトプログラム）を利用する場合があります。
+    </p>
+    <p>
+      これらの広告配信事業者は、利用者の興味に応じた広告を表示するために Cookie
+      を使用することがあります。Cookie を使用することで、当サイトは利用者のブラウザを識別できますが、
+      個人を特定できる情報（氏名・住所・メールアドレス・電話番号など）は取得しません。
+    </p>
+    <p>
+      Cookie を無効にする方法や Google AdSense に関する詳細は、
+      <a href="https://policies.google.com/technologies/ads?hl=ja" rel="noopener noreferrer" target="_blank"
+        >Google の広告に関するポリシー</a
+      >をご確認ください。パーソナライズ広告は
+      <a href="https://myadcenter.google.com/" rel="noopener noreferrer" target="_blank">Google 広告設定</a
+      >から無効にできます。
+    </p>
+
+    <h2>アクセス解析ツールについて</h2>
+    <p>
+      当サイトでは、アクセス解析のために Cookie を使用するツールを利用する場合があります。
+      収集されるデータは匿名であり、個人を特定するものではありません。
+      この機能は Cookie を無効にすることで収集を拒否できます。
+    </p>
+
+    <h2>配信情報の正確性について</h2>
+    <p>
+      当サイトが掲載する配信状況・配信終了日は、記事内に明記した基準日時点の情報です。
+      配信内容および配信期間は各配信サービスの都合により予告なく変更されることがあります。
+      ご視聴の際は必ず各サービスの公式サイトで最新の情報をご確認ください。
+    </p>
+
+    <h2>免責事項</h2>
+    <p>
+      当サイトの情報について、可能な限り正確性の確保に努めていますが、
+      内容の正確性・完全性を保証するものではありません。
+      当サイトの情報を利用して生じたいかなる損害についても、一切の責任を負いかねます。
+    </p>
+    <p>
+      当サイトからリンクされている外部サイトの内容やサービスについては、当サイトは責任を負いません。
+    </p>
+
+    <h2>著作権について</h2>
+    <p>
+      当サイトに掲載している作品情報の著作権・肖像権等は、各権利所有者に帰属します。
+      権利を侵害する意図はありませんが、掲載内容に問題がある場合は
+      <a href="/contact">お問い合わせ</a>よりご連絡ください。速やかに対応いたします。
+    </p>
+    <p>
+      当サイトが作成した文章・図表の著作権は当サイトに帰属します。無断転載を禁じます。
+    </p>
+
+    <h2>データの提供元</h2>
+    <p>
+      配信状況のデータは
+      <a href={ATTRIBUTION.url} rel="noopener noreferrer" target="_blank"
+        >Streaming Availability API by Movie of the Night</a
+      >より取得しています。作品タイトルの一部は
+      <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">Wikidata</a>（CC0）
+      を利用しています。
+    </p>
+
+    <h2>お問い合わせ</h2>
+    <p>
+      本ポリシーに関するお問い合わせは<a href="/contact">お問い合わせページ</a>よりお願いいたします。
+    </p>
+
+    <p class="muted">制定日: 2026年8月1日</p>
+  </div>
+</BaseLayout>

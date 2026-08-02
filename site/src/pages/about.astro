@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SITE } from '../config'
+---
+
+<BaseLayout
+  title="運営者情報"
+  description={`${SITE.name}の運営方針、掲載情報の取得方法、記事作成のプロセスについて説明しています。`}
+>
+  <h1>運営者情報</h1>
+  <div class="prose">
+    <h2>当サイトについて</h2>
+    <p>
+      {SITE.name}は、Netflix・Amazon Prime Video・Disney+・Apple TV+
+      における<strong>配信終了予定</strong>と<strong>新着配信作品</strong>を追いかけるサイトです。
+    </p>
+    <p>
+      「観ようと思っていた作品が、気づいたら配信終了していた」——
+      そんな取りこぼしをなくすことを目的にしています。
+      新作の紹介はどこでも読めますが、<strong>いつ観られなくなるのか</strong>を
+      継続的に追っているサイトは多くありません。そこに絞って情報を届けます。
+    </p>
+
+    <h2>情報の取得方法</h2>
+    <p>
+      配信状況のデータは、配信情報を専門に扱う
+      <a href="https://www.movieofthenight.com/about/api" rel="noopener noreferrer" target="_blank"
+        >Streaming Availability API</a
+      >から日次で取得しています。各サービスの配信開始・終了の変化を自動で検知し、
+      記事として整理しています。
+    </p>
+    <p>
+      作品の日本語タイトルは、正確性を期すため
+      <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">Wikidata</a>
+      から取得しています。邦題は翻訳ではなく配給時に決まる固有名詞のため、推測は行いません。
+      確認できなかった作品は原題のまま掲載しています。
+    </p>
+
+    <h2>記事作成について</h2>
+    <p>
+      記事の下書きには文章生成AIを利用していますが、<strong
+        >掲載前に人による確認を経て公開しています</strong
+      >。配信日・作品情報などの事実はすべて上記のデータソースに基づいており、
+      AIによる推測で事実を補完することはありません。
+    </p>
+
+    <h2>掲載情報の限界</h2>
+    <p>
+      当サイトが配信状況を把握しているのは、Netflix・Amazon Prime Video・Disney+・Apple TV+
+      の4サービスです。U-NEXT・Hulu・DMM TV
+      などについては配信状況のデータを保有していないため、
+      記事内では「配信中」といった断定は行わず、各サービスでの検索リンクのみを掲載しています。
+    </p>
+    <p>
+      また、配信情報の反映には数日程度の遅れが生じる場合があります。
+      記事には必ず情報の基準日を明記していますので、あわせてご確認ください。
+    </p>
+
+    <h2>運営者</h2>
+    <p>
+      {SITE.author}
+    </p>
+    <p class="muted">
+      ご連絡は<a href="/contact">お問い合わせページ</a>よりお願いいたします。
+    </p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,26 @@
+{
+  "name": "brog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "collect": "tsx pipeline/cli/collect.ts",
+    "write": "tsx pipeline/cli/write.ts",
+    "preview": "tsx pipeline/cli/preview.ts",
+    "catalogs": "tsx pipeline/cli/catalogs.ts",
+    "probe": "tsx pipeline/cli/probe.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

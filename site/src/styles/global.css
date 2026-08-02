@@ -1,0 +1,231 @@
+/*
+ * サイト全体のスタイル。
+ * ライト/ダーク両対応。OSの設定に追従する。
+ */
+
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f6f7f9;
+  --border: #e3e6ea;
+  --text: #1a1d21;
+  --text-muted: #5c646e;
+  --accent: #1f6feb;
+  --accent-soft: #e8f0fe;
+  --warn: #b45309;
+
+  --max-width: 46rem;
+  --radius: 10px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1216;
+    --bg-subtle: #171b21;
+    --border: #2a303a;
+    --text: #e6e9ee;
+    --text-muted: #98a1ad;
+    --accent: #6ea8fe;
+    --accent-soft: #17233a;
+    --warn: #f0b357;
+
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* 日本語の可読性を優先。line-height は広めに取る。 */
+  font-family:
+    'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic',
+    'Meiryo', system-ui, sans-serif;
+  line-height: 1.85;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  /* 横スクロールは絶対に起こさない */
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: 1.15rem;
+}
+
+/* --- 見出し --- */
+h1,
+h2,
+h3 {
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+h1 {
+  font-size: clamp(1.5rem, 4.5vw, 2rem);
+  margin: 0 0 0.6rem;
+}
+h2 {
+  font-size: clamp(1.2rem, 3.4vw, 1.4rem);
+  margin: 2.6rem 0 0.8rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--border);
+}
+h3 {
+  font-size: 1.08rem;
+  margin: 1.8rem 0 0.5rem;
+}
+
+/* --- 本文 --- */
+.prose p {
+  margin: 0 0 1.2rem;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.3rem;
+  margin: 0 0 1.2rem;
+}
+.prose li {
+  margin-bottom: 0.35rem;
+}
+.prose strong {
+  font-weight: 700;
+}
+
+.prose blockquote {
+  margin: 1.4rem 0;
+  padding: 0.85rem 1.1rem;
+  background: var(--bg-subtle);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+.prose blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/*
+ * 表は必ず自身の中で横スクロールさせる。ページ本体は絶対に横に伸ばさない。
+ * display:block + width:max-content + max-width:100% で、
+ * 内容が狭ければ縮み、はみ出す場合だけスクロールする。
+ */
+.table-scroll {
+  overflow-x: auto;
+  margin: 1.4rem 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.prose table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 1.4rem 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  /* iOS で慣性スクロールを効かせる */
+  -webkit-overflow-scrolling: touch;
+}
+.prose th,
+.prose td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.prose th {
+  background: var(--bg-subtle);
+  font-weight: 600;
+}
+.prose tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- 汎用パーツ --- */
+.muted {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.notice {
+  margin: 1.6rem 0;
+  padding: 0.8rem 1rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 他サービスへの検索リンク。配信中と断定しないための導線。 */
+.find-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.find-links a {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  font-size: 0.82rem;
+  text-decoration: none;
+}
+.find-links a:hover {
+  border-color: var(--accent);
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  padding: 0.5rem 0.9rem;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+}

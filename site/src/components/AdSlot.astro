@@ -1,0 +1,56 @@
+---
+import { ADSENSE_CLIENT } from '../config'
+
+interface Props {
+  /** AdSense の広告ユニットID */
+  slot?: string
+}
+const { slot } = Astro.props
+
+/**
+ * 広告枠。
+ *
+ * ★ PUBLIC_ADSENSE_CLIENT が未設定なら**何も描画しない**。
+ *   AdSense は審査中のサイトに広告コードが入っていること自体は問題ないが、
+ *   記事数が揃う前に貼ると審査で不利になりうるため、既定はオフにしている。
+ *   審査通過後に site/.env で有効化する。
+ */
+const enabled = Boolean(ADSENSE_CLIENT && slot)
+---
+
+{
+  enabled && (
+    <aside class="ad" aria-label="広告">
+      <span class="label">広告</span>
+      <ins
+        class="adsbygoogle"
+        style="display:block"
+        data-ad-client={ADSENSE_CLIENT}
+        data-ad-slot={slot}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+      <script
+        async
+        is:inline
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+        crossorigin="anonymous"
+      />
+      <script is:inline>
+        (adsbygoogle = window.adsbygoogle || []).push({})
+      </script>
+    </aside>
+  )
+}
+
+<style>
+  .ad {
+    margin: 2rem 0;
+  }
+  .label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+</style>

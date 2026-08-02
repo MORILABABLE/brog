@@ -1,0 +1,36 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PostCard from '../../components/PostCard.astro'
+import { CATEGORIES, SITE } from '../../config'
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft)
+
+  return Object.values(CATEGORIES).map((cat) => ({
+    params: { category: cat.slug },
+    props: {
+      cat,
+      posts: posts
+        .filter((p) => p.data.category === cat.slug)
+        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+    },
+  }))
+}
+
+const { cat, posts } = Astro.props
+---
+
+<BaseLayout
+  title={`${cat.label}の記事一覧`}
+  description={`${SITE.name}の「${cat.label}」カテゴリの記事一覧です。`}
+>
+  <h1>{cat.label}</h1>
+  {
+    posts.length === 0 ? (
+      <p class="muted">このカテゴリの記事はまだありません。</p>
+    ) : (
+      posts.map((post) => <PostCard post={post} />)
+    )
+  }
+</BaseLayout>

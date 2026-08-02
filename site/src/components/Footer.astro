@@ -1,0 +1,54 @@
+---
+import { SITE, ATTRIBUTION } from '../config'
+const year = new Date().getFullYear()
+---
+
+<footer>
+  <div class="wrap">
+    <nav aria-label="サイト情報">
+      <a href="/about">運営者情報</a>
+      <a href="/privacy">プライバシーポリシー</a>
+      <a href="/contact">お問い合わせ</a>
+      <a href="/rss.xml">RSS</a>
+    </nav>
+
+    {/* API利用規約で必須の帰属表示。サイトと各記事の両方に出す義務がある。 */}
+    <p class="attribution">
+      {ATTRIBUTION.text}（<a href={ATTRIBUTION.url} rel="noopener noreferrer" target="_blank"
+        >Streaming Availability API</a
+      >）
+    </p>
+    <p class="attribution">
+      作品タイトルの一部は <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">Wikidata</a
+      >（CC0）を利用しています。
+    </p>
+    <p class="copyright">© {year} {SITE.name}</p>
+  </div>
+</footer>
+
+<style>
+  footer {
+    margin-top: 4rem;
+    padding-block: 1.8rem 2.4rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-subtle);
+    font-size: 0.84rem;
+    color: var(--text-muted);
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  nav a {
+    color: var(--text-muted);
+  }
+  .attribution {
+    margin: 0 0 0.4rem;
+    line-height: 1.7;
+  }
+  .copyright {
+    margin: 1rem 0 0;
+  }
+</style>
