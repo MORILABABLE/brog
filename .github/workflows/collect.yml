@@ -28,19 +28,35 @@ jobs:
   collect:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
+      # シークレット未登録は最も多い失敗原因。
+      # 素の exit 1 だと原因が分からないので、ここで明示的に検出する。
+      - name: 必要なシークレットを確認
+        env:
+          KEY: ${{ secrets.STREAMING_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::STREAMING_API_KEY が登録されていません"
+            echo "リポジトリの Settings → Secrets and variables → Actions →"
+            echo "New repository secret から STREAMING_API_KEY を登録してください。"
+            exit 1
+          fi
+          echo "シークレット: 登録済み"
+
       - run: npm ci
 
       - name: 変化を収集
-        run: npm run collect -- --days "${{ inputs.days || '7' }}" --kinds "${{ inputs.kinds || 'new,removed,expiring' }}"
         env:
           STREAMING_API_KEY: ${{ secrets.STREAMING_API_KEY }}
+          DAYS: ${{ inputs.days || '7' }}
+          KINDS: ${{ inputs.kinds || 'new,removed,expiring' }}
+        run: npm run collect -- --days "$DAYS" --kinds "$KINDS"
 
       - name: 結果をコミット
         run: |

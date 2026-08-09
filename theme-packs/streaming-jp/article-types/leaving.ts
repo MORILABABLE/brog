@@ -26,6 +26,10 @@ export const leavingArticle: ArticleType = {
       .filter((e) => e.at)
       // 当月に終了するものだけ。判定はサイトの基準タイムゾーンで行う。
       .filter((e) => sameMonthInSiteTz(e.at!, ctx))
+      // ★ 既に終了済みのものを除く。
+      //   これが無いと、月の途中で生成したときに終了済み作品を
+      //   「これから終了します」と書いてしまう。読者にとっては明確な誤情報。
+      .filter((e) => Date.parse(e.at!) >= ctx.now.getTime())
       .sort((a, b) => a.at!.localeCompare(b.at!))
       .slice(0, MAX_ITEMS)
   },
