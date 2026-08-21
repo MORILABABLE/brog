@@ -6,7 +6,7 @@
  * API は同じ変化を複数回返すことがあるし、実行タイミングによって期間も重なる。
  * 一度記事にした (サービス, 変化種別, 作品ID) は二度と拾わない。
  */
-import { mkdir, readFile, writeFile, appendFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, writeFile, appendFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import type { ChangeEvent } from '../sources/types.ts'
 import { currentYearMonth } from './datetime.ts'
@@ -101,4 +101,32 @@ export async function readEvents(yearMonth: string): Promise<ChangeEvent[]> {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') return []
     throw err
   }
+}
+
+/**
+ * 収集済みの全イベントを読み込む。
+ *
+ * ■ なぜ「当月ぶん」ではなく全部読むか
+ * JSONL のファイル名は**収集した月**であって、変化が起きる月ではない。
+ * 8月に収集した「9月30日終了」は 2026-08.jsonl に入る。
+ * 当月のファイルだけを読むと、
+ *   - 前月に収集した今月の終了作品を取りこぼす
+ *   - 翌月の記事を今月のうちに書けない
+ * という取りこぼしが起きる。どの月を記事にするかの判定は記事タイプ側の
+ * select() が行うので、ここでは絞り込まずに全部渡す。
+ *
+ * 同じ変化が複数ファイルに入ることはない（収集時に台帳で重複を落としている）。
+ */
+export async function readAllEvents(): Promise<ChangeEvent[]> {
+  let files: string[]
+  try {
+    files = (await readdir(EVENT_DIR)).filter((f) => f.endsWith('.jsonl')).sort()
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return []
+    throw err
+  }
+
+  const out: ChangeEvent[] = []
+  for (const f of files) out.push(...(await readEvents(f.replace(/\.jsonl$/, ''))))
+  return out
 }

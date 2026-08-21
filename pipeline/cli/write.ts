@@ -22,7 +22,7 @@
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { loadTheme, type Theme } from '../theme.ts'
-import { loadLedger, readEvents, saveLedger } from '../core/events.ts'
+import { loadLedger, readAllEvents, saveLedger } from '../core/events.ts'
 import { currentYearMonth } from '../core/datetime.ts'
 import { buildMarkdown, parseArticle, type ArticleType } from '../core/article.ts'
 import { hasError, verifyArticle } from '../core/verify.ts'
@@ -58,15 +58,24 @@ const flag = (name: string) => process.argv.includes(`--${name}`)
 interface DraftContext {
   typeId: string
   createdAt: string
+  /** 記事が対象とする月。--emit 時の指定を --apply でも再現するため保存する。 */
+  targetMonth?: string
   items: ChangeEvent[]
 }
 
-/** 既存記事のタイトル一覧（重複検知用） */
-async function existingTitles(): Promise<string[]> {
+/**
+ * 既存記事のタイトル一覧（重複検知用）。
+ *
+ * これから書き出すファイル自身は除く。除かないと、
+ * 一度書き出した記事を直して再実行したときに
+ * 「同じタイトルの記事が既に存在します」で自分自身に弾かれ、
+ * 記事を修正できなくなる。
+ */
+async function existingTitles(excludeSlug: string): Promise<string[]> {
   try {
     const files = await readdir(POSTS_DIR)
     const titles: string[] = []
-    for (const f of files.filter((f) => f.endsWith('.md'))) {
+    for (const f of files.filter((f) => f.endsWith('.md') && f !== `${excludeSlug}.md`)) {
       const raw = await readFile(join(POSTS_DIR, f), 'utf8')
       const m = raw.match(/^title:\s*'(.*)'\s*$/m) ?? raw.match(/^title:\s*"(.*)"\s*$/m)
       if (m?.[1]) titles.push(m[1].replace(/''/g, "'"))
@@ -87,6 +96,7 @@ async function finalize(
   items: ChangeEvent[],
   theme: Theme,
   now: Date,
+  targetMonth: string,
   stopReason?: string,
 ): Promise<void> {
   const parsed = parseArticle(raw)
@@ -98,25 +108,27 @@ async function finalize(
     process.exit(1)
   }
 
-  const issues = verifyArticle({
-    parsed,
-    items,
-    existingTitles: await existingTitles(),
-    stopReason,
-  })
-  const typeIssues = type.verify(parsed.body, items)
+  const ctx = { theme, now, targetMonth }
+  const slug = type.slug(ctx)
+  const issues = [
+    ...verifyArticle({
+      parsed,
+      items,
+      existingTitles: await existingTitles(slug),
+      stopReason,
+    }),
+    ...type.verify(parsed.body, items, ctx),
+  ]
 
   for (const i of issues) console.log(`  [${i.level === 'error' ? 'NG' : '警告'}] ${i.message}`)
-  for (const m of typeIssues) console.log(`  [NG] ${m}`)
 
-  if (hasError(issues) || typeIssues.length > 0) {
+  if (hasError(issues)) {
     console.error('\n品質ゲートを通過しませんでした。記事は書き出しません。')
     console.error('本文を直して、もう一度 --apply してください。')
     process.exit(1)
   }
   if (issues.length === 0) console.log('  品質ゲート: 問題なし')
 
-  const ctx = { theme, now }
   const md = buildMarkdown({
     parsed,
     category: type.category,
@@ -130,12 +142,12 @@ async function finalize(
     offsetMinutes: theme.utc_offset_minutes,
   })
 
-  const path = join(POSTS_DIR, `${type.slug(ctx)}.md`)
+  const path = join(POSTS_DIR, `${slug}.md`)
   await mkdir(dirname(path), { recursive: true })
   await writeFile(path, md, 'utf8')
 
   const ledger = await loadLedger()
-  ledger.usedRankingThemes.push(`article:${type.slug(ctx)}`)
+  ledger.usedRankingThemes.push(`article:${slug}`)
   await saveLedger(ledger)
 
   console.log(`\n書き出し: ${path}`)
@@ -167,8 +179,13 @@ async function applyDraft(theme: Theme): Promise<void> {
   const type = TYPES[draft.typeId]
   if (!type) throw new Error(`context.json の記事タイプが不明です: ${draft.typeId}`)
 
-  console.log(`下書きを適用します（${type.id} / 素材${draft.items.length}件 / ${draft.createdAt}）\n`)
-  await finalize(response, type, draft.items, theme, new Date(draft.createdAt))
+  const now = new Date(draft.createdAt)
+  const targetMonth = draft.targetMonth ?? currentYearMonth(theme.utc_offset_minutes)
+
+  console.log(
+    `下書きを適用します（${type.id} / 対象 ${targetMonth} / 素材${draft.items.length}件 / ${draft.createdAt}）\n`,
+  )
+  await finalize(response, type, draft.items, theme, now, targetMonth)
 }
 
 /** --emit: プロンプトと素材をファイルに書き出す */
@@ -178,6 +195,7 @@ async function emitDraft(
   type: ArticleType,
   items: ChangeEvent[],
   now: Date,
+  targetMonth: string,
 ): Promise<void> {
   await mkdir(DRAFT_DIR, { recursive: true })
 
@@ -205,7 +223,11 @@ ${prompt}
   await writeFile(PROMPT_PATH, doc, 'utf8')
   await writeFile(
     CONTEXT_PATH,
-    JSON.stringify({ typeId: type.id, createdAt: now.toISOString(), items } satisfies DraftContext, null, 2),
+    JSON.stringify(
+      { typeId: type.id, createdAt: now.toISOString(), targetMonth, items } satisfies DraftContext,
+      null,
+      2,
+    ),
     'utf8',
   )
 
@@ -231,17 +253,21 @@ async function main(): Promise<void> {
   }
 
   const now = new Date()
-  const ctx = { theme, now }
-  const month = currentYearMonth(theme.utc_offset_minutes)
-  const events = await readEvents(month)
+  const targetMonth = arg('month') ?? currentYearMonth(theme.utc_offset_minutes)
+  if (!/^\d{4}-\d{2}$/.test(targetMonth)) {
+    throw new Error(`--month は YYYY-MM 形式で指定してください: ${targetMonth}`)
+  }
+
+  const ctx = { theme, now, targetMonth }
+  const events = await readAllEvents()
   const ledger = await loadLedger()
   const items = type.select(events, ledger, ctx)
 
-  console.log(`テーマ: ${theme.label}  記事タイプ: ${type.id}`)
+  console.log(`テーマ: ${theme.label}  記事タイプ: ${type.id}  対象月: ${targetMonth}`)
   console.log(`素材: ${events.length}件中 ${items.length}件を選択\n`)
 
   if (items.length === 0) {
-    console.log('記事にできる素材がありません。先に npm run collect を実行してください。')
+    console.log(`${targetMonth} を対象にできる素材がありません。先に npm run collect を実行してください。`)
     return
   }
 
@@ -262,7 +288,7 @@ async function main(): Promise<void> {
     return
   }
 
-  if (flag('emit')) return await emitDraft(system, prompt, type, items, now)
+  if (flag('emit')) return await emitDraft(system, prompt, type, items, now, targetMonth)
 
   // --- API で生成 ---
   const llm = createProvider({ provider: arg('provider'), model: arg('model') })
@@ -282,7 +308,7 @@ async function main(): Promise<void> {
     `完了: 入力 ${result.usage.inputTokens} / 出力 ${result.usage.outputTokens} トークン  ${cost}\n`,
   )
 
-  await finalize(result.text, type, items, theme, now, result.stopReason)
+  await finalize(result.text, type, items, theme, now, targetMonth, result.stopReason)
 }
 
 main().catch((err: unknown) => {

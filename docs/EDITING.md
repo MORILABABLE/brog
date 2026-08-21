@@ -1,6 +1,11 @@
 # ブラウザで編集する（github.dev）
 
-最終更新: 2026-08-09
+最終更新: 2026-08-21
+
+> 記事テンプレートの編集・本番URL・デプロイ手順は、このファイルの後半にある。
+> [記事テンプレートを編集する](#記事テンプレートを編集する) ／
+> [本番サイトのURL](#本番サイトのurl) ／
+> [記事を公開する（デプロイ）](#記事を公開するデプロイ)
 
 ターミナルを使わずに、記事もデザインもブラウザ上で編集できる。
 
@@ -160,3 +165,217 @@ git pull
 ```
 
 これを忘れて両方で編集すると、後で統合作業が必要になる。
+
+収集は GitHub Actions で**毎週 火・金の 04:00 JST に自動実行**され、
+`data/` の更新がそのままコミットされる。手元に無い変更が増えていることがあるので、
+作業前の `git pull` は習慣にしておく。
+
+---
+
+# 記事テンプレートを編集する
+
+毎月の配信終了記事を「どう書くか」は、**コードではなく Markdown 3枚**で決まっている。
+この3枚はプログラムを触らずに編集してよい。
+
+| 変えたいもの | ファイル |
+|---|---|
+| **記事の構成・文体・禁止事項** | `theme-packs/streaming-jp/templates/leaving.md` |
+| **毎月そのまま使う固定文言** | `theme-packs/streaming-jp/templates/fixed-phrases.md` |
+| **お手本として見せる文例** | `theme-packs/streaming-jp/templates/examples/leaving-excerpt.md` |
+
+## それぞれの役割
+
+### leaving.md — 構成と文体
+
+リード → 終了日順のまとまり → その他の注目作 → 全終了作品リスト → 他のサービスで探す → まとめ、
+という記事の骨格と、文体のルールが書いてある。
+
+「セクションの最後は『〜しましょう』で締める」「記号は全角に統一する」
+「記事の作り方の解説を書かない」といった方針はここを直す。
+
+### fixed-phrases.md — 固定文言
+
+**言い換えずに毎月そのまま使う文言**だけを集めたファイル。
+`{月}` `{サービス}` `{基準日}` `{本数}` の部分が実際の値に置き換わる。
+
+| キー | 使われる場所 |
+|---|---|
+| `lead-first-sentence` | 本文の1文目（`【9月終了】…65本が見放題終了対象です。`） |
+| `lead-closer` | リードの最後の1文（`シリーズや名作を…観ておきましょう！`） |
+| `other-services-intro` | 「他のサービスで探す」の冒頭 |
+| `attribution` | 記事の末尾（API利用規約上の義務） |
+
+> **ここを直すと、記事を書くときの指示と、書いたあとの検査の両方が同時に変わる。**
+> 文言の出典が1か所なので、片方だけ古いまま残ることがない。
+
+### examples/leaving-excerpt.md — お手本
+
+「こう書けていれば正解」という文例。2026年8月号から4か所を抜粋し、
+それぞれ**なぜ良いのか**を添えてある。記事を書くときに参考として渡される。
+
+内容ではなく**書き方**の手本なので、作品名や日付は毎月置き換わる前提。
+
+## コードを触る必要があるもの
+
+| 変えたいもの | ファイル | 場所 |
+|---|---|---|
+| 1記事に載せる上限本数 | `theme-packs/streaming-jp/article-types/leaving.ts` | `MAX_ITEMS` |
+| 素材の選び方・並び順 | 同上 | `select()` |
+| 品質チェックの内容 | 同上 | `verify()` |
+| 対象サービス・タイムゾーン | `theme-packs/streaming-jp/theme.yaml` | — |
+| `/article` の手順書 | `.claude/commands/article.md` | — |
+
+## 品質チェックの見方
+
+`npm run write -- --apply` のときに2種類の指摘が出る。
+
+| 表示 | 意味 |
+|---|---|
+| `[NG]` | **公開を止める。** 誤情報・規約違反・固定文言の欠落など |
+| `[警告]` | 止めない。文体の指摘なので、判定が外れることもある |
+
+よく出る警告は「セクションの最後が視聴を促す形で終わっていません」。
+段落そのものが「どれから観るべきか」の助言になっていれば、無視してよい。
+
+---
+
+# 本番サイトのURL
+
+| 見たいもの | URL |
+|---|---|
+| トップページ | https://mitokou.com |
+| 2026年9月の配信終了記事 | https://mitokou.com/posts/2026-09-leaving |
+| 2026年8月の配信終了記事 | https://mitokou.com/posts/2026-08-leaving |
+| 配信終了カテゴリの一覧 | https://mitokou.com/category/leaving |
+| サイトマップ（Search Console用） | https://mitokou.com/sitemap-index.xml |
+
+## 記事URLの決まり方
+
+記事のURLは**ファイル名がそのまま**になる。
+
+```
+site/src/content/posts/2026-09-leaving.md
+                       └─────┬─────┘
+https://mitokou.com/posts/2026-09-leaving
+```
+
+末尾にスラッシュは付かない（`site/astro.config.mjs` の `build.format: 'file'` による）。
+
+> 独自ドメインをまだ繋いでいない場合は、Cloudflare Pages が発行する
+> `https://<プロジェクト名>.pages.dev` で同じ内容が見られる。
+> プロジェクト名は Cloudflare ダッシュボード → **Workers & Pages** で確認できる。
+
+> ドメインを変えるときに直すのは2か所だけ。
+> `site/src/config.ts` の `SITE.url` と `site/public/robots.txt` の `Sitemap:` 行。
+
+---
+
+# 記事を公開する（デプロイ）
+
+## 全体の流れ
+
+```
+収集 ──→ 記事生成 ──→ ビルド確認 ──→ commit & push
+                                          ↓
+                            Cloudflare Pages が自動ビルド
+                                          ↓
+                                    本番に反映（数分）
+```
+
+**手動でファイルをアップロードする作業は無い。** push が公開のトリガー。
+
+## 手順
+
+### 1. データを集める（通常は不要）
+
+週2回自動で走っているので、普段は飛ばしてよい。
+最新の状況が欲しいときだけ実行する。
+
+```powershell
+cd C:\Users\grate\brog
+npm run collect
+```
+
+> APIの無料枠は **500リクエスト/月**。自動実行で月250ほど使うので、
+> 手動実行は必要なときだけにする。
+
+### 2. 記事を書く
+
+Claude Code のセッションで:
+
+```
+/article
+```
+
+ターミナルで手順を分けたい場合:
+
+```powershell
+npm run write -- --emit --month 2026-09     # 指示と素材を書き出す
+                                             # data/draft/prompt.md を読んで記事を書き、
+                                             # data/draft/response.md に保存する
+npm run write -- --apply                    # 検証して site/ に書き出す
+```
+
+`--month` を省略すると**当月**が対象になる。
+**9月の記事を8月のうちに書く**ときは `--month 2026-09` を付ける。
+終了予定の記事は月に入る前に出したほうが読者に役立つので、こちらが基本。
+
+`[NG]` が出たら `data/draft/response.md` を直して `--apply` をやり直す。
+
+### 3. 壊れていないか確認する
+
+```powershell
+cd C:\Users\grate\brog\site
+npm run build
+```
+
+frontmatter のスキーマ検証もここで走る。**通らなければ push しない。**
+
+見た目まで確認するなら:
+
+```powershell
+cd C:\Users\grate\brog\site
+npm run dev
+```
+→ http://localhost:4321/posts/2026-09-leaving
+
+### 4. 公開する
+
+```powershell
+cd C:\Users\grate\brog
+git add -A
+git commit -m "2026年9月の配信終了記事を追加"
+git push
+```
+
+数分で本番に反映される。
+
+## 反映されたか確認する
+
+| 見る場所 | 分かること |
+|---|---|
+| GitHub のコミット一覧 | ✅ / ❌ でビルドの成否 |
+| Cloudflare → Workers & Pages → 該当プロジェクト → **Deployments** | ビルドログ。失敗の原因はここに出る |
+| https://mitokou.com/posts/2026-09-leaving | 実際に公開された記事 |
+
+> **ビルドが失敗しても公開中のサイトは壊れない。**
+> Cloudflare は成功したビルドだけを公開するので、「反映されない」だけで済む。
+
+## 公開した記事を書き直す
+
+手順は同じでよい。`data/draft/response.md` を直して `--apply` すると
+**同じファイルが上書きされる**（`2026-09-leaving.md`）。
+そのまま commit & push すれば本番も更新される。
+
+URL（スラッグ）は変わらないので、検索エンジンの評価も引き継がれる。
+
+本文を少し直すだけなら、`site/src/content/posts/2026-09-leaving.md` を
+直接編集してもよい。github.dev からでも同じ。
+
+## やってはいけないこと
+
+- **frontmatter を手書きで新規作成しない。** 日付や出典を間違えると記事の信頼性を直接損なう
+- **ビルドを通さずに push しない。** 落ちる原因のほとんどは frontmatter
+- **`data/` 以下を手で消さない。** 台帳（`ledger.json`）が壊れると、
+  一度記事にした作品を再び記事にしてしまう
+- **`sources` と末尾の提供元表記を消さない。** API利用規約上の義務

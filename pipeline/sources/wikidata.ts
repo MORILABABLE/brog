@@ -75,6 +75,17 @@ export async function saveTitleCache(cache: TitleCache): Promise<void> {
 }
 
 /**
+ * Wikidata の曖昧さ回避の括弧。
+ * 同名作品を区別するための注記であって作品名の一部ではない。
+ * 実例: "ミュータント・タートルズ (2014年の映画)"
+ *
+ * 作品名の一部として括弧を持つ邦題（例: 『(500)日のサマー』）を壊さないよう、
+ * 末尾にあり、かつ中身が注記だと分かるものだけを落とす。
+ */
+const DISAMBIGUATION =
+  /[（(](?:\d{4}年の)?(?:映画|作品|テレビドラマ|ドラマ|テレビアニメ|アニメ|小説|漫画|ゲーム)[）)]$/
+
+/**
  * Wikidata のラベルには前後の空白やゼロ幅文字が混入していることがある
  * （実例: "ブレイキング・コップス2﻿"）。
  * そのまま使うと記事タイトルやスラッグが壊れるため正規化する。
@@ -83,6 +94,8 @@ function normalizeLabel(label: string): string {
   return label
     .replace(/[​-‍﻿⁠]/g, '') // ゼロ幅スペース・BOM 等
     .replace(/\s+/g, ' ')
+    .trim()
+    .replace(DISAMBIGUATION, '')
     .trim()
 }
 

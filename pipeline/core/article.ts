@@ -13,6 +13,7 @@
 import type { ChangeEvent } from '../sources/types.ts'
 import type { Theme } from '../theme.ts'
 import type { Ledger } from './events.ts'
+import type { VerifyIssue } from './verify.ts'
 import { formatIsoDate } from './datetime.ts'
 
 export type Category = 'leaving' | 'arrivals' | 'ranking'
@@ -20,6 +21,14 @@ export type Category = 'leaving' | 'arrivals' | 'ranking'
 export interface ArticleContext {
   theme: Theme
   now: Date
+  /**
+   * 記事が対象とする月（`YYYY-MM`）。既定は実行時点の当月。
+   *
+   * 実行日と分けている理由: 「9月に終了する作品」の記事は、
+   * 9月に入ってから書いても遅い。8月のうちに書けるようにする。
+   * 記事タイプはこの値で素材を絞り、スラッグとタグもこれに合わせる。
+   */
+  targetMonth: string
 }
 
 export interface ArticleType {
@@ -31,8 +40,14 @@ export interface ArticleType {
   buildPrompt(items: ChangeEvent[], ctx: ArticleContext): { system: string; prompt: string }
   tags(items: ChangeEvent[], ctx: ArticleContext): string[]
   slug(ctx: ArticleContext): string
-  /** タイプ固有の検証。問題があればメッセージを返す。 */
-  verify(md: string, items: ChangeEvent[]): string[]
+  /**
+   * タイプ固有の検証。
+   *
+   * error は公開を止める（誤情報・規約違反など、出してはいけないもの）。
+   * warn は止めない。文体や言い回しの指摘は、判定が外れることがある以上
+   * 公開を止める根拠にはならないため必ず warn にする。
+   */
+  verify(md: string, items: ChangeEvent[], ctx: ArticleContext): VerifyIssue[]
 }
 
 // --- LLM出力のパース -----------------------------------------------------
