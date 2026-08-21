@@ -142,7 +142,7 @@ Amazon Prime Videoでは洋画8作品が一斉終了です。往年の名作揃�
 ## 他のサービスで探す
 #この文言固定で現状は良いです
 
-※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスの配信状況を把握できます。それ以外のサービスでの配信有無は確認していませんが、以下から各サービス内を検索できます。
+※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
 
 - [U-NEXT で検索](https://video.unext.jp/freeword)
 - [Hulu で検索](https://www.hulu.jp/search)

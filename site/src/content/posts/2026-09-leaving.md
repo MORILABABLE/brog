@@ -226,7 +226,7 @@ Netflixでは9月14日に、ジェームズ・ボンドの主演俳優1人分が
 
 ## 他のサービスで探す
 
-※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスの配信状況を把握できます。それ以外のサービスでの配信有無は確認していませんが、以下から各サービス内を検索できます。
+※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
 
 - [U-NEXT で検索](https://video.unext.jp/freeword)
 - [Hulu で検索](https://www.hulu.jp/search)
