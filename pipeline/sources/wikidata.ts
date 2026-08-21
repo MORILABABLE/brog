@@ -28,6 +28,8 @@ import { dirname, join } from 'node:path'
 
 const ENDPOINT = 'https://query.wikidata.org/sparql'
 export const TITLE_CACHE_PATH = join('data', 'titles.json')
+export const ORIGIN_CACHE_PATH = join('data', 'origins.json')
+export const COMPANY_CACHE_PATH = join('data', 'companies.json')
 
 /** 1クエリあたりのID数。URL長とWDQSの負荷を考えた値。 */
 const BATCH_SIZE = 50
@@ -39,6 +41,21 @@ const USER_AGENT = 'brog/0.1 (automated blog pipeline; contact via repository)'
 const P_IMDB = 'P345'
 const P_TMDB_MOVIE = 'P4947'
 const P_TMDB_TV = 'P4983'
+/**
+ * 原語（original language of film or TV show）。
+ *
+ * ★ 製作国（P495）を使ってはいけない。共同製作の出資国がすべて並ぶため、
+ *   「NOPE/ノープ」（P495 に日本を含む）や「ヤンヤン 夏の想い出」（台湾・日本）が
+ *   邦画に化ける。実測で確認済み。原語なら両方とも正しく海外作品になる。
+ */
+const P_ORIGINAL_LANGUAGE = 'P364'
+/**
+ * 制作会社（production company）。
+ *
+ * 「同じ制作会社の作品が同じ日にまとめて配信開始された」というまとまりを、
+ * 推測ではなく事実として書くために引く。
+ */
+const P_PRODUCTION_COMPANY = 'P272'
 
 /** 作品を指すID群。API はどちらも返すが、片方しか無いこともある。 */
 export interface TitleRef {
@@ -99,18 +116,21 @@ function normalizeLabel(label: string): string {
     .trim()
 }
 
-async function runQuery(sparql: string): Promise<Map<string, string>> {
+type Binding = Record<string, { value?: string } | undefined>
+
+async function runBindings(sparql: string): Promise<Binding[]> {
   const res = await fetch(`${ENDPOINT}?format=json&query=${encodeURIComponent(sparql)}`, {
     headers: { 'User-Agent': USER_AGENT, accept: 'application/sparql-results+json' },
   })
   if (!res.ok) throw new Error(`Wikidata ${res.status} ${res.statusText}`)
 
-  const json = (await res.json()) as {
-    results?: { bindings?: { key?: { value?: string }; label?: { value?: string } }[] }
-  }
+  const json = (await res.json()) as { results?: { bindings?: Binding[] } }
+  return json.results?.bindings ?? []
+}
 
+async function runQuery(sparql: string): Promise<Map<string, string>> {
   const out = new Map<string, string>()
-  for (const b of json.results?.bindings ?? []) {
+  for (const b of await runBindings(sparql)) {
     const key = b.key?.value
     const label = b.label?.value ? normalizeLabel(b.label.value) : ''
     // 同一IDに複数ラベルが返ることがある。最初の1件を採用する。
@@ -226,4 +246,189 @@ export async function resolveTitles(
     if (!(key in cache)) cache[key] = null
   }
   return cache
+}
+
+// --- 作品の周辺情報（原語・制作会社） -------------------------------------
+
+/**
+ * キー -> ラベルの配列。null は「Wikidataに無いと確認済み」を意味する。
+ *
+ * ■ 何に使うか
+ *   原語     ジャンル別記事（アニメ / 洋画 / 邦画）の振り分け
+ *   制作会社 「同じ制作会社の作品が一斉に配信開始」というまとまりの裏付け
+ *
+ * 配信APIはどちらも返さないので、ここで補う。
+ * **解釈はテーマパック側の仕事で、ここでは事実だけを持つ。**
+ */
+export type LabelCache = Record<string, string[] | null>
+
+/** 後方互換のための別名 */
+export type OriginCache = LabelCache
+
+async function loadLabelCache(path: string): Promise<LabelCache> {
+  try {
+    return JSON.parse(await readFile(path, 'utf8')) as LabelCache
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return {}
+    throw err
+  }
+}
+
+async function saveLabelCache(path: string, cache: LabelCache): Promise<void> {
+  await mkdir(dirname(path), { recursive: true })
+  const sorted: LabelCache = {}
+  for (const k of Object.keys(cache).sort()) sorted[k] = cache[k]!
+  await writeFile(path, JSON.stringify(sorted, null, 2) + '\n', 'utf8')
+}
+
+export const loadOriginCache = () => loadLabelCache(ORIGIN_CACHE_PATH)
+export const saveOriginCache = (cache: LabelCache) => saveLabelCache(ORIGIN_CACHE_PATH, cache)
+export const loadCompanyCache = () => loadLabelCache(COMPANY_CACHE_PATH)
+export const saveCompanyCache = (cache: LabelCache) => saveLabelCache(COMPANY_CACHE_PATH, cache)
+
+interface PropertyQuery {
+  /** 引く Wikidata プロパティ（P364 など） */
+  property: string
+  /** ラベルの言語。`ja,en` のように優先順で並べる */
+  labelLang: string
+  /** 警告メッセージに出す名前 */
+  name: string
+}
+
+/** 1作品が複数の値を持つことがある（多言語映画・共同制作）ので、キーごとに集める。 */
+function collectLabels(bindings: Binding[]): Map<string, string[]> {
+  const out = new Map<string, string[]>()
+  for (const b of bindings) {
+    const key = b.key?.value
+    const label = b.valueLabel?.value
+    if (!key || !label) continue
+    const values = out.get(key) ?? []
+    if (!values.includes(label)) values.push(label)
+    out.set(key, values)
+  }
+  return out
+}
+
+async function queryPropertyByImdb(ids: string[], q: PropertyQuery): Promise<Map<string, string[]>> {
+  return collectLabels(
+    await runBindings(`SELECT ?key ?valueLabel WHERE {
+  VALUES ?key { ${literals(ids)} }
+  ?item wdt:${P_IMDB} ?key .
+  ?item wdt:${q.property} ?value .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "${q.labelLang}". }
+}`),
+  )
+}
+
+async function queryPropertyByTmdb(
+  refs: { movie: string[]; tv: string[] },
+  q: PropertyQuery,
+): Promise<Map<string, string[]>> {
+  const clauses: string[] = []
+  if (refs.movie.length) {
+    clauses.push(`{ VALUES ?key { ${literals(refs.movie)} } ?item wdt:${P_TMDB_MOVIE} ?key . }`)
+  }
+  if (refs.tv.length) {
+    clauses.push(`{ VALUES ?key { ${literals(refs.tv)} } ?item wdt:${P_TMDB_TV} ?key . }`)
+  }
+  if (clauses.length === 0) return new Map()
+
+  return collectLabels(
+    await runBindings(`SELECT ?key ?valueLabel WHERE {
+  ${clauses.join('\n  UNION\n  ')}
+  ?item wdt:${q.property} ?value .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "${q.labelLang}". }
+}`),
+  )
+}
+
+/**
+ * 作品群のあるプロパティを解決する。キャッシュ済みは問い合わせない。
+ * 手順と失敗時の扱いは resolveTitles と同じ（止めない・欠けたまま扱う）。
+ */
+async function resolveProperty(
+  refs: TitleRef[],
+  cache: LabelCache,
+  q: PropertyQuery,
+): Promise<LabelCache> {
+  const pending = new Map<string, TitleRef>()
+  for (const ref of refs) {
+    const key = titleCacheKey(ref)
+    if (key && !(key in cache)) pending.set(key, ref)
+  }
+  if (pending.size === 0) return cache
+
+  // --- 1) IMDb ID ---
+  const byImdb = [...pending.entries()].filter(([, r]) => r.imdbId)
+  for (const batch of chunk(byImdb, BATCH_SIZE)) {
+    try {
+      const found = await queryPropertyByImdb(
+        batch.map(([, r]) => r.imdbId!),
+        q,
+      )
+      for (const [key, ref] of batch) {
+        const hit = found.get(ref.imdbId!)
+        if (hit) cache[key] = hit
+      }
+    } catch (err) {
+      console.warn(`  ! Wikidata(${q.name}/IMDb)照会に失敗: ${err instanceof Error ? err.message : err}`)
+    }
+  }
+
+  // --- 2) 取りこぼしを TMDB ID で ---
+  const stillMissing = [...pending.entries()].filter(([key, r]) => !cache[key] && r.tmdbId)
+  for (const batch of chunk(stillMissing, BATCH_SIZE)) {
+    const movie: string[] = []
+    const tv: string[] = []
+    const backRef = new Map<string, string>()
+
+    for (const [key, ref] of batch) {
+      const [kind, id] = ref.tmdbId!.split('/')
+      if (!id) continue
+      backRef.set(id, key)
+      if (kind === 'tv') tv.push(id)
+      else movie.push(id)
+    }
+
+    try {
+      const found = await queryPropertyByTmdb({ movie, tv }, q)
+      for (const [tmdbNumericId, values] of found) {
+        const key = backRef.get(tmdbNumericId)
+        if (key) cache[key] = values
+      }
+    } catch (err) {
+      console.warn(`  ! Wikidata(${q.name}/TMDB)照会に失敗: ${err instanceof Error ? err.message : err}`)
+    }
+  }
+
+  for (const key of pending.keys()) {
+    if (!(key in cache)) cache[key] = null
+  }
+  return cache
+}
+
+/** 原語を解決する。ラベルは英語で持つ（`Japanese` のような言語名として使うため）。 */
+export function resolveOrigins(refs: TitleRef[], cache: LabelCache): Promise<LabelCache> {
+  return resolveProperty(refs, cache, {
+    property: P_ORIGINAL_LANGUAGE,
+    labelLang: 'en',
+    name: '原語',
+  })
+}
+
+/**
+ * 制作会社を解決する。ラベルはサイトの言語で持つ（記事にそのまま出すため）。
+ * 実測では日本のアニメ9件すべてが日本語ラベルで取れた
+ * （京都アニメーション・東映アニメーション・シャフト・マッドハウス等）。
+ */
+export function resolveCompanies(
+  refs: TitleRef[],
+  lang: string,
+  cache: LabelCache,
+): Promise<LabelCache> {
+  return resolveProperty(refs, cache, {
+    property: P_PRODUCTION_COMPANY,
+    labelLang: `${lang},en`,
+    name: '制作会社',
+  })
 }

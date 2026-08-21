@@ -18,6 +18,20 @@ import { formatIsoDate } from './datetime.ts'
 
 export type Category = 'leaving' | 'arrivals' | 'ranking'
 
+/**
+ * 記事タイプの下位区分。ジャンル別記事のために使う。
+ *
+ * 「アニメだけの配信開始記事」のように、同じ構成で切り口だけが違う記事を
+ * 記事タイプごと増やさずに作れるようにするための仕組み。
+ * 中身（どの作品がどのバリアントに属するか）はテーマパック側が決める。
+ */
+export interface ArticleVariant {
+  /** CLI の `--genre` とスラッグに使うキー。例: `anime` */
+  key: string
+  /** 記事本文での呼び方。例: `アニメ` */
+  label: string
+}
+
 export interface ArticleContext {
   theme: Theme
   now: Date
@@ -29,11 +43,26 @@ export interface ArticleContext {
    * 記事タイプはこの値で素材を絞り、スラッグとタグもこれに合わせる。
    */
   targetMonth: string
+  /** 選択中のバリアント。バリアントを持たない記事タイプでは undefined。 */
+  variant?: ArticleVariant
 }
 
 export interface ArticleType {
   readonly id: string
   readonly category: Category
+  /** 記事タイプの説明。`npm run write -- --list` に出る。 */
+  readonly description: string
+  /**
+   * この記事タイプが作るバリアント。
+   *
+   * 空（未定義）なら「分割しない1本」だけを作る。
+   * 1件以上あるなら、バリアントごとに1本ずつ作る（`--genre` が必須になる）。
+   *
+   * 「総合1本 ＋ ジャンル別3本」の両方を出したい場合は、
+   * 1つのタイプに2つのモードを持たせず、**別々の記事タイプとして登録する**。
+   * 総合とジャンル別では読者に渡すものが違い、テンプレートも分かれるため。
+   */
+  readonly variants?: readonly ArticleVariant[]
   /** 記事にする素材を選ぶ。空なら記事化しない。 */
   select(events: ChangeEvent[], ledger: Ledger, ctx: ArticleContext): ChangeEvent[]
   /** LLMへの指示を組み立てる */

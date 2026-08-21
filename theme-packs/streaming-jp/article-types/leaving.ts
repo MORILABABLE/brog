@@ -14,11 +14,26 @@ import { readFileSync } from 'node:fs'
 import { OUTPUT_FORMAT, type ArticleContext, type ArticleType } from '../../../pipeline/core/article.ts'
 import { buildSearchLinks } from '../../../pipeline/core/search-links.ts'
 import { formatMonthDay } from '../../../pipeline/core/datetime.ts'
-import { loadFixedPhrases, render, type FixedPhrases } from '../../../pipeline/core/fixed-phrases.ts'
 import { themeFile } from '../../../pipeline/theme.ts'
 import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
 import type { ChangeEvent } from '../../../pipeline/sources/types.ts'
 import type { Ledger } from '../../../pipeline/core/events.ts'
+import { productionCompanies } from '../work-context.ts'
+import {
+  articleMonth,
+  asOfLabel,
+  clip,
+  dateSections,
+  fixedPhrases,
+  halfWidthSymbols,
+  isTargetMonth,
+  itemTitles,
+  normalizeBody,
+  phraseReader,
+  ratingMentionsInProse,
+  serviceLabels,
+  serviceNames,
+} from './shared.ts'
 
 /**
  * 1記事に載せる上限。
@@ -31,8 +46,8 @@ const MAX_ITEMS = 80
 
 /** fixed-phrases.md に必ずあるべきキー。欠けていれば読み込み時に落ちる。 */
 const REQUIRED_PHRASES = [
-  'lead-first-sentence',
-  'lead-closer',
+  'leaving-lead-first-sentence',
+  'leaving-lead-closer',
   'other-services-intro',
   'attribution',
 ] as const
@@ -46,6 +61,7 @@ const CALL_TO_ACTION = /(ましょう|ください|見逃せません|お見逃�
 export const leavingArticle: ArticleType = {
   id: 'leaving',
   category: 'leaving',
+  description: '今月見放題が終了する作品（ジャンルを分けない総合）',
 
   select(events, _ledger: Ledger, ctx) {
     const target = events
@@ -77,8 +93,7 @@ export const leavingArticle: ArticleType = {
       themeFile(ctx.theme, 'templates', 'examples', 'leaving-excerpt.md'),
       'utf8',
     )
-    const phrases = fixedPhrases(ctx)
-    const labelOf = new Map(ctx.theme.catalogs.map((c) => [c.key, c.label]))
+    const labelOf = serviceLabels(ctx)
     const offset = ctx.theme.utc_offset_minutes
 
     const rows = items.map((e) => {
@@ -93,8 +108,11 @@ export const leavingArticle: ArticleType = {
         `  サービス: ${labelOf.get(e.service) ?? e.service}`,
         `  終了日: ${formatMonthDay(e.at!, offset)}`,
         e.work.year ? `  公開年: ${e.work.year}年` : '',
-        e.work.rating ? `  評価: ${e.work.rating}/100` : '',
+        e.work.rating ? `  評価: ${e.work.rating}/100（★表にだけ書き、地の文には書かないこと）` : '',
         e.work.genres.length ? `  ジャンル: ${e.work.genres.join(' / ')}` : '',
+        productionCompanies(e.work)?.length
+          ? `  制作: ${productionCompanies(e.work)!.join(' / ')}`
+          : '',
         e.work.overview ? `  あらすじ(英語原文): ${e.work.overview}` : '',
         links.length ? `  検索リンク: ${links.map((l) => `[${l.label}](${l.url})`).join(' / ')}` : '',
       ]
@@ -103,7 +121,7 @@ export const leavingArticle: ArticleType = {
     })
 
     // 差し込み済みの固定文言。プロンプトにも検査にも同じ値を使う。
-    const resolved = resolvePhrases(phrases, items, ctx)
+    const resolved = resolvePhrases(items, ctx)
 
     const system = `あなたは動画配信サービスの情報を扱う日本語ブログの編集者です。
 与えられたデータだけを使って記事を書きます。データに無い事実を書いてはいけません。
@@ -154,18 +172,26 @@ ${rows.join('\n\n')}
 2. リードの2段落目では、見つけたまとまりのうち**知名度の高いものを終了日順に**、
    作品名・シリーズ名を「」で囲んで挙げること。記事の構造の説明は書かない。
    目立つシリーズが無ければ、有名作・人気作、近年に続編が出た作品を優先する。
-3. まとまりを解説する \`##\` セクションは、**見出しに具体的な作品名を入れ**、
+3. **各セクションは「見出し → 表 → 解説」の順に書くこと。**
+   見出しの直後に導入文を挟まず、いきなり表を置きます。
+   表の列は「終了日 / 作品 / 評価 / サービス」の4列で固定してください。
+4. まとまりを解説する \`##\` セクションは、**見出しに具体的な作品名を入れ**、
    **最終段落を「〜しましょう」など視聴を促す形で締める**こと。
-4. あらすじは英語で与えられています。日本語で書き直してください（直訳ではなく要約でよい）。
-5. 「★邦題が未確認」と書かれた作品は、**与えられた原題をそのまま**使ってください。
+5. **評価スコアは表にだけ書き、地の文には一切書かないこと。**
+   「この日の最高評価は」「評価だけで選ぶなら」はいずれも禁止です。
+6. あらすじは英語で与えられています。日本語で書き直してください（直訳ではなく要約でよい）。
+7. 「★邦題が未確認」と書かれた作品は、**与えられた原題をそのまま**使ってください。
    日本語タイトルを推測して書いてはいけません。
-6. 記号は全角に統一してください（！ ？ （） を半角で書かない）。`
+8. 制作会社は素材に与えられたものだけを書いてください。
+   放送開始日・公開日など、データに無い日付を補ってはいけません。
+9. 記号は全角に統一してください（！ ？ （） を半角で書かない）。
+   ただし作品名に含まれる半角記号は正式表記なのでそのまま使ってください。`
 
     return { system, prompt }
   },
 
   tags(items, ctx) {
-    const labelOf = new Map(ctx.theme.catalogs.map((c) => [c.key, c.label]))
+    const labelOf = serviceLabels(ctx)
     const services = [...new Set(items.map((e) => labelOf.get(e.service) ?? e.service))]
     const [y, m] = ctx.targetMonth.split('-')
     return [...services, '配信終了', `${y}年${Number(m)}月`]
@@ -176,15 +202,13 @@ ${rows.join('\n\n')}
   },
 
   verify(raw, items, ctx): VerifyIssue[] {
-    // 改行コードを正規化してから見る。CRLF のままだと行単位の検査が
-    // 一致せず、「検査したが何も見つからなかった」ように見えてしまう。
-    const md = raw.replace(/^﻿/, '').replace(/\r\n?/g, '\n').trim()
+    const md = normalizeBody(raw)
 
     const issues: VerifyIssue[] = []
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 
-    const resolved = resolvePhrases(fixedPhrases(ctx), items, ctx)
+    const resolved = resolvePhrases(items, ctx)
 
     // --- 事故を防ぐ検査（公開を止める） ---
 
@@ -227,7 +251,17 @@ ${rows.join('\n\n')}
       warn(`リードの1文目が想定の型と違います。想定:\n      ${resolved.leadFirstSentence}`)
     }
 
+    // 評価は表にだけ載せる。地の文の言及は読者の役に立たない。
+    for (const line of ratingMentionsInProse(md)) {
+      warn(`地の文で評価に言及しています: 「${clip(line, 50)}」（評価は表にだけ載せます）`)
+    }
+
     for (const section of dateSections(md)) {
+      // ★ 構成の核。見出しの直後に導入文を挟むと、
+      //   読者は一覧を掴む前に文章を読まされることになる。
+      if (!section.startsWithTable) {
+        warn(`「${section.heading}」の見出し直後が表になっていません（見出し → 表 → 解説の順）。`)
+      }
       const last = section.lastParagraph
       if (last && !CALL_TO_ACTION.test(last)) {
         warn(
@@ -237,7 +271,7 @@ ${rows.join('\n\n')}
       }
     }
 
-    const halfWidth = [...new Set(stripLinks(md).match(/[!?()]/g) ?? [])]
+    const halfWidth = halfWidthSymbols(md, itemTitles(items))
     if (halfWidth.length) {
       warn(`半角記号が混ざっています: ${halfWidth.join(' ')} → 全角（！ ？ （ ））に統一してください。`)
     }
@@ -247,19 +281,6 @@ ${rows.join('\n\n')}
 }
 
 // --- 固定文言 -------------------------------------------------------------
-
-let cache: { key: string; phrases: FixedPhrases } | undefined
-
-/** テーマごとに1度だけ読む。buildPrompt と verify の両方から呼ばれる。 */
-function fixedPhrases(ctx: ArticleContext): FixedPhrases {
-  if (cache?.key !== ctx.theme.key) {
-    cache = {
-      key: ctx.theme.key,
-      phrases: loadFixedPhrases(themeFile(ctx.theme, 'templates', 'fixed-phrases.md'), REQUIRED_PHRASES),
-    }
-  }
-  return cache.phrases
-}
 
 interface ResolvedPhrases {
   /** 【8月終了】 */
@@ -273,102 +294,22 @@ interface ResolvedPhrases {
 }
 
 /** 固定文言に今月の値を差し込む。プロンプトと検査で同じ結果になることが要件。 */
-function resolvePhrases(
-  phrases: FixedPhrases,
-  items: ChangeEvent[],
-  ctx: ArticleContext,
-): ResolvedPhrases {
-  const offset = ctx.theme.utc_offset_minutes
+function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhrases {
   const vars = {
     月: articleMonth(ctx),
     サービス: serviceNames(items, ctx),
-    基準日: formatMonthDay(ctx.now.toISOString(), offset),
+    基準日: asOfLabel(ctx),
     本数: items.length,
   }
-  const get = (key: string) => render(phrases.get(key) ?? '', vars)
+  const get = phraseReader(fixedPhrases(ctx, REQUIRED_PHRASES), vars)
 
   return {
     leadPrefix: `【${vars.月}月終了】`,
-    leadFirstSentence: get('lead-first-sentence'),
-    leadCloser: get('lead-closer'),
+    leadFirstSentence: get('leaving-lead-first-sentence'),
+    leadCloser: get('leaving-lead-closer'),
     otherServicesIntro: get('other-services-intro'),
     attribution: get('attribution'),
     asOf: vars.基準日,
   }
 }
 
-/**
- * 記事が対象とする月。
- * 実行日ではなく対象月から取る。8月のうちに9月分を書く場合でもずれない。
- */
-function articleMonth(ctx: ArticleContext): number {
-  return Number(ctx.targetMonth.split('-')[1])
-}
-
-/** 「NetflixとAmazon Prime Video」。3つ以上なら中黒でつなぐ。 */
-function serviceNames(items: ChangeEvent[], ctx: ArticleContext): string {
-  const present = new Set(items.map((e) => e.service))
-  // 並び順はテーマの定義順に固定する。月によって順番が入れ替わらないようにするため。
-  const labels = ctx.theme.catalogs.filter((c) => present.has(c.key)).map((c) => c.label)
-  if (labels.length === 0) return ctx.theme.catalogs.map((c) => c.label).join('・')
-  if (labels.length === 2) return labels.join('と')
-  return labels.join('・')
-}
-
-// --- 本文の走査 -----------------------------------------------------------
-
-interface DateSection {
-  heading: string
-  /** 表・箇条書き・見出しを除いた、最後の本文段落 */
-  lastParagraph: string | undefined
-}
-
-/**
- * `## 8月14日：…` 形式のセクションを取り出す。
- * 締めルールの対象は日付ごとのまとまりだけで、
- * 「その他の注目作」「全終了作品リスト」などは対象外（テンプレート構成3参照）。
- */
-function dateSections(md: string): DateSection[] {
-  const sections: DateSection[] = []
-  let current: { heading: string; lines: string[] } | undefined
-
-  const flush = () => {
-    if (!current) return
-    const prose = current.lines
-      .map((l) => l.trim())
-      .filter((l) => l && !l.startsWith('|') && !l.startsWith('-') && !l.startsWith('#') && !l.startsWith('>'))
-    sections.push({
-      heading: current.heading,
-      lastParagraph: prose.at(-1)?.replace(/\*+/g, '').trim(),
-    })
-    current = undefined
-  }
-
-  for (const line of md.split('\n')) {
-    const h2 = line.match(/^## +(.*)$/)
-    if (h2) {
-      flush()
-      const heading = h2[1]!.trim()
-      if (/^\d{1,2}月\d{1,2}日/.test(heading)) current = { heading, lines: [] }
-      continue
-    }
-    current?.lines.push(line)
-  }
-  flush()
-  return sections
-}
-
-/** Markdown のリンク記法を取り除く。URL の半角括弧を誤検出しないため。 */
-function stripLinks(md: string): string {
-  return md.replace(/\[[^\]]*\]\([^)]*\)/g, '')
-}
-
-function clip(s: string, max = 40): string {
-  return s.length <= max ? s : `${s.slice(0, max)}…`
-}
-
-/** サイトのタイムゾーンで見て、記事の対象月に入るか */
-function isTargetMonth(iso: string, ctx: ArticleContext): boolean {
-  const shifted = new Date(Date.parse(iso) + ctx.theme.utc_offset_minutes * 60_000)
-  return shifted.toISOString().slice(0, 7) === ctx.targetMonth
-}

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "collect": "tsx pipeline/cli/collect.ts",
+    "enrich": "tsx pipeline/cli/enrich.ts",
     "write": "tsx pipeline/cli/write.ts",
     "preview": "tsx pipeline/cli/preview.ts",
     "catalogs": "tsx pipeline/cli/catalogs.ts",

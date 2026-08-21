@@ -8,6 +8,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parse } from 'yaml'
 import type { SearchLinkConfig } from './core/search-links.ts'
+import type { ArticleType } from './core/article.ts'
 
 export interface CatalogConfig {
   /** テーマ内で使う安定したキー。記事やファイル名で使う。 */
@@ -92,4 +93,32 @@ export async function loadTheme(key = activeThemeKey()): Promise<Theme> {
 /** テーマパック内のファイルパス */
 export function themeFile(theme: Theme, ...parts: string[]): string {
   return join(THEME_ROOT, theme.key, ...parts)
+}
+
+/**
+ * テーマパックが提供する記事タイプを読み込む。
+ *
+ * ■ なぜ動的インポートか
+ * 記事タイプはテーマ固有の資産で、増減する。パイプライン側に
+ * `import { leavingArticle } from '../../theme-packs/streaming-jp/...'` と書くと、
+ * 記事を1種類増やすたびにパイプラインを直すことになり、
+ * 「テーマパックを差し替えるだけ」という前提が崩れる。
+ *
+ * テーマパックは `article-types/index.ts` から `ARTICLE_TYPES` を出す約束。
+ */
+export async function loadArticleTypes(theme: Theme): Promise<ArticleType[]> {
+  const specifier = `../theme-packs/${theme.key}/article-types/index.ts`
+  let mod: { ARTICLE_TYPES?: ArticleType[] }
+  try {
+    mod = (await import(specifier)) as { ARTICLE_TYPES?: ArticleType[] }
+  } catch (err) {
+    throw new Error(
+      `テーマ ${theme.key} の記事タイプを読み込めません（${THEME_ROOT}/${theme.key}/article-types/index.ts）: ` +
+        (err instanceof Error ? err.message : String(err)),
+    )
+  }
+  if (!mod.ARTICLE_TYPES?.length) {
+    throw new Error(`${THEME_ROOT}/${theme.key}/article-types/index.ts が ARTICLE_TYPES を出していません`)
+  }
+  return mod.ARTICLE_TYPES
 }

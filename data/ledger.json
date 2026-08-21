@@ -1090,6 +1090,13 @@
     "prime-video:removed:99487",
     "prime-video:removed:999"
   ],
-  "usedRankingThemes": [],
-  "updatedAt": "2026-08-20T19:34:36.624Z"
+  "usedRankingThemes": [
+    "article:2026-08-arrivals-anime",
+    "article:2026-08-arrivals-anime",
+    "article:2026-08-arrivals-anime",
+    "article:2026-08-arrivals-japanese",
+    "article:2026-08-arrivals-japanese",
+    "article:2026-08-arrivals-western"
+  ],
+  "updatedAt": "2026-08-21T12:50:43.612Z"
 }

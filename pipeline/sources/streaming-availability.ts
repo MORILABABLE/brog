@@ -56,12 +56,18 @@ interface ApiShow {
   imdbId?: string
   tmdbId?: string
   title?: string
+  /** 原語のタイトル。日本の作品は日本語表記で返る。 */
+  originalTitle?: string
   overview?: string
   showType?: string
   releaseYear?: number
   firstAirYear?: number
   rating?: number
   genres?: { id?: string; name?: string }[]
+  /** ローマ字表記で返る */
+  directors?: string[]
+  /** ローマ字表記で返る */
+  cast?: string[]
   imageSet?: ApiImageSet
   streamingOptions?: Record<string, ApiStreamingOption[]>
 }
@@ -293,6 +299,10 @@ export class StreamingAvailabilitySource implements Source {
  * この API の output_language は en/es/fr/tr/de のみ対応で、日本語がない。
  * 邦題は書き出し時に別途解決する（DESIGN.md 3.6 参照）。
  * そのために imdbId / tmdbId を meta に保持しておく。
+ *
+ * ただし originalTitle だけは例外で、**日本の作品は日本語表記のまま返る**。
+ * あらすじが欠けている作品（邦画に多い）でも、監督・出演者と合わせれば
+ * 推測なしで1文書けるので、directors / cast も落とさずに持つ。
  */
 function toWork(show: ApiShow, changeLink?: string): Work {
   const posters = show.imageSet?.verticalPoster ?? {}
@@ -308,11 +318,16 @@ function toWork(show: ApiShow, changeLink?: string): Work {
   return {
     id: show.id,
     title: show.title ?? '',
+    // 原題と同じなら持たない。イベントログを無駄に太らせないため。
+    originalTitle: show.originalTitle && show.originalTitle !== show.title ? show.originalTitle : undefined,
     type: show.showType ?? 'movie',
     year: show.releaseYear ?? show.firstAirYear,
     overview: show.overview ?? '',
     rating: show.rating,
     genres: (show.genres ?? []).map((g) => g.name ?? '').filter(Boolean),
+    // 記事で使うのは冒頭数名。全員入れてもプロンプトが太るだけで読者の役に立たない。
+    directors: show.directors?.length ? show.directors.slice(0, 3) : undefined,
+    cast: show.cast?.length ? show.cast.slice(0, 5) : undefined,
     posterUrl: poster,
     link,
     meta: {

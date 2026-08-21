@@ -18,6 +18,12 @@ export interface Work {
    * 解決できなかった場合は undefined で、記事側は title にフォールバックする。
    */
   localizedTitle?: string
+  /**
+   * 原語でのタイトル。**日本の作品は日本語表記のまま返る**
+   * （例: Dear Family → ディア・ファミリー、Last Mile → ラストマイル）。
+   * Wikidata に項目が無い作品でも、これがあれば邦題と作品の出自が分かる。
+   */
+  originalTitle?: string
   /** movie | series */
   type: string
   /** 公開年。不明なら undefined */
@@ -26,6 +32,13 @@ export interface Work {
   /** 0-100 に正規化した評価 */
   rating?: number
   genres: string[]
+  /**
+   * 監督。**ローマ字表記で返る**（例: Sho Tsukikawa）。
+   * 日本語表記への変換は邦題と同じく推測が効かないので、記事側で勝手に訳さないこと。
+   */
+  directors?: string[]
+  /** 主な出演者。監督と同じくローマ字表記。 */
+  cast?: string[]
   posterUrl?: string
   /** 作品ページへのリンク（出典として記事に載せる） */
   link?: string

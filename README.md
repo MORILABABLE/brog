@@ -37,10 +37,10 @@ Streaming Availability API
 
 | change_type | 意味 | 記事タイプ |
 |---|---|---|
-| `new` | 新規配信開始 | A: 新着告知 |
-| `removed` | 配信終了済み | C-1: 事後まとめ |
-| `expiring` | **配信終了予定（日付付き）** | C-2: 終了告知 |
-| `upcoming` | 配信開始予定 | 先出し告知 |
+| `new` | 新規配信開始 | `arrivals`（ジャンル別3本） |
+| `removed` | 配信終了済み | 未使用 |
+| `expiring` | **配信終了予定（日付付き）** | `leaving` |
+| `upcoming` | 配信開始予定 | `arrivals` 末尾の「これから配信開始予定」 |
 
 収集と執筆を分けているのは、APIリクエストを節約しつつ
 **記事生成だけを何度でもやり直せる**ようにするため。
@@ -85,7 +85,7 @@ Netflix / Prime Video / Disney+ 以外（U-NEXT / Hulu / DMM TV）の ID は未�
 ### 4. 収集してみる
 
 ```bash
-npm run collect                        # 直近7日の new / removed / expiring
+npm run collect                        # 直近7日の new / removed / expiring / upcoming
 npm run collect -- --days 14
 npm run collect -- --kinds new,expiring
 ```
@@ -110,15 +110,36 @@ npm run collect -- --kinds new,expiring
 | コマンド | 内容 |
 |---|---|
 | `npm run collect` | 配信状況の変化を収集して記録 |
+| `npm run enrich` | 収集済みイベントに Wikidata の情報を後追いで足す（無料・APIキー不要） |
+| `npm run write -- --list` | **作れる記事と素材件数の一覧** |
 | `/article` | **このセッションで記事を執筆（API課金なし）** |
-| `npm run write -- --emit` | プロンプトを `data/draft/prompt.md` に書き出す |
+| `npm run write -- --type <記事> [--genre <ジャンル>] --emit` | プロンプトを `data/draft/prompt.md` に書き出す |
 | `npm run write -- --apply` | `data/draft/response.md` を検証して記事にする |
-| `npm run write` | LLM APIで生成して書き出す（課金あり） |
-| `npm run write -- --dry-run` | プロンプトだけ表示（無料） |
+| `npm run write -- --type <記事> [--genre <ジャンル>]` | LLM APIで生成して書き出す（課金あり） |
+| `npm run write -- ... --dry-run` | プロンプトだけ表示（無料） |
 | `npm run preview` | 収集済みデータが記事としてどう見えるかを表示（API消費なし） |
 | `npm run catalogs` | 対象国のサービス一覧と theme.yaml の解決結果 |
 | `npm run probe -- /changes country=jp ...` | APIの生レスポンスを表示（フィールド名の検証用） |
 | `npm run typecheck` | 型チェック |
+
+## 記事の種類
+
+`npm run write -- --list` が唯一の一覧。現在はこの4本。
+
+| 記事 | 内容 |
+|---|---|
+| `leaving` | 今月見放題が終了する作品（ジャンルを分けない総合） |
+| `arrivals --genre anime` | 今月見放題配信が始まったアニメ |
+| `arrivals --genre western` | 同・洋画・海外ドラマ |
+| `arrivals --genre japanese` | 同・邦画・国内ドラマ |
+
+配信開始は月に300〜400本あり1記事に収まらないので、ジャンルで分けている。
+振り分けは Wikidata の原語（`data/origins.json`）と API の `originalTitle` で機械的に行う
+（`theme-packs/streaming-jp/genres.ts`）。判定できない作品は記事に出さない。
+
+**記事の種類を増やすときに触るのは、テンプレートと記事タイプの2ファイルだけ。**
+CLI もスラッシュコマンドも変えなくてよい。手順は
+`theme-packs/streaming-jp/article-types/index.ts` の冒頭にある。
 
 ---
 
@@ -191,8 +212,9 @@ npm run write
 **テンプレートを調整するときは `npm run write -- --dry-run`。**
 LLMを呼ばずにプロンプトだけ表示するので、何度試しても無料。
 
-記事の構成・文体・禁止事項は `theme-packs/streaming-jp/templates/leaving.md` にある。
-**このファイルを編集すれば全記事の構成が変わる。コードは触らなくてよい。**
+記事の構成・文体・禁止事項は `theme-packs/streaming-jp/templates/` にある
+（`leaving.md` / `arrivals.md`、共通の文言は `fixed-phrases.md`）。
+**これらを編集すれば全記事の構成が変わる。コードは触らなくてよい。**
 
 frontmatter（日付・カテゴリ・出典・基準日）は**収集データから機械的に組み立てる**。
 LLMが書くのはタイトル・説明文・本文だけ。日付や出典をLLMに任せると誤りが混入し、

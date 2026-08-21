@@ -1,7 +1,7 @@
 /**
  * 配信状況の変化を収集する。
  *
- *   npm run collect              直近7日の new / removed / expiring
+ *   npm run collect              直近7日の new / removed / expiring / upcoming
  *   npm run collect -- --days 14
  *   npm run collect -- --kinds new,expiring
  *
@@ -14,8 +14,14 @@ import { StreamingAvailabilitySource } from '../sources/streaming-availability.t
 import type { ChangeKind } from '../sources/types.ts'
 import { appendEvents, dedupe, eventKey, loadLedger, saveLedger } from '../core/events.ts'
 import {
+  loadCompanyCache,
+  loadOriginCache,
   loadTitleCache,
+  resolveCompanies,
+  resolveOrigins,
   resolveTitles,
+  saveCompanyCache,
+  saveOriginCache,
   saveTitleCache,
   titleCacheKey,
   type TitleRef,
@@ -38,7 +44,9 @@ async function main(): Promise<void> {
   const theme = await loadTheme()
   const sinceDays = Number(arg('days') ?? 7)
 
-  const kinds = (arg('kinds')?.split(',') ?? ['new', 'removed', 'expiring']) as ChangeKind[]
+  // upcoming（配信開始予定）も既定で取る。配信開始記事の末尾に置く
+  // 「これから配信開始予定」の素材になる。追加コストは月10〜20リクエスト程度。
+  const kinds = (arg('kinds')?.split(',') ?? ['new', 'removed', 'expiring', 'upcoming']) as ChangeKind[]
   const invalid = kinds.filter((k) => !VALID_KINDS.includes(k))
   if (invalid.length) {
     throw new Error(`不正な kind: ${invalid.join(', ')}（有効: ${VALID_KINDS.join(', ')}）`)
@@ -62,6 +70,18 @@ async function main(): Promise<void> {
   }))
   await resolveTitles(refs, theme.site_language, cache)
   await saveTitleCache(cache)
+
+  // 原語も解決する。ジャンル別記事（アニメ/洋画/邦画）の振り分けに使う。
+  // 同じく Wikidata なので無料。失敗しても収集は止めない。
+  const originCache = await loadOriginCache()
+  await resolveOrigins(refs, originCache)
+  await saveOriginCache(originCache)
+
+  // 制作会社も解決する。「同じ制作会社の作品が一斉に配信開始」というまとまりを
+  // 推測ではなく事実として書くための材料になる。
+  const companyCache = await loadCompanyCache()
+  await resolveCompanies(refs, theme.site_language, companyCache)
+  await saveCompanyCache(companyCache)
 
   let resolved = 0
   for (const [i, e] of fresh.entries()) {

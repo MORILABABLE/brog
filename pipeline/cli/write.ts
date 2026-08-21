@@ -1,35 +1,47 @@
 /**
- * 記事を生成する。3つの使い方がある。
+ * 記事を生成する。
+ *
+ * ── どの記事が作れるかを見る
+ *   npm run write -- --list
  *
  * ── A. API で生成（課金あり）
- *   npm run write
+ *   npm run write -- --type arrivals --genre anime
  *
  * ── B. このターミナル（Claude Code等）で生成（API課金なし）
- *   npm run write -- --emit     → data/draft/prompt.md を書き出す
+ *   npm run write -- --type arrivals --genre anime --emit
  *   （prompt.md を読んで記事を書き、data/draft/response.md に保存）
  *   npm run write -- --apply    → 検証して site/ に書き出す
  *
  *   スラッシュコマンド /article で上記を自動化できる。
  *
  * ── C. プロンプトの確認だけ（無料）
- *   npm run write -- --dry-run
+ *   npm run write -- --type arrivals --genre anime --dry-run
  *
  * ■ なぜ分割するか
  * 検証・frontmatter組み立て・書き出しは、どの方式でも共通の処理。
  * 「プロンプトを作る」と「応答を適用する」に分ければ、
  * 生成手段だけを差し替えられる。品質ゲートはどの経路でも必ず通る。
+ *
+ * ■ 記事タイプはここに書かない
+ * どんな記事があるかはテーマパックの `article-types/index.ts` が決める。
+ * この CLI は記事タイプの中身を知らないまま、一覧・選択・実行だけを担う。
+ * 記事を1種類増やしてもこのファイルは変わらない。
  */
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { loadTheme, type Theme } from '../theme.ts'
+import { loadArticleTypes, loadTheme, type Theme } from '../theme.ts'
 import { loadLedger, readAllEvents, saveLedger } from '../core/events.ts'
 import { currentYearMonth } from '../core/datetime.ts'
-import { buildMarkdown, parseArticle, type ArticleType } from '../core/article.ts'
+import {
+  buildMarkdown,
+  parseArticle,
+  type ArticleType,
+  type ArticleVariant,
+} from '../core/article.ts'
 import { hasError, verifyArticle } from '../core/verify.ts'
 import { createProvider } from '../llm/index.ts'
 import { ATTRIBUTION } from '../sources/streaming-availability.ts'
 import type { ChangeEvent } from '../sources/types.ts'
-import { leavingArticle } from '../../theme-packs/streaming-jp/article-types/leaving.ts'
 
 try {
   process.loadEnvFile('.env')
@@ -44,10 +56,6 @@ const CONTEXT_PATH = join(DRAFT_DIR, 'context.json')
 const RESPONSE_PATH = join(DRAFT_DIR, 'response.md')
 const MAX_TOKENS = 16_000
 
-const TYPES: Record<string, ArticleType> = {
-  leaving: leavingArticle,
-}
-
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`)
   return i >= 0 ? process.argv[i + 1] : undefined
@@ -60,7 +68,26 @@ interface DraftContext {
   createdAt: string
   /** 記事が対象とする月。--emit 時の指定を --apply でも再現するため保存する。 */
   targetMonth?: string
+  /** 選択したバリアント（ジャンル）。同じく --apply で再現するため保存する。 */
+  variantKey?: string
   items: ChangeEvent[]
+}
+
+/** 「記事タイプ×バリアント」1通り。これが記事1本に対応する。 */
+interface Recipe {
+  type: ArticleType
+  variant?: ArticleVariant
+}
+
+/** 登録されている記事タイプから、作れる記事の組み合わせをすべて並べる。 */
+function recipes(types: ArticleType[]): Recipe[] {
+  return types.flatMap((type) =>
+    type.variants?.length ? type.variants.map((variant) => ({ type, variant })) : [{ type }],
+  )
+}
+
+function recipeLabel(r: Recipe): string {
+  return r.variant ? `${r.type.id} --genre ${r.variant.key}` : r.type.id
 }
 
 /**
@@ -92,13 +119,14 @@ async function existingTitles(excludeSlug: string): Promise<string[]> {
  */
 async function finalize(
   raw: string,
-  type: ArticleType,
+  recipe: Recipe,
   items: ChangeEvent[],
   theme: Theme,
   now: Date,
   targetMonth: string,
   stopReason?: string,
 ): Promise<void> {
+  const { type } = recipe
   const parsed = parseArticle(raw)
   if (!parsed) {
     console.error('出力を解釈できませんでした。指定した形式に従っていません。')
@@ -108,7 +136,7 @@ async function finalize(
     process.exit(1)
   }
 
-  const ctx = { theme, now, targetMonth }
+  const ctx = { theme, now, targetMonth, variant: recipe.variant }
   const slug = type.slug(ctx)
   const issues = [
     ...verifyArticle({
@@ -176,23 +204,31 @@ async function applyDraft(theme: Theme): Promise<void> {
     process.exit(1)
   }
 
-  const type = TYPES[draft.typeId]
+  const type = (await loadArticleTypes(theme)).find((t) => t.id === draft.typeId)
   if (!type) throw new Error(`context.json の記事タイプが不明です: ${draft.typeId}`)
+
+  const variant = draft.variantKey
+    ? type.variants?.find((v) => v.key === draft.variantKey)
+    : undefined
+  if (draft.variantKey && !variant) {
+    throw new Error(`context.json のジャンルが不明です: ${draft.typeId} / ${draft.variantKey}`)
+  }
 
   const now = new Date(draft.createdAt)
   const targetMonth = draft.targetMonth ?? currentYearMonth(theme.utc_offset_minutes)
 
   console.log(
-    `下書きを適用します（${type.id} / 対象 ${targetMonth} / 素材${draft.items.length}件 / ${draft.createdAt}）\n`,
+    `下書きを適用します（${recipeLabel({ type, variant })} / 対象 ${targetMonth} / ` +
+      `素材${draft.items.length}件 / ${draft.createdAt}）\n`,
   )
-  await finalize(response, type, draft.items, theme, now, targetMonth)
+  await finalize(response, { type, variant }, draft.items, theme, now, targetMonth)
 }
 
 /** --emit: プロンプトと素材をファイルに書き出す */
 async function emitDraft(
   system: string,
   prompt: string,
-  type: ArticleType,
+  recipe: Recipe,
   items: ChangeEvent[],
   now: Date,
   targetMonth: string,
@@ -224,7 +260,13 @@ ${prompt}
   await writeFile(
     CONTEXT_PATH,
     JSON.stringify(
-      { typeId: type.id, createdAt: now.toISOString(), targetMonth, items } satisfies DraftContext,
+      {
+        typeId: recipe.type.id,
+        createdAt: now.toISOString(),
+        targetMonth,
+        variantKey: recipe.variant?.key,
+        items,
+      } satisfies DraftContext,
       null,
       2,
     ),
@@ -240,17 +282,76 @@ ${prompt}
   console.log('\n（このセッションなら /article で1〜3を自動化できます）')
 }
 
+/**
+ * --list: 作れる記事を素材の件数つきで並べる。
+ *
+ * 記事タイプが増えても、使う側はこれを見れば選べる。
+ * スラッシュコマンドに記事の一覧を書き写さずに済ませるための入口。
+ */
+async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promise<void> {
+  const events = await readAllEvents()
+  const ledger = await loadLedger()
+  const existing = new Set(
+    (await readdir(POSTS_DIR).catch(() => []))
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => f.replace(/\.md$/, '')),
+  )
+
+  console.log(`テーマ: ${theme.label}  対象月: ${targetMonth}  収集済み ${events.length}件\n`)
+  console.log('  記事                              素材  状態  スラッグ')
+  console.log('  ' + '-'.repeat(72))
+
+  for (const r of recipes(await loadArticleTypes(theme))) {
+    const ctx = { theme, now, targetMonth, variant: r.variant }
+    const items = r.type.select(events, ledger, ctx)
+    const slug = r.type.slug(ctx)
+    const state = existing.has(slug) ? '作成済' : items.length === 0 ? '素材なし' : '未作成'
+    console.log(
+      `  ${recipeLabel(r).padEnd(32)}${String(items.length).padStart(4)}  ${state.padEnd(6)}${slug}`,
+    )
+  }
+
+  console.log('\n書き出す:  npm run write -- --type <記事> [--genre <ジャンル>] --emit')
+}
+
+/** `--type` / `--genre` から作る記事を1つに決める。 */
+function pickRecipe(types: ArticleType[]): Recipe {
+  const all = recipes(types)
+  const typeId = arg('type') ?? types[0]!.id
+  const type = types.find((t) => t.id === typeId)
+  if (!type) {
+    throw new Error(
+      `不明な記事タイプ: ${typeId}（有効: ${types.map((t) => t.id).join(', ')}）\n` +
+        '  一覧は npm run write -- --list',
+    )
+  }
+
+  const genre = arg('genre')
+  if (!type.variants?.length) {
+    if (genre) throw new Error(`記事タイプ ${type.id} はジャンルで分かれていません（--genre は不要）`)
+    return { type }
+  }
+
+  if (!genre) {
+    throw new Error(
+      `記事タイプ ${type.id} には --genre が必要です（有効: ${type.variants.map((v) => v.key).join(' / ')}）\n` +
+        `  例: npm run write -- --type ${type.id} --genre ${type.variants[0]!.key} --emit`,
+    )
+  }
+  const variant = type.variants.find((v) => v.key === genre)
+  if (!variant) {
+    throw new Error(
+      `不明なジャンル: ${genre}（${type.id} で有効: ${type.variants.map((v) => v.key).join(' / ')}）`,
+    )
+  }
+  return all.find((r) => r.type === type && r.variant === variant)!
+}
+
 async function main(): Promise<void> {
   const theme = await loadTheme()
 
   // --apply は素材を context.json から復元するので、選択処理を行わない
   if (flag('apply')) return await applyDraft(theme)
-
-  const typeId = arg('type') ?? 'leaving'
-  const type = TYPES[typeId]
-  if (!type) {
-    throw new Error(`不明な記事タイプ: ${typeId}（有効: ${Object.keys(TYPES).join(', ')}）`)
-  }
 
   const now = new Date()
   const targetMonth = arg('month') ?? currentYearMonth(theme.utc_offset_minutes)
@@ -258,12 +359,17 @@ async function main(): Promise<void> {
     throw new Error(`--month は YYYY-MM 形式で指定してください: ${targetMonth}`)
   }
 
-  const ctx = { theme, now, targetMonth }
+  if (flag('list')) return await listRecipes(theme, targetMonth, now)
+
+  const recipe = pickRecipe(await loadArticleTypes(theme))
+  const { type } = recipe
+
+  const ctx = { theme, now, targetMonth, variant: recipe.variant }
   const events = await readAllEvents()
   const ledger = await loadLedger()
   const items = type.select(events, ledger, ctx)
 
-  console.log(`テーマ: ${theme.label}  記事タイプ: ${type.id}  対象月: ${targetMonth}`)
+  console.log(`テーマ: ${theme.label}  記事: ${recipeLabel(recipe)}  対象月: ${targetMonth}`)
   console.log(`素材: ${events.length}件中 ${items.length}件を選択\n`)
 
   if (items.length === 0) {
@@ -288,7 +394,7 @@ async function main(): Promise<void> {
     return
   }
 
-  if (flag('emit')) return await emitDraft(system, prompt, type, items, now, targetMonth)
+  if (flag('emit')) return await emitDraft(system, prompt, recipe, items, now, targetMonth)
 
   // --- API で生成 ---
   const llm = createProvider({ provider: arg('provider'), model: arg('model') })
@@ -308,7 +414,7 @@ async function main(): Promise<void> {
     `完了: 入力 ${result.usage.inputTokens} / 出力 ${result.usage.outputTokens} トークン  ${cost}\n`,
   )
 
-  await finalize(result.text, type, items, theme, now, targetMonth, result.stopReason)
+  await finalize(result.text, recipe, items, theme, now, targetMonth, result.stopReason)
 }
 
 main().catch((err: unknown) => {
