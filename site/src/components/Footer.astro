@@ -27,13 +27,21 @@ const year = new Date().getFullYear()
 </footer>
 
 <style>
+  /*
+   * 背景の地（--bg-tint）に合わせた紺。色の定義は styles/global.css。
+   * 文字が地の上に直接載るので、本文用の --text-muted ではなく
+   * フッター専用の明るい色を使う。
+   */
   footer {
     margin-top: 4rem;
     padding-block: 1.8rem 2.4rem;
-    border-top: 1px solid var(--border);
-    background: var(--bg-subtle);
+    border-top: 1px solid var(--footer-border);
+    background: var(--footer-bg);
     font-size: 0.84rem;
-    color: var(--text-muted);
+    color: var(--footer-text);
+  }
+  footer a {
+    color: var(--footer-link);
   }
   nav {
     display: flex;
@@ -42,7 +50,7 @@ const year = new Date().getFullYear()
     margin-bottom: 1rem;
   }
   nav a {
-    color: var(--text-muted);
+    color: var(--footer-text);
   }
   .attribution {
     margin: 0 0 0.4rem;

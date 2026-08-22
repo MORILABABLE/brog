@@ -9,13 +9,16 @@
 
 ## いま何がどうなっているか
 
-サイトの背景は**画像ファイルではなく CSS で描いている。**
-淡いブルーの地に点を敷き、その上に本文を白いカードで浮かせている。
+**濃いブルーの地に点を敷き、その上にバナーと本文を浮かせている。**
+地の色はヘッダーバナー（暗い映画館の写真）と地続きに見えるよう合わせてある。
 
 ```
 ┌──────────────────────────────┐
-│ ヘッダー（不透明・--bg）              │  ← 点は見えない
+│ ヘッダー（白・--bg）                 │
 ├──────────────────────────────┤
+│ ・ ┌────────────────────┐ ・ │
+│ ・ │ ヘッダーバナー（全ページに出る）  │ ・ │  ← src/assets/header-banner.png
+│ ・ └────────────────────┘ ・ │
 │ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ │  ← 背景グラフィック（body）
 │ ・ ┌────────────────────┐ ・ │
 │ ・ │ 本文カード（.content-card） │ ・ │  ← 白く浮いている
@@ -23,35 +26,44 @@
 │ ・ └────────────────────┘ ・ │
 │ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ │
 ├──────────────────────────────┤
-│ フッター（不透明・--bg-subtle）       │  ← 点は見えない
+│ フッター（紺・--footer-bg）           │
 └──────────────────────────────┘
 ```
 
-**画像ファイルにしなかった理由**は3つ。
+**背景（点と地色）は画像ファイルではなく CSS で描いている。** 理由は3つ。
 
 1. サイトはライト/ダーク両対応。画像だと明暗2枚とメディアクエリが必要になる
 2. 背景は全ページに乗る。画像だと表示速度（LCP）に直撃し、広告収入にも響く
 3. CSS なら数百バイトで済み、`--accent` などの既存の色変数と揃えられる
 
+> **ライトモードでも地は暗い。** 文字は必ず白いカードの中に置くこと。
+> カードの外に直接テキストを置くと、`--text`（ほぼ黒）のままで読めなくなる。
+> フッターだけは地の上に載るので、専用の明るい色（`--footer-text`）を持たせてある。
+
 | 変えたいもの | ファイル | 節 |
 |---|---|---|
-| 背景の濃さ・柄 | `site/src/styles/global.css` | [1](#1-背景の濃さを変える) [2](#2-背景の柄を変える) [3](#3-背景をやめる) |
+| 背景の濃さ・色・柄 | `site/src/styles/global.css` | [1](#1-背景の色と濃さを変える) [2](#2-背景の柄を変える) [3](#3-背景をやめる) |
 | 本文カードの見た目 | `site/src/styles/global.css` | [4](#4-本文カードを調整するやめる) |
 | ロゴ・ファビコン | `site/public/favicon.svg` | [5](#5-ロゴファビコンを差し替える) |
-| ヘッダーバナー | `site/src/assets/` + `index.astro` | [6](#6-ヘッダーバナーを入れる) |
-| SNS共有画像 | `site/public/og-default.png` | [7](#7-og画像sns共有画像を差し替える) |
+| ヘッダーバナー | `site/src/assets/header-banner.png` | [6](#6-ヘッダーバナーを差し替える) |
+| SNS共有画像 | `site/public/og-default.jpg` | [7](#7-og画像sns共有画像を差し替える) |
 
 ---
 
-## 1. 背景の濃さを変える
+## 1. 背景の色と濃さを変える
 
-`site/src/styles/global.css` の先頭にツマミが3つある。
+`site/src/styles/global.css` の先頭にツマミがある。
 
 ```css
 :root {
-  --bg-tint: #eef4fd;                     /* 地の色 */
-  --dot-color: rgba(31, 111, 235, 0.22);  /* 点の色 */
-  --dot-gap: 22px;                        /* 点の間隔 */
+  --bg-tint: #1b3a6e;                      /* 地の色 */
+  --dot-color: rgba(174, 208, 255, 0.13);  /* 点の色 */
+  --dot-gap: 22px;                         /* 点の間隔 */
+
+  --footer-bg: #16305c;                    /* フッターの地。--bg-tint より少し沈める */
+  --footer-text: #bccbe4;                  /* フッターの文字 */
+  --footer-link: #9dc4ff;                  /* フッターのリンク */
+  --footer-border: rgba(255, 255, 255, 0.12);
 }
 ```
 
@@ -60,21 +72,38 @@
 
 | やりたいこと | 直す値 |
 |---|---|
-| もっと淡くしたい | `--dot-color` の末尾 `0.22` を `0.12` などに下げる |
-| もっとはっきりさせたい | 同じ数字を `0.30` などに上げる |
+| 地をもっと濃くしたい | `--bg-tint` を `#142c55` などに下げる。`--footer-bg` も一段暗い値に合わせる |
+| 地を明るくしたい | `--bg-tint` を `#28518f` などに上げる |
+| 青みを落として黒に寄せたい | `--bg-tint` を `#1a2430` などに寄せる |
+| 淡いブルーに戻したい | `--bg-tint: #eef4fd` ＋ `--dot-color: rgba(31,111,235,0.22)`。**その場合はフッターの色も明るく戻すこと**（[下記](#フッターだけ元の明るい色に戻す)） |
+| 点を目立たせたい | `--dot-color` の末尾 `0.13` を `0.20` などに上げる |
 | 点をまばらにしたい | `--dot-gap` を `28px` `32px` と広げる |
-| 地の青みを強くしたい | `--bg-tint` を `#e8f0fd` などに寄せる |
-| 地の青みを消したい | `--bg-tint` を `#f6f7f9`（既存の `--bg-subtle` と同じ）にする |
 
 ダーク側の既定値はこちら。
 
 ```css
---bg-tint: #0a0d12;
---dot-color: rgba(110, 168, 254, 0.16);
+--bg-tint: #0b1d3a;
+--dot-color: rgba(110, 168, 254, 0.14);
+--footer-bg: #091728;
 ```
 
-> **ダークは点を「明るく」する。** ライトと同じ発想で暗い点を置くと、
-> 暗い地に暗い点で何も見えなくなる。
+> **地が暗いので、点は「明るい色」で置いている。** 暗い地に暗い点を置くと何も見えない。
+> 地を淡い色に戻すときは、点も暗い色に戻す必要がある。
+
+### フッターだけ元の明るい色に戻す
+
+`site/src/components/Footer.astro` の `footer { }` を戻す。
+
+```css
+footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+}
+```
+
+同じファイルの `footer a { color: var(--footer-link); }` を消し、
+`nav a { color: var(--footer-text); }` を `var(--text-muted)` に戻す。
 
 ---
 
@@ -140,8 +169,9 @@ body {
 }
 ```
 
-**狭い画面（47rem 以下）ではカードを解除して全幅に戻している。**
+**狭い画面（47rem 以下）ではカードとバナーを全幅に戻している。**
 スマホで本文の横幅を削るほうが、背景が見えることより損だという判断。
+そのぶん**スマホでは背景の紺がほとんど見えない**（フッター手前の余白だけ）。
 この挙動は同じファイルの `@media (max-width: 47rem)` で変えられる。
 
 **カードをやめる**なら `site/src/layouts/BaseLayout.astro` の1行を戻す。
@@ -212,99 +242,108 @@ import Logo from '../assets/logo.svg'
 
 ---
 
-## 6. ヘッダーバナーを入れる
+## 6. ヘッダーバナーを差し替える
+
+いま入っているのは `site/src/assets/header-banner.png`（1200 × 628）。
+`site/src/layouts/BaseLayout.astro` から**全ページ**に出している。
+
+### 差し替え手順
+
+**1.** 新しい画像を `site/src/assets/header-banner.png` に**同じファイル名で**上書きする。
+
+> **`public/` ではなく `src/assets/` に置くこと。**
+> `src/assets/` の画像だけがビルド時に WebP へ変換され、
+> 複数サイズの `srcset` と `width`/`height` が自動で付く。
+> 実際に効いている（917KB の PNG → 配信時 18〜33KB の WebP）。
+
+**2.** 縦横比を変えた場合は `site/src/layouts/BaseLayout.astro` の `widths` を直す。
+
+```astro
+<Image
+  class="site-banner"
+  src={banner}
+  alt={OG_IMAGE.alt}
+  widths={[736, 1200]}          {/* 元画像の幅を超える数値は指定できない */}
+  sizes="(max-width: 47rem) 100vw, 736px"
+  loading="eager"
+  fetchpriority="high"
+/>
+```
+
+**3.** 画像内の文言を変えたなら `site/src/config.ts` の `OG_IMAGE.alt` も直す
+（バナーの `alt` はここを共有している）。
 
 ### 書き出しの寸法
 
 | | 値 |
 |---|---|
-| 表示される幅 | 最大 **675px**（本文カードの内側） |
-| 書き出す幅 | **1350px 以上**（Retina 用に2倍） |
-| 推奨サイズ | **1400 × 350**（4:1） |
+| 表示される幅 | 最大 **736px**（本文カードと同じ幅） |
+| 書き出す幅 | **1200px 以上** |
 | 形式 | PNG または JPG。**WebP への変換はビルドが自動でやる** |
+| 縦横比 | 現在は 1.91:1。**下の「高さの話」も読むこと** |
 
-### 手順
+### 高さの話（重要）
 
-**1.** 画像を `site/src/assets/banner.png` に置く。
+現在の 1.91:1 だと、デスクトップで**高さ 385px** になる。
+これが**全ページの一番上**に載るので、記事ページでは本文が
+その分だけ下に押し下げられる。
 
-> `public/` ではなく **`src/assets/`** に置くこと。
-> `src/assets/` の画像だけがビルド時に WebP へ変換され、
-> 複数サイズの `srcset` と `width`/`height` が自動で付く。
+- **バナーを目立たせたい** → いまのまま
+- **記事ページでは低く抑えたい** → 帯にトリミングして表示する
 
-**2.** `site/src/pages/index.astro` を編集する。
-
-```astro
----
-import { Image } from 'astro:assets'
-import { getCollection } from 'astro:content'
-import BaseLayout from '../layouts/BaseLayout.astro'
-import PostCard from '../components/PostCard.astro'
-import { SITE } from '../config'
-import banner from '../assets/banner.png'
-
-const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-)
----
-
-<BaseLayout title={SITE.name} description={SITE.description}>
-  <Image
-    class="site-banner"
-    src={banner}
-    alt=""
-    widths={[675, 1350]}
-    sizes="(max-width: 47rem) calc(100vw - 2.3rem), 675px"
-    loading="eager"
-    fetchpriority="high"
-  />
-
-  <section class="hero">
-    ...
-```
-
-**3.** 同じファイルの `<style>` に足す。
+帯にする場合は `site/src/styles/global.css` の `.site-banner` にこう足す。
 
 ```css
 .site-banner {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin-top: 1.1rem;
-  border-radius: var(--radius);
+  aspect-ratio: 3 / 1;      /* 736 × 245 になる */
+  object-fit: cover;        /* はみ出した上下を切る */
+  object-position: center;
 }
 ```
 
+> **トリミングすると画像の上下が切れる。**
+> 現在のバナーは中央に丸ロゴ、下端にキャッチコピーがあるので、
+> 3:1 に切るとキャッチコピーが消える。帯にするなら**帯用の絵を別に作る**ほうがよい。
+
 ### 注意
 
-- **`loading="eager"` と `fetchpriority="high"` を付ける。**
+- **`loading="eager"` と `fetchpriority="high"` は外さないこと。**
   バナーは画面の一番上に出るので、遅延読み込みにすると表示速度の評価が落ちる
-- **`alt` は中身で決める。** 飾りなら `alt=""`、
-  バナーにサイト名やキャッチコピーが**画像として**入っているなら、その文言を `alt` に書く
-- **全ページに出したい**なら `index.astro` ではなく
-  `site/src/layouts/BaseLayout.astro` の `<Header />` の直後に置く。
-  ただし記事ページの読み込みも遅くなるので、トップだけを勧める
+- **`alt` は画像の中身を書く。** バナーにキャッチコピーが**画像として**
+  入っているなら、その文言をそのまま `alt` に書く（読み上げと検索の両方に効く）
+- **トップページだけに出したい**なら、`BaseLayout.astro` の `<Image>` を
+  `site/src/pages/index.astro` の `<BaseLayout>` の中へ移す
 
 ---
 
 ## 7. OG画像（SNS共有画像）を差し替える
 
-X や Slack にURLを貼ったときに出る画像。いま入っているのは**仮のもの**。
+X や Slack にURLを貼ったときに出る画像。
+いまは**ヘッダーバナーと同じ絵**を JPEG 化して使っている（`site/public/og-default.jpg`・65KB）。
 
-**1.** 画像編集ソフトで **1200 × 630** で作る（この寸法は各SNS共通の推奨値）。
+> バナーが 1200 × 628 で、これは各SNSの推奨比率（1.91:1）とほぼ同じ。
+> 別々に作る理由が無いので共用している。**分けたくなったら差し替えればよい。**
 
-**2.** `site/public/og-default.png` に**同じファイル名で**上書きする。
-ファイル名を変える場合は `site/src/config.ts` の `OG_IMAGE.path` も直す。
+**1.** 画像編集ソフトで **1200 × 630** で作る。
+
+**2.** `site/public/og-default.jpg` に**同じファイル名で**上書きする。
+ファイル名や寸法を変える場合は `site/src/config.ts` も直す。
 
 ```ts
 export const OG_IMAGE = {
-  path: '/og-default.png',
+  path: '/og-default.jpg',
   width: 1200,
-  height: 630,
-  alt: '観とこう｜配信終了前に、観とこう。',
+  height: 628,
+  alt: '観とこう｜主要動画サービスの見放題配信タイトルは観れるうちに',
 } as const
 ```
 
 **3.** `alt` も実際の画像の内容に合わせて直す。
+**この `alt` はヘッダーバナーと共有している**ので、両方に合う文言にすること。
+
+> **写真は JPEG にする。** PNG のままだと1MB近くになる。
+> `public/` の画像はビルドで最適化されないので、ここだけは手で軽くする必要がある。
+> バナー元画像（`src/assets/`）は PNG のままでよい（ビルドが WebP にする）。
 
 ### 注意
 
@@ -342,6 +381,7 @@ URLで直接指す必要があるなら `public/`。**
 | | 理由 |
 |---|---|
 | 映画・ドラマのポスター、場面写真、キービジュアル | 著作権。配信ブログで最も起きやすい事故 |
+| ライセンスを確認していない写真素材 | **現在のヘッダーバナーの映画館写真も、出所と商用可否を確認しておくこと** |
 | Netflix / Disney+ / Prime Video / Apple TV+ のロゴ | 商標＋各社ブランドガイドライン。サービス名は**テキストのまま**が安全 |
 | Canva の無料素材を「ロゴ・商標として単独で」使う | Canva のライセンス上禁止（デザインの一部ならOK） |
 

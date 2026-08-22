@@ -22,14 +22,15 @@ export const SITE = {
  * **絶対URLで出す必要がある。** 相対パスだと X や Slack が解決できず、
  * カードが画像なしで出る。組み立ては BaseLayout.astro 側で行う。
  *
- * ファイルは site/public/og-default.png。差し替え手順は docs/APPEARANCE.md。
+ * ヘッダーバナーと同じ絵を使っている（src/assets/header-banner.png を JPEG 化したもの）。
+ * ファイルは site/public/og-default.jpg。差し替え手順は docs/APPEARANCE.md。
  */
 export const OG_IMAGE = {
-  path: '/og-default.png',
-  /** 差し替えるときもこの寸法を守る。1200×630 は各SNS共通の推奨値。 */
+  path: '/og-default.jpg',
+  /** 差し替えるときは 1200×630 前後（1.91:1）を守る。各SNS共通の推奨比率。 */
   width: 1200,
-  height: 630,
-  alt: '観とこう｜配信終了前に、観とこう。',
+  height: 628,
+  alt: '観とこう｜主要動画サービスの見放題配信タイトルは観れるうちに',
 } as const
 
 /**

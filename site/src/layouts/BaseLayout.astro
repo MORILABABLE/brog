@@ -1,7 +1,9 @@
 ---
+import { Image } from 'astro:assets'
 import { SITE, OG_IMAGE } from '../config'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
+import banner from '../assets/header-banner.png'
 import '../styles/global.css'
 
 interface Props {
@@ -99,6 +101,23 @@ const jsonLd = publishedAt
   <body>
     <a class="skip-link" href="#main">本文へスキップ</a>
     <Header />
+
+    {/*
+      ヘッダーバナー。全ページに出す。
+      画面の一番上に来るので eager + fetchpriority で先に読ませる
+      （lazy にすると表示速度の評価が落ちる）。
+      元画像は 1200px 幅なので、それを超える widths は指定できない。
+    */}
+    <Image
+      class="site-banner"
+      src={banner}
+      alt={OG_IMAGE.alt}
+      widths={[736, 1200]}
+      sizes="(max-width: 47rem) 100vw, 736px"
+      loading="eager"
+      fetchpriority="high"
+    />
+
     {/* 背景グラフィックから浮かせる本文カード。styles/global.css の .content-card。 */}
     <main id="main" class="content-card">
       <slot />

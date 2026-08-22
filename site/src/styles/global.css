@@ -15,13 +15,26 @@
 
   /*
    * サイト共通の背景グラフィック。画像ファイルではなく CSS で描いている。
-   * 淡いブルーの地に点を敷き、本文カラム(.content-card)を白く浮かせる。
+   * 濃いブルーの地に点を敷き、本文カラム(.content-card)を白く浮かせる。
+   * ヘッダーバナー（暗い映画館の写真）と地続きに見せるための配色。
    * 濃さの調整・パターンの差し替えは docs/APPEARANCE.md を参照。
    * ライトとダークの2箇所あるので必ず両方直すこと。
+   *
+   * 注意: ライトモードでも地は暗い。文字は白いカードの中にしか置かないこと。
    */
-  --bg-tint: #eef4fd;                     /* 地の色 */
-  --dot-color: rgba(31, 111, 235, 0.22);  /* 点の色。薄くしたいなら末尾の 0.22 を下げる */
-  --dot-gap: 22px;                        /* 点の間隔。広げるほど目立たなくなる */
+  --bg-tint: #1b3a6e;                      /* 地の色 */
+  --dot-color: rgba(174, 208, 255, 0.13);  /* 点の色。薄くしたいなら末尾の 0.13 を下げる */
+  --dot-gap: 22px;                         /* 点の間隔。広げるほど目立たなくなる */
+
+  /*
+   * フッターも背景の地に合わせて紺にしている。
+   * ここだけ明るいままだと、ページの一番下で色が切り替わって浮く。
+   * 文字とリンクは地の上に直接載るので、専用の明るい色を持たせている。
+   */
+  --footer-bg: #16305c;
+  --footer-text: #bccbe4;
+  --footer-link: #9dc4ff;
+  --footer-border: rgba(255, 255, 255, 0.12);
 
   --max-width: 46rem;
   --radius: 10px;
@@ -40,9 +53,14 @@
     --accent-soft: #17233a;
     --warn: #f0b357;
 
-    /* 背景グラフィック（ダーク）。地を暗く沈めて点を明るくする。 */
-    --bg-tint: #0a0d12;
-    --dot-color: rgba(110, 168, 254, 0.16);
+    /* 背景グラフィック（ダーク）。ライトより一段沈めた紺。 */
+    --bg-tint: #0b1d3a;
+    --dot-color: rgba(110, 168, 254, 0.14);
+
+    --footer-bg: #091728;
+    --footer-text: #93a6c2;
+    --footer-link: #8db8f5;
+    --footer-border: rgba(255, 255, 255, 0.09);
 
     color-scheme: dark;
   }
@@ -99,6 +117,19 @@ img {
 }
 
 /*
+ * ヘッダーバナー。BaseLayout.astro から全ページに出している。
+ * 本文カードと同じ幅・同じ角丸で揃え、上下を背景の地でつなぐ。
+ */
+.site-banner {
+  display: block;
+  width: 100%;
+  max-width: var(--max-width);
+  height: auto;
+  margin: 1.6rem auto 0;
+  border-radius: 14px;
+}
+
+/*
  * 本文カラム。背景の点から浮かせるためのカード。
  * 外形は .wrap と同じ幅だが、カードの内側に余白を取るぶん本文はわずかに狭くなる。
  */
@@ -117,6 +148,11 @@ img {
  * スマホで本文の横幅を削るほうが、背景が見えることより損だという判断。
  */
 @media (max-width: 47rem) {
+  /* バナーもヘッダーに密着させて全幅にする */
+  .site-banner {
+    margin-top: 0;
+    border-radius: 0;
+  }
   .content-card {
     margin-top: 0;
     padding-inline: 1.15rem;

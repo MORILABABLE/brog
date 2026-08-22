@@ -6,10 +6,15 @@
 ```astro
 ---
 import { Image } from 'astro:assets'
-import banner from '../assets/banner.png'
+import banner from '../assets/header-banner.png'
 ---
-<Image src={banner} alt="" widths={[736, 1472]} sizes="(max-width: 47rem) 100vw, 736px" />
+<Image src={banner} alt="" widths={[736, 1200]} sizes="(max-width: 47rem) 100vw, 736px" />
 ```
+
+> `widths` に**元画像の幅を超える数値は書けない**（ビルドが落ちる）。
+
+いま入っている `header-banner.png` は全ページのヘッダーバナー。
+差し替え手順は [docs/APPEARANCE.md の6節](../../../docs/APPEARANCE.md#6-ヘッダーバナーを差し替える)。
 
 `public/` に置いた画像は**最適化されない**（そのまま配信される）。使い分けは次のとおり。
 
