@@ -5,6 +5,7 @@
 | 目的 | 読むファイル |
 |---|---|
 | **ブラウザで記事・デザインを編集する** | **[docs/EDITING.md](./docs/EDITING.md)** |
+| **背景・ロゴ・バナー・OG画像を変える** | **[docs/APPEARANCE.md](./docs/APPEARANCE.md)** |
 | **作業を再開する / 引き継ぐ** | **[docs/HANDOVER.md](./docs/HANDOVER.md)** |
 | **他ジャンルでブログを増やす** | **[docs/NEW-THEME.md](./docs/NEW-THEME.md)** |
 | 設計の全体像・判断の理由 | [DESIGN.md](./DESIGN.md) |

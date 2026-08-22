@@ -6,3 +6,17 @@
 # スナップショットは差分を見たいのでテキスト扱いのまま
 *.json text eol=lf
 *.jsonl text eol=lf
+
+# 画像・フォントはバイナリだと明示する。
+# text=auto の自動判定でも実際には壊れないが、判定に頼らず固定しておく。
+# （SVG は中身がテキストなので、ここには入れず LF 正規化のままにする）
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

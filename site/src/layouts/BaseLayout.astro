@@ -1,5 +1,5 @@
 ---
-import { SITE } from '../config'
+import { SITE, OG_IMAGE } from '../config'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
 import '../styles/global.css'
@@ -31,6 +31,9 @@ function toPublicPath(pathname: string): string {
 
 const publicPath = toPublicPath(Astro.url.pathname)
 const canonical = new URL(publicPath, Astro.site ?? SITE.url).href
+
+// OGP画像は絶対URLでないと各SNSが解決できない
+const ogImage = new URL(OG_IMAGE.path, Astro.site ?? SITE.url).href
 
 // トップだけはタグラインを併記し、下層ページはサイト名を後置する
 const isHome = publicPath === '/'
@@ -68,13 +71,23 @@ const jsonLd = publishedAt
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex,follow" />}
 
+    {/* ファビコン。SVG非対応の古いブラウザ向けに PNG も併記する。 */}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
     <meta property="og:type" content={publishedAt ? 'article' : 'website'} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:locale" content="ja_JP" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content={String(OG_IMAGE.width)} />
+    <meta property="og:image:height" content={String(OG_IMAGE.height)} />
+    <meta property="og:image:alt" content={OG_IMAGE.alt} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
 
     <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
@@ -86,7 +99,8 @@ const jsonLd = publishedAt
   <body>
     <a class="skip-link" href="#main">本文へスキップ</a>
     <Header />
-    <main id="main" class="wrap">
+    {/* 背景グラフィックから浮かせる本文カード。styles/global.css の .content-card。 */}
+    <main id="main" class="content-card">
       <slot />
     </main>
     <Footer />

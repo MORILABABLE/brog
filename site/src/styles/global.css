@@ -13,6 +13,16 @@
   --accent-soft: #e8f0fe;
   --warn: #b45309;
 
+  /*
+   * サイト共通の背景グラフィック。画像ファイルではなく CSS で描いている。
+   * 淡いブルーの地に点を敷き、本文カラム(.content-card)を白く浮かせる。
+   * 濃さの調整・パターンの差し替えは docs/APPEARANCE.md を参照。
+   * ライトとダークの2箇所あるので必ず両方直すこと。
+   */
+  --bg-tint: #eef4fd;                     /* 地の色 */
+  --dot-color: rgba(31, 111, 235, 0.22);  /* 点の色。薄くしたいなら末尾の 0.22 を下げる */
+  --dot-gap: 22px;                        /* 点の間隔。広げるほど目立たなくなる */
+
   --max-width: 46rem;
   --radius: 10px;
 
@@ -29,6 +39,10 @@
     --accent: #6ea8fe;
     --accent-soft: #17233a;
     --warn: #f0b357;
+
+    /* 背景グラフィック（ダーク）。地を暗く沈めて点を明るくする。 */
+    --bg-tint: #0a0d12;
+    --dot-color: rgba(110, 168, 254, 0.16);
 
     color-scheme: dark;
   }
@@ -49,7 +63,14 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  /*
+   * 地色は var(--bg) ではなく背景グラフィック。本文は .content-card で白く浮かせる。
+   * ヘッダー(--bg)とフッター(--bg-subtle)は不透明なので、点が見えるのは
+   * その間の余白部分だけになる。
+   */
+  background-color: var(--bg-tint);
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1.3px);
+  background-size: var(--dot-gap) var(--dot-gap);
   color: var(--text);
   font-size: 16px;
   /* 横スクロールは絶対に起こさない */
@@ -75,6 +96,33 @@ img {
   max-width: var(--max-width);
   margin-inline: auto;
   padding-inline: 1.15rem;
+}
+
+/*
+ * 本文カラム。背景の点から浮かせるためのカード。
+ * 外形は .wrap と同じ幅だが、カードの内側に余白を取るぶん本文はわずかに狭くなる。
+ */
+.content-card {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 1.6rem auto 0;
+  padding: 0.6rem 1.9rem 2.2rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+/*
+ * 狭い画面ではカードをやめて全幅に戻す。
+ * スマホで本文の横幅を削るほうが、背景が見えることより損だという判断。
+ */
+@media (max-width: 47rem) {
+  .content-card {
+    margin-top: 0;
+    padding-inline: 1.15rem;
+    border: none;
+    border-radius: 0;
+  }
 }
 
 /* --- 見出し --- */

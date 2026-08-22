@@ -80,9 +80,13 @@ dataAsOf: 2026-08-09             ← 配信情報の基準日
 
 ## デザインを編集する
 
+> **背景グラフィック・ロゴ・ヘッダーバナー・OG画像**を変えるなら
+> 専用の手順書がある → **[APPEARANCE.md](./APPEARANCE.md)**
+
 | 変えたいもの | ファイル |
 |---|---|
 | **色・文字サイズ・余白・全体の見た目** | `site/src/styles/global.css` |
+| **背景グラフィック・本文カード** | `site/src/styles/global.css`（[APPEARANCE.md](./APPEARANCE.md)） |
 | サイト名・タグライン・説明文 | `site/src/config.ts` |
 | ヘッダー（上部のメニュー） | `site/src/components/Header.astro` |
 | フッター（下部の表記） | `site/src/components/Footer.astro` |

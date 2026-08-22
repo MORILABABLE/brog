@@ -1,0 +1,8 @@
+# Cloudflare Pages のレスポンスヘッダー設定。
+# このファイルは public/ から dist/ の直下にコピーされ、Pages が読み取る。
+#
+# /_astro/ 配下は Astro がファイル名にハッシュを付けて出力する。
+# 中身が変われば必ずファイル名も変わるので、永久にキャッシュさせてよい。
+# 画像を追加すると効いてくる（最適化後の webp もここに入る）。
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
