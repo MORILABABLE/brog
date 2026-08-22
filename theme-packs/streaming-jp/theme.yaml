@@ -40,9 +40,26 @@ show_types:
 # id に `.subscription` を付けると見放題のみに絞られ、レンタル・購入は除外される。
 # Apple TV と Prime Video は購入・レンタルが混在するため必須。
 #
-# supports_upcoming: 配信終了予定(expiring)・開始予定(upcoming)が取れるか。
-# API側の制約で Netflix / Prime Video / Disney+ / Apple TV / Max / Mubi のみ対応。
-# 幸い、日本の主要4社はすべて対応している。
+# supports_upcoming: 配信終了予定(expiring)・開始予定(upcoming)を要求するか。
+# APIのドキュメント上は Netflix / Prime Video / Disney+ / Apple TV / Max / Mubi が対応。
+#
+# ★ ただし日本カタログでの実測（2026-08・6回の収集・1,089件）では、
+#   expiring が実際に返ったのは Netflix と Amazon Prime Video の2社だけだった。
+#
+#     netflix      new 194 / removed 162 / expiring 162 / upcoming 0
+#     prime-video  new 169 / removed 257 / expiring  50 / upcoming 0
+#     disney-plus  new  16 / removed  76 / expiring   0 / upcoming 0
+#     apple-tv     new   1 / removed   2 / expiring   0 / upcoming 0
+#
+#   取得上限による打ち切りではない（expiring は最大79件で、上限200に一度も達していない）。
+#   upcoming は4社とも0件で、記事の「これから配信開始予定」節は一度も出力されていない。
+#
+#   → 配信終了「予定」記事(leaving)に載るのは実質2社。
+#     Disney+ の終了は removed から「配信終了済み」記事(ended)で扱っている。
+#     Apple TV+ は件数が少なすぎて記事にならない。
+#     フラグを true のままにしているのは、外してもリクエストが減らない
+#     （4社を1リクエストに束ねているため）一方、API側が返し始めたときに
+#     気づけなくなるのを避けるため。
 catalogs:
   - key: netflix
     label: Netflix

@@ -11,8 +11,10 @@ import { SITE } from '../config'
   <div class="prose">
     <h2>当サイトについて</h2>
     <p>
-      {SITE.name}は、Netflix・Amazon Prime Video・Disney+・Apple TV+
-      における<strong>配信終了予定</strong>と<strong>新着配信作品</strong>を追いかけるサイトです。
+      {SITE.name}は、Netflix・Amazon Prime Video における<strong>配信終了予定</strong>と、
+      Disney+ を加えた<strong>新着配信作品</strong>を追いかけるサイトです。
+      Disney+ については配信終了予定を取得できないため、
+      <strong>終了済みの作品</strong>を別途まとめ、他のサービスで探すための導線を掲載しています。
     </p>
     <p>
       「観ようと思っていた作品が、気づいたら配信終了していた」——
@@ -50,6 +52,12 @@ import { SITE } from '../config'
       の4サービスです。U-NEXT・Hulu・DMM TV
       などについては配信状況のデータを保有していないため、
       記事内では「配信中」といった断定は行わず、各サービスでの検索リンクのみを掲載しています。
+    </p>
+    <p>
+      また、<strong>配信終了予定日を取得できるのは Netflix・Amazon Prime Video の2社に限られます。</strong>
+      Disney+ については終了の予告をお伝えできず、終了後に「配信終了済み」として
+      まとめる形になります。Apple TV+ は配信状況の更新自体が月数件と少なく、
+      記事に登場しない月がほとんどです。
     </p>
     <p>
       また、配信情報の反映には数日程度の遅れが生じる場合があります。

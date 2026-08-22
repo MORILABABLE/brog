@@ -39,7 +39,7 @@ Streaming Availability API
 | change_type | 意味 | 記事タイプ |
 |---|---|---|
 | `new` | 新規配信開始 | `arrivals`（ジャンル別3本） |
-| `removed` | 配信終了済み | 未使用 |
+| `removed` | 配信終了済み | `ended`（配信終了予定を取れないサービスのみ） |
 | `expiring` | **配信終了予定（日付付き）** | `leaving` |
 | `upcoming` | 配信開始予定 | `arrivals` 末尾の「これから配信開始予定」 |
 
@@ -125,11 +125,12 @@ npm run collect -- --kinds new,expiring
 
 ## 記事の種類
 
-`npm run write -- --list` が唯一の一覧。現在はこの4本。
+`npm run write -- --list` が唯一の一覧。現在はこの5本。
 
 | 記事 | 内容 |
 |---|---|
-| `leaving` | 今月見放題が終了する作品（ジャンルを分けない総合） |
+| `leaving` | 今月見放題が終了**する**作品（ジャンルを分けない総合） |
+| `ended` | 今月見放題が終了**した**作品（配信終了予定を取得できないサービス＝現在は Disney+） |
 | `arrivals --genre anime` | 今月見放題配信が始まったアニメ |
 | `arrivals --genre western` | 同・洋画・海外ドラマ |
 | `arrivals --genre japanese` | 同・邦画・国内ドラマ |
@@ -137,6 +138,11 @@ npm run collect -- --kinds new,expiring
 配信開始は月に300〜400本あり1記事に収まらないので、ジャンルで分けている。
 振り分けは Wikidata の原語（`data/origins.json`）と API の `originalTitle` で機械的に行う
 （`theme-packs/streaming-jp/genres.ts`）。判定できない作品は記事に出さない。
+
+**`leaving` と `ended` は別カテゴリで、混ぜてはいけない。**
+前者はまだ観られる（急ぐ意味がある）、後者はもう観られない（他サービスを探す）で、
+読者に渡すものが正反対だから。`ended` は「お見逃しなく」「今のうちに」といった
+表現を検出すると**公開を止める**（`article-types/ended.ts` の `MISLEADING`）。
 
 **記事の種類を増やすときに触るのは、テンプレートと記事タイプの2ファイルだけ。**
 CLI もスラッシュコマンドも変えなくてよい。手順は
@@ -167,7 +173,19 @@ Ghost         → ゴースト/ニューヨークの幻
 **U-NEXT・Hulu・DMM TV は含まれない。**
 
 採用しているのは **Netflix / Prime Video / Disney+ / Apple TV+** の4社。
-この4社はすべて `expiring`（配信終了予定）に対応している。
+
+**ただし `expiring`（配信終了予定）が実際に返るのは Netflix と Prime Video の2社だけ。**
+2026年8月の実測（6回の収集・1,089件）では Disney+ と Apple TV+ の expiring は0件だった
+（取得上限による打ち切りではない）。したがって:
+
+| サービス | 配信終了予定 | 扱い |
+|---|---|---|
+| Netflix / Prime Video | 取れる | `leaving` で**終了前**に知らせる |
+| Disney+ | 取れない | `ended` で**終了後**にまとめ、他サービスへの導線を出す |
+| Apple TV+ | 取れない | 更新が月2〜3件と少なく、記事にならない |
+
+`upcoming`（配信開始予定）は4社とも0件で、`arrivals` の「これから配信開始予定」節は
+一度も出力されていない。詳細は `theme-packs/streaming-jp/theme.yaml` の catalogs 節。
 
 対象外の U-NEXT / Hulu / DMM TV には**検索リンク方式**で導線を作る。
 作品別の配信状況を取れるAPIは月2.2万円〜（TMDB商用）で見合わないため、

@@ -12,7 +12,8 @@ const cat = CATEGORIES[post.data.category]
 
 <article class="card">
   <div class="meta">
-    <span class="badge">{cat.label}</span>
+    {/* data-category で色が変わる。配色は styles/global.css の :root。 */}
+    <span class="badge" data-category={cat.slug}>{cat.label}</span>
     <time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time>
   </div>
   <h2><a href={`/posts/${post.id}`}>{post.data.title}</a></h2>

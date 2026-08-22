@@ -16,7 +16,17 @@ import type { Ledger } from './events.ts'
 import type { VerifyIssue } from './verify.ts'
 import { formatIsoDate } from './datetime.ts'
 
-export type Category = 'leaving' | 'arrivals' | 'ranking'
+/**
+ * 記事カテゴリ。site/src/config.ts の CATEGORIES と
+ * site/src/content.config.ts の enum と**必ず3つ揃える**こと。
+ * 揃っていないとサイト側のビルドが落ちる（それが検知の仕組み）。
+ *
+ * leaving と ended を分けている理由:
+ *   leaving = これから終了する（まだ観られる／急ぐ意味がある）
+ *   ended   = すでに終了した（もう観られない／他サービスを探す）
+ * 読者に渡すものが正反対なので、同じカテゴリに混ぜてはいけない。
+ */
+export type Category = 'leaving' | 'arrivals' | 'ranking' | 'ended'
 
 /**
  * 記事タイプの下位区分。ジャンル別記事のために使う。

@@ -19,6 +19,7 @@
  */
 import type { ArticleType } from '../../../pipeline/core/article.ts'
 import { leavingArticle } from './leaving.ts'
+import { endedArticle } from './ended.ts'
 import { arrivalsArticle } from './arrivals.ts'
 
-export const ARTICLE_TYPES: ArticleType[] = [leavingArticle, arrivalsArticle]
+export const ARTICLE_TYPES: ArticleType[] = [leavingArticle, endedArticle, arrivalsArticle]

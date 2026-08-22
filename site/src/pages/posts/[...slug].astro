@@ -30,6 +30,8 @@ const cat = CATEGORIES[post.data.category]
     <h1>{post.data.title}</h1>
 
     <div class="meta">
+      {/* 記事単体で開かれたときも、色で種別が分かるようにする。 */}
+      <span class="badge" data-category={cat.slug}>{cat.label}</span>
       <time datetime={isoDate(post.data.pubDate)}>公開 {formatDate(post.data.pubDate)}</time>
       {
         post.data.updatedDate && (
@@ -88,7 +90,9 @@ const cat = CATEGORIES[post.data.category]
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    /* バッジと日付が並ぶので、縦位置を揃える */
+    align-items: center;
+    gap: 0.7rem 1rem;
     font-size: 0.84rem;
     color: var(--text-muted);
   }

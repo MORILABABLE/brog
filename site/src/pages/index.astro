@@ -11,7 +11,12 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
 
 <BaseLayout title={SITE.name} description={SITE.description}>
   <section class="hero">
-    <h1>{SITE.tagline}</h1>
+    {/*
+      見出しはヘッダーバナーに同じ文言が焼き込まれているため、画面には出さない。
+      ただし <h1> 自体は残す。トップページから h1 が無くなるのは
+      SEO・アクセシビリティの両面で損。styles/global.css の .visually-hidden 参照。
+    */}
+    <h1 class="visually-hidden">{SITE.tagline}</h1>
     <p>{SITE.description}</p>
   </section>
 

@@ -14,7 +14,8 @@ const posts = defineCollection({
     description: z.string().min(30).max(160),
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
-    category: z.enum(['leaving', 'arrivals', 'ranking']),
+    // pipeline/core/article.ts の Category と揃えること
+    category: z.enum(['leaving', 'arrivals', 'ranking', 'ended']),
     tags: z.array(z.string()).default([]),
     /** 出典。API利用規約の帰属表示義務を満たすため必須。 */
     sources: z
