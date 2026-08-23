@@ -73,6 +73,23 @@ export interface ArticleType {
    * 総合とジャンル別では読者に渡すものが違い、テンプレートも分かれるため。
    */
   readonly variants?: readonly ArticleVariant[]
+  /**
+   * バリアントを指すCLIフラグ名と、人間向けの呼び方。
+   *
+   * 既定は `genre` / `ジャンル`（`arrivals` がジャンル別なので、それが元の形）。
+   * `leaving` のようにサービス別で分ける記事タイプは `service` / `サービス` を指定する。
+   * ここを分けないと `--genre netflix` という指定になり、
+   * 運用者が毎月見る画面に嘘が出る。
+   */
+  readonly variantFlag?: string
+  readonly variantNoun?: string
+  /**
+   * 記事として成立する最低の素材数。`--list` の状態表示にだけ使う。
+   *
+   * **生成を機械的に止めはしない。** 少ない月でも出す判断はありうるので、
+   * 「素材不足」と表示して運用者に見せるところまでにとどめる。
+   */
+  readonly minItems?: number
   /** 記事にする素材を選ぶ。空なら記事化しない。 */
   select(events: ChangeEvent[], ledger: Ledger, ctx: ArticleContext): ChangeEvent[]
   /** LLMへの指示を組み立てる */

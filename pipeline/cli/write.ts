@@ -86,8 +86,18 @@ function recipes(types: ArticleType[]): Recipe[] {
   )
 }
 
+/** バリアントのCLIフラグ名。既定は genre（ジャンル別記事が元の形だったため）。 */
+function variantFlag(type: ArticleType): string {
+  return type.variantFlag ?? 'genre'
+}
+
+/** バリアントの人間向けの呼び方。エラー文と一覧の見出しに使う。 */
+function variantNoun(type: ArticleType): string {
+  return type.variantNoun ?? 'ジャンル'
+}
+
 function recipeLabel(r: Recipe): string {
-  return r.variant ? `${r.type.id} --genre ${r.variant.key}` : r.type.id
+  return r.variant ? `${r.type.id} --${variantFlag(r.type)} ${r.variant.key}` : r.type.id
 }
 
 /**
@@ -211,7 +221,9 @@ async function applyDraft(theme: Theme): Promise<void> {
     ? type.variants?.find((v) => v.key === draft.variantKey)
     : undefined
   if (draft.variantKey && !variant) {
-    throw new Error(`context.json のジャンルが不明です: ${draft.typeId} / ${draft.variantKey}`)
+    throw new Error(
+      `context.json の${variantNoun(type)}が不明です: ${draft.typeId} / ${draft.variantKey}`,
+    )
   }
 
   const now = new Date(draft.createdAt)
@@ -305,16 +317,26 @@ async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promis
     const ctx = { theme, now, targetMonth, variant: r.variant }
     const items = r.type.select(events, ledger, ctx)
     const slug = r.type.slug(ctx)
-    const state = existing.has(slug) ? '作成済' : items.length === 0 ? '素材なし' : '未作成'
+    const min = r.type.minItems ?? 0
+    const state = existing.has(slug)
+      ? '作成済'
+      : items.length === 0
+        ? '素材なし'
+        : // 少ない月に無理に1本立てると表がスカスカの記事になる。
+          // 止めはしないが、運用者が気づけるように出す。
+          items.length < min
+          ? '素材不足'
+          : '未作成'
     console.log(
       `  ${recipeLabel(r).padEnd(32)}${String(items.length).padStart(4)}  ${state.padEnd(6)}${slug}`,
     )
   }
 
-  console.log('\n書き出す:  npm run write -- --type <記事> [--genre <ジャンル>] --emit')
+  console.log('\n書き出す:  npm run write -- --type <記事> [--<区分> <値>] --emit')
+  console.log('           区分は上の一覧に出ている形（--genre / --service）をそのまま使う')
 }
 
-/** `--type` / `--genre` から作る記事を1つに決める。 */
+/** `--type` と バリアントのフラグ（`--genre` / `--service`）から作る記事を1つに決める。 */
 function pickRecipe(types: ArticleType[]): Recipe {
   const all = recipes(types)
   const typeId = arg('type') ?? types[0]!.id
@@ -326,22 +348,24 @@ function pickRecipe(types: ArticleType[]): Recipe {
     )
   }
 
-  const genre = arg('genre')
+  const flag = variantFlag(type)
+  const noun = variantNoun(type)
+  const picked = arg(flag)
   if (!type.variants?.length) {
-    if (genre) throw new Error(`記事タイプ ${type.id} はジャンルで分かれていません（--genre は不要）`)
+    if (picked) throw new Error(`記事タイプ ${type.id} は${noun}で分かれていません（--${flag} は不要）`)
     return { type }
   }
 
-  if (!genre) {
+  if (!picked) {
     throw new Error(
-      `記事タイプ ${type.id} には --genre が必要です（有効: ${type.variants.map((v) => v.key).join(' / ')}）\n` +
-        `  例: npm run write -- --type ${type.id} --genre ${type.variants[0]!.key} --emit`,
+      `記事タイプ ${type.id} には --${flag} が必要です（有効: ${type.variants.map((v) => v.key).join(' / ')}）\n` +
+        `  例: npm run write -- --type ${type.id} --${flag} ${type.variants[0]!.key} --emit`,
     )
   }
-  const variant = type.variants.find((v) => v.key === genre)
+  const variant = type.variants.find((v) => v.key === picked)
   if (!variant) {
     throw new Error(
-      `不明なジャンル: ${genre}（${type.id} で有効: ${type.variants.map((v) => v.key).join(' / ')}）`,
+      `不明な${noun}: ${picked}（${type.id} で有効: ${type.variants.map((v) => v.key).join(' / ')}）`,
     )
   }
   return all.find((r) => r.type === type && r.variant === variant)!

@@ -44,6 +44,45 @@ import {
  */
 const MAX_ITEMS = 80
 
+/**
+ * サービス別に1本ずつ書く。
+ *
+ * ■ なぜサービス別なのか（2026-08-23 の実測で決めた）
+ * 最初はジャンル別（アニメ / 洋画 / 邦画）を検討したが、**成立しなかった**。
+ * 配信終了は洋画ライブラリの入れ替えが主因で、邦画が慢性的に枯れる。
+ *
+ *     leaving 9月  合計65件 → アニメ 6 / 洋画 47 / 邦画  3
+ *     leaving 8月  合計147件 → アニメ41 / 洋画 78 / 邦画 11
+ *
+ * 邦画は3か月分すべてで記事にならない件数だった。
+ * 一方サービス別なら 9月= Netflix 35 / Prime Video 30 で両方成立する。
+ *
+ * さらにサービス軸は**検索需要と一致する**。Googleサジェストの実測では
+ * 「配信終了予定␣」の候補10件が10件ともサービス名だった
+ * （netflix / アマプラ / プライムビデオ / u-next / …）。ジャンル名は出てこない。
+ * ジャンル分類は原語不明で判定できない作品が月9〜17件出て捨てられるが、
+ * サービスは100%確実に分かる、という副次的な利点もある。
+ *
+ * ■ ここに Disney+ / Apple TV+ が無い理由
+ * 実測（2026-08・1,089件）で expiring を返したのは Netflix と Prime Video だけ。
+ * 残り2社は0件だった（theme.yaml の catalogs 節に計測値がある）。
+ * 返し始めたらここに足す。**ラベルは theme.yaml の catalogs と揃えること。**
+ */
+const SERVICE_VARIANTS = [
+  { key: 'netflix', label: 'Netflix' },
+  { key: 'prime-video', label: 'Amazon Prime Video' },
+] as const
+
+/**
+ * 記事として成立する最低件数。
+ *
+ * 月によって入れ替え数は大きく振れる（Prime Video は 8月20件 / 9月30件）。
+ * 少なすぎる月に無理に1本立てると、表がスカスカの記事が公開される。
+ * 下回ったときは `--list` が「素材不足」と出すので、その月はそのサービスを飛ばす。
+ * **自動で総合記事に統合したりはしない**。どちらを出すかは運用者が決める。
+ */
+const MIN_ITEMS = 15
+
 /** fixed-phrases.md に必ずあるべきキー。欠けていれば読み込み時に落ちる。 */
 const REQUIRED_PHRASES = [
   'leaving-lead-first-sentence',
@@ -61,11 +100,19 @@ const CALL_TO_ACTION = /(ましょう|ください|見逃せません|お見逃�
 export const leavingArticle: ArticleType = {
   id: 'leaving',
   category: 'leaving',
-  description: '今月見放題が終了する作品（ジャンルを分けない総合）',
+  description: '今月見放題が終了する作品（サービス別）',
+  variants: SERVICE_VARIANTS,
+  variantFlag: 'service',
+  variantNoun: 'サービス',
+  minItems: MIN_ITEMS,
 
   select(events, _ledger: Ledger, ctx) {
+    const service = ctx.variant?.key
+    if (!service) return []
+
     const target = events
       .filter((e) => e.kind === 'expiring')
+      .filter((e) => e.service === service)
       // 終了日が不明なものは記事にできない
       .filter((e) => e.at)
       // 対象月に終了するものだけ。判定はサイトの基準タイムゾーンで行う。
@@ -198,7 +245,9 @@ ${rows.join('\n\n')}
   },
 
   slug(ctx) {
-    return `${ctx.targetMonth}-leaving`
+    // ★ 既に公開済みの 2026-08-leaving / 2026-09-leaving は総合1本だった頃のもの。
+    //   サービス別に切り替えた 2026-10 以降がこの形になる。過去分は作り直さない。
+    return `${ctx.targetMonth}-leaving-${ctx.variant?.key ?? 'all'}`
   },
 
   verify(raw, items, ctx): VerifyIssue[] {

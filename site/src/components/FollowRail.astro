@@ -1,0 +1,116 @@
+---
+import { AFFILIATE } from '../config'
+import { withAmazonTag } from '../lib/affiliate'
+
+/**
+ * 本文の右の余白に置く追従枠。
+ *
+ * ■ なぜ「余白」なのか
+ * このサイトは本文が `--max-width: 46rem`（736px）中央寄せで、
+ * ワイド画面では左右に紺の地がかなり余っている。
+ * そこに置けば**本文カラムを1mmも削らずに**広告面を作れる。
+ * 記事は配信終了作品の表が主体で横幅を食うため、
+ * 本文を狭める形のサイドバーは採れない（＝この形しか成立しない）。
+ *
+ * ■ position: sticky を使う理由（fixed ではなく）
+ * fixed にすると本文が終わってもレールが residual に残り、フッターに重なる。
+ * 参考にした実装（noiat.co.jp）はそれをJSで制御していたが、
+ * sticky なら**親グリッド行の高さが自然な上限**になるので、
+ * JSなしで同じ挙動になる。このサイトのJSゼロ方針を崩さずに済む。
+ *
+ * ■ 出す条件
+ *   - アフィリエイトのIDが設定されている（未設定なら1行も描画しない）
+ *   - 画面幅 80rem(1280px) 以上（狭い画面ではCSS側で display:none）
+ * 幅が足りない画面で無理に出すと本文を圧迫するので、出さない。
+ *
+ * ★ いまは「器」。中身は Amazon 1枠だけにしてある。
+ *   2026-08 時点で提携できているのが Amazon しかないため。
+ *   Phase B で U-NEXT（1,320円）が承認されたら、下の OFFER を差し替える。
+ *   複数を並べないのは、選択肢を増やすと読者が選べなくなるため
+ *   （参考サイトも1広告主だけを出していた）。
+ */
+const tag = AFFILIATE.amazonTag
+
+const OFFER = {
+  label: 'Amazon Prime Video',
+  heading: '観たかった作品、まだ間に合うかも',
+  body: '見放題が終わった作品も、レンタル・購入なら観られることがあります。',
+  action: 'Prime Videoで探す',
+  href: withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag),
+}
+---
+
+{
+  tag && (
+    <aside class="follow-rail" aria-label="広告">
+      <div class="inner">
+        <p class="pr">PR</p>
+        <p class="label">{OFFER.label}</p>
+        <p class="heading">{OFFER.heading}</p>
+        <p class="body">{OFFER.body}</p>
+        <a class="action" href={OFFER.href} rel="sponsored noopener" target="_blank" data-affiliate="true">
+          {OFFER.action}
+        </a>
+      </div>
+    </aside>
+  )
+}
+
+<style>
+  /*
+   * 表示・非表示と配置は styles/global.css の .layout 側で決めている。
+   * ここは枠の中身の見た目だけ。
+   */
+  .inner {
+    position: sticky;
+    /* ヘッダーに張り付かない程度の余白 */
+    top: 1rem;
+    max-width: 17rem;
+    padding: 1rem 1rem 1.15rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  /* 景品表示法（ステマ規制）上、広告面にも表記が要る */
+  .pr {
+    display: inline-block;
+    margin: 0 0 0.6rem;
+    padding: 0.05rem 0.4rem;
+    border: 1px solid var(--text-muted);
+    border-radius: 3px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .label {
+    margin: 0 0 0.3rem;
+    font-size: 0.74rem;
+    color: var(--text-muted);
+  }
+  .heading {
+    margin: 0 0 0.5rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  .body {
+    margin: 0 0 0.9rem;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+  .action {
+    display: block;
+    padding: 0.55rem 0.7rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+  }
+  .action:hover {
+    opacity: 0.9;
+  }
+</style>

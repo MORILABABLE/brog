@@ -11,17 +11,20 @@
 
 ## 1. いまの状態
 
-**Phase A（実装）は完了。動かすには `site/.env` に値を入れるだけ。**
+**Phase A（実装）は完了し、Amazon は稼働中**（2026-08-23 に `PUBLIC_AMAZON_TAG` 設定済み）。
+残るのは ASP の提携（Phase B）。
 
 | | 状態 |
 |---|---|
 | リンクの体裁（`rel="sponsored"` / `target`） | ✅ ビルド時に自動付与 |
 | Amazon のトラッキングID付与 | ✅ ビルド時に自動付与（IDは記事に焼き込まない） |
 | LinkSwitch（U-NEXT / Hulu の自動変換） | ✅ 実装済み・**PID未設定なので未稼働** |
-| 広告（PR）表記 | ✅ 実装済み・**アフィリエイト未設定なので非表示** |
-| Amazon規約の固定文 | ✅ 実装済み・**ID未設定なので非表示** |
+| 広告（PR）表記 | ✅ **表示中** |
+| Amazon規約の固定文 | ✅ **表示中** |
 | プライバシーポリシー | ✅ 追記済み |
-| Amazon への導線（記事末尾・トップ） | ✅ 実装済み・**ID未設定なので非表示** |
+| Amazon への導線（記事末尾・トップ） | ✅ **表示中** |
+| 右の追従枠（1280px以上） | ✅ **表示中**（6節 Phase D） |
+| 常設ページの作品別リンク | ✅ `/leaving/<サービス>` に実装済み（6節 Phase C） |
 | ASPへの登録・提携申請 | ❌ 未着手（Phase B） |
 
 > **未設定なら「PR」表記も含めて一切描画されない。**
@@ -102,6 +105,10 @@ TELASA・Lemino・FOD・TVer・楽天TV もプログラムなし。
 | `site/src/components/LinkSwitch.astro` | VCのJSタグ。`<head>` に入る |
 | `site/src/components/AffiliateNotice.astro` | 「PR」表記 |
 | `site/src/components/AmazonCta.astro` | Amazon への導線。文面が記事カテゴリで変わる |
+| `site/src/components/FollowRail.astro` | 本文右の余白に置く追従枠。中身は1広告主だけ |
+| `site/src/lib/search-links.ts` | 各サービスの検索URL。**theme.yaml と同内容**。片方だけ直さない |
+| `site/src/pages/leaving/[service].astro` | 常設ページ。rehype を通らないので tag と rel をページ側で付ける |
+| `site/src/styles/global.css` の `.layout` | 追従枠の配置と出し分け（1280px未満では従来と同一） |
 | `site/src/components/Footer.astro` | Amazon規約の固定文 |
 | `site/src/pages/privacy.astro` | アフィリエイトの開示 |
 
@@ -173,17 +180,35 @@ AdSense を通すまでアフィリエイト化しない、と 2026-08-23 に判
 ### Phase B — ASPへの登録と提携申請
 
 1. **バリューコマース**と**afb**に登録（この2つで U-NEXT / Hulu / ABEMA を押さえられる）
-2. U-NEXT → Hulu → ABEMA の順に提携申請
-3. 承認後、`PUBLIC_VC_LINKSWITCH_PID` を設定
+2. **Link-A** にも登録する（2026-08-23 追加）
+3. U-NEXT → Hulu → ABEMA の順に提携申請
+4. 承認後、`PUBLIC_VC_LINKSWITCH_PID` を設定
+
+> **Link-A を足した理由（実測）**
+> 競合の [VOD比較記事](https://www.noiat.co.jp/internet/vod_comparison/) の外部リンクを数えたところ、
+> **73本が `cl.link-ag.net`**（Link-A）だった。同ページの他の経路は
+> ドコモ系22本、Impact系9本、Netflixは素のリンク7本。
+> **VOD特化のメディアが主力に据えているASPが Link-A** ということになる。
+> DMM TV もここ経由だが、DMM は当面対象外（5-3）なので、
+> こちらの狙いは **U-NEXT と Disney+**。
 
 > **記事数が足りないと審査に落ちる。** afb・バリューコマースはサイトの体裁と記事数を見る。
 > 2026-08-23 時点で記事は6本。**10〜15本に増やしてから申請する**こと。
 > Phase A は審査不要なので先に動かし、記事を積みながら申請する。
 
-### Phase C — 作品ごとの Amazon リンク
+### Phase C — 作品ごとの Amazon リンク（常設ページは実装済み）
 
-いまの Amazon 導線は記事単位（末尾のCTA）で、**作品ごとではない**。
-配信終了記事の「この作品はレンタルなら観られる」を作品行ごとに出せると効果が大きい。
+**常設ページ `/leaving/<サービス>` には既に入っている**（2026-08-23）。
+作品1行ごとに U-NEXT / Hulu / DMM TV / Amazon の検索リンクが並ぶ。
+
+> ★ 常設ページは `.astro` なので **rehype-affiliate を通らない**。
+> `tag=` と `rel` はページ側で `withAmazonTag()` / `relFor()` を呼んで付けている。
+> 記事本文（Markdown）とは経路が違うので、方針を変えるときは**両方直す**。
+> URLテンプレートは `site/src/lib/search-links.ts`（theme.yaml と同じ内容を持つ）。
+
+**残っているのは月次記事の本文側。** いまの Amazon 導線は記事単位（末尾のCTA）で、
+作品ごとではない。配信終了記事の「この作品はレンタルなら観られる」を
+作品行ごとに出せると効果が大きい。
 
 必要な変更:
 
@@ -198,14 +223,68 @@ AdSense を通すまでアフィリエイト化しない、と 2026-08-23 に判
 > ラベルは「Amazon（レンタル・購入）」のように**見放題と混同しない書き方**にすること。
 > 見放題が終わった作品に「Amazonで配信中」と書くと誤情報になる。
 
-### Phase D — 記事の左右フィールド
+### Phase D — 記事の右の追従枠 ✅ 器は実装済み（2026-08-23）
 
-現在は1カラム（`global.css` の `--max-width: 46rem`）。
-右レールを作るには横幅を広げる必要があるが、記事本文が**配信終了作品の表**主体で
-横幅を食うため、素直に広げると表が読みにくくなる。
+**当初は「表レイアウトの改修とセット」と考えていたが、それは不要だった。**
 
-**表レイアウトの改修（折りたたみ・格納等）とセットで検討する**方針
-（2026-08-23 に決定・未着手）。
+[競合の実装](https://www.noiat.co.jp/internet/vod_comparison/) を調べたところ、
+追従枠は**本文カラムを削らず、余白に浮かせている**（`position:fixed; width:289px`）。
+当サイトも本文 `46rem`（736px）中央寄せなので、1280px 画面なら片側 272px の余白があり、
+**本文の幅を1mmも変えずに枠を置ける**。表が狭くなる問題は起きない。
+
+実装は `FollowRail.astro` ＋ `global.css` の `.layout`。
+
+```
+1280px 未満  → .layout { display: block }   ＝ 従来と1ピクセルも変わらない
+1280px 以上  → minmax(0,1fr) | 46rem | minmax(0,1fr) の3カラム
+                                              └ ここに追従枠
+```
+
+- **JSゼロを維持**。競合はJSで追従させているが、それは本文末でフェードアウトさせるため。
+  `position: sticky` なら親グリッド行の高さが自然な上限になるので、JSが要らない
+- `minmax(0, 1fr)` にしているのは、`1fr` だと枠の min-content 幅で右列が広がり
+  本文が中央からずれるため
+- 中身はいま **Amazon 1枠**。提携できているのがそれだけのため。
+  Phase B で U-NEXT が通ったら `FollowRail.astro` の `OFFER` を差し替える。
+  **複数を並べない**（競合も1広告主だけ。選択肢を増やすと読者が選べなくなる）
+
+**残っている検討事項**
+
+- 効果測定。記事6本・流入ほぼゼロでは良し悪しが判断できない。記事を増やしてから
+- **追従枠に AdSense を入れないこと。** 本文に重ならない配置なら通常は問題ないが、
+  追従広告は誤クリック誘発とみなされうる領域。審査を控えている間は
+  **追従枠はアフィリエイト専用**にする
+- スクロール追従の実挙動は**ブラウザで目視確認していない**（headless Edge が
+  スクロール後の描画を撮影できなかった）。1280px 以上で開いて確認すること
+
+### Phase E-2 — Prime Video の Impact プログラム（要調査）
+
+**Amazonアソシエイトとは別に、Prime Video Japan 専用のアフィリエイトプログラムが
+Impact（impact.com）上で稼働している。** 2026-08-23 にリダイレクトを追って確認した。
+
+```
+https://primevideojapan.sjv.io/7aXnDr
+  → www.ojrq.net/p/?return=...            （Impact の同意・同期）
+  → primevideojapan.sjv.io/c/5461011/2171891/27854?sharedid=...
+  → https://www.amazon.co.jp/gp/video/collection/IncludedwithPrime
+       ?irclickid=...&irpid=5461011&irgwc=1&ref=dvm_ass_acm_xx_mf_s_imp_...
+```
+
+`irclickid` / `irpid` / `irgwc` は Impact Radius のパラメータで、
+遷移先は Amazon.co.jp の Prime Video 見放題コレクション。
+広告主ID `5461011`、キャンペーン `2171891`。
+
+**分かっていないこと**（ここが要調査）
+
+- **参加方法**。日本語のアフィリエイト解説記事はこのプログラムを一切扱っていない。
+  自己申込みができないクローズド／招待制の可能性が高い
+- **単価**。Amazonアソシエイトの Prime無料体験 500円/件 より高いのかどうか
+- **アソシエイトとの併用可否**。リンクのドメインが別なので技術的な衝突は起きないが、
+  規約上どうかは未確認
+
+**当面は追わない判断**（2026-08-23）。Amazonアソシエイトは既に永続IDを保有しており、
+乗り換えの利得が不明なため。調べるなら impact.com にパートナー登録して
+ブランド検索するのが入口になる。
 
 ### Phase E — Disney+ / Apple TV+
 

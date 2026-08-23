@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
 import { CATEGORIES, SITE } from '../../config'
+import { LEAVING_SERVICES } from '../../lib/leaving-data'
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
@@ -26,6 +27,28 @@ const { cat, posts } = Astro.props
   description={`${SITE.name}の「${cat.label}」カテゴリの記事一覧です。`}
 >
   <h1>{cat.label}</h1>
+
+  {/*
+    常設ページへの導線。月次記事は公開時点のスナップショットなので、
+    「いま終了予定のもの全部」を見たい読者はこちらに送る。
+    配信終了予定のカテゴリにだけ出す。
+  */}
+  {
+    cat.slug === 'leaving' && (
+      <aside class="always-updated">
+        <p class="lead">常に最新の終了予定を見る</p>
+        <ul>
+          {LEAVING_SERVICES.map((s) => (
+            <li>
+              <a href={`/leaving/${s.key}`}>{s.label}で配信終了予定の作品一覧</a>
+            </li>
+          ))}
+        </ul>
+        <p class="note">収集のたびに自動で更新されます。月次記事は各月のまとめです。</p>
+      </aside>
+    )
+  }
+
   {
     posts.length === 0 ? (
       <p class="muted">このカテゴリの記事はまだありません。</p>
@@ -34,3 +57,31 @@ const { cat, posts } = Astro.props
     )
   }
 </BaseLayout>
+
+<style>
+  .always-updated {
+    margin: 1.2rem 0 2rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-subtle);
+  }
+  .always-updated .lead {
+    margin: 0 0 0.6rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .always-updated ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.92rem;
+  }
+  .always-updated li {
+    margin-bottom: 0.3rem;
+  }
+  .always-updated .note {
+    margin: 0.7rem 0 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+</style>

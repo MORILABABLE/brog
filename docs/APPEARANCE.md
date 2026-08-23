@@ -20,10 +20,10 @@
 │ ・ │ ヘッダーバナー（全ページに出る）  │ ・ │  ← src/assets/header-banner.png
 │ ・ └────────────────────┘ ・ │
 │ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ │  ← 背景グラフィック（body）
-│ ・ ┌────────────────────┐ ・ │
-│ ・ │ 本文カード（.content-card） │ ・ │  ← 白く浮いている
-│ ・ │ 記事・カード一覧はこの中       │ ・ │
-│ ・ └────────────────────┘ ・ │
+│ ・ ┌────────────────────┐ ┌──┐ │
+│ ・ │ 本文カード（.content-card） │ │追従│ │  ← 白く浮いている
+│ ・ │ 記事・カード一覧はこの中       │ │ 枠 │ │  ← 1280px以上だけ（4節）
+│ ・ └────────────────────┘ └──┘ │
 │ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ ・ │
 ├──────────────────────────────┤
 │ フッター（紺・--footer-bg）           │
@@ -182,6 +182,38 @@ body {
 ```astro
 <main id="main" class="wrap">        <!-- content-card → wrap -->
 ```
+
+### 右の追従枠（1280px 以上だけ）
+
+本文カードの右の余白に、スクロールに追従する広告枠を出している
+（`FollowRail.astro`／中身と運用は [AFFILIATE.md](./AFFILIATE.md)）。
+見た目に関わるのは `global.css` の `.layout` だけ。
+
+```css
+.layout { display: block; }          /* 既定。1280px 未満は従来と同一 */
+
+@media (min-width: 80rem) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) min(var(--max-width), 100%) minmax(0, 1fr);
+  }
+}
+```
+
+**本文の幅（`--max-width`）は枠があってもなくても変わらない。**
+左右とも同じ列幅なので本文は中央のままで、右の余白に枠が載るだけ。
+記事は配信終了作品の**表**が主体で横幅を食うため、本文を削るサイドバー方式は採っていない。
+
+| 変えたいこと | 直す場所 |
+|---|---|
+| 枠を出す画面幅の下限 | `.layout` のメディアクエリ `80rem` |
+| 枠の幅 | `FollowRail.astro` の `.inner { max-width }` |
+| 枠が張り付く位置 | 同 `.inner { top }` |
+| **枠を消す** | `BaseLayout.astro` から `<FollowRail />` を外す |
+
+> `.inner` の `position: sticky` は、`html` に `overflow` が無く
+> `body` の `overflow-x: hidden` がビューポートに伝播することで成立している。
+> **`html` 側に `overflow` を足すと追従が壊れる。**
 
 ---
 

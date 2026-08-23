@@ -1,0 +1,248 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AffiliateNotice from '../../components/AffiliateNotice.astro'
+import AmazonCta from '../../components/AmazonCta.astro'
+import { ATTRIBUTION, AFFILIATE, SITE } from '../../config'
+import { formatDate, isoDate } from '../../utils/date'
+import { LEAVING_SERVICES, groupByDate, loadLeaving } from '../../lib/leaving-data'
+import { amazonVideoLink, otherServiceLinks } from '../../lib/search-links'
+import { relFor, withAmazonTag } from '../../lib/affiliate'
+
+/**
+ * 常設ページ「◯◯で配信終了予定の作品」。
+ *
+ * ■ 月次記事との違い
+ * 月次記事は公開時点のスナップショットで、月をまたぐと古くなる。
+ * このページはURLが固定で、`collect` のたびに中身だけが入れ替わる。
+ * LLMを使わないので生成コストはゼロ、誤情報のリスクもない。
+ *
+ * ■ リンクに tag= と rel を**ここで付けている**理由
+ * 記事本文（Markdown）のリンクは build 時に rehype-affiliate が処理するが、
+ * このページは .astro なので rehype を通らない。
+ * 同じ方針（src/lib/affiliate.ts）を明示的に呼んで揃えている。
+ */
+export function getStaticPaths() {
+  return LEAVING_SERVICES.map((s) => ({
+    params: { service: s.key },
+    props: { label: s.label },
+  }))
+}
+
+const { service } = Astro.params
+const { label } = Astro.props
+
+const { works, dataAsOf } = loadLeaving(service!)
+const groups = groupByDate(works)
+
+/** リンク1本を、tag付与と rel 決定まで済ませた形にする */
+function decorate(link: { label: string; url: string }) {
+  const url = withAmazonTag(link.url, AFFILIATE.amazonTag)
+  return { label: link.label, url, rel: relFor(url) }
+}
+
+const title = `${label}で配信終了予定の作品一覧`
+const description =
+  works.length > 0
+    ? `${label}で見放題配信が終了する予定の作品${works.length}本を終了日順にまとめています。最も近い終了日は${formatDate(groups[0]!.date)}です。`
+    : `${label}で見放題配信が終了する予定の作品を終了日順にまとめています。現在、終了予定として取得できている作品はありません。`
+---
+
+<BaseLayout title={title} description={description}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a> ›
+    <a href="/category/leaving">配信終了予定</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  <AffiliateNotice />
+
+  {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
+  <p class="notice">
+    {
+      dataAsOf ? (
+        <>
+          配信情報は <strong>{formatDate(dataAsOf)}時点</strong>のものです。
+        </>
+      ) : (
+        <>配信情報の取得時刻が不明です。</>
+      )
+    }
+    {label}の都合により変更される場合があります。ご視聴前に公式サイトでご確認ください。
+  </p>
+
+  {
+    works.length === 0 ? (
+      <p class="empty">
+        現在、{label}で終了予定として取得できている作品はありません。
+        {label === 'Amazon Prime Video'
+          ? 'Prime Video は終了の約11日前にならないと終了予定が出ないため、時期によっては空になります。'
+          : 'しばらくしてから再度ご確認ください。'}
+      </p>
+    ) : (
+      <>
+        <p class="summary">
+          <strong>{works.length}本</strong>が終了予定です。終了日の早い順に並べています。
+        </p>
+
+        {groups.map((g) => (
+          <section class="day">
+            <h2 id={isoDate(g.date)}>
+              <time datetime={isoDate(g.date)}>{formatDate(g.date)}</time>
+              <span class="count">{g.works.length}本</span>
+            </h2>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">作品</th>
+                    <th scope="col">公開年</th>
+                    <th scope="col">評価</th>
+                    <th scope="col">他で探す</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {g.works.map((w) => (
+                    <tr>
+                      <th scope="row">
+                        {w.title}
+                        {w.originalTitle && <span class="original">（原題: {w.originalTitle}）</span>}
+                      </th>
+                      <td>{w.year ? `${w.year}年` : '—'}</td>
+                      <td>{w.rating ? `${w.rating}/100` : '—'}</td>
+                      <td class="links">
+                        {[...otherServiceLinks(w.title), amazonVideoLink(w.title)]
+                          .map(decorate)
+                          .map((l) => (
+                            <a href={l.url} rel={l.rel} target="_blank">
+                              {l.label}
+                            </a>
+                          ))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ))}
+      </>
+    )
+  }
+
+  <AmazonCta category="leaving" />
+
+  <section class="sources">
+    <h2>出典</h2>
+    <ul>
+      <li>
+        <a href={ATTRIBUTION.url} rel="noopener noreferrer" target="_blank">
+          {ATTRIBUTION.text}
+        </a>
+      </li>
+      <li>
+        <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">
+          作品タイトル（Wikidata・CC0）
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <p class="other-services">
+    ほかのサービスの終了予定:
+    {
+      LEAVING_SERVICES.filter((s) => s.key !== service).map((s) => (
+        <a href={`/leaving/${s.key}`}>{s.label}</a>
+      ))
+    }
+  </p>
+
+  <p class="site-note">
+    {SITE.name}が配信状況を把握しているのは Netflix・Amazon Prime Video・Disney+・Apple TV+
+    の4サービスです。「他で探す」のリンクは各サービスの検索結果に飛ぶだけで、
+    配信の有無を保証するものではありません。
+  </p>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .summary {
+    margin: 1.2rem 0 0;
+  }
+  .empty {
+    margin: 1.5rem 0;
+    color: var(--text-muted);
+  }
+  .day h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    font-size: 1.05rem;
+  }
+  .count {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+  /* 表は横に伸びるので、はみ出したら表ごと横スクロールさせる */
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  th,
+  td {
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  thead th {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  /* 「2019 / 年」と折り返すのを防ぐ。作品名の列だけは折り返してよい。 */
+  tbody td {
+    white-space: nowrap;
+  }
+  tbody th {
+    font-weight: 600;
+  }
+  .original {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+  .links {
+    white-space: nowrap;
+  }
+  .links a {
+    margin-right: 0.6rem;
+    font-size: 0.8rem;
+  }
+  .sources h2 {
+    font-size: 1rem;
+  }
+  .sources ul {
+    padding-left: 1.2rem;
+    font-size: 0.86rem;
+  }
+  .other-services a {
+    margin-left: 0.7rem;
+  }
+  .site-note {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+</style>

@@ -4,6 +4,7 @@ import { SITE, OG_IMAGE, CARD_IMAGE } from '../config'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
 import LinkSwitch from '../components/LinkSwitch.astro'
+import FollowRail from '../components/FollowRail.astro'
 import banner from '../assets/header-banner.png'
 import '../styles/global.css'
 
@@ -144,10 +145,19 @@ const jsonLd = publishedAt
       fetchpriority="high"
     />
 
-    {/* 背景グラフィックから浮かせる本文カード。styles/global.css の .content-card。 */}
-    <main id="main" class="content-card">
-      <slot />
-    </main>
+    {/*
+      本文カード＋追従枠。
+      .layout は 1280px 未満では block（＝従来と同一）、
+      それ以上で3カラムのグリッドになり、右の余白に追従枠が載る。
+      本文の幅はどちらでも変わらない。styles/global.css の .layout を参照。
+    */}
+    <div class="layout">
+      {/* 背景グラフィックから浮かせる本文カード。styles/global.css の .content-card。 */}
+      <main id="main" class="content-card">
+        <slot />
+      </main>
+      <FollowRail />
+    </div>
     <Footer />
   </body>
 </html>
