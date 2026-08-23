@@ -1,5 +1,12 @@
 node_modules/
 dist/
 .astro/
+
+# 記事ごとのカード画像・本文中のセクション画像。
+# ビルド（prebuild）で毎回生成されるので管理しない。
+# 生成元は scripts/make-cards.mjs / make-sections.mjs と記事の中身。
+# ★ 記事に書かれた ![](/sections/xxx.jpg) の参照だけは記事側にあるので管理する。
+public/cards/
+public/sections/
 .env
 .env.local

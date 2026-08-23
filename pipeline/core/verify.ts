@@ -27,6 +27,88 @@ export interface VerifyInput {
   stopReason?: string
 }
 
+/**
+ * 強調記法（`**`）が Markdown として成立しているかを調べる。
+ *
+ * ■ なぜ必要か
+ * CommonMark は `**` を「開ける/閉じられる」かを前後の文字種で判定する
+ * （left-flanking / right-flanking 規則）。日本語の全角約物と隣接すると
+ * この判定が成立せず、`**` がそのまま本文に表示される。実際に起きた例:
+ *
+ *   ×  **……終了します。**麺屋の息子ポーが……
+ *      閉じ側の直前が「。」（約物）で直後が「麺」（文字）→ 閉じられない
+ *      → 「**」が画面に出る
+ *   ○  **……終了します**。麺屋の息子ポーが……
+ *
+ *   ×  この中では**『オーメン』が……終了する**のが
+ *      開き側の直前が「は」（文字）で直後が「『」（約物）→ 開けない
+ *   ○  この中では、**『オーメン』が……終了する**のが
+ *
+ * ■ 判定の範囲
+ * 2個以上の `*` の連なりだけを見る。1個の `*` は箇条書きの記号と
+ * 区別がつかず、誤検知の方が害になるため対象外。
+ */
+const UNICODE_PUNCT = /[\p{P}\p{S}]/u
+
+interface DelimiterRun {
+  index: number
+  canOpen: boolean
+  canClose: boolean
+}
+
+function classifyRuns(block: string): DelimiterRun[] {
+  const runs: DelimiterRun[] = []
+  const re = /\*{2,}/g
+  let m: RegExpExecArray | null
+
+  while ((m = re.exec(block)) !== null) {
+    const before = m.index > 0 ? block[m.index - 1]! : ''
+    const afterAt = m.index + m[0].length
+    const after = afterAt < block.length ? block[afterAt]! : ''
+
+    // 行頭・行末は空白として扱う（CommonMark の定義どおり）
+    const beforeSpace = before === '' || /\s/u.test(before)
+    const afterSpace = after === '' || /\s/u.test(after)
+    const beforePunct = before !== '' && UNICODE_PUNCT.test(before)
+    const afterPunct = after !== '' && UNICODE_PUNCT.test(after)
+
+    runs.push({
+      index: m.index,
+      canOpen: !afterSpace && (!afterPunct || beforeSpace || beforePunct),
+      canClose: !beforeSpace && (!beforePunct || afterSpace || afterPunct),
+    })
+  }
+  return runs
+}
+
+/**
+ * 対になれない `**` の位置を返す。空なら全て正しく描画される。
+ * 公開済み記事の一括点検にも使えるよう export している。
+ */
+export function unpairedEmphasis(body: string): { index: number; block: string }[] {
+  // コードフェンス内は Markdown として解釈されないので除外する
+  const scrubbed = body.replace(/```[\s\S]*?```/g, '')
+  const bad: { index: number; block: string }[] = []
+
+  // 強調は空行をまたげない。段落ごとに突き合わせる。
+  for (const block of scrubbed.split(/\n\s*\n/)) {
+    const stack: DelimiterRun[] = []
+    const orphans: DelimiterRun[] = []
+
+    for (const run of classifyRuns(block)) {
+      if (run.canClose && stack.length > 0) {
+        stack.pop()
+      } else if (run.canOpen) {
+        stack.push(run)
+      } else {
+        orphans.push(run)
+      }
+    }
+    for (const run of [...orphans, ...stack]) bad.push({ index: run.index, block })
+  }
+  return bad
+}
+
 export function verifyArticle(input: VerifyInput): VerifyIssue[] {
   const issues: VerifyIssue[] = []
   const { parsed, items } = input
@@ -53,6 +135,17 @@ export function verifyArticle(input: VerifyInput): VerifyIssue[] {
   }
   if (parsed.description.includes('\n')) {
     err('説明文が複数行になっています。1行で書く必要があります。')
+  }
+
+  // --- Markdown が壊れていないか ---
+  // 対になれない `**` は画面にそのまま出る。読者に見える明確な欠陥なので止める。
+  for (const { index, block } of unpairedEmphasis(parsed.body)) {
+    const around = block.slice(Math.max(0, index - 28), index + 30).replace(/\n/g, ' ')
+    err(
+      `強調記法が Markdown として成立していません: 「…${around}…」\n` +
+        '      日本語では「〜します。**次の文」のように閉じ記号の直前が約物だと閉じられません。\n' +
+        '      「〜します**。次の文」のように、句点や括弧を強調の外に出してください。',
+    )
   }
 
   // --- 帰属表示（規約上の義務） ---

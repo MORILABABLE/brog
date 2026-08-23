@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "cards": "node scripts/make-cards.mjs",
+    "sections": "node scripts/make-sections.mjs",
+    "prebuild": "node scripts/make-cards.mjs && node scripts/make-sections.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check"
@@ -16,6 +19,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "opentype.js": "^2.0.0",
     "typescript": "^6.0.3"
   }
 }

@@ -43,6 +43,13 @@ export const OG_IMAGE = {
 } as const
 
 /**
+ * 記事ごとのカード画像の寸法。
+ * **site/scripts/make-cards.mjs の W / H と必ず揃えること。**
+ * ここがずれると、SNS側が実物と違う寸法で確保して表示が崩れる。
+ */
+export const CARD_IMAGE = { width: 1200, height: 630 } as const
+
+/**
  * 配信情報の提供元表記。API利用規約で必須。
  * サイトフッターと各記事の両方に表示する義務がある。
  */

@@ -234,6 +234,20 @@ h3 {
   font-weight: 700;
 }
 
+/*
+ * 本文中の画像。表と解説の間に入るセクション画像がこれにあたる。
+ * 生成元は site/scripts/make-sections.mjs。
+ */
+.prose img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+  border-radius: var(--radius);
+  /* 画像の地色がカードと同系のため、境目が分かるように輪郭を置く */
+  border: 1px solid var(--border);
+}
+
 .prose blockquote {
   margin: 1.4rem 0;
   padding: 0.85rem 1.1rem;

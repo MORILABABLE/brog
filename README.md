@@ -217,6 +217,20 @@ npm run write -- --emit     # data/draft/prompt.md を書き出す
 npm run write -- --apply    # 検証して site/ に書き出す
 ```
 
+**画像はビルド時に自動生成される**（`site/package.json` の `prebuild`）。
+SNS用のカード画像と、本文の小段落に挟むセクション画像の2種類。
+文字はフォントをパスに変換しているので、Windows でも Cloudflare のビルド環境（Linux）でも
+同じ絵になる。詳細は [docs/APPEARANCE.md](./docs/APPEARANCE.md#9-記事ごとのカード画像)。
+
+**新しく記事を書いたときだけ、本文への画像の挿し込みを1回実行する。**
+
+```bash
+cd site && npm run sections -- --write
+```
+
+画像自体はビルドが作るが、記事ファイルへの `![…]()` の追記はここでしか行わない
+（ビルドが記事を書き換えるのを避けるため）。何度実行しても結果は同じ。
+
 ### B. LLM API で生成する
 
 ```bash
