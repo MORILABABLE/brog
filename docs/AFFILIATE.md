@@ -23,7 +23,7 @@
 | Amazon規約の固定文 | ✅ **表示中** |
 | プライバシーポリシー | ✅ 追記済み |
 | Amazon への導線（記事末尾・トップ） | ✅ **表示中** |
-| 右の追従枠（1280px以上） | ✅ **表示中**（6節 Phase D） |
+| 右の追従枠（1200px以上） | ✅ **表示中**（6節 Phase D） |
 | 常設ページの作品別リンク | ✅ 6枚すべてに実装済み（`/leaving/…` `/arrivals/…`）。6節 Phase C |
 | ASPへの登録・提携申請 | ❌ 未着手（Phase B） |
 
@@ -109,7 +109,7 @@ TELASA・Lemino・FOD・TVer・楽天TV もプログラムなし。
 | `site/src/lib/search-links.ts` | 各サービスの検索URL。**theme.yaml と同内容**。片方だけ直さない |
 | `site/src/components/WorkTable.astro` | 常設ページの作品表。**rehype を通らないので tag と rel をここで付ける** |
 | `site/src/lib/events-data.ts` | 常設ページのデータ読み込み（終了予定 / 新着 / 定点観測） |
-| `site/src/styles/global.css` の `.layout` | 追従枠の配置と出し分け（1280px未満では従来と同一） |
+| `site/src/styles/global.css` の `.layout` | 追従枠の配置と出し分け（1200px未満では従来と同一） |
 | `site/src/components/Footer.astro` | Amazon規約の固定文 |
 | `site/src/pages/privacy.astro` | アフィリエイトの開示 |
 
@@ -232,14 +232,14 @@ AdSense を通すまでアフィリエイト化しない、と 2026-08-23 に判
 
 [競合の実装](https://www.noiat.co.jp/internet/vod_comparison/) を調べたところ、
 追従枠は**本文カラムを削らず、余白に浮かせている**（`position:fixed; width:289px`）。
-当サイトも本文 `46rem`（736px）中央寄せなので、1280px 画面なら片側 272px の余白があり、
+当サイトも本文 `46rem`（736px）中央寄せなので、1200px 画面でも片側 232px の余白があり、
 **本文の幅を1mmも変えずに枠を置ける**。表が狭くなる問題は起きない。
 
 実装は `FollowRail.astro` ＋ `global.css` の `.layout`。
 
 ```
-1280px 未満  → .layout { display: block }   ＝ 従来と1ピクセルも変わらない
-1280px 以上  → minmax(0,1fr) | 46rem | minmax(0,1fr) の3カラム
+1200px 未満  → .layout { display: block }   ＝ 従来と1ピクセルも変わらない
+1200px 以上  → minmax(0,1fr) | 46rem | minmax(0,1fr) の3カラム
                                               └ ここに追従枠
 ```
 
@@ -258,7 +258,7 @@ AdSense を通すまでアフィリエイト化しない、と 2026-08-23 に判
   追従広告は誤クリック誘発とみなされうる領域。審査を控えている間は
   **追従枠はアフィリエイト専用**にする
 - スクロール追従の実挙動は**ブラウザで目視確認していない**（headless Edge が
-  スクロール後の描画を撮影できなかった）。1280px 以上で開いて確認すること
+  スクロール後の描画を撮影できなかった）。1200px 以上で開いて確認すること
 
 ### Phase E-2 — Prime Video の Impact プログラム（要調査）
 

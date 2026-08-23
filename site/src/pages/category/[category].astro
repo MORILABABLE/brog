@@ -2,8 +2,10 @@
 import { getCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
+import EvergreenCard from '../../components/EvergreenCard.astro'
 import { CATEGORIES, SITE } from '../../config'
-import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
+import { evergreenFor } from '../../lib/evergreen'
+import { loadArrivals, loadLeaving } from '../../lib/events-data'
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
@@ -20,6 +22,19 @@ export async function getStaticPaths() {
 }
 
 const { cat, posts } = Astro.props
+
+/*
+ * 常設ページを記事カードと同じ体裁で先頭に出す。
+ * 「常に最新の◯◯を見る」という箱にまとめていたのをやめた（2026-08-23）。
+ * サービスごとの見分けがつかず、周囲の記事カードから浮いていたため。
+ *
+ * 件数と基準日はここで読む。ビルド時にしか動かないので費用はかからない。
+ */
+const evergreen = evergreenFor(cat.slug).map((page) => {
+  const key = page.href.split('/').pop()!
+  const data = page.category === 'leaving' ? loadLeaving(key) : loadArrivals(key)
+  return { page, count: data.works.length, dataAsOf: data.dataAsOf }
+})
 ---
 
 <BaseLayout
@@ -28,45 +43,10 @@ const { cat, posts } = Astro.props
 >
   <h1>{cat.label}</h1>
 
-  {/*
-    常設ページへの導線。月次記事は公開時点のスナップショットなので、
-    「いま終了予定のもの全部」を見たい読者はこちらに送る。
-    配信終了予定のカテゴリにだけ出す。
-  */}
-  {/*
-    常設ページへの導線。
-    ★ 文面に内部の言葉（収集・定点観測・月次記事）を出さないこと。
-      読者に必要なのは「いま終わる作品を全部見られる」という一点だけ。
-      仕組みの説明は読者の関心ではないし、書くと運用の都合が透けて読みにくくなる。
-  */}
   {
-    cat.slug === 'leaving' && (
-      <aside class="always-updated">
-        <p class="lead">終了予定をまとめて見る</p>
-        <ul>
-          {LEAVING_SERVICES.map((s) => (
-            <li>
-              <a href={`/leaving/${s.key}`}>{s.label}で終わる作品</a>
-            </li>
-          ))}
-        </ul>
-      </aside>
-    )
-  }
-
-  {
-    cat.slug === 'arrivals' && (
-      <aside class="always-updated">
-        <p class="lead">新着をまとめて見る</p>
-        <ul>
-          {ARRIVALS_SERVICES.map((s) => (
-            <li>
-              <a href={`/arrivals/${s.key}`}>{s.label}に入った作品</a>
-            </li>
-          ))}
-        </ul>
-      </aside>
-    )
+    evergreen.map((e) => (
+      <EvergreenCard page={e.page} count={e.count} dataAsOf={e.dataAsOf} />
+    ))
   }
 
   {
@@ -78,30 +58,3 @@ const { cat, posts } = Astro.props
   }
 </BaseLayout>
 
-<style>
-  .always-updated {
-    margin: 1.2rem 0 2rem;
-    padding: 1rem 1.2rem;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--bg-subtle);
-  }
-  .always-updated .lead {
-    margin: 0 0 0.6rem;
-    font-weight: 700;
-    font-size: 0.95rem;
-  }
-  .always-updated ul {
-    margin: 0;
-    padding-left: 1.2rem;
-    font-size: 0.92rem;
-  }
-  .always-updated li {
-    margin-bottom: 0.3rem;
-  }
-  .always-updated .note {
-    margin: 0.7rem 0 0;
-    font-size: 0.78rem;
-    color: var(--text-muted);
-  }
-</style>

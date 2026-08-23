@@ -1,0 +1,81 @@
+---
+import { CATEGORIES } from '../config'
+import { formatDate } from '../utils/date'
+import type { EvergreenPage } from '../lib/evergreen'
+
+interface Props {
+  page: EvergreenPage
+  /** 掲載本数。0 のときは件数を出さない。 */
+  count: number
+  /** データの基準日 */
+  dataAsOf: Date | null
+}
+
+const { page, count, dataAsOf } = Astro.props
+const cat = CATEGORIES[page.category]
+
+/**
+ * 常設ページを、記事カード（PostCard）と**同じ体裁**で1枚ずつ出す。
+ *
+ * ★ PostCard と markup・スタイルを揃えること。ここが本体の役目。
+ *   以前は「常に最新の終了予定を見る」という箱にリンクをまとめていたが、
+ *   記事一覧の中で浮いていた（2026-08-23 に作り直し）。
+ *   **サムネイルもあえて付けていない。** 周りの記事カードに画像が無いので、
+ *   ここだけ絵を置くと結局浮く。画像は追従枠（FollowRail）の役割にしてある。
+ *   PostCard の見た目を変えたら、こちらも同じように変える。
+ *
+ * 日付欄に出しているのは公開日ではなく**配信情報の基準日**。
+ * このページは公開日という概念を持たず、中身が入れ替わり続けるため。
+ */
+---
+
+<article class="card">
+  <div class="meta">
+    <span class="badge" data-category={cat.slug}>{cat.label}</span>
+    {dataAsOf && <time>{formatDate(dataAsOf)}時点</time>}
+  </div>
+  <h2><a href={page.href}>{page.title}</a></h2>
+  <p class="desc">
+    {
+      count > 0
+        ? `${page.label}の${cat.label}を${count}本、日付順にまとめています。`
+        : `${page.label}の${cat.label}を日付順にまとめています。`
+    }
+  </p>
+</article>
+
+<style>
+  /* --- ここから下は PostCard.astro と同じ値。ずらさないこと。 --- */
+  .card {
+    padding: 1.2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  h2 {
+    margin: 0.5rem 0 0.4rem;
+    padding: 0;
+    border: none;
+    font-size: 1.15rem;
+    line-height: 1.5;
+  }
+  h2 a {
+    color: var(--text);
+    text-decoration: none;
+  }
+  h2 a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .desc {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+</style>
