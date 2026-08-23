@@ -24,7 +24,7 @@
 | プライバシーポリシー | ✅ 追記済み |
 | Amazon への導線（記事末尾・トップ） | ✅ **表示中** |
 | 右の追従枠（1280px以上） | ✅ **表示中**（6節 Phase D） |
-| 常設ページの作品別リンク | ✅ `/leaving/<サービス>` に実装済み（6節 Phase C） |
+| 常設ページの作品別リンク | ✅ 6枚すべてに実装済み（`/leaving/…` `/arrivals/…`）。6節 Phase C |
 | ASPへの登録・提携申請 | ❌ 未着手（Phase B） |
 
 > **未設定なら「PR」表記も含めて一切描画されない。**
@@ -107,7 +107,8 @@ TELASA・Lemino・FOD・TVer・楽天TV もプログラムなし。
 | `site/src/components/AmazonCta.astro` | Amazon への導線。文面が記事カテゴリで変わる |
 | `site/src/components/FollowRail.astro` | 本文右の余白に置く追従枠。中身は1広告主だけ |
 | `site/src/lib/search-links.ts` | 各サービスの検索URL。**theme.yaml と同内容**。片方だけ直さない |
-| `site/src/pages/leaving/[service].astro` | 常設ページ。rehype を通らないので tag と rel をページ側で付ける |
+| `site/src/components/WorkTable.astro` | 常設ページの作品表。**rehype を通らないので tag と rel をここで付ける** |
+| `site/src/lib/events-data.ts` | 常設ページのデータ読み込み（終了予定 / 新着 / 定点観測） |
 | `site/src/styles/global.css` の `.layout` | 追従枠の配置と出し分け（1280px未満では従来と同一） |
 | `site/src/components/Footer.astro` | Amazon規約の固定文 |
 | `site/src/pages/privacy.astro` | アフィリエイトの開示 |
@@ -198,13 +199,15 @@ AdSense を通すまでアフィリエイト化しない、と 2026-08-23 に判
 
 ### Phase C — 作品ごとの Amazon リンク（常設ページは実装済み）
 
-**常設ページ `/leaving/<サービス>` には既に入っている**（2026-08-23）。
+**常設ページには既に入っている**（2026-08-23）。`/leaving/…` と `/arrivals/…` の
 作品1行ごとに U-NEXT / Hulu / DMM TV / Amazon の検索リンクが並ぶ。
+成果リンクの本数は netflix の新着ページで584本、終了予定ページで335本。
 
 > ★ 常設ページは `.astro` なので **rehype-affiliate を通らない**。
 > `tag=` と `rel` はページ側で `withAmazonTag()` / `relFor()` を呼んで付けている。
 > 記事本文（Markdown）とは経路が違うので、方針を変えるときは**両方直す**。
 > URLテンプレートは `site/src/lib/search-links.ts`（theme.yaml と同じ内容を持つ）。
+> 表の描画は `WorkTable.astro` に集約してあるので、直すのはそこ1か所でよい。
 
 **残っているのは月次記事の本文側。** いまの Amazon 導線は記事単位（末尾のCTA）で、
 作品ごとではない。配信終了記事の「この作品はレンタルなら観られる」を

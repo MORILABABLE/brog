@@ -1,0 +1,126 @@
+---
+import { AFFILIATE } from '../config'
+import { relFor, withAmazonTag } from '../lib/affiliate'
+import { amazonVideoLink, otherServiceLinks } from '../lib/search-links'
+import { formatDate, isoDate } from '../utils/date'
+import type { WorkRow } from '../lib/events-data'
+
+interface Props {
+  groups: { date: Date; works: WorkRow[] }[]
+  /** 日付見出しの意味づけ。「終了」「配信開始」など。 */
+  dateNoun: string
+}
+
+const { groups, dateNoun } = Astro.props
+
+/**
+ * 作品一覧の表。常設ページ（配信終了予定 / 新着配信）で共有する。
+ *
+ * ★ リンクに tag= と rel を**ここで付けている**理由
+ * 記事本文（Markdown）のリンクは build 時に rehype-affiliate が処理するが、
+ * 常設ページは .astro なので rehype を通らない。
+ * 同じ方針（src/lib/affiliate.ts）を明示的に呼んで揃えている。
+ */
+function decorate(link: { label: string; url: string }) {
+  const url = withAmazonTag(link.url, AFFILIATE.amazonTag)
+  return { label: link.label, url, rel: relFor(url) }
+}
+---
+
+{
+  groups.map((g) => (
+    <section class="day">
+      <h2 id={isoDate(g.date)}>
+        <time datetime={isoDate(g.date)}>{formatDate(g.date)}</time>
+        <span class="count">
+          {g.works.length}本{dateNoun}
+        </span>
+      </h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">作品</th>
+              <th scope="col">公開年</th>
+              <th scope="col">評価</th>
+              <th scope="col">他で探す</th>
+            </tr>
+          </thead>
+          <tbody>
+            {g.works.map((w) => (
+              <tr>
+                <th scope="row">
+                  {w.title}
+                  {w.originalTitle && <span class="original">（原題: {w.originalTitle}）</span>}
+                </th>
+                <td>{w.year ? `${w.year}年` : '—'}</td>
+                <td>{w.rating ? `${w.rating}/100` : '—'}</td>
+                <td class="links">
+                  {[...otherServiceLinks(w.title), amazonVideoLink(w.title)]
+                    .map(decorate)
+                    .map((l) => (
+                      <a href={l.url} rel={l.rel} target="_blank">
+                        {l.label}
+                      </a>
+                    ))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))
+}
+
+<style>
+  .day h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    font-size: 1.05rem;
+  }
+  .count {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+  /* 表は横に伸びるので、はみ出したら表ごと横スクロールさせる */
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  th,
+  td {
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  thead th {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  /* 「2019 / 年」と折り返すのを防ぐ。作品名の列だけは折り返してよい。 */
+  tbody td {
+    white-space: nowrap;
+  }
+  tbody th {
+    font-weight: 600;
+  }
+  .original {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+  .links a {
+    margin-right: 0.6rem;
+    font-size: 0.8rem;
+  }
+</style>

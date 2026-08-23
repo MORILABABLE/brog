@@ -5,22 +5,27 @@ import AmazonCta from '../../components/AmazonCta.astro'
 import WorkTable from '../../components/WorkTable.astro'
 import { ATTRIBUTION, SITE } from '../../config'
 import { formatDate } from '../../utils/date'
-import { LEAVING_SERVICES, groupByDate, loadLeaving } from '../../lib/events-data'
+import {
+  ARRIVALS_SERVICES,
+  ARRIVALS_WINDOW_DAYS,
+  LEAVING_SERVICES,
+  groupByDate,
+  loadArrivals,
+} from '../../lib/events-data'
 
 /**
- * 常設ページ「◯◯で配信終了予定の作品」。
+ * 常設ページ「◯◯で最近見放題になった作品」。
  *
- * 月次記事は公開時点のスナップショットで月をまたぐと古くなるが、
- * このページはURLが固定で `collect` のたびに中身だけが入れ替わる。
- * LLMを使わないので生成コストはゼロ、誤情報のリスクもない。
+ * 配信終了予定ページ（/leaving/…）と対になる。
+ * 違いは2つだけ。
+ *   - 拾うのが `new`（過去の出来事）なので、**新しい順**に並べる
+ *   - 「新着」と呼べる期間に限る（ARRIVALS_WINDOW_DAYS）
  *
- * ★ 月次記事の取りこぼしを埋める役割がある。
- *   Prime Video は終了の11日前にしか終了予定を出さないため、
- *   月次記事はどう頑張っても月後半分を落とす（HANDOVER.md の落とし穴）。
- *   ここは収集のたびに追従するので、そこが埋まる。
+ * ★ Apple TV+ のページは作っていない。収集期間を通して `new` が1件しか
+ *   無かったため（events-data.ts の ARRIVALS_SERVICES を参照）。
  */
 export function getStaticPaths() {
-  return LEAVING_SERVICES.map((s) => ({
+  return ARRIVALS_SERVICES.map((s) => ({
     params: { service: s.key },
     props: { label: s.label },
   }))
@@ -29,27 +34,26 @@ export function getStaticPaths() {
 const { service } = Astro.params
 const { label } = Astro.props
 
-const { works, dataAsOf } = loadLeaving(service!)
+const { works, dataAsOf } = loadArrivals(service!)
 const groups = groupByDate(works)
 
-const title = `${label}で配信終了予定の作品一覧`
+const title = `${label}で最近見放題になった作品一覧`
 const description =
   works.length > 0
-    ? `${label}で見放題配信が終了する予定の作品${works.length}本を終了日順にまとめています。最も近い終了日は${formatDate(groups[0]!.date)}です。`
-    : `${label}で見放題配信が終了する予定の作品を終了日順にまとめています。現在、終了予定として取得できている作品はありません。`
+    ? `${label}で直近${ARRIVALS_WINDOW_DAYS}日間に見放題配信が始まった作品${works.length}本を、配信開始日の新しい順にまとめています。`
+    : `${label}で最近見放題配信が始まった作品をまとめています。現在、直近${ARRIVALS_WINDOW_DAYS}日間に取得できた作品はありません。`
 ---
 
 <BaseLayout title={title} description={description}>
   <nav class="breadcrumb" aria-label="パンくず">
     <a href="/">ホーム</a> ›
-    <a href="/category/leaving">配信終了予定</a>
+    <a href="/category/arrivals">新着配信</a>
   </nav>
 
   <h1>{title}</h1>
 
   <AffiliateNotice />
 
-  {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
   <p class="notice">
     {
       dataAsOf ? (
@@ -66,22 +70,25 @@ const description =
   {
     works.length === 0 ? (
       <p class="empty">
-        現在、{label}で終了予定として取得できている作品はありません。
-        {label === 'Amazon Prime Video'
-          ? 'Prime Video は終了の約11日前にならないと終了予定が出ないため、時期によっては空になります。'
-          : 'しばらくしてから再度ご確認ください。'}
+        直近{ARRIVALS_WINDOW_DAYS}日間に、{label}で見放題配信が始まった作品は取得できていません。
       </p>
     ) : (
       <>
         <p class="summary">
-          <strong>{works.length}本</strong>が終了予定です。終了日の早い順に並べています。
+          直近{ARRIVALS_WINDOW_DAYS}日間で<strong>{works.length}本</strong>
+          が見放題に追加されました。配信開始日の新しい順に並べています。
         </p>
-        <WorkTable groups={groups} dateNoun="終了" />
+        {/*
+          ★ 「いま観られる」と断定しない。
+            new は「配信が始まった」という過去の記録で、その後に終了している
+            可能性がある。ページ下部の注記と合わせて誤読を防ぐ。
+        */}
+        <WorkTable groups={groups} dateNoun="追加" />
       </>
     )
   }
 
-  <AmazonCta category="leaving" />
+  <AmazonCta category="arrivals" />
 
   <section class="sources">
     <h2>出典</h2>
@@ -102,18 +109,23 @@ const description =
   <p class="related">
     ほかの常設ページ:
     {
-      LEAVING_SERVICES.filter((s) => s.key !== service).map((s) => (
-        <a href={`/leaving/${s.key}`}>{s.label}の終了予定</a>
+      ARRIVALS_SERVICES.filter((s) => s.key !== service).map((s) => (
+        <a href={`/arrivals/${s.key}`}>{s.label}の新着</a>
       ))
     }
-    <a href={`/arrivals/${service}`}>{label}の新着配信</a>
+    {
+      LEAVING_SERVICES.some((s) => s.key === service) && (
+        <a href={`/leaving/${service}`}>{label}の終了予定</a>
+      )
+    }
     <a href="/stats">配信の出入り（月次）</a>
   </p>
 
   <p class="site-note">
+    掲載しているのは<strong>配信が始まった記録</strong>です。
+    その後に配信が終了している場合があります。
     {SITE.name}が配信状況を把握しているのは Netflix・Amazon Prime Video・Disney+・Apple TV+
-    の4サービスです。「他で探す」のリンクは各サービスの検索結果に飛ぶだけで、
-    配信の有無を保証するものではありません。
+    の4サービスで、「他で探す」のリンクは各サービスの検索結果に飛ぶだけです。
   </p>
 </BaseLayout>
 

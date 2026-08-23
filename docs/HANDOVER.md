@@ -17,10 +17,13 @@
 | リポジトリ | https://github.com/MORILABABLE/brog （Private） |
 | 収集パイプライン | ✅ 2026-08 で1,089件を取得済み |
 | 邦題解決 | ✅ Wikidata経由・解決率73% |
-| サイト | ✅ 16ページ生成・型エラー0・JSなし（LinkSwitch を有効にすると外部JSが1本入る） |
+| サイト | ✅ 20ページ生成・型エラー0・JSなし（LinkSwitch を有効にすると外部JSが1本入る） |
 | 記事 | ✅ 6本を公開中（`leaving`2 / `arrivals`3 / `ended`1） |
 | 記事タイプ | ✅ 5種（`npm run write -- --list` が唯一の一覧）。`leaving` は 2026-08-23 に**サービス別**へ分割 |
-| 常設ページ | ✅ `/leaving/netflix` `/leaving/prime-video`。**LLM不使用**・`collect` のたびに自動更新 |
+| 常設ページ | ✅ 6枚。**LLM不使用**・`collect` のたびに自動更新。実装は `site/src/lib/events-data.ts` |
+| ┗ 配信終了予定 | `/leaving/netflix`（111本） `/leaving/prime-video`（32本） |
+| ┗ 新着配信 | `/arrivals/netflix`（194本） `/arrivals/prime-video`（169本） `/arrivals/disney-plus`（16本） |
+| ┗ 定点観測 | `/stats`（月次の追加・削除。**このサイトにしか出せない数字**） |
 | デザイン | ✅ 濃紺の背景＋本文カード、ヘッダーバナー、カテゴリ色分け（[APPEARANCE.md](./APPEARANCE.md)） |
 | 画像 | ✅ 記事カード（OG）と本文セクション画像を**ビルド時に自動生成**。作品画像は未使用（下記の返答待ち） |
 | 記事の生成（セッション経由） | ✅ `/article` で実行。**API課金なし**。品質ゲートまで検証済み |
@@ -142,8 +145,7 @@ URL失効時に画像だけ欠けても記事が崩れないようにするた�
 7. `bench.ts`（同じ素材を各LLMに流してコスト・品質・検証通過率を比較）
 8. GitHub Actions で定期実行＋PR自動作成（P3）
 9. 記事20〜30本たまったら AdSense 申請（P4）
-10. 常設ページの第2弾（新着配信 `/arrivals/<サービス>`、月次の定点観測）
-11. アフィリエイト Phase C（**月次記事本文**への作品別Amazonリンク）
+10. アフィリエイト Phase C（**月次記事本文**への作品別Amazonリンク）
     → 常設ページ側には既に入っている。残るのは記事テンプレート側
     → [AFFILIATE.md の6節](./AFFILIATE.md)
 

@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
 import { CATEGORIES, SITE } from '../../config'
-import { LEAVING_SERVICES } from '../../lib/leaving-data'
+import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
@@ -43,6 +43,28 @@ const { cat, posts } = Astro.props
               <a href={`/leaving/${s.key}`}>{s.label}で配信終了予定の作品一覧</a>
             </li>
           ))}
+          <li>
+            <a href="/stats">配信の出入り（月次の定点観測）</a>
+          </li>
+        </ul>
+        <p class="note">収集のたびに自動で更新されます。月次記事は各月のまとめです。</p>
+      </aside>
+    )
+  }
+
+  {
+    cat.slug === 'arrivals' && (
+      <aside class="always-updated">
+        <p class="lead">常に最新の新着を見る</p>
+        <ul>
+          {ARRIVALS_SERVICES.map((s) => (
+            <li>
+              <a href={`/arrivals/${s.key}`}>{s.label}で最近見放題になった作品一覧</a>
+            </li>
+          ))}
+          <li>
+            <a href="/stats">配信の出入り（月次の定点観測）</a>
+          </li>
         </ul>
         <p class="note">収集のたびに自動で更新されます。月次記事は各月のまとめです。</p>
       </aside>

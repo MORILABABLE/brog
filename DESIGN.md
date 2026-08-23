@@ -378,19 +378,40 @@ LLM_PROVIDER=openai-compat   LLM_BASE_URL=https://api.deepseek.com/v1  LLM_MODEL
 ```
 /leaving/netflix        Netflix で終了予定の作品を全部
 /leaving/prime-video    Prime Video で終了予定の作品を全部
+/arrivals/netflix       Netflix で直近60日に見放題入りした作品
+/arrivals/prime-video   同上
+/arrivals/disney-plus   同上
+/stats                  月ごとに何本増えて何本減ったか（定点観測）
 ```
 
 月次記事が公開時点のスナップショットなのに対し、こちらは `collect` のたびに
 全件が入れ替わる。**被リンクと検索評価が1つのURLに集中する**のが狙い。
 
-出すのは「作品名・終了日・評価」という事実だけなので**文章生成が要らない**。
+出すのは「作品名・日付・評価」という事実だけなので**文章生成が要らない**。
 生成コストゼロ、誤情報のリスクゼロ、品質ゲートも不要。
-実装は `site/src/lib/leaving-data.ts` と `site/src/pages/leaving/[service].astro` で、
+実装は `site/src/lib/events-data.ts` に集約し、
 リポジトリ直下の `data/events/*.jsonl` をビルド時に直接読む。
 
 **月次記事の取りこぼしを埋める役割もある。** Prime Video は終了の11日前にしか
 終了予定を出さないため、月次記事はどう頑張っても月後半分を落とす（4節の落とし穴）。
 常設ページは収集のたびに追従するのでそこが埋まる。
+
+#### 薄いページを作らない
+
+`/arrivals/apple-tv` は**あえて作っていない**。収集期間を通して `new` が1件しか
+無かったため。1件だけのページは薄いページの量産になり、検索評価とAdSense審査の
+両方で不利になる。件数が増えたら `ARRIVALS_SERVICES` に足す。
+
+#### `/stats` は「観測できた数」であって「起きた数」ではない
+
+ここが他にまねできない資産である一方、**統計の体裁をした誤情報になりやすい**。
+
+- 収集を始めた月より前は出さない。観測していないので数えられない
+  （2026-07 は収集開始前なので除外している）
+- 進行中の月は「集計中」と明示する。月末まで増えるため
+- 収集間隔より短い期間だけ配信された作品は取りこぼす、とページ本文に明記する
+
+この区別を曖昧にした瞬間に、このページは価値ではなく負債になる。
 
 ```ts
 export interface ArticleType {

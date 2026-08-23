@@ -1,0 +1,220 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { ATTRIBUTION, SITE } from '../config'
+import { formatDate } from '../utils/date'
+import {
+  ARRIVALS_SERVICES,
+  LEAVING_SERVICES,
+  formatMonth,
+  loadMonthlyStats,
+} from '../lib/events-data'
+
+/**
+ * 定点観測「配信の出入り」。
+ *
+ * ■ なぜこのページを持つのか
+ * 作品の一覧はどのサイトも作れるが、**月ごとに何本入って何本消えたか**は
+ * 収集を継続していないと出せない。当サイトが実際に取り続けている数字なので、
+ * ここだけは他がまねできない。データは引用されやすく、被リンクを呼びやすい。
+ *
+ * ■ 数字の性質を偽らない（重要）
+ * ここに出るのは「**観測できた数**」であって「起きた数」ではない。
+ *   - 収集を始めた月より前は出さない（観測していないので数えられない）
+ *   - 進行中の月は「集計中」と明示する（月末まで増える）
+ * これを曖昧にすると、統計の体裁をした誤情報になる。
+ */
+const { months, collectStart, dataAsOf } = loadMonthlyStats()
+
+const latest = months[0]
+const description = latest
+  ? `Netflix・Amazon Prime Video・Disney+・Apple TV+ の見放題ラインナップが月ごとに何本増えて何本減ったかの記録です。${formatMonth(latest.month)}は追加${latest.addedTotal}本・削除${latest.removedTotal}本でした。`
+  : 'Netflix・Amazon Prime Video・Disney+・Apple TV+ の見放題ラインナップが月ごとに何本増えて何本減ったかの記録です。'
+---
+
+<BaseLayout title="配信の出入り（月次の定点観測）" description={description}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a>
+  </nav>
+
+  <h1>配信の出入り（月次の定点観測）</h1>
+
+  <p class="lead">
+    {SITE.name}が収集している4サービスについて、
+    <strong>見放題ラインナップが月ごとに何本増えて何本減ったか</strong>の記録です。
+  </p>
+
+  <p class="notice">
+    {
+      dataAsOf ? (
+        <>
+          集計は <strong>{formatDate(dataAsOf)}時点</strong>のデータに基づきます。
+        </>
+      ) : (
+        <>集計時点が不明です。</>
+      )
+    }
+    {
+      collectStart && (
+        <>
+          収集開始は{formatDate(collectStart)}のため、<strong>それ以前の月は掲載していません</strong>。
+        </>
+      )
+    }
+  </p>
+
+  {
+    months.length === 0 ? (
+      <p class="empty">まだ集計できる月がありません。</p>
+    ) : (
+      months.map((m) => (
+        <section class="month">
+          <h2 id={m.month}>
+            {formatMonth(m.month)}
+            {m.inProgress && <span class="badge">集計中</span>}
+          </h2>
+          <p class="total">
+            追加 <strong>{m.addedTotal}本</strong> ／ 削除 <strong>{m.removedTotal}本</strong>
+            {m.addedTotal > 0 && (
+              <span class="net">
+                （差引 {m.addedTotal - m.removedTotal > 0 ? '+' : ''}
+                {m.addedTotal - m.removedTotal}本）
+              </span>
+            )}
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">サービス</th>
+                  <th scope="col">追加</th>
+                  <th scope="col">削除</th>
+                  <th scope="col">差引</th>
+                </tr>
+              </thead>
+              <tbody>
+                {m.services.map((s) => (
+                  <tr>
+                    <th scope="row">{s.label}</th>
+                    <td>{s.added}</td>
+                    <td>{s.removed}</td>
+                    <td class={s.added - s.removed < 0 ? 'minus' : ''}>
+                      {s.added - s.removed > 0 ? '+' : ''}
+                      {s.added - s.removed}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))
+    )
+  }
+
+  <section class="howto">
+    <h2>数字の読み方</h2>
+    <ul>
+      <li>
+        <strong>「観測できた数」であって「起きた数」ではありません。</strong>
+        収集の間隔より短い期間だけ配信された作品は取りこぼします。
+      </li>
+      <li>
+        <strong>「集計中」の月は月末まで増えます。</strong>確定値ではありません。
+      </li>
+      <li>
+        削除は見放題から外れたことを指します。レンタル・購入では引き続き扱われている場合があります。
+      </li>
+      <li>Apple TV+ は日本での出入りが極端に少なく、0本が続くことがあります。</li>
+    </ul>
+  </section>
+
+  <section class="sources">
+    <h2>出典</h2>
+    <ul>
+      <li>
+        <a href={ATTRIBUTION.url} rel="noopener noreferrer" target="_blank">
+          {ATTRIBUTION.text}
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <p class="related">
+    作品ごとの一覧:
+    {LEAVING_SERVICES.map((s) => <a href={`/leaving/${s.key}`}>{s.label}の終了予定</a>)}
+    {ARRIVALS_SERVICES.map((s) => <a href={`/arrivals/${s.key}`}>{s.label}の新着</a>)}
+  </p>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .lead {
+    margin: 1rem 0 0;
+  }
+  .month h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    font-size: 1.1rem;
+  }
+  .badge {
+    padding: 0.1rem 0.45rem;
+    border-radius: 3px;
+    background: var(--cat-leaving-bg);
+    color: var(--cat-leaving-fg);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .total {
+    margin: 0.3rem 0 0.8rem;
+    font-size: 0.95rem;
+  }
+  .net {
+    margin-left: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th,
+  td {
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    white-space: nowrap;
+  }
+  thead th {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  /* 数字の列は右寄せのほうが桁を比べやすい */
+  tbody td {
+    text-align: right;
+  }
+  .minus {
+    color: var(--warn);
+  }
+  .howto h2,
+  .sources h2 {
+    font-size: 1rem;
+  }
+  .howto ul,
+  .sources ul {
+    padding-left: 1.2rem;
+    font-size: 0.86rem;
+    line-height: 1.9;
+  }
+  .related a {
+    margin-left: 0.7rem;
+  }
+</style>
