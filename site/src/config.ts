@@ -3,9 +3,9 @@
  * ドメイン取得後に url を差し替えれば全体に反映される。
  */
 export const SITE = {
-  name: '観とこう',
+  name: '見放題レーダー',
   /** トップページのタイトルに使う短い一句。説明文の切り貼りにしない。 */
-  tagline: '配信終了前に、観とこう。',
+  tagline: '消える前に、気づける。',
   /**
    * 検索結果やOGPで使う説明。meta description の推奨長（全角120字）に収める。
    *
@@ -17,10 +17,10 @@ export const SITE = {
   description:
     'Netflix・Amazon Prime Video で配信が終了する作品と、Disney+ を含む新しく配信が始まった作品を追いかけるサイト。観たかった作品を見逃す前に。',
   /** 本番URL。末尾スラッシュなし。 */
-  url: 'https://mitokou.com',
+  url: 'https://mihoudairader.com',
   locale: 'ja-JP',
   /** 運営者名。お問い合わせ・運営者情報ページで使う。 */
-  author: '観とこう編集部',
+  author: '見放題レーダー編集部',
 } as const
 
 /**
@@ -39,7 +39,7 @@ export const OG_IMAGE = {
   /** 差し替えるときは 1200×630 前後（1.91:1）を守る。各SNS共通の推奨比率。 */
   width: 1200,
   height: 628,
-  alt: '観とこう｜主要動画サービスの見放題配信タイトルは観れるうちに',
+  alt: '見放題レーダー｜主要動画サービスの配信終了と新着をまとめて追う',
 } as const
 
 /**

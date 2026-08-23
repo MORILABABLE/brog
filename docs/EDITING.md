@@ -282,11 +282,11 @@ git pull
 
 | 見たいもの | URL |
 |---|---|
-| トップページ | https://mitokou.com |
-| 2026年9月の配信終了記事 | https://mitokou.com/posts/2026-09-leaving |
-| 2026年8月の配信終了記事 | https://mitokou.com/posts/2026-08-leaving |
-| 配信終了カテゴリの一覧 | https://mitokou.com/category/leaving |
-| サイトマップ（Search Console用） | https://mitokou.com/sitemap-index.xml |
+| トップページ | https://mihoudairader.com |
+| 2026年9月の配信終了記事 | https://mihoudairader.com/posts/2026-09-leaving |
+| 2026年8月の配信終了記事 | https://mihoudairader.com/posts/2026-08-leaving |
+| 配信終了カテゴリの一覧 | https://mihoudairader.com/category/leaving |
+| サイトマップ（Search Console用） | https://mihoudairader.com/sitemap-index.xml |
 
 ## 記事URLの決まり方
 
@@ -295,7 +295,7 @@ git pull
 ```
 site/src/content/posts/2026-09-leaving.md
                        └─────┬─────┘
-https://mitokou.com/posts/2026-09-leaving
+https://mihoudairader.com/posts/2026-09-leaving
 ```
 
 末尾にスラッシュは付かない（`site/astro.config.mjs` の `build.format: 'file'` による）。
@@ -395,7 +395,7 @@ git push
 |---|---|
 | GitHub のコミット一覧 | ✅ / ❌ でビルドの成否 |
 | Cloudflare → Workers & Pages → 該当プロジェクト → **Deployments** | ビルドログ。失敗の原因はここに出る |
-| https://mitokou.com/posts/2026-09-leaving | 実際に公開された記事 |
+| https://mihoudairader.com/posts/2026-09-leaving | 実際に公開された記事 |
 
 > **ビルドが失敗しても公開中のサイトは壊れない。**
 > Cloudflare は成功したビルドだけを公開するので、「反映されない」だけで済む。

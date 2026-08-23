@@ -86,7 +86,30 @@ function textPath(weight, text, x, y, size) {
     path.extend(glyph.getPath(cx, y, size))
     cx += (glyph.advanceWidth / f.unitsPerEm) * size
   }
+  roundCommands(path)
   return { d: path.toPathData(2), width: cx - x }
+}
+
+/**
+ * 座標を小数2桁に丸めてから toPathData() に渡す。**外すと文字が黒い塊になる。**
+ *
+ * opentype.js 2.0.0 の roundDecimal() は小数部をこう丸める:
+ *   +(Math.round(decimalPart + 'e+2') + 'e-2')
+ * 文字送り cx は加算の繰り返しなので浮動小数の誤差が必ず乗り、
+ * 559 のつもりの座標が 559.0000000000001 になる。小数部は 1.1e-13 で、
+ * 文字列にすると指数表記 '1.1e-13' → '1.1e-13e+2' となって Math.round が NaN を返す。
+ * その NaN が d 属性にそのまま出力され、パスが閉じずに塗り潰される。
+ *
+ * さらに悪いことに結果は decimalRoundingCache（モジュール全体で共有）に載るため、
+ * 一度でも踏むと同じ小数部を持つ別の文字列まで巻き添えになる。
+ * ここで誤差を消しておけば、指数表記になる小数部が生まれない。
+ */
+function roundCommands(path) {
+  for (const c of path.commands) {
+    for (const k of ['x', 'y', 'x1', 'y1', 'x2', 'y2']) {
+      if (k in c) c[k] = Math.round(c[k] * 100) / 100
+    }
+  }
 }
 
 function textWidth(weight, text, size) {
@@ -184,7 +207,7 @@ function buildSvg({ title, category, tags }) {
     )
   }
   parts.push(
-    `<path d="${textPath('bold', '観とこう　mitokou.com', padX, H - 68, 28).d}" fill="#1f6feb"/>`,
+    `<path d="${textPath('bold', '見放題レーダー　mihoudairader.com', padX, H - 68, 28).d}" fill="#1f6feb"/>`,
   )
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">

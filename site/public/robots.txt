@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mitokou.com/sitemap-index.xml
+Sitemap: https://mihoudairader.com/sitemap-index.xml

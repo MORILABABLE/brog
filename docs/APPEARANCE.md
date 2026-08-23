@@ -362,7 +362,7 @@ export const OG_IMAGE = {
   path: '/og-default.jpg',
   width: 1200,
   height: 628,
-  alt: '観とこう｜主要動画サービスの見放題配信タイトルは観れるうちに',
+  alt: '見放題レーダー｜主要動画サービスの配信終了と新着をまとめて追う',
 } as const
 ```
 

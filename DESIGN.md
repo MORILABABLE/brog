@@ -24,8 +24,8 @@
 | 公開フロー | **PR承認制**（AIが下書きPRを作成 → 人がマージ → 本番公開） |
 | LLM | プロバイダ差し替え可能（Claude / Gemini / OpenAI互換）。開発基準は Claude Sonnet 5 |
 | 収益化 | ASPアフィリエイト（主力）＋ Amazonアソシエイト ＋ AdSense |
-| ドメイン | **`mitokou.com`**（観とこう）。選定理由は [DEPLOY.md](./DEPLOY.md#取得したら) を参照 |
-| サイト名 | **観とこう** — 「配信終了前に、観とこう。」 |
+| ドメイン | **`mihoudairader.com`**（見放題レーダー）。選定理由は [DEPLOY.md](./DEPLOY.md#取得したら) を参照 |
+| サイト名 | **見放題レーダー** — 「消える前に、気づける。」 |
 | サーバー | 不要（静的サイト＋GitHub Actions）。必要なのは独自ドメインのみ |
 
 ---

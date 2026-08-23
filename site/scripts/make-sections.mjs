@@ -71,7 +71,21 @@ function textPath(weight, text, x, y, size) {
     path.extend(g.getPath(cx, y, size))
     cx += (g.advanceWidth / f.unitsPerEm) * size
   }
+  roundCommands(path)
   return { d: path.toPathData(2), width: cx - x }
+}
+
+/**
+ * 座標を小数2桁に丸めてから toPathData() に渡す。**外すと文字が黒い塊になる。**
+ * 理由は make-cards.mjs の同名関数に書いてある（opentype.js 2.0.0 の roundDecimal が
+ * 小数部を指数表記の文字列にしてしまい NaN を返す）。直すときは両方直すこと。
+ */
+function roundCommands(path) {
+  for (const c of path.commands) {
+    for (const k of ['x', 'y', 'x1', 'y1', 'x2', 'y2']) {
+      if (k in c) c[k] = Math.round(c[k] * 100) / 100
+    }
+  }
 }
 
 function textWidth(weight, text, size) {
