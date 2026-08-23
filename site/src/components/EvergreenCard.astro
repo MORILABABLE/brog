@@ -1,6 +1,8 @@
 ---
+import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
 import { formatDate } from '../utils/date'
+import { serviceImage } from '../lib/images'
 import type { EvergreenPage } from '../lib/evergreen'
 
 interface Props {
@@ -13,6 +15,7 @@ interface Props {
 
 const { page, count, dataAsOf } = Astro.props
 const cat = CATEGORIES[page.category]
+const thumb = serviceImage(page.thumbKey)
 
 /**
  * 常設ページを、記事カード（PostCard）と**同じ体裁**で1枚ずつ出す。
@@ -20,9 +23,10 @@ const cat = CATEGORIES[page.category]
  * ★ PostCard と markup・スタイルを揃えること。ここが本体の役目。
  *   以前は「常に最新の終了予定を見る」という箱にリンクをまとめていたが、
  *   記事一覧の中で浮いていた（2026-08-23 に作り直し）。
- *   **サムネイルもあえて付けていない。** 周りの記事カードに画像が無いので、
- *   ここだけ絵を置くと結局浮く。画像は追従枠（FollowRail）の役割にしてある。
  *   PostCard の見た目を変えたら、こちらも同じように変える。
+ *
+ * サムネイルは `src/assets/services/<キー>.png`（人が置く指定画像）。
+ * 記事カード側も同じ位置に絵が入るので、並べても段差が出ない。
  *
  * 日付欄に出しているのは公開日ではなく**配信情報の基準日**。
  * このページは公開日という概念を持たず、中身が入れ替わり続けるため。
@@ -30,25 +34,34 @@ const cat = CATEGORIES[page.category]
 ---
 
 <article class="card">
-  <div class="meta">
-    <span class="badge" data-category={cat.slug}>{cat.label}</span>
-    {dataAsOf && <time>{formatDate(dataAsOf)}時点</time>}
+  <Thumb image={thumb} category={page.category} size={72} initial={page.label.charAt(0)} />
+
+  <div class="main">
+    <div class="meta">
+      <span class="badge" data-category={cat.slug}>{cat.label}</span>
+      {dataAsOf && <time>{formatDate(dataAsOf)}時点</time>}
+    </div>
+    <h2><a href={page.href}>{page.title}</a></h2>
+    <p class="desc">
+      {
+        count > 0
+          ? `${page.label}の${cat.label}を${count}本、日付順にまとめています。`
+          : `${page.label}の${cat.label}を日付順にまとめています。`
+      }
+    </p>
   </div>
-  <h2><a href={page.href}>{page.title}</a></h2>
-  <p class="desc">
-    {
-      count > 0
-        ? `${page.label}の${cat.label}を${count}本、日付順にまとめています。`
-        : `${page.label}の${cat.label}を日付順にまとめています。`
-    }
-  </p>
 </article>
 
 <style>
   /* --- ここから下は PostCard.astro と同じ値。ずらさないこと。 --- */
   .card {
+    display: flex;
+    gap: 0.9rem;
     padding: 1.2rem 0;
     border-bottom: 1px solid var(--border);
+  }
+  .main {
+    min-width: 0;
   }
   .meta {
     display: flex;

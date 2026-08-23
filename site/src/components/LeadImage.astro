@@ -1,0 +1,58 @@
+---
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
+
+interface Props {
+  /** src/assets 由来（最適化される）。常設ページのサービス画像 */
+  image?: ImageMetadata
+  /** public/ 由来のパス（最適化されない）。記事の heroImage */
+  src?: string
+  alt?: string
+}
+
+const { image, src, alt = '' } = Astro.props
+
+/**
+ * 見出し（h1）の**直上**に置く画像。
+ *
+ * ★ サイト共通のヘッダーバナーとは別物。
+ *   バナーは全ページ共通の看板で、こちらは**そのページ固有**の絵。
+ *   本文カードの中、パンくずと h1 の間に入る。
+ *
+ * ★ 画像が無いときは**何も描かない**。
+ *   カードの左サムネイル（Thumb.astro）と違い、
+ *   ここは大きな面なので、空の枠を出すと見た目が破綻する。
+ */
+---
+
+{
+  (image || src) && (
+    <figure class="lead">
+      {image ? (
+        <Image src={image} alt={alt} widths={[480, 736]} sizes="(max-width: 47rem) 100vw, 640px" />
+      ) : (
+        /* public/ 配下は astro:assets を通せないので素の img */
+        <img src={src} alt={alt} loading="eager" decoding="async" />
+      )}
+    </figure>
+  )
+}
+
+<style>
+  .lead {
+    margin: 0 0 1rem;
+  }
+  .lead :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    /*
+     * 横長で切り抜く。縦長のポスターがそのまま入ると本文が押し下げられ、
+     * 記事の本題（表）に届くまでのスクロールが増える。
+     */
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+</style>

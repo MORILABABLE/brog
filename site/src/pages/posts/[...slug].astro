@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AdSlot from '../../components/AdSlot.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
+import LeadImage from '../../components/LeadImage.astro'
 import { CATEGORIES } from '../../config'
 import { formatDate, isoDate } from '../../utils/date'
 
@@ -29,6 +30,13 @@ const cat = CATEGORIES[post.data.category]
       <a href="/">ホーム</a> ›
       <a href={`/category/${cat.slug}`}>{cat.label}</a>
     </nav>
+
+    {/*
+      見出しの直上に置く、この記事固有の画像。
+      サイト共通のヘッダーバナーとは別物。未設定なら何も描かれない。
+      frontmatter の heroImage に入る。
+    */}
+    <LeadImage src={post.data.heroImage} alt="" />
 
     <h1>{post.data.title}</h1>
 

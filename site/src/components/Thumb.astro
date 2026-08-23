@@ -1,0 +1,92 @@
+---
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
+import type { CategorySlug } from '../config'
+
+interface Props {
+  /** src/assets 由来の画像（最適化される） */
+  image?: ImageMetadata
+  /** public/ 由来の画像パス（最適化されない）。frontmatter の heroImage 用 */
+  src?: string
+  /** 画像が無いときのタイルの色分けに使う */
+  category?: CategorySlug
+  /** 一辺の px。正方形で切り抜く */
+  size?: number
+  /** 画像が無いときにタイルへ置く1文字。省略可 */
+  initial?: string
+}
+
+const { image, src, category, size = 72, initial } = Astro.props
+
+/**
+ * カードの左に置く正方形サムネイル。
+ *
+ * ★ 画像が無くても**必ず同じ大きさの枠を出す**。
+ *   ここで何も描かないと、画像のあるカードと無いカードで高さが揃わず、
+ *   一覧の並びが乱れる（追従枠で一度踏んだ）。
+ */
+---
+
+<span class="thumb" style={`--thumb-size:${size}px`} data-category={category}>
+  {
+    image ? (
+      <Image class="img" src={image} alt="" width={size * 2} height={size * 2} />
+    ) : src ? (
+      /* public/ 配下は astro:assets を通せないので素の img。寸法は必ず指定する */
+      <img class="img" src={src} alt="" width={size} height={size} loading="lazy" decoding="async" />
+    ) : (
+      <span class="fallback" aria-hidden="true">
+        {initial}
+      </span>
+    )
+  }
+</span>
+
+<style>
+  .thumb {
+    flex: none;
+    display: block;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /*
+   * 画像が無いときのタイル。カテゴリバッジと同じ色を使うので、
+   * 画像が揃うまでの間も一覧の色分けとして機能する。
+   * 配色は styles/global.css の :root（--cat-*）。
+   */
+  .fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-subtle);
+    color: var(--text-muted);
+    font-size: calc(var(--thumb-size) / 3);
+    font-weight: 700;
+  }
+  .thumb[data-category='leaving'] .fallback {
+    background: var(--cat-leaving-bg);
+    color: var(--cat-leaving-fg);
+  }
+  .thumb[data-category='ended'] .fallback {
+    background: var(--cat-ended-bg);
+    color: var(--cat-ended-fg);
+  }
+  .thumb[data-category='arrivals'] .fallback {
+    background: var(--cat-arrivals-bg);
+    color: var(--cat-arrivals-fg);
+  }
+  .thumb[data-category='ranking'] .fallback {
+    background: var(--cat-ranking-bg);
+    color: var(--cat-ranking-fg);
+  }
+</style>

@@ -1,4 +1,5 @@
 ---
+import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
 import { formatDate, isoDate } from '../utils/date'
 import type { CollectionEntry } from 'astro:content'
@@ -8,22 +9,44 @@ interface Props {
 }
 const { post } = Astro.props
 const cat = CATEGORIES[post.data.category]
+
+/**
+ * 記事カード。
+ *
+ * ★ 常設ページのカード（EvergreenCard.astro）と**体裁を揃えること**。
+ *   一覧では両者が並ぶので、片方だけ形が違うと浮く。
+ *   左サムネイル・バッジ・日付・見出し・説明という並びは共通。
+ *
+ * サムネイルは frontmatter の `heroImage`。いまは未設定なので
+ * カテゴリ色のタイルが出る（Thumb.astro）。
+ * ポスター再ホストの可否が確定したら、パイプラインがここに絵を入れる。
+ */
 ---
 
 <article class="card">
-  <div class="meta">
-    {/* data-category で色が変わる。配色は styles/global.css の :root。 */}
-    <span class="badge" data-category={cat.slug}>{cat.label}</span>
-    <time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time>
+  <Thumb src={post.data.heroImage} category={post.data.category} size={72} />
+
+  <div class="main">
+    <div class="meta">
+      {/* data-category で色が変わる。配色は styles/global.css の :root。 */}
+      <span class="badge" data-category={cat.slug}>{cat.label}</span>
+      <time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time>
+    </div>
+    <h2><a href={`/posts/${post.id}`}>{post.data.title}</a></h2>
+    <p class="desc">{post.data.description}</p>
   </div>
-  <h2><a href={`/posts/${post.id}`}>{post.data.title}</a></h2>
-  <p class="desc">{post.data.description}</p>
 </article>
 
 <style>
+  /* --- EvergreenCard.astro と同じ値。ずらさないこと。 --- */
   .card {
+    display: flex;
+    gap: 0.9rem;
     padding: 1.2rem 0;
     border-bottom: 1px solid var(--border);
+  }
+  .main {
+    min-width: 0;
   }
   .meta {
     display: flex;

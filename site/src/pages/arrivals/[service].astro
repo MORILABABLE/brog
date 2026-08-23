@@ -3,8 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import WorkTable from '../../components/WorkTable.astro'
+import LeadImage from '../../components/LeadImage.astro'
 import { ATTRIBUTION, SITE } from '../../config'
 import { formatDate } from '../../utils/date'
+import { serviceImage } from '../../lib/images'
 import {
   ARRIVALS_SERVICES,
   ARRIVALS_WINDOW_DAYS,
@@ -36,6 +38,7 @@ const { label } = Astro.props
 
 const { works, dataAsOf } = loadArrivals(service!)
 const groups = groupByDate(works)
+const lead = serviceImage(service!)
 
 const title = `${label}で最近見放題になった作品一覧`
 const description =
@@ -49,6 +52,9 @@ const description =
     <a href="/">ホーム</a> ›
     <a href="/category/arrivals">新着配信</a>
   </nav>
+
+  {/* 見出しの直上。src/assets/services/<キー>.png を置くと出る */}
+  <LeadImage image={lead} alt="" />
 
   <h1>{title}</h1>
 
