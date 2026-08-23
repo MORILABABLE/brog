@@ -1,24 +1,28 @@
 ---
 import { Image } from 'astro:assets'
+import { getCollection } from 'astro:content'
 import type { ImageMetadata } from 'astro'
 import { AFFILIATE, CATEGORIES } from '../config'
 import { withAmazonTag } from '../lib/affiliate'
 import { EVERGREEN_PAGES } from '../lib/evergreen'
 
 /**
- * 本文の右の余白に置く追従枠。
+ * 本文の右の余白に置く追従枠。上から3ブロック。
  *
- * ■ 中身は2種類。**性質が違うので必ず分けて扱う。**
- *   1. 常設ページのカード … 広告ではない。常に出す
- *   2. 広告カード         … アフィリエイト有効時のみ。PR表記が要る
- *   まとめて `aria-label="広告"` にすると、ナビまで広告と称することになる。
- *   逆にPR表記を外すと景品表示法（ステマ規制）に触れる。**混ぜない。**
+ *   1. 最新の配信終了・配信開始一覧 … 常設ページのカード。広告ではない
+ *   2. 新着記事                     … カテゴリ横断の最新記事
+ *   3. PR                          … 広告カード。アフィリエイト有効時のみ
  *
- * ■ 1枚ずつ独立したカードにしている
- * 当初は「いつでも最新」という見出しの下にリンクを箇条書きしていたが、
- * **サービスごとの見分けがつかず、サイト内の他のカードから浮いていた**
- * （2026-08-23 に作り直し）。いまはサムネイル＋カテゴリバッジを持つ
- * 独立したカードを縦に並べ、記事カード（PostCard）と同じ語彙で見せている。
+ * ■ 広告とそれ以外を混ぜない
+ * まとめて `aria-label="広告"` にすると 1・2 まで広告と称することになり、
+ * 逆に 3 のPR表記を外すと景品表示法（ステマ規制）に触れる。**必ず分ける。**
+ *
+ * ■ 並びは全ページで固定（重要）
+ * 以前は「いま見ているページのカードを消す」実装にしていたが、
+ * **ページを移動するたびに一覧の中身と順番が変わり、読者が混乱する**
+ * （2026-08-23 に修正）。いまは常に同じ順で全件出し、
+ * 現在地のカードだけリンクを外して `aria-current="page"` を付けている。
+ * **項目を出し分ける実装に戻さないこと。**
  *
  * ■ なぜ「余白」なのか
  * 本文は `--max-width: 46rem`（736px）中央寄せで、ワイド画面では左右が余っている。
@@ -34,9 +38,12 @@ import { EVERGREEN_PAGES } from '../lib/evergreen'
  * カテゴリページ側にも置いてある（そちらが狭い画面での入口）。
  */
 
+/** 新着記事に出す本数。増やすと枠が縦に伸びてPR枠が画面外に出やすくなる。 */
+const RECENT_POSTS = 4
+
 /**
  * サムネイル。`src/assets/services/<キー>.{png,jpg,jpeg,webp}` を置くと拾う。
- * ★ 画像が無くても壊れない。絵の場所が空くだけ。
+ * ★ 画像が無くても壊れない。サービス名の頭文字が入る。
  *   推奨サイズと注意は src/assets/services/README.md。
  */
 const thumbs = import.meta.glob<{ default: ImageMetadata }>(
@@ -51,9 +58,12 @@ function thumbFor(key: string): ImageMetadata | undefined {
   return hit?.[1].default
 }
 
-// いま見ているページ自身へのカードは出さない
+const posts = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, RECENT_POSTS)
+
+/** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
 const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
-const pages = EVERGREEN_PAGES.filter((p) => p.href !== current)
 
 const tag = AFFILIATE.amazonTag
 const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag)
@@ -61,39 +71,79 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
 
 <aside class="follow-rail">
   <div class="inner">
-    <ul class="rail-list">
-      {
-        pages.map((p) => (
-          <li>
-            <a class="rail-card" href={p.href}>
-              <span class="thumb-slot">
-                {thumbFor(p.thumbKey) ? (
-                  <Image
-                    class="thumb"
-                    src={thumbFor(p.thumbKey)!}
-                    alt=""
-                    width={56}
-                    height={56}
-                  />
-                ) : (
-                  /* 画像が無いときは頭文字だけ置く。枠の高さが揃うので並びが崩れない */
-                  <span class="thumb thumb-fallback" aria-hidden="true">
-                    {p.label.charAt(0)}
-                  </span>
-                )}
-              </span>
-              <span class="body">
-                {/* 記事カードと同じバッジ。色は styles/global.css の :root */}
-                <span class="badge" data-category={p.category}>
-                  {CATEGORIES[p.category].label}
+    <nav class="block" aria-label="最新の配信終了・配信開始一覧">
+      <p class="block-title">最新の配信終了・配信開始一覧</p>
+      <ul class="cards">
+        {
+          EVERGREEN_PAGES.map((p) => {
+            const isCurrent = p.href === current
+            const Inner = (
+              <>
+                <span class="thumb-slot">
+                  {thumbFor(p.thumbKey) ? (
+                    <Image class="thumb" src={thumbFor(p.thumbKey)!} alt="" width={56} height={56} />
+                  ) : (
+                    <span class="thumb thumb-fallback" aria-hidden="true">
+                      {p.label.charAt(0)}
+                    </span>
+                  )}
                 </span>
-                <span class="name">{p.shortLabel}</span>
-              </span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+                <span class="body">
+                  <span class="badge" data-category={p.category}>
+                    {CATEGORIES[p.category].label}
+                  </span>
+                  <span class="name">{p.shortLabel}</span>
+                </span>
+              </>
+            )
+            return (
+              <li>
+                {/* 現在地は消さずに、リンクだけ外す。並びを崩さないため */}
+                {isCurrent ? (
+                  <span class="rail-card is-current" aria-current="page">
+                    {Inner}
+                  </span>
+                ) : (
+                  <a class="rail-card" href={p.href}>
+                    {Inner}
+                  </a>
+                )}
+              </li>
+            )
+          })
+        }
+      </ul>
+    </nav>
+
+    {
+      posts.length > 0 && (
+        <nav class="block" aria-label="新着記事">
+          <p class="block-title">新着記事</p>
+          <ul class="posts">
+            {posts.map((post) => {
+              const href = `/posts/${post.id}`
+              const isCurrent = href === current
+              return (
+                <li>
+                  <span class="badge" data-category={post.data.category}>
+                    {CATEGORIES[post.data.category].label}
+                  </span>
+                  {isCurrent ? (
+                    <span class="post-title is-current" aria-current="page">
+                      {post.data.title}
+                    </span>
+                  ) : (
+                    <a class="post-title" href={href}>
+                      {post.data.title}
+                    </a>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+      )
+    }
 
     {
       tag && (
@@ -125,10 +175,33 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     position: sticky;
     top: 1rem;
     max-width: 17rem;
+    /*
+     * ★ 枠が画面より高くなると、sticky の下端（＝PR枠）に永久に手が届かなくなる。
+     *   画面に収まらないときだけ枠の中をスクロールさせて、必ず最後まで見られるようにする。
+     */
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
   }
 
-  /* --- 常設ページのカード --- */
-  .rail-list {
+  .block {
+    margin-bottom: 1rem;
+  }
+  /*
+   * ★ この見出しはカードの外＝**背景の紺の上に直接載る**。
+   *   --text-muted（本文用の暗いグレー）だと紺に沈んで読めない。
+   *   地の上に置く文字用の明るい色を使う（フッターと同じ考え方）。
+   *   docs/APPEARANCE.md「文字は白いカードの中にしか置かないこと」の例外なので、
+   *   色を変えるときはコントラストを必ず確認する。
+   */
+  .block-title {
+    margin: 0 0 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--footer-text);
+  }
+
+  /* --- 1. 常設ページのカード --- */
+  .cards {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -152,7 +225,12 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     border-radius: 10px;
     text-decoration: none;
   }
-  .rail-card:hover {
+  a.rail-card:hover {
+    border-color: var(--accent);
+  }
+  /* 現在地。押せないことが分かる見た目にする（項目自体は消さない） */
+  .rail-card.is-current {
+    background: var(--bg-subtle);
     border-color: var(--accent);
   }
   .thumb-slot {
@@ -166,7 +244,6 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     border-radius: 8px;
     object-fit: cover;
   }
-  /* 画像未配置のとき。頭文字を淡く置くだけの控えめな見た目にする */
   .thumb-fallback {
     display: flex;
     align-items: center;
@@ -183,7 +260,7 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     gap: 0.25rem;
     min-width: 0;
   }
-  .body .badge {
+  .badge {
     font-size: 0.68rem;
     padding: 0.05rem 0.45rem;
   }
@@ -193,13 +270,47 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     line-height: 1.4;
     color: var(--text);
   }
-  .rail-card:hover .name {
+  a.rail-card:hover .name {
     color: var(--accent);
   }
 
-  /* --- 広告 --- */
+  /* --- 2. 新着記事 --- */
+  .posts {
+    margin: 0;
+    padding: 0.85rem 0.9rem;
+    list-style: none;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .posts li + li {
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--border);
+  }
+  .post-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /* 記事タイトルは長い。2行で切らないと枠が縦に伸びすぎる */
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+    text-decoration: none;
+  }
+  a.post-title:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .post-title.is-current {
+    color: var(--text-muted);
+  }
+
+  /* --- 3. 広告 --- */
   .rail-ad {
-    margin-top: 0.9rem;
     padding: 1rem 1rem 1.15rem;
     background: var(--bg);
     border: 1px solid var(--border);
