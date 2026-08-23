@@ -204,12 +204,48 @@ body {
 左右とも同じ列幅なので本文は中央のままで、右の余白に枠が載るだけ。
 記事は配信終了作品の**表**が主体で横幅を食うため、本文を削るサイドバー方式は採っていない。
 
+#### 枠の中身は2つに分かれている
+
+```
+┌──────────────┐
+│ いつでも最新      │  ← 常設ページへのナビ。広告ではない。常に出る
+│  終了予定        │
+│  [絵] Netflix   │
+│  [絵] Prime Video│
+│  新着           │
+│  [絵] Netflix   │
+│  ⋯             │
+├──────────────┤
+│ PR             │  ← 広告カード。アフィリエイト有効時のみ
+│ Amazon …       │
+└──────────────┘
+```
+
+**この2つを混ぜてはいけない。** まとめて `aria-label="広告"` にすると
+ナビまで広告と称することになり、逆にPR表記を外すと景品表示法（ステマ規制）に触れる。
+
+いま見ているページ自身へのリンクは自動で除かれる。
+
+#### サムネイルを置く
+
+`src/assets/services/<キー>.png` を置くだけで、その行に36×36pxの絵が出る。
+キーはサービスキー（`netflix` / `prime-video` / `disney-plus`）と `stats`。
+**置いていないキーは文字だけの行になり、レイアウトは崩れない。**
+詳細と注意（各社ロゴの商標リスクを含む）は
+[src/assets/services/README.md](../site/src/assets/services/README.md)。
+
 | 変えたいこと | 直す場所 |
 |---|---|
 | 枠を出す画面幅の下限 | `.layout` のメディアクエリ `80rem` |
 | 枠の幅 | `FollowRail.astro` の `.inner { max-width }` |
 | 枠が張り付く位置 | 同 `.inner { top }` |
+| ナビに出す常設ページ | `src/lib/events-data.ts` の `LEAVING_SERVICES` / `ARRIVALS_SERVICES` |
+| サムネイル | `src/assets/services/` にファイルを置く／消す |
 | **枠を消す** | `BaseLayout.astro` から `<FollowRail />` を外す |
+
+> **狭い画面（1280px未満）では枠ごと消える。**
+> 常設ページへの入口がスマホで無くなるので、カテゴリページ側にも導線を置いてある
+> （`src/pages/category/[category].astro`）。片方だけ消さないこと。
 
 > `.inner` の `position: sticky` は、`html` に `overflow` が無く
 > `body` の `overflow-x: hidden` がビューポートに伝播することで成立している。

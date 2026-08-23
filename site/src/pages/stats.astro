@@ -31,23 +31,23 @@ const description = latest
   : 'Netflix・Amazon Prime Video・Disney+・Apple TV+ の見放題ラインナップが月ごとに何本増えて何本減ったかの記録です。'
 ---
 
-<BaseLayout title="配信の出入り（月次の定点観測）" description={description}>
+<BaseLayout title="見放題の増減（毎月更新）" description={description}>
   <nav class="breadcrumb" aria-label="パンくず">
     <a href="/">ホーム</a>
   </nav>
 
-  <h1>配信の出入り（月次の定点観測）</h1>
+  <h1>見放題の増減</h1>
 
   <p class="lead">
-    {SITE.name}が収集している4サービスについて、
-    <strong>見放題ラインナップが月ごとに何本増えて何本減ったか</strong>の記録です。
+    {SITE.name}が追いかけている4サービスで、
+    <strong>見放題の作品が月ごとに何本増えて何本減ったか</strong>をまとめています。
   </p>
 
   <p class="notice">
     {
       dataAsOf ? (
         <>
-          集計は <strong>{formatDate(dataAsOf)}時点</strong>のデータに基づきます。
+          <strong>{formatDate(dataAsOf)}時点</strong>の情報です。
         </>
       ) : (
         <>集計時点が不明です。</>
@@ -56,7 +56,7 @@ const description = latest
     {
       collectStart && (
         <>
-          収集開始は{formatDate(collectStart)}のため、<strong>それ以前の月は掲載していません</strong>。
+          当サイトが調べ始めたのが{formatDate(collectStart)}のため、<strong>それ以前の月は載せていません</strong>。
         </>
       )
     }
@@ -115,14 +115,14 @@ const description = latest
     <h2>数字の読み方</h2>
     <ul>
       <li>
-        <strong>「観測できた数」であって「起きた数」ではありません。</strong>
-        収集の間隔より短い期間だけ配信された作品は取りこぼします。
+        <strong>当サイトが確認できた本数です。</strong>
+        ごく短い期間だけ配信された作品は含まれないことがあります。
       </li>
       <li>
-        <strong>「集計中」の月は月末まで増えます。</strong>確定値ではありません。
+        <strong>「集計中」の月は、月末に向けてまだ本数が増えます。</strong>
       </li>
       <li>
-        削除は見放題から外れたことを指します。レンタル・購入では引き続き扱われている場合があります。
+        「削除」は見放題から外れたことを指します。レンタルや購入では引き続き観られる場合があります。
       </li>
       <li>Apple TV+ は日本での出入りが極端に少なく、0本が続くことがあります。</li>
     </ul>

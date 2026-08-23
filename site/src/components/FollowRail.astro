@@ -1,77 +1,229 @@
 ---
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
 import { AFFILIATE } from '../config'
 import { withAmazonTag } from '../lib/affiliate'
+import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../lib/events-data'
 
 /**
  * 本文の右の余白に置く追従枠。
  *
+ * ■ 中身は2つ。**性質が違うので必ず分けて扱う。**
+ *   1. 常設ページへのナビ … 広告ではない。常に出す
+ *   2. 広告カード         … アフィリエイト有効時のみ。PR表記が要る
+ *   まとめて `aria-label="広告"` にすると、ナビまで広告と称することになる。
+ *   逆にPR表記を外すと景品表示法（ステマ規制）に触れる。**混ぜない。**
+ *
  * ■ なぜ「余白」なのか
- * このサイトは本文が `--max-width: 46rem`（736px）中央寄せで、
- * ワイド画面では左右に紺の地がかなり余っている。
- * そこに置けば**本文カラムを1mmも削らずに**広告面を作れる。
- * 記事は配信終了作品の表が主体で横幅を食うため、
- * 本文を狭める形のサイドバーは採れない（＝この形しか成立しない）。
+ * 本文は `--max-width: 46rem`（736px）中央寄せで、ワイド画面では左右が余っている。
+ * そこに置けば**本文カラムを1mmも削らずに**面を作れる。
+ * 記事は配信終了作品の表が主体で横幅を食うため、本文を狭めるサイドバーは採れない。
  *
  * ■ position: sticky を使う理由（fixed ではなく）
- * fixed にすると本文が終わってもレールが residual に残り、フッターに重なる。
- * 参考にした実装（noiat.co.jp）はそれをJSで制御していたが、
- * sticky なら**親グリッド行の高さが自然な上限**になるので、
- * JSなしで同じ挙動になる。このサイトのJSゼロ方針を崩さずに済む。
+ * fixed だと本文が終わってもレールが残りフッターに重なる。
+ * sticky なら親グリッド行の高さが自然な上限になるので、JSなしで同じ挙動になる。
  *
  * ■ 出す条件
- *   - アフィリエイトのIDが設定されている（未設定なら1行も描画しない）
- *   - 画面幅 80rem(1280px) 以上（狭い画面ではCSS側で display:none）
- * 幅が足りない画面で無理に出すと本文を圧迫するので、出さない。
- *
- * ★ いまは「器」。中身は Amazon 1枠だけにしてある。
- *   2026-08 時点で提携できているのが Amazon しかないため。
- *   Phase B で U-NEXT（1,320円）が承認されたら、下の OFFER を差し替える。
- *   複数を並べないのは、選択肢を増やすと読者が選べなくなるため
- *   （参考サイトも1広告主だけを出していた）。
+ * 画面幅 80rem(1280px) 以上（styles/global.css の `.layout`）。
+ * **狭い画面では枠ごと消える**ので、常設ページへの導線は
+ * カテゴリページ側にも置いてある（そちらが狭い画面での入口）。
  */
-const tag = AFFILIATE.amazonTag
 
-const OFFER = {
-  label: 'Amazon Prime Video',
-  heading: '観たかった作品、まだ間に合うかも',
-  body: '見放題が終わった作品も、レンタル・購入なら観られることがあります。',
-  action: 'Prime Videoで探す',
-  href: withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag),
+/**
+ * サムネイル。`src/assets/services/<キー>.{png,jpg,jpeg,webp}` を置くと拾う。
+ *
+ * ★ 画像が無くても壊れない。文字だけの行になる。
+ *   差し替え手順と推奨サイズは docs/APPEARANCE.md。
+ */
+const thumbs = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/services/*.{png,jpg,jpeg,webp}',
+  { eager: true },
+)
+
+function thumbFor(key: string): ImageMetadata | undefined {
+  const hit = Object.entries(thumbs).find(([path]) =>
+    path.match(new RegExp(`/${key}\\.(png|jpg|jpeg|webp)$`)),
+  )
+  return hit?.[1].default
 }
+
+interface RailLink {
+  href: string
+  label: string
+  thumbKey: string
+}
+
+const leaving: RailLink[] = LEAVING_SERVICES.map((s) => ({
+  href: `/leaving/${s.key}`,
+  label: s.label,
+  thumbKey: s.key,
+}))
+
+const arrivals: RailLink[] = ARRIVALS_SERVICES.map((s) => ({
+  href: `/arrivals/${s.key}`,
+  label: s.label,
+  thumbKey: s.key,
+}))
+
+const stats: RailLink = { href: '/stats', label: '見放題の増減', thumbKey: 'stats' }
+
+// いま見ているページ自身へのリンクは出さない
+const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
+const notCurrent = (l: RailLink) => l.href !== current
+
+const tag = AFFILIATE.amazonTag
+const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag)
 ---
 
-{
-  tag && (
-    <aside class="follow-rail" aria-label="広告">
-      <div class="inner">
-        <p class="pr">PR</p>
-        <p class="label">{OFFER.label}</p>
-        <p class="heading">{OFFER.heading}</p>
-        <p class="body">{OFFER.body}</p>
-        <a class="action" href={OFFER.href} rel="sponsored noopener" target="_blank" data-affiliate="true">
-          {OFFER.action}
-        </a>
-      </div>
-    </aside>
-  )
-}
+<aside class="follow-rail">
+  <div class="inner">
+    <nav class="rail-nav" aria-label="いつでも最新の一覧">
+      <p class="rail-title">いつでも最新</p>
+
+      {
+        leaving.filter(notCurrent).length > 0 && (
+          <>
+            <p class="group">終了予定</p>
+            <ul>
+              {leaving.filter(notCurrent).map((l) => (
+                <li>
+                  <a href={l.href}>
+                    {thumbFor(l.thumbKey) && (
+                      <Image class="thumb" src={thumbFor(l.thumbKey)!} alt="" width={36} height={36} />
+                    )}
+                    <span>{l.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+
+      {
+        arrivals.filter(notCurrent).length > 0 && (
+          <>
+            <p class="group">新着</p>
+            <ul>
+              {arrivals.filter(notCurrent).map((l) => (
+                <li>
+                  <a href={l.href}>
+                    {thumbFor(l.thumbKey) && (
+                      <Image class="thumb" src={thumbFor(l.thumbKey)!} alt="" width={36} height={36} />
+                    )}
+                    <span>{l.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+
+      {
+        notCurrent(stats) && (
+          <ul class="single">
+            <li>
+              <a href={stats.href}>
+                {thumbFor(stats.thumbKey) && (
+                  <Image class="thumb" src={thumbFor(stats.thumbKey)!} alt="" width={36} height={36} />
+                )}
+                <span>{stats.label}</span>
+              </a>
+            </li>
+          </ul>
+        )
+      }
+    </nav>
+
+    {
+      tag && (
+        <div class="rail-ad" aria-label="広告">
+          <p class="pr">PR</p>
+          <p class="ad-label">Amazon Prime Video</p>
+          <p class="ad-heading">観たかった作品、まだ間に合うかも</p>
+          <p class="ad-body">
+            見放題が終わった作品も、レンタル・購入なら観られることがあります。
+          </p>
+          <a
+            class="ad-action"
+            href={adHref}
+            rel="sponsored noopener"
+            target="_blank"
+            data-affiliate="true"
+          >
+            Prime Videoで探す
+          </a>
+        </div>
+      )
+    }
+  </div>
+</aside>
 
 <style>
-  /*
-   * 表示・非表示と配置は styles/global.css の .layout 側で決めている。
-   * ここは枠の中身の見た目だけ。
-   */
+  /* 表示・非表示と配置は styles/global.css の .layout 側。ここは中身の見た目だけ。 */
   .inner {
     position: sticky;
-    /* ヘッダーに張り付かない程度の余白 */
     top: 1rem;
     max-width: 17rem;
+  }
+
+  /* --- 常設ページへのナビ --- */
+  .rail-nav {
+    padding: 0.9rem 0.9rem 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .rail-title {
+    margin: 0 0 0.6rem;
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+  .group {
+    margin: 0.7rem 0 0.25rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  .rail-nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rail-nav ul.single {
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--border);
+  }
+  .rail-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0;
+    font-size: 0.84rem;
+    text-decoration: none;
+  }
+  .rail-nav a:hover span {
+    text-decoration: underline;
+  }
+  /* サムネイルが無い行と高さを揃えるため、行の高さは文字側で決める */
+  .thumb {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+  /* --- 広告 --- */
+  .rail-ad {
+    margin-top: 0.9rem;
     padding: 1rem 1rem 1.15rem;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 12px;
   }
-  /* 景品表示法（ステマ規制）上、広告面にも表記が要る */
+  /* 景品表示法（ステマ規制）上、広告面には表記が要る */
   .pr {
     display: inline-block;
     margin: 0 0 0.6rem;
@@ -82,24 +234,24 @@ const OFFER = {
     font-weight: 700;
     color: var(--text-muted);
   }
-  .label {
+  .ad-label {
     margin: 0 0 0.3rem;
     font-size: 0.74rem;
     color: var(--text-muted);
   }
-  .heading {
+  .ad-heading {
     margin: 0 0 0.5rem;
     font-size: 0.92rem;
     font-weight: 700;
     line-height: 1.5;
   }
-  .body {
+  .ad-body {
     margin: 0 0 0.9rem;
     font-size: 0.78rem;
     line-height: 1.7;
     color: var(--text-muted);
   }
-  .action {
+  .ad-action {
     display: block;
     padding: 0.55rem 0.7rem;
     border-radius: 6px;
@@ -110,7 +262,7 @@ const OFFER = {
     text-align: center;
     text-decoration: none;
   }
-  .action:hover {
+  .ad-action:hover {
     opacity: 0.9;
   }
 </style>
