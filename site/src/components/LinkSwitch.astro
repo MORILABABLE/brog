@@ -1,0 +1,45 @@
+---
+import { AFFILIATE } from '../config'
+
+/**
+ * バリューコマース LinkSwitch。
+ *
+ * ■ これが何を解決するか
+ * 記事はパイプラインが自動生成する。本文に書かれるのは
+ * `https://video.unext.jp/freeword?query=作品名` のような**ただの検索URL**で、
+ * アフィリエイトリンクではない。
+ * LinkSwitch はブラウザ側でそれを自動的にアフィリエイトリンクへ変換する。
+ * **記事本文を1文字も書き換えずに成果計測できる**のが採用理由。
+ *
+ * ■ 設定していなければ何も出さない
+ * PUBLIC_VC_LINKSWITCH_PID が空ならこのタグは描画されない。
+ * サイトはJSゼロのまま動く。
+ *
+ * ★ 有効化する前に、VC管理画面の**ブロック設定**で以下を除外すること。
+ *   - Amazon : アソシエイトのタグと二重計上になる（規約違反になりうる）
+ *   - DMM    : AdSense審査のリスク回避のため当面アフィリエイト対象外
+ *   コード側の除外は src/lib/affiliate.ts の EXCLUDED_HOSTS。
+ *   ただし LinkSwitch の変換はVC側で走るので、**管理画面の設定が本体**。
+ *   詳細は docs/AFFILIATE.md。
+ */
+const pid = AFFILIATE.linkSwitchPid
+---
+
+{
+  pid && (
+    <>
+      {/*
+        ★ 必ず window に直接代入すること。
+          Astro の define:vars はスクリプトを IIFE で包むため、
+          `var vc_pid = ...` と書くと関数スコープに閉じ込められ、
+          グローバルを読む vcdal.js から見えなくなる。
+          タグの読み込みだけは成功するので、
+          「入れたのに成果が出ない」という気づきにくい壊れ方をする。
+      */}
+      <script is:inline define:vars={{ pid }}>
+        window.vc_pid = pid
+      </script>
+      <script is:inline async src="//aml.valuecommerce.com/vcdal.js"></script>
+    </>
+  )
+}

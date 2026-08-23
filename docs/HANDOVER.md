@@ -24,6 +24,7 @@
 | 画像 | ✅ 記事カード（OG）と本文セクション画像を**ビルド時に自動生成**。作品画像は未使用（下記の返答待ち） |
 | 記事の生成（セッション経由） | ✅ `/article` で実行。**API課金なし**。品質ゲートまで検証済み |
 | 記事の生成（API経由） | 🔶 実装済みだが**実通信は未検証**（APIキー未設定） |
+| アフィリエイト | ✅ 実装完了・**未稼働**（`site/.env` に値を入れれば動く）。[AFFILIATE.md](./AFFILIATE.md) |
 | 自動デプロイ | ✅ main への push で Cloudflare Pages が自動ビルド |
 | 定期実行 | ❌ 未着手（GitHub Actions は書いてあるが動作未確認） |
 
@@ -59,6 +60,7 @@ cd site && npm run build        # サイトのビルド
 |---|---|
 | **他ジャンルのブログを増やしたい** | **[NEW-THEME.md](./NEW-THEME.md)** |
 | **背景・バナー・ロゴ・OG画像・カテゴリ色・記事内の画像** | **[APPEARANCE.md](./APPEARANCE.md)** |
+| **アフィリエイト（有効化手順・提携状況・落とし穴）** | **[AFFILIATE.md](./AFFILIATE.md)** |
 | ブラウザ（github.dev）で記事やデザインを直す | [EDITING.md](./EDITING.md) |
 | 全体の設計・なぜその選択をしたか | [../DESIGN.md](../DESIGN.md) |
 | セットアップ・コマンド一覧 | [../README.md](../README.md) |
@@ -110,28 +112,36 @@ URL失効時に画像だけ欠けても記事が崩れないようにするた�
 
 ### すぐ
 
-1. **`mihoudairader.com` を Cloudflare Pages に割り当てる**
-   **左メニューに `Pages` は無い**（`Compute & AI` の下の `Workers & Pages`）。
-   メニューを探さず `https://dash.cloudflare.com/?to=/:account/pages/view/brog-ez1/domains`
-   を直接開く。Custom domains → Set up a domain。
-   Cloudflare Registrar で取得済みなのでDNSは自動。
-   詰まったときの原因は [DEPLOY.md の4節](../DEPLOY.md#4-独自ドメインを割り当てる)。
+1. **アフィリエイトを有効化する**
+   `site/.env` と **Cloudflare Pages の環境変数**に `PUBLIC_AMAZON_TAG` を入れる
+   （`.env` はリポジトリに入らないので、Pages 側にも要る）。
+   これだけで Amazon 導線・PR表記・規約文がまとめて出る。
+   ASP（バリューコマース / afb）の登録は Phase B。
+   **記事6本では審査に落ちるので、10〜15本に増やしてから申請する。**
+   手順と落とし穴は [AFFILIATE.md](./AFFILIATE.md)。
 2. **`site/src/pages/contact.astro` に実在する連絡先を設定**
    未設定だとページに警告が出る。Googleフォームが最も手軽。
    AdSense審査で連絡手段の存在が確認されるため公開前に必須。
 3. **`.env` に `ANTHROPIC_API_KEY` を入れて `npm run write` を実通信で検証**
    プロンプト組み立てまでは確認済みだが、生成〜検証〜書き出しの通しは未検証。
 
+> ✅ **完了: `mihoudairader.com` の Cloudflare Pages への割り当て**（2026-08-23）
+> 詰まったときの原因（左メニューに `Pages` が無い等）は
+> [DEPLOY.md の4節](../DEPLOY.md#4-独自ドメインを割り当てる)。
+
 ### そのあと
 
-4. 記事タイプ `ranking` を追加（`arrivals` と `ended` は実装済み）
+4. 記事を10〜15本に増やす（Phase B のASP審査を通すため）
+5. 記事タイプ `ranking` を追加（`arrivals` と `ended` は実装済み）
    → `theme-packs/streaming-jp/article-types/ended.ts` が最も新しい実装例
-5. `upcoming` を収集の既定から外すか判断する
+6. `upcoming` を収集の既定から外すか判断する
    → 全実行・全サービスで**0件**が続いており、月12リクエストの空振り。
      API側が返し始める可能性はあるので、四半期に一度 `--kinds upcoming` で手動確認する運用も可
-6. `bench.ts`（同じ素材を各LLMに流してコスト・品質・検証通過率を比較）
-6. GitHub Actions で定期実行＋PR自動作成（P3）
-7. 記事20〜30本たまったら AdSense 申請（P4）
+7. `bench.ts`（同じ素材を各LLMに流してコスト・品質・検証通過率を比較）
+8. GitHub Actions で定期実行＋PR自動作成（P3）
+9. 記事20〜30本たまったら AdSense 申請（P4）
+10. アフィリエイト Phase C 以降（作品ごとのAmazonリンク・左右フィールド）
+    → [AFFILIATE.md の6節](./AFFILIATE.md)
 
 ### サイトの改善余地（自覚済み）
 
@@ -237,14 +247,23 @@ URL失効時に画像だけ欠けても記事が崩れないようにするた�
 当初は U-NEXT 等の高単価ASP案件（1件1,000〜1,500円）を主力に見込んでいたが、
 **APIがこれらのサービスをカバーしていないため、データで裏付けた導線は作れない。**
 
+**さらに 2026-08-23 の調査で前提がもう一段変わった。**
+Disney+ と Apple TV+ は**そもそも提携できない**（前者はクローズド案件、後者は招待制）。
+Netflix に至っては公式のアフィリエイトプログラムが存在しない。
+
 現実的な構成:
 
 | 手段 | 位置づけ |
 |---|---|
-| Amazonアソシエイト（Prime Video） | 主力。単価は低いが導線が自然 |
-| Disney+ のASP案件 | 新着配信（月16件前後）と配信終了済み記事で訴求できる。終了予定は取れない |
-| Apple TV+ のASP案件 | 収集が月2〜3件しかなく、記事への露出はほぼ期待できない |
-| U-NEXT等のASP案件 | 検索リンク方式で一般導線としてのみ |
+| **U-NEXT / Hulu のASP案件** | **主力**。917〜1,320円/件。検索リンク方式で導線化（LinkSwitchで自動変換） |
+| Amazonアソシエイト（Prime Video） | 対象4社で唯一提携できる。24時間クッキーが実体 |
+| DMM TV のASP案件 | 単価最高だが**当面見送り**（FANZA同一基盤でAdSense審査にリスク） |
+| Disney+ / Apple TV+ | **現在提携できない**。実績が出てから再挑戦 |
 | AdSense | 記事20〜30本たまってから |
 
+皮肉だが、**APIに無いから諦めた U-NEXT / Hulu が収益では主力**になる。
+
 **収益化のスピードは当初想定より遅い**と見ておくこと。
+
+> 実装状況・有効化手順・提携状況の一覧・落とし穴は **[AFFILIATE.md](./AFFILIATE.md)** に集約。
+> Phase A（実装）は完了済みで、`site/.env` に値を入れれば動く状態。

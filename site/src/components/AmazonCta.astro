@@ -1,0 +1,123 @@
+---
+import { AFFILIATE } from '../config'
+import { amazonVideoSearchUrl, withAmazonTag } from '../lib/affiliate'
+import type { CategorySlug } from '../config'
+
+interface Props {
+  /**
+   * 記事カテゴリ。文面を変えるために使う。
+   * 未指定ならトップページ等の汎用文面になる。
+   */
+  category?: CategorySlug
+  /** 検索語。省略すると Prime Video の売り場トップへ送る。 */
+  query?: string
+}
+
+const { category, query } = Astro.props
+const tag = AFFILIATE.amazonTag
+
+/**
+ * Amazon への導線。
+ *
+ * ■ なぜ Amazon だけ別扱いなのか
+ * 対象4社のうち、2026-08 時点でアフィリエイト提携できるのは Amazon だけ。
+ * Netflix は公式プログラムが存在せず、Disney+ と Apple TV+ は招待制。
+ * つまり「自分がデータを持っている作品」で唯一収益化できる導線がここ。
+ *
+ * ■ 文面が category で変わる理由
+ * 配信終了記事の読者は**もう見放題では観られない**。
+ * そこに「見放題で探す」と出すのは誤誘導になる。
+ * 一方でレンタル・購入なら観られることが多く、これは事実として言える。
+ * 記事タイプごとに、言えることだけを言う。
+ *
+ * ■ 収益の実体はクッキー
+ * 見放題作品を観るだけでは紹介料は発生しない。
+ * Amazon は**クリックから24時間**、その訪問者のあらゆる購入が成果になる。
+ * だからリンク先が売り場トップでも意味がある。
+ *
+ * ★ トラッキングIDが未設定なら描画しない。
+ *   タグの無い Amazon リンクを置いても1円にもならず、
+ *   広告表記（PR）だけが出てしまうため。
+ */
+const COPY: Record<string, { lead: string; action: string }> = {
+  leaving: {
+    lead: '見放題の配信が終わっても、レンタル・購入なら引き続き観られる作品があります。',
+    action: 'Prime Videoでレンタル・購入を探す',
+  },
+  ended: {
+    lead: '見放題での配信は終了していますが、レンタル・購入なら観られる場合があります。',
+    action: 'Prime Videoでレンタル・購入を探す',
+  },
+  arrivals: {
+    lead: '配信が始まった作品は Prime Video でまとめて探せます。',
+    action: 'Prime Videoで作品を探す',
+  },
+  ranking: {
+    lead: 'ランキング上位の作品は Prime Video でまとめて探せます。',
+    action: 'Prime Videoで作品を探す',
+  },
+}
+
+const fallback = {
+  lead: '観たい作品が見放題にあるか、レンタル・購入で観られるかを Prime Video で探せます。',
+  action: 'Prime Videoで作品を探す',
+}
+
+const copy = (category && COPY[category]) || fallback
+
+// 検索語があれば動画カテゴリ内検索、無ければ売り場トップ。
+// どちらも tag= が付くのでクッキーは同じように効く。
+const href = query
+  ? amazonVideoSearchUrl(query, tag)
+  : withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag)
+---
+
+{
+  tag && (
+    <aside class="amazon-cta" aria-label="Amazonで探す">
+      <p class="lead">{copy.lead}</p>
+      <a class="action" href={href} rel="sponsored noopener" target="_blank" data-affiliate="true">
+        {copy.action}
+      </a>
+      <p class="note">リンク先はAmazonの検索結果です。配信・販売状況はAmazon側でご確認ください。</p>
+    </aside>
+  )
+}
+
+<style>
+  .amazon-cta {
+    margin: 2rem 0;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-subtle);
+  }
+  .lead {
+    margin: 0 0 0.8rem;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+  .action {
+    display: inline-block;
+    padding: 0.6rem 1.1rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .action:hover {
+    opacity: 0.9;
+  }
+  /*
+   * 「配信中」と断定しないための注記。
+   * 当サイトは Amazon の在庫・配信状況のデータを持っていないので、
+   * リンクの先が空振りでも誤情報にならない書き方にしておく。
+   */
+  .note {
+    margin: 0.7rem 0 0;
+    font-size: 0.76rem;
+    color: var(--text-muted);
+  }
+</style>

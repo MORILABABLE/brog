@@ -1,5 +1,5 @@
 ---
-import { SITE, ATTRIBUTION } from '../config'
+import { SITE, ATTRIBUTION, AFFILIATE } from '../config'
 const year = new Date().getFullYear()
 ---
 
@@ -22,6 +22,18 @@ const year = new Date().getFullYear()
       作品タイトルの一部は <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">Wikidata</a
       >（CC0）を利用しています。
     </p>
+    {/*
+      Amazonアソシエイト運営規約が要求する固定文。
+      文言は規約の指定どおりで、言い換えてはいけない。
+      トラッキングID未設定＝プログラム未参加なので、そのときは出さない。
+    */}
+    {
+      AFFILIATE.amazonTag && (
+        <p class="attribution">
+          Amazonのアソシエイトとして、{SITE.name}は適格販売により収入を得ています。
+        </p>
+      )
+    }
     <p class="copyright">© {year} {SITE.name}</p>
   </div>
 </footer>

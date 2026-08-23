@@ -1,0 +1,53 @@
+---
+import { AFFILIATE_ENABLED } from '../config'
+
+/**
+ * 広告（PR）表記。**景品表示法上の義務**。
+ *
+ * 2023年10月1日施行のいわゆるステマ規制により、
+ * 広告であることを隠した表示は不当表示になる。
+ * アフィリエイトリンクを含むページには「PR」「広告」等を
+ * **一般消費者が分かりやすい位置**に明記しなければならない。
+ *
+ * ★ 置く位置が要件の一部。
+ *   本文を読み進めた先ではなく、記事の**冒頭**に出す。
+ *   「読めば分かる」ではなく「見れば分かる」状態にする必要がある。
+ *
+ * ★ アフィリエイトが未設定なら描画しない。
+ *   実際には広告リンクが1本も無いのに「PR」と表示するのは、
+ *   かえって不正確な表示になるため。判定は AFFILIATE_ENABLED に寄せてある。
+ */
+---
+
+{
+  AFFILIATE_ENABLED && (
+    <p class="affiliate-notice">
+      <span class="tag">PR</span>
+      この記事にはアフィリエイト広告（Amazonアソシエイト等）のリンクが含まれます。
+    </p>
+  )
+}
+
+<style>
+  .affiliate-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  /*
+   * 「PR」は目立たせるが、記事の見出しより強くはしない。
+   * 見落とされない程度のコントラストは必要（それが法の要件のため）。
+   */
+  .tag {
+    flex: none;
+    padding: 0.1rem 0.45rem;
+    border: 1px solid var(--text-muted);
+    border-radius: 3px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+</style>

@@ -2,6 +2,8 @@
 import { getCollection, render } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AdSlot from '../../components/AdSlot.astro'
+import AffiliateNotice from '../../components/AffiliateNotice.astro'
+import AmazonCta from '../../components/AmazonCta.astro'
 import { CATEGORIES } from '../../config'
 import { formatDate, isoDate } from '../../utils/date'
 
@@ -43,6 +45,13 @@ const cat = CATEGORIES[post.data.category]
       }
     </div>
 
+    {/*
+      広告（PR）表記。景品表示法（ステマ規制）上の義務なので、
+      本文を読み進めた先ではなく**冒頭**に置く。
+      アフィリエイトが未設定のときは何も描画されない。
+    */}
+    <AffiliateNotice />
+
     {/* 配信状況は変わるため、基準日を必ず明示する */}
     <p class="notice">
       配信情報は <strong>{formatDate(post.data.dataAsOf)}時点</strong>のものです。
@@ -52,6 +61,13 @@ const cat = CATEGORIES[post.data.category]
     <div class="prose">
       <Content />
     </div>
+
+    {/*
+      Amazon への導線。文面は記事カテゴリで変わる
+      （配信終了記事に「見放題で探す」と出すのは誤誘導になるため）。
+      トラッキングID未設定なら描画されない。
+    */}
+    <AmazonCta category={post.data.category} />
 
     <AdSlot />
 

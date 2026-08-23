@@ -2,6 +2,8 @@
 import { getCollection } from 'astro:content'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import PostCard from '../components/PostCard.astro'
+import AffiliateNotice from '../components/AffiliateNotice.astro'
+import AmazonCta from '../components/AmazonCta.astro'
 import { SITE } from '../config'
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
@@ -18,6 +20,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
     */}
     <h1 class="visually-hidden">{SITE.tagline}</h1>
     <p>{SITE.description}</p>
+    <AffiliateNotice />
   </section>
 
   {
@@ -31,6 +34,13 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
       </div>
     )
   }
+
+  {/*
+    記事一覧の下に置く。一覧より上に広告導線を出すと、
+    サイトの用（配信終了の把握）より先に広告が来ることになる。
+    AdSense の審査でも「主目的がコンテンツであること」を見られる。
+  */}
+  <AmazonCta />
 </BaseLayout>
 
 <style>

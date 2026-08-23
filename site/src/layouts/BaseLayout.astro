@@ -3,6 +3,7 @@ import { Image } from 'astro:assets'
 import { SITE, OG_IMAGE, CARD_IMAGE } from '../config'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
+import LinkSwitch from '../components/LinkSwitch.astro'
 import banner from '../assets/header-banner.png'
 import '../styles/global.css'
 
@@ -113,6 +114,14 @@ const jsonLd = publishedAt
 
     {/* 構造化データはビルド時に加工されず、そのまま出力される必要がある */}
     <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+
+    {/*
+      バリューコマース LinkSwitch。
+      本文中の U-NEXT / Hulu などの通常リンクを、ブラウザ側で
+      アフィリエイトリンクに変換する。未設定なら何も出力されない
+      （＝サイトはJSゼロのまま）。詳細は docs/AFFILIATE.md。
+    */}
+    <LinkSwitch />
   </head>
 
   <body>

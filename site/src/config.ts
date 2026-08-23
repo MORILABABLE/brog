@@ -83,3 +83,30 @@ export type CategorySlug = keyof typeof CATEGORIES
  * 設定するときは site/.env に PUBLIC_ADSENSE_CLIENT=ca-pub-xxxx を置く。
  */
 export const ADSENSE_CLIENT = import.meta.env.PUBLIC_ADSENSE_CLIENT ?? ''
+
+/**
+ * アフィリエイト。**どちらも未設定なら、広告表記も含めて一切描画されない。**
+ *
+ * 未設定のまま「PR」と表示するのは景品表示法上むしろ不正確なので、
+ * 表示・非表示はこの2つの値だけで決まるようにしてある。
+ * 運用を始めるときは site/.env に値を入れるだけでよい（コード変更は不要）。
+ *
+ * 設定手順と提携状況は docs/AFFILIATE.md。
+ */
+export const AFFILIATE = {
+  /**
+   * Amazonアソシエイトのトラッキングid（`xxxxx-22` の形）。
+   * これを入れると本文中の Amazon リンクに build 時 tag= が付く。
+   */
+  amazonTag: import.meta.env.PUBLIC_AMAZON_TAG ?? '',
+  /**
+   * バリューコマース LinkSwitch の vc_pid。
+   * これを入れると、本文の U-NEXT / Hulu などの**通常リンクが
+   * ブラウザ側で自動的にアフィリエイトリンクに変換される**。
+   * 記事のURLを書き換える必要がないので、自動生成した記事にそのまま効く。
+   */
+  linkSwitchPid: import.meta.env.PUBLIC_VC_LINKSWITCH_PID ?? '',
+} as const
+
+/** アフィリエイトが1つでも有効か。広告表記の出し分けに使う。 */
+export const AFFILIATE_ENABLED = Boolean(AFFILIATE.amazonTag || AFFILIATE.linkSwitchPid)
