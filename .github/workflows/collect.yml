@@ -19,6 +19,9 @@ on:
 
 permissions:
   contents: write
+  # 収集結果を Issue で知らせるために要る。
+  # これが無いと通知だけが 403 で落ちる（収集自体は成功する）。
+  issues: write
 
 concurrency:
   group: collect
@@ -58,7 +61,20 @@ jobs:
           KINDS: ${{ inputs.kinds || 'new,removed,expiring' }}
         run: npm run collect -- --days "$DAYS" --kinds "$KINDS"
 
+      # 収集しただけでは何が増減したか分からない（サイトには出るが、
+      # 運用者が能動的に見に行かないと気づけない）。Issue を立てて
+      # GitHub からメールで届くようにする。変化が0件なら何も作らない。
+      - name: 収集結果を通知
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Watch を外していても届くように本文で @メンションする
+          NOTIFY_MENTION: ${{ github.repository_owner }}
+        run: npm run notify
+
+      # 通知が失敗しても収集結果と枠の記録は残す。
+      # ここを always() にしないと、通知の不調で収集ぶんが丸ごと捨てられる。
       - name: 結果をコミット
+        if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

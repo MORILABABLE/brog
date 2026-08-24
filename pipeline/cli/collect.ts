@@ -11,8 +11,9 @@
  */
 import { loadTheme } from '../theme.ts'
 import { StreamingAvailabilitySource } from '../sources/streaming-availability.ts'
-import type { ChangeKind } from '../sources/types.ts'
+import type { ChangeEvent, ChangeKind } from '../sources/types.ts'
 import { appendEvents, dedupe, eventKey, loadLedger, saveLedger } from '../core/events.ts'
+import { addUsage } from '../core/api-usage.ts'
 import {
   loadCompanyCache,
   loadOriginCache,
@@ -57,7 +58,19 @@ async function main(): Promise<void> {
   console.log(`テーマ: ${theme.label} (${theme.key})  国: ${theme.country}`)
   console.log(`対象: ${kinds.join(', ')}  期間: 直近${sinceDays}日\n`)
 
-  const raw = await source.collectChanges({ sinceDays, kinds })
+  let raw: ChangeEvent[]
+  try {
+    raw = await source.collectChanges({ sinceDays, kinds })
+  } finally {
+    // 途中で落ちてもリクエストは消費されている。枠の記録だけは必ず残す。
+    // ここを finally にしていないと、429 で落ちた回の消費が記録から抜ける。
+    const usage = await addUsage(source.requestCount, theme.utc_offset_minutes)
+    console.log(
+      `\nAPIリクエスト ${source.requestCount}回  ` +
+        `${usage.month} の消費 ${usage.used}/${usage.limit}\n`,
+    )
+  }
+
   const ledger = await loadLedger()
   const fresh = dedupe(raw, ledger)
 

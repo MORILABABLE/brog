@@ -117,6 +117,17 @@ export class StreamingAvailabilitySource implements Source {
   /** catalog id -> theme.yaml のサービスキー。API の応答をテーマ語彙に戻すため。 */
   #serviceByCatalogId: Map<string, CatalogConfig>
 
+  /**
+   * このインスタンスが投げたリクエスト数。
+   * 無料枠(500req/月)の消費は 429 が返るまで見えないので、自分で数えて
+   * `data/api-usage.json` に積む。リトライも枠を消費する前提で1回と数える。
+   */
+  #requests = 0
+
+  get requestCount(): number {
+    return this.#requests
+  }
+
   constructor(
     private readonly apiKey: string,
     private readonly theme: Theme,
@@ -134,6 +145,7 @@ export class StreamingAvailabilitySource implements Source {
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v))
 
     for (let attempt = 0; attempt < 4; attempt++) {
+      this.#requests++
       const res = await fetch(url, {
         headers: { 'X-API-Key': this.apiKey, accept: 'application/json' },
       })

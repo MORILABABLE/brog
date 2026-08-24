@@ -104,6 +104,31 @@ npm run collect -- --kinds new,expiring
 
 以降は毎週 火・金 の 04:00 JST に自動収集し、変化があれば自動コミットされる。
 
+### 更新の通知（サイトには出ない）
+
+収集しただけでは何が増減したか分からないので、収集のたびに**Issue が立ち、
+GitHub からメールが届く**。中身は次の3つ。
+
+- サービス×種別の件数（取りこぼしの兆候に気づくため）
+- **新たに判明した配信終了予定**（作品名・終了日・残り日数）
+- API無料枠の消費（`data/api-usage.json` に月別で記録）
+
+変化が0件の回は Issue を作らない。追加のシークレット登録は不要で、
+ワークフローの `permissions: issues: write` と `GITHUB_TOKEN` だけで動く。
+
+```bash
+npm run notify -- --dry-run       # 送らずに本文を確認する（APIも状態も触らない）
+npm run notify -- --all           # 収集済みの全件を対象にする
+```
+
+> 通知が届かないときはリポジトリの Watch 設定を見る。
+> 本文で `@` メンションしているので、通常は購読状態に関わらず届く。
+
+**通知先を増やすには** `pipeline/notify/channels/` に1ファイル足して
+`pipeline/notify/index.ts` の表に1行足すだけ（`NOTIFY_CHANNEL=github-issue,discord` のように併用可）。
+通知の中身を組み立てる `pipeline/core/digest.ts` はデータソースも通知先も知らないので、
+U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含む。
+
 ---
 
 ## コマンド
@@ -111,6 +136,8 @@ npm run collect -- --kinds new,expiring
 | コマンド | 内容 |
 |---|---|
 | `npm run collect` | 配信状況の変化を収集して記録 |
+| `npm run notify` | **前回以降の変化を運用者に通知する（Issue→メール）。API消費なし** |
+| `npm run notify -- --dry-run` | 送らずに通知本文だけ表示する |
 | `npm run enrich` | 収集済みイベントに Wikidata の情報を後追いで足す（無料・APIキー不要） |
 | `npm run write -- --list` | **作れる記事と素材件数の一覧** |
 | `/article` | **このセッションで記事を執筆（API課金なし）** |

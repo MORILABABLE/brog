@@ -40,3 +40,21 @@ export function formatIsoDate(iso: string, offsetMinutes = JST_OFFSET_MINUTES): 
 export function currentYearMonth(offsetMinutes = JST_OFFSET_MINUTES): string {
   return new Date(Date.now() + offsetMinutes * 60_000).toISOString().slice(0, 7)
 }
+
+/**
+ * 「あと何日か」を返す。過去なら負。
+ *
+ * 時刻の差ではなく**基準タイムゾーンの日付の差**で数える。
+ * 「今日の23時に終了」は残り0日であって、23時間ではない。
+ * 通知で「あと1日」と出てから当日中に消えるのを避けるための丸め方。
+ */
+export function daysUntil(
+  iso: string,
+  offsetMinutes = JST_OFFSET_MINUTES,
+  now: Date = new Date(),
+): number {
+  const target = shifted(iso, offsetMinutes)
+  const base = new Date(now.getTime() + offsetMinutes * 60_000)
+  const dayOf = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+  return Math.round((dayOf(target) - dayOf(base)) / 86_400_000)
+}
