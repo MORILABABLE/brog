@@ -1,0 +1,210 @@
+---
+interface Props {
+  /**
+   * 入力欄に出す説明文。
+   * 「終了予定の作品を探す」「新着の作品を探す」のようにページ側で言い分ける。
+   */
+  label: string
+}
+
+const { label } = Astro.props
+
+/**
+ * 常設ページの作品検索。冒頭文（「32本が終了予定です。…」）の右に置く。
+ *
+ * ■ 何をするか
+ * 読者が打った文字列を含む作品の行まで**自動でスクロールする**。
+ * 絞り込み（該当しない行を隠す）はしない。前後の日付や作品数といった
+ * ページの文脈が消えると、「いつ終わるのか」を読む用が果たせなくなるため。
+ *
+ * ■ 全角・半角を無視する仕組み
+ * WorkTable が各行に `data-work-text`（ならし済みの作品名）を焼き込んでおり、
+ * ここでは読者の入力を同じ関数でならして突き合わせるだけ。
+ * ならし方の定義は src/lib/normalize.ts に1つだけある。**両側が同じ関数を使う。**
+ *
+ * ■ このコンポーネントだけJSを使う
+ * サイトは基本JSゼロで、記事ページ・トップにはスクリプトを置いていない。
+ * 検索は読者の入力に反応する機能なので、ここだけは避けられない。
+ * ★ 枠は `hidden` で出力し、スクリプトが動いたときだけ表に出す。
+ *   JSが無効な環境や、対象の行が1つも無いページ（該当0本の常設ページ）で
+ *   「打てるのに何も起きない入力欄」を見せないため。
+ */
+---
+
+<div class="work-search" data-work-search hidden>
+  <label class="visually-hidden" for="work-search-input">{label}</label>
+  <div class="row">
+    <input
+      id="work-search-input"
+      class="input"
+      type="search"
+      autocomplete="off"
+      placeholder={label}
+      data-work-search-input
+    />
+    <span class="steps" hidden data-work-search-steps>
+      {/* 見出しではなく操作ボタン。矢印だけだと読み上げで伝わらないので aria-label を付ける */}
+      <button type="button" data-work-search-step="-1" aria-label="前の該当作品へ">↑</button>
+      <button type="button" data-work-search-step="1" aria-label="次の該当作品へ">↓</button>
+    </span>
+  </div>
+  {/* 件数の読み上げ。role="status" で入力のたびに読み上げられる */}
+  <p class="status" role="status" data-work-search-status></p>
+</div>
+
+<script>
+  import { normalizeForSearch } from '../lib/normalize'
+
+  const box = document.querySelector<HTMLElement>('[data-work-search]')
+  const input = box?.querySelector<HTMLInputElement>('[data-work-search-input]')
+  const status = box?.querySelector<HTMLElement>('[data-work-search-status]')
+  const steps = box?.querySelector<HTMLElement>('[data-work-search-steps]')
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-work-row]'))
+
+  // 表が無いページ（該当0本の常設ページ）では枠ごと出さない
+  if (box && input && status && steps && rows.length > 0) {
+    box.hidden = false
+
+    /** 該当行すべてに付く印 */
+    const HIT = 'is-search-hit'
+    /** いま飛んでいる1行だけに付く印 */
+    const CURRENT = 'is-search-current'
+
+    // 動きを減らす設定の読者には瞬間移動させる（酔いを防ぐ）
+    const jump = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? ('auto' as const)
+      : ('smooth' as const)
+
+    let hits: HTMLElement[] = []
+    let index = 0
+    /** 直前に飛んだ行。同じ行への連続スクロールを止めるために持つ */
+    let scrolled: HTMLElement | null = null
+
+    /** 印を付け直し、件数を出し、現在行へ飛ぶ */
+    function paint() {
+      for (const row of rows) row.classList.remove(HIT, CURRENT)
+
+      if (hits.length === 0) {
+        steps!.hidden = true
+        scrolled = null
+        status!.textContent = input!.value.trim() === '' ? '' : '該当する作品はありません'
+        return
+      }
+
+      for (const row of hits) row.classList.add(HIT)
+      const current = hits[index]!
+      current.classList.add(CURRENT)
+
+      steps!.hidden = hits.length < 2
+      status!.textContent =
+        hits.length === 1 ? '1件' : `${index + 1}件目 / ${hits.length}件（Enterで次へ）`
+
+      // 打つたびに同じ行へ飛び直すと画面が揺れる。行が変わったときだけ動かす
+      if (current !== scrolled) {
+        scrolled = current
+        current.scrollIntoView({ behavior: jump, block: 'center', inline: 'nearest' })
+      }
+    }
+
+    function search() {
+      const query = normalizeForSearch(input!.value)
+      hits =
+        query === ''
+          ? []
+          : rows.filter((row) => (row.dataset.workText ?? '').includes(query))
+      index = 0
+      paint()
+    }
+
+    /** ↑↓ / Enter で該当行を送る。端まで行ったら反対側へ回す */
+    function step(delta: number) {
+      if (hits.length === 0) return
+      index = (index + delta + hits.length) % hits.length
+      paint()
+    }
+
+    input.addEventListener('input', search)
+    // type="search" の×ボタン（Safari など）
+    input.addEventListener('search', search)
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        // フォームが無くても Enter で送信扱いにならないよう明示的に止める
+        event.preventDefault()
+        step(event.shiftKey ? -1 : 1)
+      } else if (event.key === 'Escape') {
+        input.value = ''
+        search()
+      }
+    })
+
+    for (const button of steps.querySelectorAll<HTMLButtonElement>('[data-work-search-step]')) {
+      button.addEventListener('click', () => {
+        step(Number(button.dataset.workSearchStep))
+        // 続けて打てるように入力欄へ戻す
+        input.focus()
+      })
+    }
+  }
+</script>
+
+<style>
+  .work-search {
+    /* 冒頭文の右に置く。幅が足りなければページ側の flex が下に落とす */
+    flex: 0 1 16rem;
+    min-width: 12rem;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.4rem 0.7rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text);
+    font: inherit;
+    /*
+     * ★ 16px を下回らせない。iOS Safari は 16px 未満の入力欄に触れると
+     *   ページ全体を勝手に拡大し、戻すのは読者の操作になる。
+     */
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .steps {
+    display: flex;
+    gap: 0.2rem;
+  }
+  .steps button {
+    width: 1.9rem;
+    height: 1.9rem;
+    padding: 0;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .steps button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .status {
+    margin: 0.3rem 0 0;
+    /* 件数が出たり消えたりしても行がずれないよう高さを確保する */
+    min-height: 1.2em;
+    font-size: 0.76rem;
+    line-height: 1.2;
+    color: var(--text-muted);
+  }
+</style>

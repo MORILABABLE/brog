@@ -1,33 +1,25 @@
 ---
-import { Image } from 'astro:assets'
 import { getCollection } from 'astro:content'
 import { AFFILIATE, CATEGORIES } from '../config'
 import { withAmazonTag } from '../lib/affiliate'
-import { EVERGREEN_PAGES } from '../lib/evergreen'
-import { serviceImage } from '../lib/images'
 
 /**
- * 本文の右の余白に置く追従枠。上から3ブロック。
+ * 本文の右の余白に置く追従枠。上から2ブロック。
  *
- *   1. 最新の配信終了・配信開始一覧 … 常設ページのカード。広告ではない
- *   2. 新着記事                     … カテゴリ横断の最新記事
- *   3. PR                          … 広告カード。**ここだけ追従する**
+ *   1. 新着記事 … カテゴリ横断の最新記事
+ *   2. PR      … 広告カード。**ここだけ追従する**
  *
- * ■ 追従するのは 3 だけ
+ * ★ 「最新の配信終了・配信開始一覧」は**左の枠**（LeftRail.astro）に移した
+ *   （2026-08-24）。ここに戻すと、その下の新着記事とPR枠が画面外へ落ちる。
+ *
+ * ■ 追従するのは 2 だけ
  * 枠全体を追従させると、画面に収まらないときPR枠に手が届かなくなる。
  * 枠内スクロールで解決すると読者がスクロールを2回することになる。
- * 上2ブロックは流し、PR枠だけを sticky にするのが両立する唯一の形。
+ * 新着記事は流し、PR枠だけを sticky にするのが両立する唯一の形。
  *
  * ■ 広告とそれ以外を混ぜない
- * まとめて `aria-label="広告"` にすると 1・2 まで広告と称することになり、
- * 逆に 3 のPR表記を外すと景品表示法（ステマ規制）に触れる。**必ず分ける。**
- *
- * ■ 並びは全ページで固定（重要）
- * 以前は「いま見ているページのカードを消す」実装にしていたが、
- * **ページを移動するたびに一覧の中身と順番が変わり、読者が混乱する**
- * （2026-08-23 に修正）。いまは常に同じ順で全件出し、
- * 現在地のカードだけリンクを外して `aria-current="page"` を付けている。
- * **項目を出し分ける実装に戻さないこと。**
+ * まとめて `aria-label="広告"` にすると新着記事まで広告と称することになり、
+ * 逆にPR表記を外すと景品表示法（ステマ規制）に触れる。**必ず分ける。**
  *
  * ■ なぜ「余白」なのか
  * 本文は `--max-width: 46rem`（736px）中央寄せで、ワイド画面では左右が余っている。
@@ -39,13 +31,11 @@ import { serviceImage } from '../lib/images'
  *
  * ■ 出す条件
  * 画面幅 75rem(1200px) 以上（styles/global.css の `.layout`）。
- * **狭い画面では枠ごと消える**ので、常設ページへの導線は
- * カテゴリページ側にも置いてある（そちらが狭い画面での入口）。
  */
 
 /**
  * 新着記事に出す本数。
- * ★ 増やすと枠が縦に伸び、追従する画面高さの下限（下の @media）も上げる必要が出る。
+ * ★ 増やすと枠が縦に伸び、そのぶんPR枠が画面の下から現れるのが遅くなる。
  */
 const RECENT_POSTS = 3
 
@@ -61,50 +51,6 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
 ---
 
 <aside class="follow-rail">
-  <nav class="block" aria-label="最新の配信終了・配信開始一覧">
-    <p class="block-title">最新の配信終了・配信開始一覧</p>
-    <ul class="cards">
-      {
-        EVERGREEN_PAGES.map((p) => {
-          const isCurrent = p.href === current
-          const Inner = (
-            <>
-              <span class="thumb-slot">
-                {serviceImage(p.thumbKey) ? (
-                  <Image class="thumb" src={serviceImage(p.thumbKey)!} alt="" width={48} height={48} />
-                ) : (
-                  <span class="thumb thumb-fallback" aria-hidden="true">
-                    {p.label.charAt(0)}
-                  </span>
-                )}
-              </span>
-              <span class="body">
-                <span class="badge" data-category={p.category}>
-                  {CATEGORIES[p.category].label}
-                </span>
-                <span class="name">{p.shortLabel}</span>
-              </span>
-            </>
-          )
-          return (
-            <li>
-              {/* 現在地は消さずに、リンクだけ外す。並びを崩さないため */}
-              {isCurrent ? (
-                <span class="rail-card is-current" aria-current="page">
-                  {Inner}
-                </span>
-              ) : (
-                <a class="rail-card" href={p.href}>
-                  {Inner}
-                </a>
-              )}
-            </li>
-          )
-        })
-      }
-    </ul>
-  </nav>
-
   {
     posts.length > 0 && (
       <nav class="block" aria-label="新着記事">
@@ -140,9 +86,9 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
       <div class="rail-ad" aria-label="広告">
         <p class="pr">PR</p>
         <p class="ad-label">Amazon Prime Video</p>
-        <p class="ad-heading">観たかった作品、まだ間に合うかも</p>
+        <p class="ad-heading">観たかった作品を探すなら</p>
         <p class="ad-body">
-          見放題が終わった作品も、レンタル・購入なら観られることがあります。
+          見放題が終わった作品は、レンタル・購入で
         </p>
         <a
           class="ad-action"
@@ -166,7 +112,7 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
    * 枠全体を sticky にすると、枠が画面より高いときに上端で貼り付き、
    * 下端のPR枠に永久に手が届かなくなる。かといって枠の中をスクロールさせると
    * 読者がスクロールを2回することになる。
-   * そこで**上2ブロックはページと一緒に流し、PR枠だけを追従**させている。
+   * そこで**新着記事はページと一緒に流し、PR枠だけを追従**させている。
    * PR枠は約230pxしかないので、どんな画面高さでも必ず収まる。
    *
    * sticky の効く範囲は「直近のブロックコンテナ」＝ .follow-rail（グリッドの列）。
@@ -199,81 +145,11 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     color: var(--footer-text);
   }
 
-  /* --- 1. 常設ページのカード --- */
-  .cards {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-  .rail-card {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    /*
-     * サムネイル 48px ＋ 上下padding で 64px。
-     * 文字が2行になってもこの高さを下回らせないことで、
-     * カードの高さが揃い、縦の並びが乱れない。
-     */
-    min-height: 64px;
-    padding: 0.45rem 0.6rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    text-decoration: none;
-  }
-  a.rail-card:hover {
-    border-color: var(--accent);
-  }
-  /* 現在地。押せないことが分かる見た目にする（項目自体は消さない） */
-  .rail-card.is-current {
-    background: var(--bg-subtle);
-    border-color: var(--accent);
-  }
-  .thumb-slot {
-    flex: none;
-    width: 48px;
-    height: 48px;
-  }
-  .thumb {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    object-fit: cover;
-  }
-  .thumb-fallback {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-subtle);
-    color: var(--text-muted);
-    font-size: 1.15rem;
-    font-weight: 700;
-  }
-  .body {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-    min-width: 0;
-  }
+  /* --- 1. 新着記事 --- */
   .badge {
     font-size: 0.68rem;
     padding: 0.05rem 0.45rem;
   }
-  .name {
-    font-size: 0.86rem;
-    font-weight: 700;
-    line-height: 1.4;
-    color: var(--text);
-  }
-  a.rail-card:hover .name {
-    color: var(--accent);
-  }
-
-  /* --- 2. 新着記事 --- */
   .posts {
     margin: 0;
     padding: 0.85rem 0.9rem;
@@ -308,7 +184,7 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     color: var(--text-muted);
   }
 
-  /* --- 3. 広告 --- */
+  /* --- 2. 広告 --- */
   .rail-ad {
     padding: 0.85rem 0.9rem 1rem;
     background: var(--bg);

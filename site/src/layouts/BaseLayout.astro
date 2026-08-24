@@ -1,11 +1,10 @@
 ---
-import { Image } from 'astro:assets'
 import { SITE, OG_IMAGE, CARD_IMAGE } from '../config'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
 import LinkSwitch from '../components/LinkSwitch.astro'
+import LeftRail from '../components/LeftRail.astro'
 import FollowRail from '../components/FollowRail.astro'
-import banner from '../assets/header-banner.png'
 import '../styles/global.css'
 
 interface Props {
@@ -130,32 +129,29 @@ const jsonLd = publishedAt
     <Header />
 
     {/*
-      ヘッダーバナー。全ページに出す。
-      画面の一番上に来るので eager + fetchpriority で先に読ませる
-      （lazy にすると表示速度の評価が落ちる）。
-      元画像は 1200px 幅なので、それを超える widths は指定できない。
-    */}
-    <Image
-      class="site-banner"
-      src={banner}
-      alt={OG_IMAGE.alt}
-      widths={[736, 1200]}
-      sizes="(max-width: 47rem) 100vw, 736px"
-      loading="eager"
-      fetchpriority="high"
-    />
+      ★ 以前はここに全ページ共通のヘッダーバナー（src/assets/header-banner.png）を
+        出していたが、2026-08-24 に外した。画面の一番上をヘッダーと本文だけにして、
+        読者がすぐ一覧に入れるようにするため。
+        画像ファイル自体は消していない。**OG画像（SNS共有画像）の元になっている**
+        （site/scripts/make-og.mjs）ので、消すとその生成が落ちる。
 
-    {/*
-      本文カード＋追従枠。
-      .layout は 1280px 未満では block（＝従来と同一）、
-      それ以上で3カラムのグリッドになり、右の余白に追従枠が載る。
+      本文カード＋左右の枠。
+      .layout は 1200px 未満では block（＝1カラム）、
+      それ以上で3カラムのグリッドになり、左右の余白に枠が載る。
       本文の幅はどちらでも変わらない。styles/global.css の .layout を参照。
+
+      ★ 並びは 左枠 → 本文 → 右枠。
+        画面での並びと同じ順に置くこと（読み上げ・キーボード操作がこの順になる）。
+        本文へは先頭の「本文へスキップ」で直接飛べる。
     */}
     <div class="layout">
+      {/* 常設ページ一覧。狭い画面では消える */}
+      <LeftRail />
       {/* 背景グラフィックから浮かせる本文カード。styles/global.css の .content-card。 */}
       <main id="main" class="content-card">
         <slot />
       </main>
+      {/* 新着記事＋PR枠。狭い画面では消える */}
       <FollowRail />
     </div>
     <Footer />

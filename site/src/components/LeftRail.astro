@@ -1,0 +1,192 @@
+---
+import { Image } from 'astro:assets'
+import { CATEGORIES } from '../config'
+import { EVERGREEN_PAGES } from '../lib/evergreen'
+import { serviceImage } from '../lib/images'
+
+/**
+ * 本文の**左**の余白に置く枠。中身は「最新の配信終了・配信開始一覧」だけ。
+ *
+ * ■ なぜ左に分けたか（2026-08-24）
+ * 以前は右の追従枠（FollowRail.astro）の1ブロック目に入れていたが、
+ * サービスが増えるほど枠が縦に伸び、その下の「新着記事」とPR枠が
+ * 画面外へ押し出されていた。**常設ページ一覧は左、記事とPRは右**に分けて、
+ * どちらも画面の上のほうから始まるようにしている。
+ *
+ * ■ 追従させない
+ * 追従するのは右のPR枠だけ（理由は FollowRail.astro の説明）。
+ * ここは本文と一緒に流す。
+ *
+ * ■ 並びは全ページで固定（重要）
+ * 「いま見ているページのカードを消す」実装に戻さないこと。
+ * ページを移動するたびに一覧の中身と順番が変わり、読者が混乱する
+ * （2026-08-23 の判断）。常に同じ順で全件出し、現在地のカードだけ
+ * リンクを外して `aria-current="page"` を付けている。
+ *
+ * ■ 出す条件
+ * 画面幅 75rem(1200px) 以上（styles/global.css の `.layout`）。
+ * **狭い画面では枠ごと消える**ので、常設ページへの導線は
+ * カテゴリページ側にも置いてある（そちらが狭い画面での入口）。
+ */
+
+/** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
+const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
+---
+
+<aside class="left-rail">
+  <nav class="block" aria-label="最新の配信終了・配信開始一覧">
+    <p class="block-title">最新の配信終了・配信開始一覧</p>
+    {/*
+      検索窓（WorkSearch.astro）があることを知らせて、使ってもらうための一文。
+      ★ 検索できるのは各カードの**リンク先**であって、この枠ではない。
+        文面を変えるときも「ここで検索できる」と読める書き方にしないこと。
+    */}
+    <p class="block-note">自由にタイトルを検索できます</p>
+    <ul class="cards">
+      {
+        EVERGREEN_PAGES.map((p) => {
+          const isCurrent = p.href === current
+          const Inner = (
+            <>
+              <span class="thumb-slot">
+                {serviceImage(p.thumbKey) ? (
+                  <Image class="thumb" src={serviceImage(p.thumbKey)!} alt="" width={48} height={48} />
+                ) : (
+                  <span class="thumb thumb-fallback" aria-hidden="true">
+                    {p.label.charAt(0)}
+                  </span>
+                )}
+              </span>
+              <span class="body">
+                <span class="badge" data-category={p.category}>
+                  {CATEGORIES[p.category].label}
+                </span>
+                <span class="name">{p.shortLabel}</span>
+              </span>
+            </>
+          )
+          return (
+            <li>
+              {/* 現在地は消さずに、リンクだけ外す。並びを崩さないため */}
+              {isCurrent ? (
+                <span class="rail-card is-current" aria-current="page">
+                  {Inner}
+                </span>
+              ) : (
+                <a class="rail-card" href={p.href}>
+                  {Inner}
+                </a>
+              )}
+            </li>
+          )
+        })
+      }
+    </ul>
+  </nav>
+</aside>
+
+<style>
+  /* 表示・非表示と配置は styles/global.css の .layout 側。ここは中身の見た目だけ。 */
+  .block {
+    max-width: 17rem;
+    /*
+     * 幅の広い画面では左の列が本文よりずっと広くなる。
+     * 左端に置くと本文から離れて孤立するので、本文側（右）に寄せる。
+     */
+    margin-left: auto;
+  }
+  /*
+   * ★ この見出しはカードの外＝**背景の紺の上に直接載る**。
+   *   --text-muted（本文用の暗いグレー）だと紺に沈んで読めない。
+   *   地の上に置く文字用の明るい色を使う（フッターと同じ考え方）。
+   *   docs/APPEARANCE.md「文字は白いカードの中にしか置かないこと」の例外なので、
+   *   色を変えるときはコントラストを必ず確認する。
+   */
+  .block-title {
+    margin: 0 0 0.15rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--footer-text);
+  }
+  /* 見出しの補足。見出しと同じく地の上に載るので色は同系のまま、太さと大きさで差をつける */
+  .block-note {
+    margin: 0 0 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--footer-text);
+  }
+
+  .cards {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .rail-card {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    /*
+     * サムネイル 48px ＋ 上下padding で 64px。
+     * 文字が2行になってもこの高さを下回らせないことで、
+     * カードの高さが揃い、縦の並びが乱れない。
+     */
+    min-height: 64px;
+    padding: 0.45rem 0.6rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+  }
+  a.rail-card:hover {
+    border-color: var(--accent);
+  }
+  /* 現在地。押せないことが分かる見た目にする（項目自体は消さない） */
+  .rail-card.is-current {
+    background: var(--bg-subtle);
+    border-color: var(--accent);
+  }
+  .thumb-slot {
+    flex: none;
+    width: 48px;
+    height: 48px;
+  }
+  .thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  .thumb-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-subtle);
+    color: var(--text-muted);
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  .body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+  .badge {
+    font-size: 0.68rem;
+    padding: 0.05rem 0.45rem;
+  }
+  .name {
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+  }
+  a.rail-card:hover .name {
+    color: var(--accent);
+  }
+</style>

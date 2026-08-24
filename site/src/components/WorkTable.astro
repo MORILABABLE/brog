@@ -1,6 +1,7 @@
 ---
 import { AFFILIATE } from '../config'
 import { relFor, withAmazonTag } from '../lib/affiliate'
+import { normalizeForSearch } from '../lib/normalize'
 import { amazonVideoLink, otherServiceLinks } from '../lib/search-links'
 import { formatDate, isoDate } from '../utils/date'
 import type { WorkRow } from '../lib/events-data'
@@ -25,6 +26,21 @@ function decorate(link: { label: string; url: string }) {
   const url = withAmazonTag(link.url, AFFILIATE.amazonTag)
   return { label: link.label, url, rel: relFor(url) }
 }
+
+/**
+ * 作品検索（WorkSearch.astro）が突き合わせる文字列を行に焼き込む。
+ *
+ * 邦題と原題の両方で引けるようにするが、**間に `|` を挟んで連結する**。
+ * 詰めて繋ぐと「邦題の末尾＋原題の先頭」という実在しない並びに
+ * 当たってしまう。読者の入力からは空白は落ちるが `|` は残るので、
+ * これが境界の印になる。
+ */
+function searchText(title: string, originalTitle?: string): string {
+  return [title, originalTitle]
+    .filter((v): v is string => Boolean(v))
+    .map(normalizeForSearch)
+    .join('|')
+}
 ---
 
 {
@@ -48,7 +64,8 @@ function decorate(link: { label: string; url: string }) {
           </thead>
           <tbody>
             {g.works.map((w) => (
-              <tr>
+              /* data-work-* は作品検索（WorkSearch.astro）が読む。消さないこと */
+              <tr data-work-row data-work-text={searchText(w.title, w.originalTitle)}>
                 <th scope="row">
                   {w.title}
                   {w.originalTitle && <span class="original">（原題: {w.originalTitle}）</span>}

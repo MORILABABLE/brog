@@ -16,7 +16,6 @@
   /*
    * サイト共通の背景グラフィック。画像ファイルではなく CSS で描いている。
    * 濃いブルーの地に点を敷き、本文カラム(.content-card)を白く浮かせる。
-   * ヘッダーバナー（暗い映画館の写真）と地続きに見せるための配色。
    * 濃さの調整・パターンの差し替えは docs/APPEARANCE.md を参照。
    * ライトとダークの2箇所あるので必ず両方直すこと。
    *
@@ -152,19 +151,6 @@ img {
 }
 
 /*
- * ヘッダーバナー。BaseLayout.astro から全ページに出している。
- * 本文カードと同じ幅・同じ角丸で揃え、上下を背景の地でつなぐ。
- */
-.site-banner {
-  display: block;
-  width: 100%;
-  max-width: var(--max-width);
-  height: auto;
-  margin: 1.6rem auto 0;
-  border-radius: 14px;
-}
-
-/*
  * 本文カラム。背景の点から浮かせるためのカード。
  * 外形は .wrap と同じ幅だが、カードの内側に余白を取るぶん本文はわずかに狭くなる。
  */
@@ -179,9 +165,9 @@ img {
 }
 
 /*
- * 本文＋追従枠のレイアウト。
+ * 本文＋左右の枠のレイアウト。
  *
- * ★ 既定は block。つまりしきい値未満では**いまと1ピクセルも変わらない**。
+ * ★ 既定は block。つまりしきい値未満では**枠が消えて1カラム**になる。
  *   .content-card が自分で margin:auto して中央に来る従来どおりの挙動。
  *
  * しきい値以上のときだけ3カラムのグリッドに切り替える。
@@ -189,15 +175,19 @@ img {
  *     ┌────────┬──────────────┬────────┐
  *     │  1fr    │  46rem(本文)  │  1fr    │
  *     └────────┴──────────────┴────────┘
- *                                 └ ここに追従枠
+ *          └ 左枠                    └ 右枠（追従）
  *
- * 左右とも 1fr なので**本文は中央のまま**で、右の余白に枠が載るだけ。
+ * 左枠 = 最新の配信終了・配信開始一覧（LeftRail.astro）
+ * 右枠 = 新着記事＋PR（FollowRail.astro／PR枠だけ追従）
+ *
+ * 左右とも 1fr なので**本文は中央のまま**で、余白に枠が載るだけ。
  * 本文の幅は変わらないので、配信終了作品の表が狭くならない。
  * これがサイドバー方式（本文を削る）を採らなかった理由。
  */
 .layout {
   display: block;
 }
+.left-rail,
 .follow-rail {
   display: none;
 }
@@ -217,10 +207,19 @@ img {
     display: grid;
     /*
      * minmax(0, 1fr) にしているのは、1fr（= minmax(auto, 1fr)）だと
-     * 追従枠の min-content 幅で右列だけが広がり、本文が中央からずれるため。
+     * 枠の min-content 幅で左右の列が広がり、本文が中央からずれるため。
      * 0 を下限にしておけば左右の列は必ず同じ幅になる。
      */
     grid-template-columns: minmax(0, 1fr) min(var(--max-width), 100%) minmax(0, 1fr);
+  }
+  /*
+   * 列は3つとも明示的に指定する。DOM の並び順に依存させない。
+   */
+  .left-rail {
+    display: block;
+    grid-column: 1;
+    /* 横のpaddingを削って、狭い画面でも枠の内側を確保する */
+    padding: 1.6rem 0.9rem 0;
   }
   .layout > .content-card {
     grid-column: 2;
@@ -228,7 +227,6 @@ img {
   .follow-rail {
     display: block;
     grid-column: 3;
-    /* 横のpaddingを削って、狭い画面でも枠の内側を確保する */
     padding: 1.6rem 0.9rem 0;
   }
 }
@@ -238,11 +236,6 @@ img {
  * スマホで本文の横幅を削るほうが、背景が見えることより損だという判断。
  */
 @media (max-width: 47rem) {
-  /* バナーもヘッダーに密着させて全幅にする */
-  .site-banner {
-    margin-top: 0;
-    border-radius: 0;
-  }
   .content-card {
     margin-top: 0;
     padding-inline: 1.15rem;
@@ -399,6 +392,47 @@ h3 {
 .badge[data-category='ranking'] {
   background: var(--cat-ranking-bg);
   color: var(--cat-ranking-fg);
+}
+
+/*
+ * 常設ページの「冒頭文＋作品検索」の行。
+ *   ┌──────────────────────────────┬──────────┐
+ *   │ 32本が終了予定です。終了日の早い順に… │ [検索窓]  │
+ *   └──────────────────────────────┴──────────┘
+ * 幅が足りなければ検索窓が下に落ちる（スマホ）。
+ */
+.list-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.2rem;
+  margin: 1.2rem 0 0;
+}
+.list-head > .summary {
+  flex: 1 1 16rem;
+  margin: 0;
+}
+
+/*
+ * 作品検索（WorkSearch.astro）が当たった行の印。
+ *
+ * ★ 印を付けるのは実行時なので、表を描く WorkTable.astro の scoped style では
+ *   なくここに置いている（クラスは JS が後から足す）。
+ * ★ 行そのものに background を敷いても、セルの背景に隠れて見えないことがある。
+ *   セル側（th/td）に敷くこと。
+ */
+tr.is-search-hit > th,
+tr.is-search-hit > td {
+  background: var(--bg-subtle);
+}
+tr.is-search-current > th,
+tr.is-search-current > td {
+  background: var(--accent-soft);
+}
+/* いま飛んでいる1行だけ、左端に縦棒を出す（色だけに頼らないため） */
+tr.is-search-current > *:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 /* 他サービスへの検索リンク。配信中と断定しないための導線。 */

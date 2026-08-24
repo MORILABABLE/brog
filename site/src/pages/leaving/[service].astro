@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import WorkTable from '../../components/WorkTable.astro'
+import WorkSearch from '../../components/WorkSearch.astro'
 import LeadImage from '../../components/LeadImage.astro'
 import { ATTRIBUTION, SITE } from '../../config'
 import { formatDate } from '../../utils/date'
@@ -79,9 +80,17 @@ const description =
       </p>
     ) : (
       <>
-        <p class="summary">
-          <strong>{works.length}本</strong>が終了予定です。終了日の早い順に並べています。
-        </p>
+        {/*
+          冒頭文の右の空きに作品検索を置く。
+          入力すると該当作品の行まで自動でスクロールする（絞り込みはしない）。
+          レイアウトは styles/global.css の .list-head。
+        */}
+        <div class="list-head">
+          <p class="summary">
+            <strong>{works.length}本</strong>が終了予定です。終了日の早い順に並べています。
+          </p>
+          <WorkSearch label="終了予定の作品を探す" />
+        </div>
         <WorkTable groups={groups} dateNoun="終了" />
       </>
     )
@@ -129,9 +138,7 @@ const description =
     font-size: 0.82rem;
     color: var(--text-muted);
   }
-  .summary {
-    margin: 1.2rem 0 0;
-  }
+  /* 冒頭文の位置は .list-head 側で決めている（styles/global.css） */
   .empty {
     margin: 1.5rem 0;
     color: var(--text-muted);

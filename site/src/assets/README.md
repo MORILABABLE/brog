@@ -13,8 +13,10 @@ import banner from '../assets/header-banner.png'
 
 > `widths` に**元画像の幅を超える数値は書けない**（ビルドが落ちる）。
 
-いま入っている `header-banner.png` は全ページのヘッダーバナー。
-差し替え手順は [docs/APPEARANCE.md の6節](../../../docs/APPEARANCE.md#6-ヘッダーバナーを差し替える)。
+いま入っている `header-banner.png` は**画面には出していない**（2026-08-24 に非表示）。
+ただし **OG画像（SNS共有画像）の元**なので消さないこと
+（`site/scripts/make-og.mjs` が読む）。経緯と差し替え手順は
+[docs/APPEARANCE.md の6節](../../../docs/APPEARANCE.md#6-ヘッダーバナーいまは表示していない)。
 
 `public/` に置いた画像は**最適化されない**（そのまま配信される）。使い分けは次のとおり。
 
