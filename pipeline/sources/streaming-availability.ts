@@ -46,9 +46,20 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // 実レスポンスでの検証がまだ済んでいないため、必須フィールドを最小限にし、
 // 欠けても落ちないようにしている。`npm run probe` で生レスポンスを確認できる。
 
+/**
+ * 画像URL。キーは `w240` `w480` … の幅指定。
+ *
+ * **URLは署名付きで、有効期限は6〜12ヶ月**（`?Expires=` に入っている）。
+ * サイトはこれをビルド時に取得して自分のドメインから配信する。
+ * 再ホストは提供元の許諾済み（2026-08-25）で、
+ * 「最低でも6ヶ月ごとに取り直すこと」を推奨されている。
+ *   → 取り直しは `npm run refresh:images`
+ */
 interface ApiImageSet {
   verticalPoster?: Record<string, string>
   horizontalPoster?: Record<string, string>
+  verticalBackdrop?: Record<string, string>
+  horizontalBackdrop?: Record<string, string>
 }
 
 interface ApiShow {
@@ -302,6 +313,44 @@ export class StreamingAvailabilitySource implements Source {
 
     return out
   }
+
+  /**
+   * 1作品の画像URLだけを取り直す。**1作品につき1リクエスト**。
+   *
+   * 署名付きURLは6〜12ヶ月で失効する。失効すると過去記事の画像が
+   * ビルドのたびに取得できなくなり、文字だけのカードに戻ってしまう。
+   * サイトが実際に使っている作品（data/image-manifest.json）だけを
+   * 期限前に取り直すために使う。呼ぶのは `npm run refresh:images`。
+   */
+  async fetchImages(showId: string): Promise<{ posterUrl?: string; backdropUrl?: string }> {
+    const show = await this.#get<ApiShow>(`/shows/${encodeURIComponent(showId)}`, {
+      country: this.theme.country,
+      output_language: this.theme.api_language,
+      series_granularity: 'show',
+    })
+    return { posterUrl: pickPoster(show), backdropUrl: pickBackdrop(show) }
+  }
+}
+
+/**
+ * 縦位置のポスター。記事のセクション画像に合成する。
+ * w480 を基準にするのは、サイトでの表示（170×255）に対して十分な解像度があり、
+ * かつ1枚50KB前後に収まるため。
+ */
+function pickPoster(show: ApiShow): string | undefined {
+  const set = show.imageSet?.verticalPoster ?? {}
+  return set.w480 ?? set.w360 ?? Object.values(set)[0]
+}
+
+/**
+ * 横位置のキーアート。**まだサイトでは使っていない。**
+ * 記事冒頭の横長画像（frontmatter の heroImage、16:7）に使える形なので、
+ * 収集の時点で落とさずに持っておく。取得コストは増えない
+ * （/changes の応答に最初から入っている）。
+ */
+function pickBackdrop(show: ApiShow): string | undefined {
+  const set = show.imageSet?.horizontalBackdrop ?? show.imageSet?.horizontalPoster ?? {}
+  return set.w1080 ?? set.w720 ?? set.w480 ?? Object.values(set)[0]
 }
 
 /**
@@ -317,9 +366,6 @@ export class StreamingAvailabilitySource implements Source {
  * 推測なしで1文書けるので、directors / cast も落とさずに持つ。
  */
 function toWork(show: ApiShow, changeLink?: string): Work {
-  const posters = show.imageSet?.verticalPoster ?? {}
-  const poster = posters.w480 ?? posters.w360 ?? Object.values(posters)[0]
-
   // 変化側のディープリンクが最も確実。無ければ配信オプションから拾う。
   const link =
     changeLink ??
@@ -340,7 +386,8 @@ function toWork(show: ApiShow, changeLink?: string): Work {
     // 記事で使うのは冒頭数名。全員入れてもプロンプトが太るだけで読者の役に立たない。
     directors: show.directors?.length ? show.directors.slice(0, 3) : undefined,
     cast: show.cast?.length ? show.cast.slice(0, 5) : undefined,
-    posterUrl: poster,
+    posterUrl: pickPoster(show),
+    backdropUrl: pickBackdrop(show),
     link,
     meta: {
       imdbId: show.imdbId,

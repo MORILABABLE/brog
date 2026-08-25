@@ -39,7 +39,19 @@ export interface Work {
   directors?: string[]
   /** 主な出演者。監督と同じくローマ字表記。 */
   cast?: string[]
+  /**
+   * 縦位置のポスター。**署名付きURLで6〜12ヶ月で失効する**（`?Expires=`）。
+   * サイトはこれをビルド時に取得して自分のドメインから配信する（再ホストは許諾済み）。
+   * 期限が切れる前の取り直しは `npm run refresh:images`。
+   */
   posterUrl?: string
+  /**
+   * 横位置のキーアート。**まだサイトでは使っていない**（2026-08-25 時点）。
+   * 記事冒頭の横長画像（heroImage、16:7）に使える形なので、
+   * 追加コストなしで取れる収集の時点で持っておく。
+   * ※ 2026-08-25 より前に収集したイベントには入っていない。
+   */
+  backdropUrl?: string
   /** 作品ページへのリンク（出典として記事に載せる） */
   link?: string
   meta: Record<string, unknown>

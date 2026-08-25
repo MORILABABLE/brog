@@ -1,13 +1,24 @@
 /**
  * 記事のセクション（`## ○月○日：…`）ごとに、本文へ挟む画像を生成する。
  *
- *   npm run sections           画像だけ作る（prebuild が自動で呼ぶ）
+ *   npm run sections            画像だけ作る（prebuild が自動で呼ぶ）
  *   npm run sections -- --write 記事の Markdown に画像の参照も挿し込む
+ *   npm run sections -- --refresh    ポスターのキャッシュを無視して取り直す
+ *   npm run sections -- --no-posters ポスターを使わず文字だけの版を作る
  *
- * ■ なぜ作品の場面写真ではないのか
- * 作中キャプチャは著作権があり、広告のある当サイトでは使えない。
- * 配信APIが返すのもポスターとキーアートだけで、本編の画像は無い。
- * 詳細は docs/APPEARANCE.md の9節。
+ * ■ 作品ポスターを載せている（2026-08-25〜）
+ * 配信API(Movie of the Night)の返すポスターを**ビルド時に取得して合成**し、
+ * 自分のドメインから配信している。再ホストの可否は提供元に照会して許諾済み。
+ * 経緯・取り直しの手順は posters.mjs の冒頭と docs/APPEARANCE.md の10〜11節。
+ *
+ * **作中キャプチャ（本編の場面写真）は使えない。** 著作権があり、
+ * 広告のある当サイトでは引用の要件を満たさない。APIが返すのもポスターと
+ * キーアートだけで、本編の画像は含まれない。
+ *
+ * ■ 画像が取れなくても記事は崩れない
+ * 署名付きURLの失効・CDN障害・オフラインで取得は必ず失敗しうる。
+ * その節は**従来どおり文字だけのカード**になる。枠・日付・見出し・作品の
+ * 選定ロジックは共通なので、絵の有無で情報量は変わらない。
  *
  * ■ この画像が「表の焼き直し」にならないようにしていること
  * 節の全作品を並べると、すぐ上の表と同じものが二度出て情報が過密になる。
@@ -26,6 +37,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { PosterCache, isPlaceholder, loadManifest, loadWorkImages, saveManifest } from './posters.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..')
@@ -36,14 +48,42 @@ const outDir = join(root, 'public', 'sections')
 const W = 1200
 const H = 460
 const WRITE = process.argv.includes('--write')
+const REFRESH = process.argv.includes('--refresh')
+const NO_POSTERS = process.argv.includes('--no-posters')
 
 /**
- * 作品行の組版。カードの内側に必ず収まる値にすること。
+ * 作品行の組版（**ポスターが無いときの版**）。カードの内側に必ず収まる値にすること。
  *   1行目 ROW_TOP、以降 ROW_STEP ずつ下がり、最後に「ほかN作」が1行入る。
  *   カード下端は H - 32 なので、ROW_TOP + MAX_HIGHLIGHT * ROW_STEP < H - 44 を守る。
  */
 const ROW_TOP = 302
 const ROW_STEP = 54
+
+/** 白いカードの位置。両方の版で共通 */
+const CARD = { x: 40, y: 32, w: W - 80, h: H - 64 }
+const PAD_X = CARD.x + 48
+
+/**
+ * ポスターの組版（**ポスターがあるときの版**）。
+ *
+ * ポスターは 2:3 で返ってくるので、w:h も 2:3 にして切り取りが起きないようにする。
+ * カードの右側に並べ、その下に作品名と公開年を添える。
+ * 左側（日付・見出し）の幅はここから逆算するので、**幅を変えると見出しの
+ * 折り返しも変わる。** 数値を触ったら実際に1枚出して確認すること。
+ */
+const POSTER = { w: 170, h: 255, gap: 18, right: 42, top: 64, radius: 12 }
+
+/**
+ * ポスターの下の作品名・公開年のベースライン。カード下端(428)を超えないこと。
+ * 公開年は**その節でいちばん行数の多い作品名に合わせて**下げる（節の中で高さが揃う）。
+ */
+const CAPTION = { title: 346, step: 24, size: 20, maxLines: 2, yearSize: 18 }
+
+/** ポスターを n 枚並べたときの、左端の x 座標 */
+function posterBlockX(n) {
+  const width = n * POSTER.w + (n - 1) * POSTER.gap
+  return CARD.x + CARD.w - POSTER.right - width
+}
 
 /** make-cards.mjs と同じ同梱フォント（SIL OFL 1.1 / scripts/fonts/OFL.txt） */
 const font = {
@@ -61,6 +101,14 @@ const font = {
 const MAX_HIGHLIGHT = 2
 
 const NO_LINE_START = '、。，．・：；！？」』）］｝〉》”’ー〜%％'
+
+/**
+ * 見出しの先頭に付く日付。**複数日にまたがる見出しもある**
+ * （例:「8月6日・8月10日：」「8月25日〜8月29日：」）。
+ * ここで全部を掴んでおかないと、バッジに片方しか出ず、
+ * 残りが見出し本文に居座って同じ日付が2回出る。
+ */
+const DATE_PREFIX = /^\d{1,2}月\d{1,2}日(?:\s*[・、,／/〜～―—-]\s*(?:\d{1,2}月)?\d{1,2}日)*/
 
 function textPath(weight, text, x, y, size) {
   const f = font[weight]
@@ -111,11 +159,46 @@ function wrap(weight, text, size, maxWidth, maxLines) {
   return lines
 }
 
+/**
+ * 収まる文字サイズを選ぶ。
+ *
+ * ポスターを置くと見出しに使える幅が 1024 → 636 まで狭まる。
+ * 36px のままだと長い見出し（実データで最長45文字）が途中で切れるので、
+ * **切れない組み合わせが見つかるまで小さくしていく。**
+ * 候補は大きい順に並べること。どれも収まらなければ最後の候補を使う。
+ */
+function fitLines(weight, text, maxWidth, candidates) {
+  const total = [...text].length
+  for (const c of candidates) {
+    const lines = wrap(weight, text, c.size, maxWidth, c.max)
+    if (lines.join('').length >= total) return { ...c, lines }
+  }
+  const last = candidates[candidates.length - 1]
+  return { ...last, lines: wrap(weight, text, last.size, maxWidth, last.max) }
+}
+
 function ellipsize(weight, text, size, maxWidth) {
   if (textWidth(weight, text, size) <= maxWidth) return text
   let s = text
   while (s.length > 1 && textWidth(weight, s + '…', size) > maxWidth) s = s.slice(0, -1)
   return s + '…'
+}
+
+/**
+ * 折り返して、入りきらなければ**最後の行に「…」を付ける。**
+ * wrap() は黙って切り捨てるので、ポスターの下の作品名のように
+ * 元の文字列が長い場所でそのまま使うと「途中で終わった文」に見える。
+ */
+function wrapClamp(weight, text, size, maxWidth, maxLines) {
+  const lines = wrap(weight, text, size, maxWidth, maxLines)
+  if (lines.join('').length >= [...text].length) return lines
+
+  // 最後の行は幅いっぱいまで詰まっている。ellipsize() は「収まっている文字列」を
+  // そのまま返すので使えない。「…」の分だけ削ってから足す。
+  let s = lines[lines.length - 1]
+  while (s.length > 1 && textWidth(weight, s + '…', size) > maxWidth) s = s.slice(0, -1)
+  lines[lines.length - 1] = s + '…'
+  return lines
 }
 
 // --- 収集データ（公開年を引くため） ---------------------------------------
@@ -215,7 +298,7 @@ function parseBlocks(md) {
     }
 
     out.push({
-      dateLabel: dateHeading.match(/^(\d{1,2}月\d{1,2}日)/)[1],
+      dateLabel: DATE_PREFIX.exec(dateHeading)[0],
       heading: subHeading ?? dateHeading,
       imageLine,
       tableEnd,
@@ -249,24 +332,33 @@ function pickHighlights(section) {
 
 // --- 画像 -----------------------------------------------------------------
 
-function buildSvg(section, years) {
+/**
+ * 節の画像の SVG を組む。
+ *
+ * `posters` に枚数を渡すと**ポスターを置く前提の組版**になる。
+ * SVG 側はポスターの下敷き（角丸の板）と作品名だけを描き、
+ * 絵そのものは sharp の composite であとから重ねる。
+ * 0 を渡すと従来どおり文字だけの版になる。**両方を保守すること。**
+ */
+function buildSvg(section, years, posters = 0) {
   // 日付はバッジで別に出すので、主題からは前置きを外す
   const dateLabel = section.dateLabel
-  const theme = section.heading.replace(/^\d{1,2}月\d{1,2}日[：:]\s*/, '')
+  const theme = section.heading.replace(new RegExp(DATE_PREFIX.source + '[：:]\\s*'), '')
 
   // 地の文が取り上げた作品を大きく見せる。残りは件数だけ添える。
   const shown = pickHighlights(section).map((r) => ({ ...r, year: years.get(r.title) }))
   const rest = section.rows.length - shown.length
 
-  const cardX = 40
-  const cardW = W - cardX * 2
-  const padX = cardX + 48
-  const innerW = cardW - 96
+  const padX = PAD_X
+  // ポスターを置くぶんだけ、文字に使える幅が狭くなる
+  const innerW = posters > 0 ? posterBlockX(posters) - 36 - padX : CARD.w - 96
 
   const parts = []
   parts.push(`<rect width="${W}" height="${H}" fill="#1b3a6e"/>`)
   parts.push(`<rect width="${W}" height="${H}" fill="url(#dots)"/>`)
-  parts.push(`<rect x="${cardX}" y="32" width="${cardW}" height="${H - 64}" rx="20" fill="#ffffff"/>`)
+  parts.push(
+    `<rect x="${CARD.x}" y="${CARD.y}" width="${CARD.w}" height="${CARD.h}" rx="20" fill="#ffffff"/>`,
+  )
 
   // 日付バッジ
   if (dateLabel) {
@@ -275,33 +367,86 @@ function buildSvg(section, years) {
     parts.push(`<path d="${textPath('bold', dateLabel, padX + 18, 95, 24).d}" fill="#1a5fd0"/>`)
   }
 
-  // 節の主題（見出しから日付を除いたもの）
-  wrap('bold', theme, 36, innerW, 2).forEach((l, i) => {
-    parts.push(`<path d="${textPath('bold', l, padX, 160 + i * 50, 36).d}" fill="#1a1d21"/>`)
-  })
+  if (posters === 0) {
+    // --- 文字だけの版（ポスターが取れなかったとき） ---
+    wrap('bold', theme, 36, innerW, 2).forEach((l, i) => {
+      parts.push(`<path d="${textPath('bold', l, padX, 160 + i * 50, 36).d}" fill="#1a1d21"/>`)
+    })
 
-  parts.push(
-    `<line x1="${padX}" y1="248" x2="${W - padX}" y2="248" stroke="#e3e6ea" stroke-width="2"/>`,
-  )
+    parts.push(
+      `<line x1="${padX}" y1="248" x2="${W - padX}" y2="248" stroke="#e3e6ea" stroke-width="2"/>`,
+    )
 
-  // 取り上げた作品。公開年は右端に寄せる。
-  const titleSize = 40
-  shown.forEach((w, i) => {
-    const y = ROW_TOP + i * ROW_STEP
-    const yearText = w.year ? `${w.year}年` : ''
-    const yearW = yearText ? textWidth('bold', yearText, 26) : 0
-    const title = ellipsize('bold', w.title, titleSize, innerW - yearW - 32)
-    parts.push(`<path d="${textPath('bold', title, padX, y, titleSize).d}" fill="#1a1d21"/>`)
-    if (yearText) {
+    // 取り上げた作品。公開年は右端に寄せる。
+    const titleSize = 40
+    shown.forEach((w, i) => {
+      const y = ROW_TOP + i * ROW_STEP
+      const yearText = w.year ? `${w.year}年` : ''
+      const yearW = yearText ? textWidth('bold', yearText, 26) : 0
+      const title = ellipsize('bold', w.title, titleSize, innerW - yearW - 32)
+      parts.push(`<path d="${textPath('bold', title, padX, y, titleSize).d}" fill="#1a1d21"/>`)
+      if (yearText) {
+        parts.push(
+          `<path d="${textPath('bold', yearText, W - padX - yearW, y, 26).d}" fill="#1f6feb"/>`,
+        )
+      }
+    })
+
+    if (rest > 0) {
+      const y = ROW_TOP + shown.length * ROW_STEP - 8
+      parts.push(`<path d="${textPath('regular', `ほか${rest}作`, padX, y, 26).d}" fill="#5c646e"/>`)
+    }
+  } else {
+    // --- ポスターを置く版 ---
+    // 見出しは幅が狭いぶん、収まるサイズを選び直す
+    const fit = fitLines('bold', theme, innerW, [
+      { size: 36, max: 2 },
+      { size: 31, max: 3 },
+      { size: 27, max: 3 },
+    ])
+    const step = Math.round(fit.size * 1.38)
+    fit.lines.forEach((l, i) => {
+      parts.push(`<path d="${textPath('bold', l, padX, 168 + i * step, fit.size).d}" fill="#1a1d21"/>`)
+    })
+
+    const dividerY = 168 + (fit.lines.length - 1) * step + 34
+    parts.push(
+      `<line x1="${padX}" y1="${dividerY}" x2="${posterBlockX(posters) - 36}" y2="${dividerY}" stroke="#e3e6ea" stroke-width="2"/>`,
+    )
+
+    // 「ほかN作」は罫線のすぐ下に置く。カード下端に単独で浮かせると、
+    // 左側だけ大きく空いて配置が崩れて見える。
+    if (rest > 0) {
       parts.push(
-        `<path d="${textPath('bold', yearText, W - padX - yearW, y, 26).d}" fill="#1f6feb"/>`,
+        `<path d="${textPath('regular', `ほか${rest}作`, padX, dividerY + 44, 26).d}" fill="#5c646e"/>`,
       )
     }
-  })
 
-  if (rest > 0) {
-    const y = ROW_TOP + shown.length * ROW_STEP - 8
-    parts.push(`<path d="${textPath('regular', `ほか${rest}作`, padX, y, 26).d}" fill="#5c646e"/>`)
+    // ポスターの下敷きと、その下の作品名・公開年
+    const blockX = posterBlockX(posters)
+    const captions = shown
+      .slice(0, posters)
+      .map((w) => wrapClamp('bold', w.title, CAPTION.size, POSTER.w, CAPTION.maxLines))
+    const yearY = CAPTION.title + Math.max(...captions.map((c) => c.length)) * CAPTION.step
+
+    shown.slice(0, posters).forEach((w, i) => {
+      const x = blockX + i * (POSTER.w + POSTER.gap)
+      parts.push(
+        `<rect x="${x}" y="${POSTER.top}" width="${POSTER.w}" height="${POSTER.h}" rx="${POSTER.radius}" fill="#eef1f5"/>`,
+      )
+
+      captions[i].forEach((l, k) => {
+        parts.push(
+          `<path d="${textPath('bold', l, x, CAPTION.title + k * CAPTION.step, CAPTION.size).d}" fill="#1a1d21"/>`,
+        )
+      })
+
+      if (w.year) {
+        parts.push(
+          `<path d="${textPath('bold', `${w.year}年`, x, yearY, CAPTION.yearSize).d}" fill="#1f6feb"/>`,
+        )
+      }
+    })
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
@@ -333,8 +478,40 @@ function altFor(section, years) {
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true })
 const years = loadWorkYears()
 
+/**
+ * 画像の出どころは2つある。**期限が先のほうを採る。**
+ *   収集ログ(data/events)      … 収集した時点の署名付きURL
+ *   台帳(data/image-manifest)  … refresh:images で取り直した新しいURL
+ * 取り直した直後は台帳のほうが新しく、まだ取り直していなければ収集ログしかない。
+ */
+const workImages = NO_POSTERS ? new Map() : loadWorkImages(repo)
+const manifest = loadManifest(repo)
+const manifestByTitle = new Map(
+  Object.values(manifest.works ?? {}).map((w) => [w.title, w]),
+)
+const posters = NO_POSTERS ? null : new PosterCache(repo, { force: REFRESH })
+
+/** サイトが実際に使った作品だけを台帳に残す。取り直しの対象を絞るため。 */
+const usedWorks = {}
+
+function imageFor(title) {
+  const found = [manifestByTitle.get(title), workImages.get(title)]
+    .filter((w) => w?.url && !isPlaceholder(w.url))
+    .sort((a, b) => (b.expiresAt ?? '').localeCompare(a.expiresAt ?? ''))[0]
+  if (found) {
+    usedWorks[found.id] = {
+      id: found.id,
+      title: found.title,
+      url: found.url,
+      expiresAt: found.expiresAt,
+    }
+  }
+  return found
+}
+
 let images = 0
 let inserted = 0
+let withPosters = 0
 
 for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   const slug = file.replace(/\.md$/, '')
@@ -346,7 +523,42 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   for (const s of sections) {
     const name = nameFor(slug, s.heading)
     const out = join(outDir, name)
-    await sharp(Buffer.from(buildSvg(s, years))).jpeg({ quality: 88, mozjpeg: true }).toFile(out)
+    const shown = pickHighlights(s)
+
+    /*
+     * ポスターは**その節の全員ぶん揃ったときだけ**使う。
+     * 1枚だけ欠けた状態で並べると、空の板が残って事故に見える。
+     * 揃わない節は文字だけの版に戻す（情報量は変わらない）。
+     */
+    let arts = []
+    if (posters) {
+      arts = await Promise.all(
+        shown.map((w) => {
+          const src = imageFor(w.title)
+          return src
+            ? posters.thumbnail(src.url, POSTER.w, POSTER.h, {
+                radius: POSTER.radius,
+                label: w.title,
+              })
+            : null
+        }),
+      )
+      if (!(arts.length > 0 && arts.every(Boolean))) arts = []
+    }
+
+    const image = sharp(Buffer.from(buildSvg(s, years, arts.length)))
+    if (arts.length > 0) {
+      const blockX = posterBlockX(arts.length)
+      image.composite(
+        arts.map((input, i) => ({
+          input,
+          left: blockX + i * (POSTER.w + POSTER.gap),
+          top: POSTER.top,
+        })),
+      )
+      withPosters++
+    }
+    await image.jpeg({ quality: 88, mozjpeg: true }).toFile(out)
     images++
   }
 
@@ -371,4 +583,15 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   }
 }
 
-console.log(`セクション画像: ${images}枚を生成${WRITE ? ` / 参照 ${inserted}件を記事に反映` : ''}`)
+console.log(
+  `セクション画像: ${images}枚を生成` +
+    (posters ? `（うちポスター入り ${withPosters}枚）` : '（ポスターなし）') +
+    (WRITE ? ` / 参照 ${inserted}件を記事に反映` : ''),
+)
+
+if (posters) {
+  posters.report()
+  // 台帳は「サイトが使った作品」だけに絞って書き直す。
+  // 使わなくなった作品を残すと、取り直し(refresh:images)が無駄にAPIを叩く。
+  saveManifest(repo, usedWorks)
+}

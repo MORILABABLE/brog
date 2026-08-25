@@ -7,6 +7,7 @@
     "dev": "astro dev",
     "cards": "node scripts/make-cards.mjs",
     "sections": "node scripts/make-sections.mjs",
+    "posters:purge": "node scripts/purge-posters.mjs",
     "prebuild": "node scripts/make-cards.mjs && node scripts/make-sections.mjs",
     "build": "astro build",
     "preview": "astro preview",

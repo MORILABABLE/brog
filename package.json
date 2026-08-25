@@ -12,6 +12,7 @@
     "enrich": "tsx pipeline/cli/enrich.ts",
     "write": "tsx pipeline/cli/write.ts",
     "preview": "tsx pipeline/cli/preview.ts",
+    "refresh:images": "tsx pipeline/cli/refresh-images.ts",
     "catalogs": "tsx pipeline/cli/catalogs.ts",
     "probe": "tsx pipeline/cli/probe.ts",
     "typecheck": "tsc --noEmit",

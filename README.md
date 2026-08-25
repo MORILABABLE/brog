@@ -150,6 +150,8 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | `npm run write -- --type <記事> [--genre <ジャンル>]` | LLM APIで生成して書き出す（課金あり） |
 | `npm run write -- ... --dry-run` | プロンプトだけ表示（無料） |
 | `npm run preview` | 収集済みデータが記事としてどう見えるかを表示（API消費なし） |
+| `npm run refresh:images` | **作品ポスターのURLを取り直す（6ヶ月ごと）**→ [docs/APPEARANCE.md 11節](./docs/APPEARANCE.md#11-作品ポスターの取り扱い許諾取り直し契約終了) |
+| `npm run refresh:images -- --dry-run` | 取り直す対象だけ表示（API消費なし） |
 | `npm run catalogs` | 対象国のサービス一覧と theme.yaml の解決結果 |
 | `npm run probe -- /changes country=jp ...` | APIの生レスポンスを表示（フィールド名の検証用） |
 | `npm run typecheck` | 型チェック |
