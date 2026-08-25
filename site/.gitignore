@@ -8,6 +8,7 @@ dist/
 # ★ 記事に書かれた ![](/sections/xxx.jpg) の参照だけは記事側にあるので管理する。
 public/cards/
 public/sections/
+public/heroes/
 
 # ビルド時に取得した作品ポスターの原本（scripts/posters.mjs）。
 # 手元で同じ画像を何度も落とさないためだけの置き場。消しても動く。

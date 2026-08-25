@@ -10,6 +10,7 @@ sources:
   - label: '作品タイトル（Wikidata・CC0）'
     url: 'https://www.wikidata.org/'
 dataAsOf: 2026-08-21
+heroImage: '/heroes/2026-09-leaving.webp'
 ---
 【9月終了】NetflixとAmazon Prime Videoで見放題配信が終了する作品を、終了日順にまとめました！記事作成時点（8月21日時点）では65本が見放題終了対象です。
 

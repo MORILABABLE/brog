@@ -10,6 +10,7 @@ sources:
   - label: '作品タイトル（Wikidata・CC0）'
     url: 'https://www.wikidata.org/'
 dataAsOf: 2026-08-21
+heroImage: '/heroes/2026-08-arrivals-japanese.webp'
 ---
 【8月配信開始】NetflixとAmazon Prime Videoで見放題配信が始まった邦画・国内ドラマを、配信開始日順にまとめました！記事作成時点（8月21日時点）では44本が新たに見放題の対象です。
 

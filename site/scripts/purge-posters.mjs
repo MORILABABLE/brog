@@ -23,8 +23,12 @@ const root = join(here, '..')
 const repo = join(root, '..')
 
 const cache = purge(repo)
-const sections = join(root, 'public', 'sections')
-rmSync(sections, { recursive: true, force: true })
+const generated = [join(root, 'public', 'sections'), join(root, 'public', 'heroes')]
+for (const dir of generated) rmSync(dir, { recursive: true, force: true })
 
-console.log(`削除しました:\n  ${cache}\n  ${sections}`)
+console.log(['削除しました:', cache, ...generated].join('\n  '))
 console.log('`npm run sections` で文字だけのカードを作り直せます。')
+console.log(
+  '記事の frontmatter に残った `heroImage: \'/heroes/…\'` も消すこと' +
+    '（画像が無いとカードはカテゴリ色のタイルに戻る）。',
+)

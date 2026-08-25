@@ -44,14 +44,21 @@ const { image, src, alt = '' } = Astro.props
   }
   .lead :global(img) {
     display: block;
-    width: 100%;
-    height: auto;
     /*
-     * 横長で切り抜く。縦長のポスターがそのまま入ると本文が押し下げられ、
-     * 記事の本題（表）に届くまでのスクロールが増える。
+     * **切り抜かない。高さで抑える。**
+     *
+     * 以前は 16:7 で切り抜いていた。縦長の絵がそのまま入ると本文が押し下げられ、
+     * 記事の本題（表）に届くまでのスクロールが増えるため。
+     * ところが記事のヘッダー画像は作品のポスター（2:3）になったので、
+     * 切り抜くと顔も題字も消えて何の作品か分からない帯になる。
+     *
+     * 高さの上限だけを決めれば、押し下げの問題は同じように防げる。
+     * 横長の画像を人が指定した場合も、そのまま自然な形で出る。
      */
-    aspect-ratio: 16 / 7;
-    object-fit: cover;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 320px;
     border-radius: 12px;
     border: 1px solid var(--border);
   }

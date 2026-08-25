@@ -72,6 +72,11 @@ const outDir = join(root, 'public', 'sections')
  * styles/global.css の `img[src^='/sections/posters/']` を参照。
  */
 const posterDir = join(outDir, 'posters')
+/**
+ * 記事ごとのヘッダー画像。frontmatter の `heroImage` から参照される。
+ * 記事一覧のカードの左サムネイルと、記事ページの見出し上に出る。
+ */
+const heroDir = join(root, 'public', 'heroes')
 
 const W = 1200
 /**
@@ -114,6 +119,16 @@ const font = {
   bold: opentype.parse(readFileSync(join(here, 'fonts', 'ZenKakuGothicNew-Bold.ttf')).buffer),
   regular: opentype.parse(readFileSync(join(here, 'fonts', 'ZenKakuGothicNew-Regular.ttf')).buffer),
 }
+
+/**
+ * 記事のヘッダー画像（frontmatter の `heroImage`）に使う作品を選ぶときの、
+ * 記事タイトルとの一致とみなす最短の文字数。
+ *
+ * 短くしすぎると事故る。「日常」（2文字）のような作品名は、
+ * 記事タイトルの地の文にたまたま出てくる。4文字あれば実データでは誤爆しない。
+ * 逆に**短い題名の作品は選ばれない**。その場合は次点の規則（記事の最初の画像）に落ちる。
+ */
+const HERO_MATCH_MIN = 4
 
 /**
  * 画像で大きく見せる作品数。
@@ -453,9 +468,82 @@ function labelFor(title, years) {
   return y ? `${title}（${y}年）` : title
 }
 
+// --- 記事のヘッダー画像（heroImage） --------------------------------------
+
+/** frontmatter を雑に読む。**書き換えはしない**ので、YAMLパーサは持ち込まない。 */
+function frontmatter(md) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(md)
+  if (!m) return null
+  const body = m[1]
+  const read = (key) => {
+    const hit = new RegExp(`^${key}:[ \\t]*(.*)$`, 'm').exec(body)
+    if (!hit) return undefined
+    return hit[1].trim().replace(/^['"]|['"]$/g, '')
+  }
+  return {
+    title: read('title') ?? '',
+    heroImage: read('heroImage'),
+    /** 閉じの `---` の行番号。ここの直前に足せば必ず frontmatter の中に入る */
+    endLine: md.slice(0, m.index + m[0].length).split('\n').length - 1,
+  }
+}
+
+/**
+ * 記事タイトルと作品名の一致の強さ。一致しなければ 0。
+ *
+ * 記事タイトルに作品名がそのまま入っているとは限らない。
+ * 「クレヨンしんちゃん劇場版」に対して作品名は
+ * 「クレヨンしんちゃん ブリブリ王国の秘宝」のように**後ろが長い**。
+ * そこで作品名を後ろから削りながら、記事タイトルに含まれる
+ * いちばん長い前方一致を探す。長く一致したものほど強い。
+ */
+function titleMatchScore(articleTitle, workTitle) {
+  const chars = [...workTitle]
+  for (let n = chars.length; n >= HERO_MATCH_MIN; n--) {
+    if (articleTitle.includes(chars.slice(0, n).join(''))) return n
+  }
+  return 0
+}
+
+/**
+ * ヘッダー画像の候補を、**使いたい順**に返す。
+ *
+ *   1. 記事タイトルと一致する作品（一致が長い順）
+ *   2. 記事に最初に出てくる作品（＝いちばん上の節で取り上げた作品）
+ *
+ * 実際にどれを使うかは、ポスターが取れるかどうかで決まる。
+ * 呼び出し側が先頭から試して、最初に取れたものを採用する。
+ */
+function heroCandidates(sections, articleTitle) {
+  const seen = new Set()
+  const all = []
+  for (const [order, s] of sections.entries()) {
+    for (const r of s.rows) {
+      if (seen.has(r.title)) continue
+      seen.add(r.title)
+      all.push({ title: r.title, order })
+    }
+  }
+
+  const matched = all
+    .map((c) => ({ ...c, score: titleMatchScore(articleTitle, c.title) }))
+    .filter((c) => c.score > 0)
+    .sort((a, b) => b.score - a.score || a.order - b.order)
+
+  // 次点。記事の先頭の節が取り上げた作品を、地の文の順で。
+  const firstShown = sections.length > 0 ? pickHighlights(sections[0]).map((r) => r.title) : []
+
+  const out = []
+  for (const t of [...matched.map((m) => m.title), ...firstShown, ...all.map((a) => a.title)]) {
+    if (!out.includes(t)) out.push(t)
+  }
+  return out
+}
+
 // --- 実行 -----------------------------------------------------------------
 
 mkdirSync(posterDir, { recursive: true }) // outDir も一緒にできる
+mkdirSync(heroDir, { recursive: true })
 const years = loadWorkYears()
 
 /**
@@ -493,6 +581,8 @@ let images = 0
 let inserted = 0
 let withPosters = 0
 let withText = 0
+let heroes = 0
+let heroesWritten = 0
 
 for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   const slug = file.replace(/\.md$/, '')
@@ -552,6 +642,34 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
     }
   }
 
+  /*
+   * 記事のヘッダー画像。
+   *
+   *   1. 記事タイトルと一致する作品のポスター
+   *   2. 取れなければ、記事に最初に出てくる作品のポスター
+   *
+   * **人が指定した heroImage は絶対に触らない。**
+   * 自分で入れた `/heroes/<スラッグ>.webp` だけを作り直す。
+   * 気に入らない絵は frontmatter を書き換えれば固定できる（好きな画像を
+   * `site/public/` に置いて、そのパスを書けばよい）。
+   */
+  const fm = frontmatter(md)
+  const heroPath = `/heroes/${slug}.webp`
+  let heroRef = null
+
+  if (posters && fm && (!fm.heroImage || fm.heroImage === heroPath)) {
+    for (const title of heroCandidates(sections, fm.title)) {
+      const src = imageFor(title)
+      if (!src) continue
+      const buf = await posters.poster(src.url, POSTER.w, POSTER.h, { label: title })
+      if (!buf) continue
+      writeFileSync(join(heroDir, `${slug}.webp`), buf)
+      heroRef = heroPath
+      heroes++
+      break
+    }
+  }
+
   if (!WRITE) continue
 
   // 後ろの節から処理する。前から触ると行番号がずれるため。
@@ -578,6 +696,25 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
     }
     inserted++
   }
+
+  /*
+   * frontmatter は**最後に触る**。ここは記事の先頭なので、
+   * 先に1行足すと上で数えた節の行番号がすべて1つずれる。
+   */
+  if (heroRef && fm) {
+    const at = lines.findIndex((l, i) => i < fm.endLine && /^heroImage:/.test(l))
+    const line = `heroImage: '${heroRef}'`
+    if (at >= 0) {
+      if (lines[at] !== line) {
+        lines[at] = line
+        heroesWritten++
+      }
+    } else {
+      lines.splice(fm.endLine, 0, line)
+      heroesWritten++
+    }
+  }
+
   const next = lines.join('\n')
   if (next !== md) {
     writeFileSync(path, next)
@@ -589,6 +726,10 @@ console.log(
   `セクション画像: ${images}枚を生成` +
     `（ポスターの節 ${withPosters} / 文字だけの節 ${withText}）` +
     (WRITE ? ` / 参照 ${inserted}件を記事に反映` : ''),
+)
+console.log(
+  `ヘッダー画像: ${heroes}本の記事に用意` +
+    (WRITE ? ` / frontmatter ${heroesWritten}件を更新` : ''),
 )
 
 if (posters) {

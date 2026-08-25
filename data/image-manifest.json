@@ -1,6 +1,6 @@
 {
   "note": "サイトが実際に使っている作品画像の署名付きURL。npm run refresh:images が失効の近いものだけを取り直す。手で編集しない。",
-  "updatedAt": "2026-08-25T03:13:28.030Z",
+  "updatedAt": "2026-08-25T04:48:43.329Z",
   "works": {
     "264": {
       "id": "264",
@@ -266,6 +266,12 @@
       "url": "https://cdn.movieofthenight.com/show/117216/poster/vertical/en/480.jpg?Expires=1805833205&Signature=GbAoiDpgPpsBZD5ai89aHKa1uIGt0PhByFS1i9yah4m-X0J9t1iiaqlN~3ClL-Ni-S16BoewmGyLRRKR5a26Az4d-X23HxlBLyj9p6RjZH8foApofntCfy78ZS6lA11ghcHRpjCNFcTGYmDF6MwW-ezCE-i93dD77jwMr7ZQT47yg8~m8PZUn~Bnj9DQCn23ApBMP2alTLbr0Vjp26ixm5d9uZXEAC~uuzWsV4bbIqOyInsdecMII0W5aCbxvlMAY8UagImbUt3SktD5qlEeJtZ4MC0pzbSdeXDu-BYirJm4EfIvinWi-OXSZ~YKfgWrh3fVBCNdklf2vxZkkpg-Cw__&Key-Pair-Id=KK4HN3OO4AT5R",
       "expiresAt": "2027-03-23T20:20:05.000Z"
     },
+    "134323": {
+      "id": "134323",
+      "title": "64-ロクヨン- 後編",
+      "url": "https://cdn.movieofthenight.com/show/134323/poster/vertical/en/480.jpg?Expires=1805502969&Signature=QYVUnuth2qC8AtmlXPG~I0~X1Vzr3OoT6uIU2vORbbCEvB6ZPZxxx9id9CxaQ5Gei9iRfo1E~vO8rGvbicvuD0Omjcam~kR6s16oGCYkF~RcW2C6uMn1OVWMjq7hSTaOQauxtU0v1VFLRNlRPVOHRfXScPeRdARwSt5dMiSWYt7ep8Kx7G7SRn48Ly41-WiE9kZBb4li~-VVsdvHwt9D-o6sPZfdaDbfy1DoqRU3LB1cwTy~nqX3WGV8DN~KvHlLyUeEH8ZF~xxlRCUtYKYPffTUb3Km47sBMv6sEdVZSko2iajGykG06okUn1bVvHM65c1TIVSNgiwWfdaPWnyqeg__&Key-Pair-Id=KK4HN3OO4AT5R",
+      "expiresAt": "2027-03-20T00:36:09.000Z"
+    },
     "137941": {
       "id": "137941",
       "title": "High & Low The Worst X",
@@ -319,6 +325,12 @@
       "title": "64（ロクヨン）",
       "url": "https://cdn.movieofthenight.com/show/4917815/poster/vertical/en/480.jpg?Expires=1805511076&Signature=CaAIPeJcuyuBPMnkgXoddKHwpYIvpFNu4p3Q9yFw6EUPf7pGhrwdWgySlxbNHsQRjGULKCtJQ8ABNSAX1CVha1W7TjLWEl5jM9jVXxuUQ~zhBSgcWTLrwcGJSb1NIxECAOJZBRbDelkkbxSnCI29WlMDJraozrKWaJ8j2HoCxzN58R1i9He~PUZjFhnkD-05YIeqnHXOaTHYX12hCx-06LO309dy3eAmfWxxnAta4y9~pbBdpg6uDjDCaGoFAjUzMOA-qcotiKg2rw4wVcW8g4AsNbMp5qHXrbLBsuVjJ0RXhG7DSWrLK926QfRMqLCRHrdVbyR2a9arX4jSNmyLYQ__&Key-Pair-Id=KK4HN3OO4AT5R",
       "expiresAt": "2027-03-20T02:51:16.000Z"
+    },
+    "8867548": {
+      "id": "8867548",
+      "title": "クレヨンしんちゃん オラたちの恐竜日記",
+      "url": "https://cdn.movieofthenight.com/show/8867548/poster/vertical/en/480.jpg?Expires=1805556855&Signature=DgLLna~uu1XDUEGI1edIgG1fqceVJdi~zsqZq7im3NMEpyDTpdXuEDrFadDHytI74BY8CjFRTzuxAyLwKQ-x7fretfFh-sAZVH-dVy0X-LBtaDj-15kbQwfvjGVNMiFQpmjjzreQTWz0F4NZnDcSvcPdi6RBU1269C5P7U-vG5Fxizl0a8OWPupn-yM0YAffd6IYwrkX2pUAvqmI73oQF-TLyruzt2QMQ3LxxW4WmQ3COCwVAT2yLdP76-EcdiOYb3SvUbkg3ueH3dljA-2uAQ0wccUfyNbZTpSahHifRAUy1Du-5USsExF6e4JaVi1F4Wu~oEh~NhQDgUzpdT9PnA__&Key-Pair-Id=KK4HN3OO4AT5R",
+      "expiresAt": "2027-03-20T15:34:15.000Z"
     },
     "10740263": {
       "id": "10740263",
