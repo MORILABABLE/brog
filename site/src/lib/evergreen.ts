@@ -9,13 +9,22 @@
  *   （2026-08-23 の判断）。ページ自体は残してあり、
  *   常設ページ下部の関連リンクから辿れる（＝孤立ページにはしない）。
  */
-import { ARRIVALS_SERVICES, LEAVING_SERVICES } from './events-data'
+import { ARRIVALS_SERVICES, LEAVING_SERVICES, loadArrivals, loadLeaving } from './events-data'
+import { formatDate } from '../utils/date'
 import type { CategorySlug } from '../config'
 
 export interface EvergreenPage {
   href: string
-  /** 一覧に出す見出し。記事タイトルと並ぶので体裁を揃える。 */
-  title: string
+  /**
+   * 日付を含まない素のタイトル。
+   *
+   * ★ **これをそのまま画面に出さないこと。** 必ず `evergreenTitle()` を通す。
+   *   常設ページは中身が入れ替わり続けるので、いつ時点の情報かを
+   *   タイトルに必ず添える方針にしてある（2026-08-25）。
+   *   `title` ではなく `titleBase` という名前にしてあるのは、
+   *   素で出す実装を書いたときに気づけるようにするため。
+   */
+  titleBase: string
   /** カテゴリバッジ。styles/global.css の .badge[data-category] と対応する。 */
   category: CategorySlug
   /** サムネイルのキー。src/assets/services/<キー>.png を探す。 */
@@ -44,7 +53,7 @@ function shortOf(label: string): string {
 export const EVERGREEN_PAGES: EvergreenPage[] = [
   ...LEAVING_SERVICES.map((s) => ({
     href: `/leaving/${s.key}`,
-    title: `${s.label}で配信終了予定の作品一覧`,
+    titleBase: `${s.label}で配信終了予定の作品一覧`,
     category: 'leaving' as CategorySlug,
     thumbKey: s.key,
     label: s.label,
@@ -52,7 +61,9 @@ export const EVERGREEN_PAGES: EvergreenPage[] = [
   })),
   ...ARRIVALS_SERVICES.map((s) => ({
     href: `/arrivals/${s.key}`,
-    title: `${s.label}で最近見放題になった作品一覧`,
+    // ★ 「最近」は入れない。いつ時点かは evergreenTitle() が頭に付ける。
+    //   「最近」と書いたまま日付を添えると、日付が古いときに矛盾して見える。
+    titleBase: `${s.label}で見放題になった作品一覧`,
     category: 'arrivals' as CategorySlug,
     thumbKey: s.key,
     label: s.label,
@@ -63,4 +74,51 @@ export const EVERGREEN_PAGES: EvergreenPage[] = [
 /** 指定カテゴリの常設ページだけを返す */
 export function evergreenFor(category: CategorySlug): EvergreenPage[] {
   return EVERGREEN_PAGES.filter((p) => p.category === category)
+}
+
+// --- 鮮度の見せ方 -----------------------------------------------------------
+//
+// 常設ページは公開日を持たない。`collect` のたびに中身だけが入れ替わるので、
+// 読者から見ると「いつの情報か分からないページ」になりやすい。
+// そこで**基準日を必ず前に出す**。組み立てはこの2つの関数だけが行う
+// （ページ・カード・左の枠でずれると、同じページが別の日付を名乗ることになる）。
+
+/**
+ * 常設ページのタイトル。`【2026年8月25日時点】Netflixで配信終了予定の作品一覧`
+ *
+ * `<title>` と `<h1>`、一覧カードの見出しはすべてこれを使う。
+ * 基準日が取れないときだけ、日付なしのタイトルに落ちる。
+ */
+export function evergreenTitle(titleBase: string, dataAsOf: Date | null): string {
+  return dataAsOf ? `【${formatDate(dataAsOf)}時点】${titleBase}` : titleBase
+}
+
+/**
+ * 常設枠（左の枠）に出す名前の頭。`【2026年8月25日更新】`
+ *
+ * タイトル側が「時点」なのに対してこちらが「更新」なのは、
+ * 枠の役割が「この一覧はいつ更新されたか」を示すことだから。
+ * 基準日が取れないときは空文字を返す（何も出さない）。
+ */
+export function evergreenStamp(dataAsOf: Date | null): string {
+  return dataAsOf ? `【${formatDate(dataAsOf)}更新】` : ''
+}
+
+/**
+ * 常設ページ1枚ぶんの件数と基準日。
+ *
+ * 左の枠は全ページで描画されるので、同じ集計が何度も走る。
+ * `events-data` 側で読み込みはキャッシュ済みだが、集計もここで持っておく。
+ */
+const summaries = new Map<string, { count: number; dataAsOf: Date | null }>()
+
+export function evergreenSummary(page: EvergreenPage): { count: number; dataAsOf: Date | null } {
+  const hit = summaries.get(page.href)
+  if (hit) return hit
+
+  const key = page.href.split('/').pop()!
+  const data = page.category === 'leaving' ? loadLeaving(key) : loadArrivals(key)
+  const summary = { count: data.works.length, dataAsOf: data.dataAsOf }
+  summaries.set(page.href, summary)
+  return summary
 }

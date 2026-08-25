@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets'
 import { CATEGORIES } from '../config'
-import { EVERGREEN_PAGES } from '../lib/evergreen'
+import { EVERGREEN_PAGES, evergreenStamp, evergreenSummary } from '../lib/evergreen'
 import { serviceImage } from '../lib/images'
 
 /**
@@ -46,6 +46,13 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
       {
         EVERGREEN_PAGES.map((p) => {
           const isCurrent = p.href === current
+          /*
+           * ★ いつ更新された一覧なのかを名前の頭に出す（2026-08-25）。
+           *   ここは「最新の一覧」を名乗る枠なので、日付が無いと
+           *   読者にはいつの情報か分からない。
+           *   日付は `evergreenStamp()` が組む（ページ側の「時点」と対になる）。
+           */
+          const stamp = evergreenStamp(evergreenSummary(p).dataAsOf)
           const Inner = (
             <>
               <span class="thumb-slot">
@@ -61,7 +68,10 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
                 <span class="badge" data-category={p.category}>
                   {CATEGORIES[p.category].label}
                 </span>
-                <span class="name">{p.shortLabel}</span>
+                <span class="name">
+                  {stamp && <span class="stamp">{stamp}</span>}
+                  {p.shortLabel}
+                </span>
               </span>
             </>
           )
@@ -181,10 +191,24 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
     padding: 0.05rem 0.45rem;
   }
   .name {
+    display: block;
     font-size: 0.86rem;
     font-weight: 700;
     line-height: 1.4;
     color: var(--text);
+  }
+  /*
+   * 更新日。**日付の途中では折り返させない。**
+   * 日本語は原則どこでも折り返せるので、指定しないと
+   * 「【2026年8月25」／「日更新】Netflix」のように割れる。
+   * 枠は幅が狭い（1200px時点で約158px）ので、折り返すこと自体は前提。
+   * 折り返すなら必ず `】` のうしろで折れるようにしておく。
+   */
+  .stamp {
+    display: inline-block;
+    white-space: nowrap;
+    font-weight: 400;
+    color: var(--text-muted);
   }
   a.rail-card:hover .name {
     color: var(--accent);

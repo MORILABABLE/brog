@@ -1,9 +1,8 @@
 ---
 import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
-import { formatDate } from '../utils/date'
 import { serviceImage } from '../lib/images'
-import type { EvergreenPage } from '../lib/evergreen'
+import { evergreenTitle, type EvergreenPage } from '../lib/evergreen'
 
 interface Props {
   page: EvergreenPage
@@ -28,8 +27,12 @@ const thumb = serviceImage(page.thumbKey)
  * サムネイルは `src/assets/services/<キー>.png`（人が置く指定画像）。
  * 記事カード側も同じ位置に絵が入るので、並べても段差が出ない。
  *
- * 日付欄に出しているのは公開日ではなく**配信情報の基準日**。
- * このページは公開日という概念を持たず、中身が入れ替わり続けるため。
+ * ★ 日付は**見出しの頭**に出す（`【2026年8月25日時点】…`）。
+ *   このページは公開日という概念を持たず中身が入れ替わり続けるので、
+ *   いつ時点の一覧なのかを最初に伝える（2026-08-25）。
+ *   以前はバッジの隣に別枠で出していたが、見出しにも入れると
+ *   同じ日付が2回並ぶので、そちらは外した。
+ *   組み立ては lib/evergreen.ts。ここで文字列を作らないこと。
  */
 ---
 
@@ -39,9 +42,8 @@ const thumb = serviceImage(page.thumbKey)
   <div class="main">
     <div class="meta">
       <span class="badge" data-category={cat.slug}>{cat.label}</span>
-      {dataAsOf && <time>{formatDate(dataAsOf)}時点</time>}
     </div>
-    <h2><a href={page.href}>{page.title}</a></h2>
+    <h2><a href={page.href}>{evergreenTitle(page.titleBase, dataAsOf)}</a></h2>
     <p class="desc">
       {
         count > 0

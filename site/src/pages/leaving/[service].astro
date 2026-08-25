@@ -9,6 +9,7 @@ import { ATTRIBUTION, SITE } from '../../config'
 import { formatDate } from '../../utils/date'
 import { serviceImage } from '../../lib/images'
 import { LEAVING_SERVICES, groupByDate, loadLeaving } from '../../lib/events-data'
+import { evergreenTitle } from '../../lib/evergreen'
 
 /**
  * 常設ページ「◯◯で配信終了予定の作品」。
@@ -36,7 +37,13 @@ const { works, dataAsOf } = loadLeaving(service!)
 const groups = groupByDate(works)
 const lead = serviceImage(service!)
 
-const title = `${label}で配信終了予定の作品一覧`
+/*
+ * タイトルの頭に基準日を出す（`【2026年8月25日時点】…`）。
+ * 常設ページは公開日を持たず中身だけが入れ替わるので、
+ * **いつ時点の一覧なのかをタイトルで先に伝える**（2026-08-25）。
+ * 組み立ては lib/evergreen.ts の1か所に寄せてある。ここで文字列を作らないこと。
+ */
+const title = evergreenTitle(`${label}で配信終了予定の作品一覧`, dataAsOf)
 const description =
   works.length > 0
     ? `${label}で見放題配信が終了する予定の作品${works.length}本を終了日順にまとめています。最も近い終了日は${formatDate(groups[0]!.date)}です。`

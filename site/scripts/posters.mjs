@@ -142,13 +142,23 @@ export function loadManifest(repoDir) {
 
 export function saveManifest(repoDir, works) {
   const path = join(repoDir, 'data', MANIFEST_NAME)
+  // 作品IDで並べておくと git の差分が読める
+  const sorted = Object.fromEntries(Object.entries(works).sort(([a], [b]) => (a < b ? -1 : 1)))
+
+  /*
+   * ★ 中身が変わっていなければ書かない。
+   *   この台帳はビルドのたびに書き出されるので、時刻を毎回更新すると
+   *   **何も変わっていないのに1行だけ差分が出る**。コミットのノイズになる。
+   */
+  const current = loadManifest(repoDir)
+  if (JSON.stringify(current.works ?? {}) === JSON.stringify(sorted)) return
+
   const body = {
     note:
       'サイトが実際に使っている作品画像の署名付きURL。' +
       'npm run refresh:images が失効の近いものだけを取り直す。手で編集しない。',
     updatedAt: new Date().toISOString(),
-    // 作品IDで並べておくと git の差分が読める
-    works: Object.fromEntries(Object.entries(works).sort(([a], [b]) => (a < b ? -1 : 1))),
+    works: sorted,
   }
   writeFileSync(path, JSON.stringify(body, null, 2) + '\n', 'utf8')
 }
