@@ -9,6 +9,7 @@ import { join } from 'node:path'
 import { parse } from 'yaml'
 import type { SearchLinkConfig } from './core/search-links.ts'
 import type { ArticleType } from './core/article.ts'
+import type { UnextConfig } from './sources/unext.ts'
 
 export interface CatalogConfig {
   /** テーマ内で使う安定したキー。記事やファイル名で使う。 */
@@ -52,6 +53,15 @@ export interface Theme {
    * 配信状況のデータを持たないサービスに、断定せずに導線だけを作るための設定。
    */
   search_links?: SearchLinkConfig[]
+  /**
+   * U-NEXT の収集設定。
+   *
+   * catalogs（Streaming Availability API）と別枠なのは、素性がまったく違うため。
+   * catalogs は API のカタログID、こちらはサイトのメニューIDで、
+   * 取得手段も（API / 実ブラウザ）別物。同じ配列に混ぜると両方が歪む。
+   * 未設定なら U-NEXT の収集を行わない。
+   */
+  unext?: UnextConfig
 }
 
 export const THEME_ROOT = 'theme-packs'
@@ -86,6 +96,25 @@ export async function loadTheme(key = activeThemeKey()): Promise<Theme> {
     .map((c) => c.key)
     .filter((k, i, a) => a.indexOf(k) !== i)
   if (dupes.length) throw new Error(`${path}: catalogs.key が重複しています: ${dupes.join(', ')}`)
+
+  // unext は任意。書いてあるなら、収集が空振りしないところまで見ておく。
+  // IDが1つ欠けるとそのジャンルだけ静かに0件になるため、ここで落とす。
+  if (theme.unext) {
+    const u = theme.unext
+    if (!u.service_key) throw new Error(`${path}: unext.service_key が未設定です`)
+    if (!u.genres?.length) throw new Error(`${path}: unext.genres が空です`)
+    for (const g of u.genres) {
+      const lack = (['key', 'label', 'id', 'arrivals', 'all'] as const).filter((k) => !g[k])
+      if (lack.length) {
+        throw new Error(
+          `${path}: unext.genres[${g.key ?? '?'}] の ${lack.join(', ')} が未設定です` +
+            '（`npm run unext:menu` で調べ直せます）',
+        )
+      }
+    }
+    const gd = u.genres.map((g) => g.key).filter((k, i, a) => a.indexOf(k) !== i)
+    if (gd.length) throw new Error(`${path}: unext.genres.key が重複しています: ${gd.join(', ')}`)
+  }
 
   return theme
 }

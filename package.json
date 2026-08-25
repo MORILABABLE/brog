@@ -14,10 +14,14 @@
     "preview": "tsx pipeline/cli/preview.ts",
     "catalogs": "tsx pipeline/cli/catalogs.ts",
     "probe": "tsx pipeline/cli/probe.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "unext:menu": "tsx pipeline/cli/unext-menu.ts",
+    "collect:unext": "tsx pipeline/cli/collect-unext.ts",
+    "unext:refresh": "tsx pipeline/cli/unext-refresh.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
+    "playwright": "^1.62.1",
     "yaml": "^2.6.1"
   },
   "devDependencies": {

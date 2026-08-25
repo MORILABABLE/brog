@@ -8,6 +8,7 @@
 | **背景・ロゴ・バナー・OG画像を変える** | **[docs/APPEARANCE.md](./docs/APPEARANCE.md)** |
 | **作業を再開する / 引き継ぐ** | **[docs/HANDOVER.md](./docs/HANDOVER.md)** |
 | **他ジャンルでブログを増やす** | **[docs/NEW-THEME.md](./docs/NEW-THEME.md)** |
+| **U-NEXT の収集（APIの外側）** | **[docs/UNEXT.md](./docs/UNEXT.md)** |
 | 設計の全体像・判断の理由 | [DESIGN.md](./DESIGN.md) |
 | ドメイン・GitHub・Cloudflare の操作 | [DEPLOY.md](./DEPLOY.md) |
 
@@ -136,6 +137,9 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | コマンド | 内容 |
 |---|---|
 | `npm run collect` | 配信状況の変化を収集して記録 |
+| `npm run collect:unext` | **U-NEXT の新着・配信終了予定を収集する（APIキー不要）**→ [docs/UNEXT.md](./docs/UNEXT.md) |
+| `npm run unext:refresh` | U-NEXT の作品台帳を取り直す（**終了日の変更を見つける**） |
+| `npm run unext:menu` | U-NEXT のジャンル・カテゴリIDを調べる |
 | `npm run notify` | **前回以降の変化を運用者に通知する（Issue→メール）。API消費なし** |
 | `npm run notify -- --dry-run` | 送らずに通知本文だけ表示する |
 | `npm run enrich` | 収集済みイベントに Wikidata の情報を後追いで足す（無料・APIキー不要） |
@@ -214,7 +218,7 @@ Ghost         → ゴースト/ニューヨークの幻
 `upcoming`（配信開始予定）は4社とも0件で、`arrivals` の「これから配信開始予定」節は
 一度も出力されていない。詳細は `theme-packs/streaming-jp/theme.yaml` の catalogs 節。
 
-対象外の U-NEXT / Hulu / DMM TV には**検索リンク方式**で導線を作る。
+対象外の Hulu / DMM TV には**検索リンク方式**で導線を作る。
 作品別の配信状況を取れるAPIは月2.2万円〜（TMDB商用）で見合わないため、
 「配信中」と主張せず各社のサイト内検索へ作品名を渡すリンクだけを出す。
 
@@ -224,6 +228,18 @@ Ghost         → ゴースト/ニューヨークの幻
 
 規約上クリーンで、誤情報にもならず、読者にとっては1クリックで確認できる。
 URLは `theme.yaml` の `search_links` にあり、ASPのディープリンクに差し替えれば成果計測もできる。
+
+### U-NEXT だけは自前で取っている（2026-08-25〜）
+
+**U-NEXT は検索リンクの段階を卒業した。** このAPIに無いのは変わらないが、
+新着・配信終了予定・見放題かポイントかを**自前で収集している**（`npm run collect:unext`）。
+配信終了日まで取れるので、`leaving` を U-NEXT 単独で書ける。
+
+- 何が動いているか・データの形 → **[docs/UNEXT.md](./docs/UNEXT.md)**
+- なぜそうしてよいのか・法務上の整理 → [docs/SOURCES-UNEXT-HULU.md](./docs/SOURCES-UNEXT-HULU.md)
+
+**Hulu には同じことをしない。** 利用規約 第3条(3) が自動化手段でのアクセスを
+明示的に禁止しているため。技術的には U-NEXT より簡単だが、やらない。
 
 ## 記事生成について
 

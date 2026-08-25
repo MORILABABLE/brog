@@ -130,3 +130,105 @@ search_links:
 #    label: Crunchyroll
 #    id: crunchyroll.subscription
 #    supports_upcoming: false
+
+# =============================================================
+# U-NEXT（Streaming Availability API の外側にあるサービス）
+#
+# ★ このAPIの日本カタログに U-NEXT は存在しない（2026-08-24 再確認）。
+#   一方でアフィリエイト単価は最も高い部類（1,320円）で、収益の主戦場はこちら。
+#   そこで U-NEXT だけは**自前で取りに行く**。
+#   経緯・法務上の整理は docs/SOURCES-UNEXT-HULU.md にある。
+#
+# ★ Hulu は同じことができるのに**やらない**。
+#   利用規約 第3条(3) が自動化手段でのアクセスを明示的に禁止しているため。
+#   Hulu は search_links の検索リンクのまま据え置く。
+#
+# 取得は実ブラウザ（Playwright + Edge/Chromium）で行う。
+#   npm run collect:unext
+#
+# ジャンルとカテゴリのIDは `npm run unext:menu` で調べ直せる。
+# **IDがずれると収集が静かに空振りする**ので、取得数が急に減ったらまずここを疑う。
+unext:
+  service_key: u-next
+  label: U-NEXT
+
+  # 1ジャンルあたり何ページ読むか（1ページ30件）。
+  # 新規入荷は実測で 洋画169件(6p) / アニメ62件(3p) なので、
+  # 週2回の収集なら3ページ（90件）で足りる。取りこぼすなら増やす。
+  arrivals_pages: 3
+
+  # 終了予定は「終了日の近い順」に並べて上から読む。
+  # 期限(expiring_horizon_days)を越えた時点でそのジャンルを打ち切るので、
+  # ここは上限であって、毎回この枚数を読むわけではない。
+  expiring_pages: 2
+
+  # 何日先までの終了予定を拾うか。
+  # 45日にしているのは「翌月に終了する作品」の記事を当月中に書けるようにするため。
+  expiring_horizon_days: 45
+
+  # 遷移と遷移の間に空ける最小間隔（ミリ秒）。
+  # 規約 第25条(7)「当社のサーバーに過度の負担を及ぼす行為」に触れないための設定で、
+  # **速くしたくなっても下げないこと**。ここだけは自分で制御できる項目。
+  min_interval_ms: 2500
+
+  # `npm run unext:menu` の出力をそのまま貼る。
+  #   arrivals … 新規入荷（カテゴリ既定の並びが PUBLIC_START_DESC のもの）
+  #   all      … 全作品（終了予定を「終了日の近い順」で読むのに使う）
+  # ジャンルごとに呼び方が違う（キッズは「ぜんぶ」「あたらしい」）ので、
+  # 名前ではなく構造で拾っている。unext-menu.ts の pickAll / pickArrivals 参照。
+  genres:
+    - key: youga
+      label: 洋画
+      id: MNU0000131
+      arrivals: MNU0000692   # 新規入荷作品
+      all: MNU0000141        # すべての作品
+    - key: houga
+      label: 邦画
+      id: MNU0000132
+      arrivals: MNU0000710   # 新規入荷作品
+      all: MNU0000709        # すべての作品
+    - key: kaigai-drama
+      label: 海外ドラマ
+      id: MNU0000133
+      arrivals: MNU0000726   # 新規入荷作品
+      all: MNU0000725        # すべての作品
+    - key: asia-drama
+      label: 韓流・アジア
+      id: MNU0000134
+      arrivals: MNU0000740   # 新規入荷作品
+      all: MNU0000739        # すべての作品
+    - key: kokunai-drama
+      label: 国内ドラマ
+      id: MNU0000135
+      arrivals: MNU0000754   # 新規入荷作品
+      all: MNU0000753        # すべての作品
+    - key: anime
+      label: アニメ
+      id: MNU0000136
+      arrivals: MNU0000769   # 新規入荷作品
+      all: MNU0000768        # すべての作品
+    - key: kids
+      label: キッズ
+      id: MNU0000137
+      arrivals: MNU0000788   # あたらしい
+      all: MNU0000787        # ぜんぶ
+    - key: tv-entame
+      label: TV番組・エンタメ
+      id: MNU0000138
+      arrivals: MNU0000801   # 新規入荷作品
+      all: MNU0000800        # すべての作品
+    - key: news
+      label: 報道・スペシャル
+      id: MNU0000832
+      arrivals: MNU0000841   # 新規入荷作品
+      all: MNU0000840        # すべての作品
+    - key: music
+      label: 音楽・ライブ
+      id: MNU0000833
+      arrivals: MNU0012313   # 新規入荷の音楽作品
+      all: MNU0000850        # すべての音楽作品
+    - key: stage
+      label: 舞台・演劇
+      id: MNU0011140
+      arrivals: MNU0011179   # 新規入荷作品
+      all: MNU0011143        # すべての作品

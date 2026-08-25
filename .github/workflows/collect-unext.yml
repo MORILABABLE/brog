@@ -1,0 +1,97 @@
+name: collect-unext
+
+# U-NEXT の新着・配信終了予定を収集する。
+#
+# ■ collect.yml と分けている理由
+# 所要時間の桁が違う。collect は HTTP API なので数秒で終わるが、
+# こちらは実ブラウザで1ページ2.5秒あけて開くので数分〜数十分かかる。
+# 同じジョブに入れると、API の枠だけ見ていたつもりが長時間ジョブになる。
+#
+# APIキーは不要。かわりに**時間**と**相手のサーバーへの負荷**が制約になる。
+# 詳細は docs/UNEXT.md。
+on:
+  schedule:
+    # 毎週 火・金 の 06:00 JST (= 前日 21:00 UTC)
+    # collect.yml（04:00 JST）の2時間後。data/ への push がぶつからないよう
+    # concurrency で直列化しているが、時間もずらしておく。
+    - cron: '0 21 * * 1,4'
+  workflow_dispatch:
+    inputs:
+      kinds:
+        description: '取得する変化の種類（new,expiring）'
+        default: 'new,expiring'
+      max_detail:
+        description: '作品ページを開く上限（実行時間はほぼこれで決まる）'
+        default: '300'
+      refresh_max:
+        description: '取り直す作品ページの上限（0で取り直さない）'
+        default: '150'
+
+permissions:
+  contents: write
+  issues: write
+
+# collect.yml と同じグループ。data/ を両方が書くので直列に流す。
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect-unext:
+    runs-on: ubuntu-latest
+    # 2.5秒間隔 × 上限450ページ ＝ 最長でも約20分。余裕を見て倍。
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # 開発機は Edge を使うので何も入れなくてよいが、CI には無い。
+      # PoliteBrowser は msedge → chrome → 同梱 Chromium の順に試すので、
+      # ここで同梱版を入れておけば最後の候補で起動できる。
+      - name: Chromium を入れる
+        run: npx playwright install --with-deps chromium
+
+      - name: U-NEXT の変化を収集
+        env:
+          KINDS: ${{ inputs.kinds || 'new,expiring' }}
+          MAX_DETAIL: ${{ inputs.max_detail || '300' }}
+        run: npm run collect:unext -- --kinds "$KINDS" --max-detail "$MAX_DETAIL"
+
+      # 収集は既知の作品を素通りするので、放っておくと台帳が古くなる。
+      # 配信終了日は変わるため、**すでに記事にした作品の日付がずれる**のが怖い。
+      # 失敗しても収集ぶんは残したいので continue-on-error。
+      - name: 作品台帳を取り直す
+        if: ${{ (inputs.refresh_max || '150') != '0' }}
+        continue-on-error: true
+        env:
+          REFRESH_MAX: ${{ inputs.refresh_max || '150' }}
+        run: npm run unext:refresh -- --max "$REFRESH_MAX"
+
+      - name: 収集結果を通知
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTIFY_MENTION: ${{ github.repository_owner }}
+        run: npm run notify
+
+      # 通知が失敗しても収集結果は残す。
+      - name: 結果をコミット
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "変化なし"
+          else
+            git commit -m "chore(collect:unext): $(date -u +%Y-%m-%d)"
+            git pull --rebase
+            git push
+          fi

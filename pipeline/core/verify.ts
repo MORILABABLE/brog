@@ -16,8 +16,33 @@ export interface VerifyIssue {
 /** AdSense対策の下限。これを下回る記事は薄いと判断される。 */
 const MIN_BODY_CHARS = 2000
 
-/** 帰属表示（API利用規約上の義務）に含まれるべき文字列 */
-const ATTRIBUTION_MARKER = 'Movie of the Night'
+/**
+ * データの出どころごとの出典表記。本文に必ず含まれていなければならない。
+ *
+ * ★ 一律に Movie of the Night を要求してはいけない。
+ *   U-NEXT はそのAPIから取っていないので、機械的に付けると
+ *   **取得していないAPIを出典として偽る**ことになる。
+ *   義務の性質も違う（前者は利用規約上の義務、後者は読者への説明責任）。
+ *
+ * 上から順に最初に当たったものを使う。1記事に複数の出どころが混ざるなら、
+ * その全部が本文に必要になる。
+ */
+const ATTRIBUTIONS: {
+  match: (e: ChangeEvent) => boolean
+  marker: string
+  reason: string
+}[] = [
+  {
+    match: (e) => e.work.meta.source === 'u-next',
+    marker: 'U-NEXT の作品ページ',
+    reason: '出どころと基準日を読者に示す必要があります',
+  },
+  {
+    match: () => true,
+    marker: 'Movie of the Night',
+    reason: 'API利用規約上の義務です',
+  },
+]
 
 export interface VerifyInput {
   parsed: ParsedArticle
@@ -148,9 +173,18 @@ export function verifyArticle(input: VerifyInput): VerifyIssue[] {
     )
   }
 
-  // --- 帰属表示（規約上の義務） ---
-  if (!parsed.body.includes(ATTRIBUTION_MARKER)) {
-    err(`本文に配信情報の提供元表記（${ATTRIBUTION_MARKER}）がありません。API利用規約上の義務です。`)
+  // --- 出典表記 ---
+  // 素材の出どころから必要な表記を割り出す。記事タイプごとに書き分けるのではなく、
+  // データ側から決めるのは、書き分けを忘れても落ちるようにするため。
+  const required = new Map<string, string>()
+  for (const e of items) {
+    const a = ATTRIBUTIONS.find((x) => x.match(e))!
+    required.set(a.marker, a.reason)
+  }
+  for (const [marker, reason] of required) {
+    if (!parsed.body.includes(marker)) {
+      err(`本文に配信情報の提供元表記（${marker}）がありません。${reason}。`)
+    }
   }
 
   // --- 重複 ---

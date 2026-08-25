@@ -54,19 +54,37 @@ export function asOfLabel(ctx: ArticleContext): string {
   return formatMonthDay(ctx.now.toISOString(), ctx.theme.utc_offset_minutes)
 }
 
+/**
+ * 記事に出しうるサービスの一覧（キーと表示名）。
+ *
+ * ★ `theme.catalogs` だけを見てはいけない。
+ *   U-NEXT は Streaming Availability API のカタログに存在せず、
+ *   `theme.unext` に別枠で定義されている（取得手段がまったく違うため）。
+ *   ここで足しておかないと、U-NEXT の記事だけサービス名が
+ *   キー（`u-next`）のまま本文に出る。
+ */
+export function allServices(ctx: ArticleContext): { key: string; label: string }[] {
+  const list = ctx.theme.catalogs.map((c) => ({ key: c.key, label: c.label }))
+  if (ctx.theme.unext) {
+    list.push({ key: ctx.theme.unext.service_key, label: ctx.theme.unext.label })
+  }
+  return list
+}
+
 /** 「NetflixとAmazon Prime Video」。3つ以上なら中黒でつなぐ。 */
 export function serviceNames(items: ChangeEvent[], ctx: ArticleContext): string {
   const present = new Set(items.map((e) => e.service))
+  const all = allServices(ctx)
   // 並び順はテーマの定義順に固定する。月によって順番が入れ替わらないようにするため。
-  const labels = ctx.theme.catalogs.filter((c) => present.has(c.key)).map((c) => c.label)
-  if (labels.length === 0) return ctx.theme.catalogs.map((c) => c.label).join('・')
+  const labels = all.filter((c) => present.has(c.key)).map((c) => c.label)
+  if (labels.length === 0) return all.map((c) => c.label).join('・')
   if (labels.length === 2) return labels.join('と')
   return labels.join('・')
 }
 
 /** サービス名の対応表。プロンプトに出す表示名を引くため。 */
 export function serviceLabels(ctx: ArticleContext): Map<string, string> {
-  return new Map(ctx.theme.catalogs.map((c) => [c.key, c.label]))
+  return new Map(allServices(ctx).map((c) => [c.key, c.label]))
 }
 
 /** サイトのタイムゾーンで見て、記事の対象月に入るか */

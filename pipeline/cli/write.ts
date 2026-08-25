@@ -101,6 +101,30 @@ function recipeLabel(r: Recipe): string {
 }
 
 /**
+ * frontmatter に載せる出典。**素材の出どころから機械的に決める。**
+ *
+ * ★ 固定で書いてはいけない。U-NEXT は Streaming Availability API から
+ *   取っていないので、一律に載せると**取得していないAPIを出典として偽る**。
+ *   記事タイプ側で書き分けると、タイプを増やしたときの書き分け漏れが
+ *   そのまま嘘の出典になるため、データ側から決める。
+ */
+function sourcesFor(items: ChangeEvent[]): { label: string; url: string }[] {
+  const out: { label: string; url: string }[] = []
+
+  if (items.some((e) => e.work.meta.source !== 'u-next')) {
+    out.push({ label: ATTRIBUTION.text, url: ATTRIBUTION.url })
+    out.push({ label: '作品タイトル（Wikidata・CC0）', url: 'https://www.wikidata.org/' })
+  }
+  if (items.some((e) => e.work.meta.source === 'u-next')) {
+    out.push({
+      label: '配信状況・見放題終了日は U-NEXT の作品ページに掲載されている情報',
+      url: 'https://video.unext.jp/',
+    })
+  }
+  return out
+}
+
+/**
  * 既存記事のタイトル一覧（重複検知用）。
  *
  * これから書き出すファイル自身は除く。除かないと、
@@ -171,10 +195,7 @@ async function finalize(
     parsed,
     category: type.category,
     tags: type.tags(items, ctx),
-    sources: [
-      { label: ATTRIBUTION.text, url: ATTRIBUTION.url },
-      { label: '作品タイトル（Wikidata・CC0）', url: 'https://www.wikidata.org/' },
-    ],
+    sources: sourcesFor(items),
     dataAsOf: now,
     pubDate: now,
     offsetMinutes: theme.utc_offset_minutes,

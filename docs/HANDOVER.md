@@ -14,8 +14,9 @@
 |---|---|
 | 本番サイト | **https://mihoudairader.com/** （2026-08-23 に独自ドメイン割当済み。`brog-ez1.pages.dev` も生きている） |
 | サイト名 | **見放題レーダー**（2026-08-23 に「観とこう」から改名）。理由と却下案は [DEPLOY.md の改名の記録](../DEPLOY.md#取得したら) |
-| リポジトリ | https://github.com/MORILABABLE/brog （Private） |
+| リポジトリ | https://github.com/MORILABABLE/brog （**Public**。2026-08-25 に API で確認。以前ここには Private と書いてあったが誤り） |
 | 収集パイプライン | ✅ 2026-08 で1,089件を取得済み |
+| U-NEXT の収集 | ✅ **2026-08-25 に追加**。APIの外側を実ブラウザで取る。配信終了予定210件を収集済み・作品台帳274件。記事タイプは未実装 → [UNEXT.md](./UNEXT.md) |
 | 邦題解決 | ✅ Wikidata経由・解決率73% |
 | サイト | ✅ 20ページ生成・型エラー0。JSは**常設ページの作品検索だけ**（約1KB・インライン。LinkSwitch を有効にすると外部JSが1本入る） |
 | 記事 | ✅ 6本を公開中（`leaving`2 / `arrivals`3 / `ended`1） |
@@ -40,6 +41,9 @@
 
 ```bash
 npm run collect                 # 配信状況の変化を収集（API消費）
+npm run collect:unext           # U-NEXT の新着・終了予定を収集（APIキー不要・数分〜数十分）
+npm run unext:refresh           # U-NEXT の作品台帳を取り直す（終了日の変更を見つける）
+npm run unext:menu              # U-NEXT のジャンル・カテゴリIDを調べる
 npm run notify -- --dry-run     # 通知本文を確認（送らない・API消費なし）
 npm run notify                  # 前回以降の変化を Issue で通知
 /article                        # このセッションで記事を執筆（API課金なし）
