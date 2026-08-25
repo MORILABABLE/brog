@@ -278,21 +278,22 @@ export class PosterCache {
   }
 
   /**
-   * 角を丸めた PNG のサムネイルにして返す。sharp の composite に直接渡せる。
+   * そのまま記事に置ける WebP にして返す。
+   *
+   * **枠も角丸も焼き込まない。** 記事に出るのはポスターの絵だけで、
+   * 角の丸みは CSS（`.prose img[src^='/sections/posters/']`）が付ける。
+   * 画像に焼き込むと、配色やテーマを変えたときに全部作り直しになる。
+   *
    * ポスターは 2:3 で返ってくるので、同じ比率を渡せば切り取りは起きない。
    */
-  async thumbnail(url, w, h, { radius = 12, label = '' } = {}) {
+  async poster(url, w, h, { label = '' } = {}) {
     const src = await this.original(url, label)
     if (!src) return null
 
     try {
-      const mask = Buffer.from(
-        `<svg width="${w}" height="${h}"><rect width="${w}" height="${h}" rx="${radius}" ry="${radius}" fill="#fff"/></svg>`,
-      )
       return await sharp(src)
         .resize(w, h, { fit: 'cover', position: 'top' })
-        .composite([{ input: mask, blend: 'dest-in' }])
-        .png()
+        .webp({ quality: 78 })
         .toBuffer()
     } catch (err) {
       // 画像として読めなかった（HTMLのエラーページを掴んだ等）
@@ -336,6 +337,34 @@ export class PosterCache {
         '    → npm run refresh:images で取り直してください（docs/APPEARANCE.md 11節）',
     )
   }
+}
+
+/**
+ * ポスターに付ける導線リンク。**Amazonのビデオ内検索**（レンタル・購入）。
+ *
+ * ■ なぜ Amazon なのか
+ *   - 対象4社のうち**アフィリエイトが成立するのは Amazon だけ**
+ *     （Netflix は提携先が無い、Disney+ はクローズド、Apple TV+ は招待制）
+ *   - サービスを問わず**全作品に出せる**。ポスターが出る節すべてが導線になる
+ *   - 「見放題が終わっても買えば観られる」は事実として言える。断定を避ける
+ *     このサイトの方針（配信状況を主張しない）とも矛盾しない
+ *
+ * ■ トラッキングIDはここでは付けない
+ * ビルド時に plugins/rehype-affiliate.ts が `tag=` と `rel="sponsored"` を付ける。
+ * 記事本文にIDを焼き込むと、IDを変えるたびに全記事の再生成が要る。
+ *
+ * ■ U-NEXT の提携が通ったら
+ * バリューコマース LinkSwitch が**ブラウザ側で自動変換**するので、
+ * リンク先を `https://video.unext.jp/freeword?query=…` に替えるだけでよい。
+ * 記事の再生成は要るが、IDを埋める必要は無い（docs/AFFILIATE.md）。
+ *
+ * ★ URLの形は次の2か所と同じもの。**片方だけ直さないこと。**
+ *     site/src/lib/search-links.ts の amazonVideoLink()
+ *     theme-packs/streaming-jp/theme.yaml の search_links
+ */
+export function posterLink(title) {
+  const q = encodeURIComponent(title.replace(/[/／]/g, ' ').replace(/\s+/g, ' ').trim())
+  return `https://www.amazon.co.jp/s?k=${q}&i=instant-video`
 }
 
 /**

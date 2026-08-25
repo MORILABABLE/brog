@@ -283,8 +283,11 @@ h3 {
 }
 
 /*
- * 本文中の画像。表と解説の間に入るセクション画像がこれにあたる。
+ * 本文中の画像。小見出しの直後に入るセクション画像がこれにあたる。
  * 生成元は site/scripts/make-sections.mjs。
+ *
+ * 既定は「文字だけのカード」向け。幅いっぱいに敷き、地色がカードと同系なので
+ * 境目が分かるように輪郭を置く。
  */
 .prose img {
   display: block;
@@ -292,8 +295,44 @@ h3 {
   height: auto;
   margin: 1.5rem 0;
   border-radius: var(--radius);
-  /* 画像の地色がカードと同系のため、境目が分かるように輪郭を置く */
   border: 1px solid var(--border);
+}
+
+/*
+ * 作品ポスター（`/sections/posters/` 配下）。**扱いが上とほぼ逆になる。**
+ *
+ * ★ 幅いっぱいにしない。2:3 の絵を本文幅(736px)に広げると高さが 500px を超え、
+ *   記事の本題（表）に届くまでのスクロールが増える。**高さで抑える。**
+ * ★ 枠を付けない。ポスターは自分で絵柄が完結しているので、
+ *   輪郭を足すと額縁の中に額縁が入ったように見える。
+ *
+ * ポスターは1つの段落に2枚並ぶ（`[![](…)](…) [![](…)](…)`）。
+ * **段落ごと flex にしているのは、間の半角空白に幅を取らせないため。**
+ * inline-block で並べると空白1文字ぶんがはみ出し、狭い画面で2枚目が
+ * 下に落ちる（実測: 390px 幅で縦積みになった）。
+ */
+.prose p:has(> a > img[src^='/sections/posters/']) {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 1.4rem 0;
+}
+.prose p:has(> a > img[src^='/sections/posters/']) > a {
+  /* 画面が狭いときに縮めるため。既定の min-width:auto だと縮まない */
+  min-width: 0;
+  /* ポスターはアフィリエイトの導線を兼ねる。絵に下線は要らない */
+  text-decoration: none;
+}
+.prose img[src^='/sections/posters/'] {
+  display: inline-block;
+  width: auto;
+  height: auto;
+  max-height: 280px;
+  max-width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 10px;
+  vertical-align: top;
 }
 
 .prose blockquote {

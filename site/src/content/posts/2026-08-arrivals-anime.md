@@ -18,6 +18,8 @@ dataAsOf: 2026-08-21
 
 ## 8月3日：Netflixで京都アニメーション作品が一斉に見放題配信開始
 
+[![Free!（2013年）](/sections/posters/2026-08-arrivals-anime-3d6410c0-1.webp)](https://www.amazon.co.jp/s?k=Free!&i=instant-video) [![らき☆すた（2007年）](/sections/posters/2026-08-arrivals-anime-3d6410c0-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%89%E3%81%8D%E2%98%86%E3%81%99%E3%81%9F&i=instant-video)
+
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月3日 | Free! | 62/100 | Netflix |
@@ -27,8 +29,6 @@ dataAsOf: 2026-08-21
 | 8月3日 | らき☆すた | 70/100 | Netflix |
 | 8月3日 | 日常 | 62/100 | Netflix |
 
-![8月3日：Netflixで京都アニメーション作品が一斉に見放題配信開始。Free!（2013年）、らき☆すた（2007年）ほか4作](/sections/2026-08-arrivals-anime-3d6410c0.jpg)
-
 「Free!」「らき☆すた」「日常」は、いずれも京都アニメーション制作の作品です。同じ日にまとめて配信開始となりました。
 
 「Free!」は水泳が好きな七瀬遙が、小学生のころ同じスイミングクラブに通っていた松岡凛と高校で再会するところから始まる物語です。TVシリーズに続く劇場版3作も同時に配信開始となり、遙と凛がそれぞれの進路へ進む時期を描いた「劇場版 Free!-Timeless Medley- 絆」「劇場版 Free!-Timeless Medley- 約束」、遙がシドニーで世界大会に挑む「劇場版 Free!-the Final Stroke- 前編」まで、シリーズを通して観られる形になりました。
@@ -37,13 +37,13 @@ dataAsOf: 2026-08-21
 
 ## 8月3日：東映アニメーション作品が「ONE PIECE STAMPEDE」など3作で配信開始
 
+![8月3日：東映アニメーション作品が「ONE PIECE STAMPEDE」など3作で配信開始。ONE PIECE STAMPEDE（2019年）、デジタルモンスター（1999年）ほか1作](/sections/2026-08-arrivals-anime-b8d73870.jpg)
+
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月3日 | ONE PIECE STAMPEDE | — | Netflix |
 | 8月14日 | デジタルモンスター | 69/100 | Amazon Prime Video |
 | 8月14日 | ガールズバンドクライ | 57/100 | Amazon Prime Video |
-
-![8月3日：東映アニメーション作品が「ONE PIECE STAMPEDE」など3作で配信開始。ONE PIECE STAMPEDE（2019年）、デジタルモンスター（1999年）ほか1作](/sections/2026-08-arrivals-anime-b8d73870.jpg)
 
 「ONE PIECE STAMPEDE」は2019年公開の劇場版アニメで、東映アニメーションの制作です。ジャンルはアクションとアドベンチャーになります。
 
@@ -53,6 +53,8 @@ dataAsOf: 2026-08-21
 
 ## 8月3日：「クレヨンしんちゃん」劇場版が今月4作そろって配信開始
 
+[![クレヨンしんちゃん ブリブリ王国の秘宝（1994年）](/sections/posters/2026-08-arrivals-anime-5ff1058f-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%AF%E3%83%AC%E3%83%A8%E3%83%B3%E3%81%97%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%20%E3%83%96%E3%83%AA%E3%83%96%E3%83%AA%E7%8E%8B%E5%9B%BD%E3%81%AE%E7%A7%98%E5%AE%9D&i=instant-video) [![クレヨンしんちゃん 雲黒斎の野望（1995年）](/sections/posters/2026-08-arrivals-anime-5ff1058f-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%AF%E3%83%AC%E3%83%A8%E3%83%B3%E3%81%97%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%20%E9%9B%B2%E9%BB%92%E6%96%8E%E3%81%AE%E9%87%8E%E6%9C%9B&i=instant-video)
+
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月3日 | クレヨンしんちゃん オラたちの恐竜日記 | 58/100 | Amazon Prime Video |
@@ -60,20 +62,18 @@ dataAsOf: 2026-08-21
 | 8月16日 | クレヨンしんちゃん 雲黒斎の野望 | 61/100 | Amazon Prime Video |
 | 8月16日 | クレヨンしんちゃん ブリブリ王国の秘宝 | 54/100 | Amazon Prime Video |
 
-![8月3日：「クレヨンしんちゃん」劇場版が今月4作そろって配信開始。クレヨンしんちゃん ブリブリ王国の秘宝（1994年）、クレヨンしんちゃん 雲黒斎の野望（1995年）ほか2作](/sections/2026-08-arrivals-anime-5ff1058f.jpg)
-
 Amazon Prime Videoでは、日付をまたいで「クレヨンしんちゃん」の劇場版4作が見放題に入りました。1994年の「クレヨンしんちゃん ブリブリ王国の秘宝」、1995年の「クレヨンしんちゃん 雲黒斎の野望」、2002年の「クレヨンしんちゃん 嵐を呼ぶ アッパレ!戦国大合戦」という初期から中期の3作に、2024年の「クレヨンしんちゃん オラたちの恐竜日記」が加わる形です。
 
 「ブリブリ王国の秘宝」と「雲黒斎の野望」はシンエイ動画の制作で、シリーズは現在も新作が公開され続けています。
 
 ## 8月7日：シリーズの新作が続く「魔法少女まどか☆マギカ」「劇場版 幼女戦記」
 
+[![魔法少女まどか☆マギカ（2011年）](/sections/posters/2026-08-arrivals-anime-839df5f9-1.webp)](https://www.amazon.co.jp/s?k=%E9%AD%94%E6%B3%95%E5%B0%91%E5%A5%B3%E3%81%BE%E3%81%A9%E3%81%8B%E2%98%86%E3%83%9E%E3%82%AE%E3%82%AB&i=instant-video) [![劇場版 幼女戦記（2019年）](/sections/posters/2026-08-arrivals-anime-839df5f9-2.webp)](https://www.amazon.co.jp/s?k=%E5%8A%87%E5%A0%B4%E7%89%88%20%E5%B9%BC%E5%A5%B3%E6%88%A6%E8%A8%98&i=instant-video)
+
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月7日 | 魔法少女まどか☆マギカ | 67/100 | Amazon Prime Video |
 | 8月14日 | 劇場版 幼女戦記 | 60/100 | Amazon Prime Video |
-
-![8月7日：シリーズの新作が続く「魔法少女まどか☆マギカ」「劇場版 幼女戦記」。魔法少女まどか☆マギカ（2011年）、劇場版 幼女戦記（2019年）](/sections/2026-08-arrivals-anime-839df5f9.jpg)
 
 どちらもシリーズが今も続いている作品で、その入口にあたる作品がAmazon Prime Videoで見放題に入りました。
 
@@ -83,6 +83,8 @@ Amazon Prime Videoでは、日付をまたいで「クレヨンしんちゃん�
 
 ## 8月16日：Amazon Prime Videoで「チ。-地球の運動について-」など9作品が配信開始
 
+[![チ。-地球の運動について-（2024年）](/sections/posters/2026-08-arrivals-anime-b8ca37b7-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%81%E3%80%82-%E5%9C%B0%E7%90%83%E3%81%AE%E9%81%8B%E5%8B%95%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6-&i=instant-video) [![黄泉のツガイ（2026年）](/sections/posters/2026-08-arrivals-anime-b8ca37b7-2.webp)](https://www.amazon.co.jp/s?k=%E9%BB%84%E6%B3%89%E3%81%AE%E3%83%84%E3%82%AC%E3%82%A4&i=instant-video)
+
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月16日 | チ。-地球の運動について- | 67/100 | Amazon Prime Video |
@@ -91,8 +93,6 @@ Amazon Prime Videoでは、日付をまたいで「クレヨンしんちゃん�
 | 8月16日 | 咲-Saki- | 57/100 | Amazon Prime Video |
 | 8月16日 | ぼくらの7日間戦争 | 55/100 | Amazon Prime Video |
 | 8月16日 | 星屑テレパス | 51/100 | Amazon Prime Video |
-
-![8月16日：Amazon Prime Videoで「チ。-地球の運動について-」など9作品が配信開始。チ。-地球の運動について-（2024年）、黄泉のツガイ（2026年）ほか4作](/sections/2026-08-arrivals-anime-b8ca37b7.jpg)
 
 「チ。-地球の運動について-」は、地球と太陽をめぐる異端の教えを知った神童が、異端審問を逃れながら師の隠した研究を追う物語です。制作はマッドハウスになります。
 

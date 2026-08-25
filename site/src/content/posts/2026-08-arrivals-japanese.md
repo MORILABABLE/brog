@@ -18,6 +18,8 @@ dataAsOf: 2026-08-21
 
 ## 8月1日：Netflixで邦画が月初に一斉配信開始
 
+[![許されざる者（2013年）](/sections/posters/2026-08-arrivals-japanese-368d23b7-1.webp)](https://www.amazon.co.jp/s?k=%E8%A8%B1%E3%81%95%E3%82%8C%E3%81%96%E3%82%8B%E8%80%85&i=instant-video) [![無限の住人（2017年）](/sections/posters/2026-08-arrivals-japanese-368d23b7-2.webp)](https://www.amazon.co.jp/s?k=%E7%84%A1%E9%99%90%E3%81%AE%E4%BD%8F%E4%BA%BA&i=instant-video)
+
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月1日 | 許されざる者 | 61/100 | Netflix |
@@ -31,8 +33,6 @@ dataAsOf: 2026-08-21
 | 8月2日 | 僕だけがいない街 | 56/100 | Netflix |
 | 8月2日 | お引越し | 56/100 | Netflix |
 
-![8月1日：Netflixで邦画が月初に一斉配信開始。許されざる者（2013年）、無限の住人（2017年）ほか8作](/sections/2026-08-arrivals-japanese-368d23b7.jpg)
-
 「許されざる者」は、クリント・イーストウッド監督のアカデミー賞受賞作を日本の時代劇として再解釈した作品です。幕府が倒れた1800年代後半を舞台に、小さな農場でひっそりと暮らしていたかつての人斬り・釜田十兵衛が、新政府による住民への横暴を前に、亡き妻との約束を破って再び刀を取ります。李相日監督、渡辺謙主演で、制作にはワーナー・ブラザースと日活が名を連ねています。
 
 「無限の住人」は、不死の呪いを背負った侍が、家族の仇を討とうとする少女に力を貸しながら、自らの魂を取り戻すために戦う物語です。「夏の庭 The Friends」は1994年の作品で、夏休みに人里離れた家で暮らす老人を見張り始めた3人の少年が、やがて生と死についての新しい見方と、友情の価値を知っていく話になります。
@@ -40,6 +40,8 @@ dataAsOf: 2026-08-21
 「お引越し」は1993年の相米慎二監督作で、子どもの内面に広がる問いや空想を描いた作品です。「ごくせん THE MOVIE」は2009年公開の劇場版、「僕だけがいない街」は2016年の実写映画、「ダンスウィズミー」は2019年の作品で、アルタミラピクチャーズの制作です。
 
 ## 8月3日：Netflixで「土竜の唄」シリーズ2作を含む12本が配信開始
+
+[![土竜の唄 潜入捜査官 REIJI（2013年）](/sections/posters/2026-08-arrivals-japanese-77f194aa-1.webp)](https://www.amazon.co.jp/s?k=%E5%9C%9F%E7%AB%9C%E3%81%AE%E5%94%84%20%E6%BD%9C%E5%85%A5%E6%8D%9C%E6%9F%BB%E5%AE%98%20REIJI&i=instant-video) [![土竜の唄 FINAL（2021年）](/sections/posters/2026-08-arrivals-japanese-77f194aa-2.webp)](https://www.amazon.co.jp/s?k=%E5%9C%9F%E7%AB%9C%E3%81%AE%E5%94%84%20FINAL&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -56,8 +58,6 @@ dataAsOf: 2026-08-21
 | 8月3日 | 科捜研の女 -劇場版- | — | Netflix |
 | 8月3日 | 晩酌の流儀 | — | Netflix |
 
-![8月3日：Netflixで「土竜の唄」シリーズ2作を含む12本が配信開始。土竜の唄 潜入捜査官 REIJI（2013年）、土竜の唄 FINAL（2021年）ほか10作](/sections/2026-08-arrivals-japanese-77f194aa.jpg)
-
 「土竜の唄」は、2013年の「土竜の唄 潜入捜査官 REIJI」と2021年の「土竜の唄 FINAL」が同じ日に配信開始となりました。シリーズの1作目と完結編が同時に見放題に入った形です。
 
 「黒執事」は2014年の実写映画で、主人の復讐を助ける悪魔の執事という設定はそのままに、映画版だけの新しい物語が描かれます。「最後の忠臣蔵」は18世紀の日本を舞台に、ある仇討ちの生き残りとなった侍が、その顛末を伝えるために各地を巡る物語です。
@@ -66,27 +66,29 @@ dataAsOf: 2026-08-21
 
 ## 8月3日：Amazon Prime Videoで「64-ロクヨン-」が前後編そろって配信開始
 
+[![64（ロクヨン）（2016年）](/sections/posters/2026-08-arrivals-japanese-3c1c9b11-1.webp)](https://www.amazon.co.jp/s?k=64%EF%BC%88%E3%83%AD%E3%82%AF%E3%83%A8%E3%83%B3%EF%BC%89&i=instant-video)
+
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月3日 | 64（ロクヨン） | 52/100 | Amazon Prime Video |
 | 8月3日 | 64-ロクヨン- 後編 | 52/100 | Amazon Prime Video |
 
-![8月3日：Amazon Prime Videoで「64-ロクヨン-」が前後編そろって配信開始。64（ロクヨン）（2016年）ほか1作](/sections/2026-08-arrivals-japanese-3c1c9b11.jpg)
-
 2016年公開の「64（ロクヨン）」が、後編と同じ日に見放題に入りました。前後編に分けて公開された作品なので、片方だけでは話が完結しません。両方そろって配信開始となったことで、続けて観られる状態になっています。
 
 ## 8月6日：「踊る大捜査線」から派生した2作が配信開始
+
+[![交渉人 真下正義（2005年）](/sections/posters/2026-08-arrivals-japanese-26f6f50d-1.webp)](https://www.amazon.co.jp/s?k=%E4%BA%A4%E6%B8%89%E4%BA%BA%20%E7%9C%9F%E4%B8%8B%E6%AD%A3%E7%BE%A9&i=instant-video) [![容疑者 室井慎次（2005年）](/sections/posters/2026-08-arrivals-japanese-26f6f50d-2.webp)](https://www.amazon.co.jp/s?k=%E5%AE%B9%E7%96%91%E8%80%85%20%E5%AE%A4%E4%BA%95%E6%85%8E%E6%AC%A1&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月6日 | 交渉人 真下正義 | 49/100 | Amazon Prime Video |
 | 8月6日 | 容疑者 室井慎次 | 48/100 | Amazon Prime Video |
 
-![8月6日：「踊る大捜査線」から派生した2作が配信開始。交渉人 真下正義（2005年）、容疑者 室井慎次（2005年）](/sections/2026-08-arrivals-japanese-26f6f50d.jpg)
-
 「交渉人 真下正義」と「容疑者 室井慎次」は、どちらも2005年公開の劇場版です。「踊る大捜査線」の登場人物それぞれを主役に据えたスピンオフ2作が、同じ日にAmazon Prime Videoで見放題に入りました。シリーズは現在も新作が作られ続けています。
 
 ## 8月7日：Amazon Prime Videoで「武士の一分」「VIVANT」など6本が配信開始
+
+[![武士の一分（2006年）](/sections/posters/2026-08-arrivals-japanese-978d5631-1.webp)](https://www.amazon.co.jp/s?k=%E6%AD%A6%E5%A3%AB%E3%81%AE%E4%B8%80%E5%88%86&i=instant-video) [![VIVANT（2023年）](/sections/posters/2026-08-arrivals-japanese-978d5631-2.webp)](https://www.amazon.co.jp/s?k=VIVANT&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -96,8 +98,6 @@ dataAsOf: 2026-08-21
 | 8月10日 | TOKYOタクシー | 52/100 | Amazon Prime Video |
 | 8月10日 | 新解釈・三國志 | 50/100 | Amazon Prime Video |
 | 8月10日 | 嘘八百 | 50/100 | Amazon Prime Video |
-
-![8月7日：Amazon Prime Videoで「武士の一分」「VIVANT」など6本が配信開始。武士の一分（2006年）、VIVANT（2023年）ほか4作](/sections/2026-08-arrivals-japanese-978d5631.jpg)
 
 「武士の一分」は2006年公開の松竹作品で、山田洋次監督の時代劇です。
 
