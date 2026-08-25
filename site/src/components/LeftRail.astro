@@ -68,10 +68,8 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
                 <span class="badge" data-category={p.category}>
                   {CATEGORIES[p.category].label}
                 </span>
-                <span class="name">
-                  {stamp && <span class="stamp">{stamp}</span>}
-                  {p.shortLabel}
-                </span>
+                {stamp && <span class="stamp">{stamp}</span>}
+                <span class="name">{p.shortLabel}</span>
               </span>
             </>
           )
@@ -190,25 +188,45 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
     font-size: 0.68rem;
     padding: 0.05rem 0.45rem;
   }
+  /*
+   * ★ サービス名だけ左に 0.4rem 寄せる。**見た目を揃えるための補正。**
+   *
+   * 3行はどれも同じ x から始まっているのに、文字が出てくる位置だけずれる。
+   *   バッジ … 背景の内側に padding(0.45rem) があるので、文字は 7.2px 内側から
+   *   更新日 … `【` は字面が右半分に寄っている全角なので、インクは 6px 内側から
+   *   サービス名 … 補正が無いので 0px（＝この行だけ左に飛び出して見える）
+   * 実測値（Edge・1280px）で確認したうえで、上2行の中間に合わせてある。
+   */
   .name {
-    display: block;
+    padding-left: 0.4rem;
     font-size: 0.86rem;
     font-weight: 700;
     line-height: 1.4;
     color: var(--text);
   }
   /*
-   * 更新日。**日付の途中では折り返させない。**
-   * 日本語は原則どこでも折り返せるので、指定しないと
-   * 「【2026年8月25」／「日更新】Netflix」のように割れる。
-   * 枠は幅が狭い（1200px時点で約158px）ので、折り返すこと自体は前提。
-   * 折り返すなら必ず `】` のうしろで折れるようにしておく。
+   * 更新日。**サービス名より小さく、バッジと同じ大きさにする。**
+   * ここの主役はサービス名なので、同じ大きさで並べると日付のほうが
+   * 文字数が多いぶん目立ってしまい、カードの主従が崩れる。
+   * バッジ（0.68rem）に揃えることで、日付とカテゴリが同じ「補足」の段に見える。
+   *
+   * **日付の途中では折り返させない。** 日本語は原則どこでも折り返せるので、
+   * 指定しないと「【2026年8月25」／「日更新】Netflix」のように割れる。
+   * この大きさなら枠幅（1200px時点で約158px）に1行で収まる。
    */
   .stamp {
-    display: inline-block;
+    display: block;
     white-space: nowrap;
+    font-size: 0.68rem;
     font-weight: 400;
+    line-height: 1.3;
+    /*
+     * 補足の色だが、鮮度を伝える文字なので **muted のままだと薄すぎる。**
+     * 本文色へ 45% 寄せて、サービス名より弱く・バッジより読めるくらいにする。
+     * 明暗どちらのテーマでも同じ比率で寄るので、片方だけ沈むことがない。
+     */
     color: var(--text-muted);
+    color: color-mix(in srgb, var(--text-muted) 55%, var(--text));
   }
   a.rail-card:hover .name {
     color: var(--accent);
