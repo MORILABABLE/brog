@@ -262,6 +262,41 @@ URL失効時に画像だけ欠けても記事が崩れないようにするた�
   Pages の作成画面は `dash.cloudflare.com/?to=/:account/pages/new/provider/github`。
 - Astro 7 は **Node 22.12.0 以上**。`site/.node-version` で固定済み。
 
+### `data/` のマージ衝突（2026-08-25 に実際に踏んだ）
+
+**CI の自動収集（`chore(collect): …`）と手元のコミットがぶつかると、
+`data/events/*.jsonl` と `data/ledger.json` が必ず衝突する。**
+どちらも追記型なので、**片方を選ぶと反対側の収集結果が消える。**
+
+| ファイル | 片方を選ぶと何が起きるか |
+|---|---|
+| `data/events/*.jsonl` | 消えた作品が記事に出ない（素材そのもの） |
+| `data/ledger.json` | 既出の記録が消え、**同じ変化を再収集して記事が重複する** |
+
+**正解は和集合。** `--ours` も `--theirs` も間違い。
+
+```bash
+# 衝突した3方向を取り出して和集合にする（events は行、ledger は配列）
+git show :2:data/events/2026-08.jsonl > /tmp/ours.jsonl   # 手元
+git show :3:data/events/2026-08.jsonl > /tmp/theirs.jsonl # CI
+# ledger.json は seen / usedRankingThemes を union してソートし直す
+```
+
+解決したら**必ず突き合わせる**。ここが0でなければ、どちらかを取りこぼしている。
+
+- 重複した変化キー（`service:kind:作品ID`）が 0件
+- 台帳にあってイベントに無いもの、その逆が 0件
+
+実測（2026-08-25）: base 1089 / 手元 1812 / CI 1126 → **和集合 1849**。
+
+**そもそも起こさないほうが安い。** 手元で作業を始める前と、コミットの前に
+`git pull --rebase` しておく。`collect-unext.yml` は push 前に `git pull --rebase` を
+踏むようにしてあるが、`collect.yml` は踏んでいない（race が起きたら失敗する）。
+
+> `.gitattributes` に `merge=union` を入れれば events の衝突は自動で解決できるが、
+> **採らなかった。** 手元とCIが同じ変化を拾っていた場合に、
+> 重複した行が静かに2本入る。衝突として気づけるほうがまだ安全。
+
 ### 更新の通知（2026-08-24 に追加）
 
 - **通知が来ない＝収集も止まっている、とは限らない。** 通知だけが落ちても
