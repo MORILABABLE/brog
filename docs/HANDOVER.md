@@ -72,6 +72,7 @@ cd site && npm run build        # サイトのビルド
 
 | 読むべきとき | ファイル |
 |---|---|
+| **「画面のここを変えたい」→ どのファイルか**（早見表） | **[WHERE-TO-EDIT.md](./WHERE-TO-EDIT.md)** |
 | **他ジャンルのブログを増やしたい** | **[NEW-THEME.md](./NEW-THEME.md)** |
 | **背景・バナー・ロゴ・OG画像・カテゴリ色・記事内の画像** | **[APPEARANCE.md](./APPEARANCE.md)** |
 | **アフィリエイト（有効化手順・提携状況・落とし穴）** | **[AFFILIATE.md](./AFFILIATE.md)** |
