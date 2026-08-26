@@ -76,6 +76,14 @@ export function evergreenFor(category: CategorySlug): EvergreenPage[] {
   return EVERGREEN_PAGES.filter((p) => p.category === category)
 }
 
+/**
+ * 指定サービスの常設ページだけを返す。サービス別まとめページ（/service/…）で使う。
+ * ★ `thumbKey` がサービスキー。href から切り出さないこと（形が変わると壊れる）。
+ */
+export function evergreenForService(service: string): EvergreenPage[] {
+  return EVERGREEN_PAGES.filter((p) => p.thumbKey === service)
+}
+
 // --- 鮮度の見せ方 -----------------------------------------------------------
 //
 // 常設ページは公開日を持たない。`collect` のたびに中身だけが入れ替わるので、

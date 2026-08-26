@@ -1,0 +1,95 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PostCard from '../../components/PostCard.astro'
+import EvergreenCard from '../../components/EvergreenCard.astro'
+import { SERVICE_HUBS, SITE } from '../../config'
+import { evergreenForService, evergreenSummary } from '../../lib/evergreen'
+
+/**
+ * サービス別のまとめページ。
+ *
+ * ■ カテゴリのハブ（/category/…）と役割が違う
+ *   カテゴリ … 「何が起きたか」（終了まわり／新着）で束ねる
+ *   ここ     … 「契約しているサービス」で束ねる
+ * 同じ記事が両方から辿れるが、読者の探し方が違うので競合しない。
+ *
+ * ■ 記事はタグで拾う
+ * 記事の frontmatter `tags` にサービス名が入っている
+ * （各記事タイプの `tags()` が出している）。
+ * 記事タイプが増えても、タグさえ付いていればこのページに自動で並ぶ。
+ *
+ * ★ タグの文字列は src/config.ts の SERVICE_HUBS と完全一致が要る。
+ *   1文字でも違うと0件のページができあがる。
+ *
+ * ■ 常設ページも一緒に出す
+ * そのサービスの `/leaving/…` `/arrivals/…` があれば先頭に置く。
+ * 中身が `collect` のたびに入れ替わるので、月次記事より鮮度が高い。
+ * U-NEXT には常設ページが無い（データの取り方が違う）。**無くても崩れない。**
+ */
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft)
+
+  return SERVICE_HUBS.map((hub) => ({
+    params: { service: hub.slug },
+    props: {
+      hub,
+      posts: posts
+        .filter((p) => p.data.tags.includes(hub.tag))
+        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+    },
+  }))
+}
+
+const { hub, posts } = Astro.props
+
+const evergreen = evergreenForService(hub.slug).map((page) => ({
+  page,
+  ...evergreenSummary(page),
+}))
+
+const title = `${hub.label}の配信情報まとめ`
+const description =
+  `${hub.label}で見放題配信が始まった作品と終了する作品の記事をまとめています。` +
+  `${SITE.name}が追いかけている${hub.label}の情報はこのページから辿れます。`
+---
+
+<BaseLayout title={title} description={description}>
+  {/* 上位のカテゴリを持たないページなので、区切りの「›」は付けない */}
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a>
+  </nav>
+
+  <h1>{hub.label}</h1>
+  <p class="lead">
+    {hub.label}の配信終了と新着をまとめています。
+    {evergreen.length > 0 && '常に最新の一覧は上の2枚から見られます。'}
+  </p>
+
+  {
+    evergreen.map((e) => (
+      <EvergreenCard page={e.page} count={e.count} dataAsOf={e.dataAsOf} />
+    ))
+  }
+
+  {
+    posts.length === 0 ? (
+      <p class="muted">このサービスの記事はまだありません。</p>
+    ) : (
+      posts.map((post) => <PostCard post={post} />)
+    )
+  }
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .lead {
+    margin: 0 0 1.4rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+</style>

@@ -41,8 +41,9 @@
     本文カード（白い箱）
       幅・角丸・余白 → site/src/styles/global.css の .content-card と --max-width
 
-    右の追従枠（新着記事＋PR枠）
+    右の追従枠（サービスから探す＋最新記事＋PR枠）
       → site/src/components/FollowRail.astro
+      サービスの3項目 → site/src/config.ts の SERVICE_HUBS
 
     フッター（運営者情報・出典・著作権）
       → site/src/components/Footer.astro
@@ -60,6 +61,9 @@
     記事ページ           → site/src/pages/posts/[...slug].astro
     常設ページ（終了予定） → site/src/pages/leaving/[service].astro
     常設ページ（新着）     → site/src/pages/arrivals/[service].astro
+    サービス別まとめ       → site/src/pages/service/[service].astro
+                            記事は frontmatter の tags で拾う。
+                            ★ タグの文字列は config.ts の SERVICE_HUBS と完全一致が要る
     カテゴリ一覧          → site/src/pages/category/[category].astro
                             ★ 生成されるのは CATEGORY_HUBS の3枚だけ。
                               /category/ended は public/_redirects で

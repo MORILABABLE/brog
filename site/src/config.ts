@@ -127,6 +127,30 @@ export const CATEGORY_HUBS = [
 }[]
 
 /**
+ * サービス別のまとめページ。**右の枠から入る導線**（2026-08-26 追加）。
+ *
+ * ■ カテゴリのハブ（CATEGORY_HUBS）と軸が違う
+ *   カテゴリ … 「終了まわり」「新着」で束ねる。**何が起きたか**で探す読者向け
+ *   サービス … 「プライムビデオの話だけ見たい」。**契約しているサービス**で探す読者向け
+ * 同じ記事が両方から辿れるが、探し方が違うので競合しない。
+ *
+ * ★ `tag` は記事の frontmatter `tags` に入る文字列と**完全に一致させること。**
+ *   まとめページはタグで記事を拾う。1文字でも違うと0件のページができる。
+ *   タグを出しているのは各記事タイプの `tags()`（theme-packs/…/article-types/）。
+ *
+ * ★ Disney+ と Apple TV+ は入れていない。
+ *   実測（2026-08）で Disney+ は記事2本・新着14件、Apple TV+ は記事1本・新着5件しかなく、
+ *   まとめページを作っても中身が薄い。件数が増えたらここに足す。
+ */
+export const SERVICE_HUBS = [
+  { slug: 'prime-video', label: 'Amazon Prime Video', tag: 'Amazon Prime Video' },
+  { slug: 'netflix', label: 'Netflix', tag: 'Netflix' },
+  { slug: 'u-next', label: 'U-NEXT', tag: 'U-NEXT' },
+] as const
+
+export type ServiceHubSlug = (typeof SERVICE_HUBS)[number]['slug']
+
+/**
  * そのカテゴリの記事が載るハブ。パンくずのリンク先に使う。
  * どのハブにも属さないカテゴリがあれば、そのカテゴリ自身を指す
  * （リンクは切れるが、ビルドは落とさない）。

@@ -1,24 +1,29 @@
 ---
 import { getCollection } from 'astro:content'
-import { AFFILIATE, CATEGORIES } from '../config'
+import { AFFILIATE, CATEGORIES, SERVICE_HUBS } from '../config'
 import { withAmazonTag } from '../lib/affiliate'
 
 /**
- * 本文の右の余白に置く追従枠。上から2ブロック。
+ * 本文の右の余白に置く追従枠。上から3ブロック。
  *
- *   1. 新着記事 … カテゴリ横断の最新記事
- *   2. PR      … 広告カード。**ここだけ追従する**
+ *   1. サービスから探す … サービス別まとめページへの導線（2026-08-26 追加）
+ *   2. 最新記事        … カテゴリ横断の新しい記事
+ *   3. PR             … 広告カード。**ここだけ追従する**
+ *
+ * ★ 1 を 2 の上に置いている。
+ *   最新記事は「今なにがあるか」、サービスは「自分の契約で探す」。
+ *   契約しているサービスが決まっている読者のほうが多いので、そちらを先に出す。
  *
  * ★ 「最新の配信終了・配信開始一覧」は**左の枠**（LeftRail.astro）に移した
  *   （2026-08-24）。ここに戻すと、その下の新着記事とPR枠が画面外へ落ちる。
  *
- * ■ 追従するのは 2 だけ
+ * ■ 追従するのは 3 だけ
  * 枠全体を追従させると、画面に収まらないときPR枠に手が届かなくなる。
  * 枠内スクロールで解決すると読者がスクロールを2回することになる。
- * 新着記事は流し、PR枠だけを sticky にするのが両立する唯一の形。
+ * 上の2つは流し、PR枠だけを sticky にするのが両立する唯一の形。
  *
  * ■ 広告とそれ以外を混ぜない
- * まとめて `aria-label="広告"` にすると新着記事まで広告と称することになり、
+ * まとめて `aria-label="広告"` にすると最新記事まで広告と称することになり、
  * 逆にPR表記を外すと景品表示法（ステマ規制）に触れる。**必ず分ける。**
  *
  * ■ なぜ「余白」なのか
@@ -34,8 +39,9 @@ import { withAmazonTag } from '../lib/affiliate'
  */
 
 /**
- * 新着記事に出す本数。
+ * 最新記事に出す本数。
  * ★ 増やすと枠が縦に伸び、そのぶんPR枠が画面の下から現れるのが遅くなる。
+ *   サービスの導線を上に足したぶん、ここは増やさないこと（2026-08-26）。
  */
 const RECENT_POSTS = 3
 
@@ -51,10 +57,34 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
 ---
 
 <aside class="follow-rail">
+  <nav class="block" aria-label="サービスから探す">
+    <p class="block-title">サービスから探す</p>
+    <ul class="services">
+      {
+        SERVICE_HUBS.map((h) => {
+          const href = `/service/${h.slug}`
+          return (
+            <li>
+              {href === current ? (
+                <span class="service is-current" aria-current="page">
+                  {h.label}
+                </span>
+              ) : (
+                <a class="service" href={href}>
+                  {h.label}
+                </a>
+              )}
+            </li>
+          )
+        })
+      }
+    </ul>
+  </nav>
+
   {
     posts.length > 0 && (
-      <nav class="block" aria-label="新着記事">
-        <p class="block-title">新着記事</p>
+      <nav class="block" aria-label="最新記事">
+        <p class="block-title">最新記事</p>
         <ul class="posts">
           {posts.map((post) => {
             const href = `/posts/${post.id}`
@@ -145,7 +175,35 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     color: var(--footer-text);
   }
 
-  /* --- 1. 新着記事 --- */
+  /* --- 1. サービスから探す --- */
+  .services {
+    margin: 0;
+    padding: 0.35rem 0.4rem;
+    list-style: none;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .service {
+    display: block;
+    padding: 0.45rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+    text-decoration: none;
+  }
+  a.service:hover {
+    background: var(--bg-subtle);
+    color: var(--accent);
+  }
+  /* 現在地は押せないことが分かるようにする（押しても同じページなので） */
+  .service.is-current {
+    color: var(--text-muted);
+  }
+
+  /* --- 2. 最新記事 --- */
   .badge {
     font-size: 0.68rem;
     padding: 0.05rem 0.45rem;
