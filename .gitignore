@@ -5,6 +5,10 @@ node_modules/
 # 記事生成の作業ファイル（プロンプト・応答の一時置き場）
 data/draft/
 
+# ショート動画のカット画像（台本から何度でも作り直せる）
+# ★ 台本そのもの（shorts/*.md）は git に入れる。手で詰めた内容が資産なので。
+shorts/frames/
+
 # Astro (P1 以降)
 dist/
 .astro/

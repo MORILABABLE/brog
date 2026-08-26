@@ -31,14 +31,20 @@ import {
   clip,
   dateSections,
   fixedPhrases,
+  freshnessNote,
+  freshnessOf,
   halfWidthSymbols,
   isTargetMonth,
   itemTitles,
   normalizeBody,
   phraseReader,
+  publishable,
+  previousAsOf,
   ratingMentionsInProse,
   serviceLabels,
   serviceNames,
+  shortScriptSection,
+  type Freshness,
 } from './shared.ts'
 
 /**
@@ -62,10 +68,17 @@ const MAX_UPCOMING = 12
 /** fixed-phrases.md に必ずあるべきキー。欠けていれば読み込み時に落ちる。 */
 const REQUIRED_PHRASES = [
   'arrivals-lead-first-sentence',
+  'arrivals-update-lead-first-sentence',
   'arrivals-lead-closer',
   'arrivals-upcoming-intro',
   'other-services-intro',
   'attribution',
+  // ★ U-NEXT 由来の作品が混ざる月がある（2026-08-26 にジャンル判定を足してから）。
+  //   品質ゲートは**素材の出どころ**から必要な表記を決めるので、
+  //   片方しか渡さないと「提供元表記がありません」で公開が止まる。
+  'attribution-unext-arrivals',
+  // ショート動画の締め（記事と同時に作る台本で使う）
+  'short-closer',
 ] as const
 
 /**
@@ -98,9 +111,12 @@ export const arrivalsArticle: ArticleType = {
   description: '今月見放題配信が始まった作品（ジャンル別）',
   variants: GENRES,
 
-  select(events, _ledger: Ledger, ctx) {
+  select(rawEvents, _ledger: Ledger, ctx) {
     const genre = ctx.variant?.key
     if (!genre) return []
+
+    // ★ 出さないと決めた作品を最初に外す（data/excluded-works.json）
+    const events = publishable(rawEvents)
 
     const started = events
       .filter((e) => e.kind === 'new')
@@ -112,10 +128,37 @@ export const arrivalsArticle: ArticleType = {
     // 上限を超えるときは「配信開始日順」ではなく素材の厚い順で残す。
     // 日付順で切ると月の後半がまるごと落ち、
     // 「月後半は何も始まらない」と読める記事になってしまう。
+    /*
+     * 上限を超えるときは「配信開始日順」ではなく素材の厚い順で残す。
+     * 日付順で切ると月の後半がまるごと落ち、
+     * 「月後半は何も始まらない」と読める記事になってしまう。
+     *
+     * ★ **今回の追加分を先に取る**（2026-08-26）。
+     *   この記事タイプは月内に何度も書き直すようになった。
+     *   新しく入った作品が上限で落ちると、更新回なのに
+     *   「今回増えたぶん」を書けない記事ができあがる。
+     *
+     * ★ ただし**上限そのものは外さず、追加分に渡す枠も半分までにする。**
+     *   追加分だけで上限を超える月がある（実測: U-NEXT のジャンル判定を
+     *   足した直後、洋画の追加分が95件になった）。
+     *   追加分を優先しきると**前の版に載っていた作品が全部押し出され**、
+     *   「今回新たに60本、今月は60本」という、更新ではなく総入れ替えの
+     *   記事ができあがる。読者から見ると前に読んだ記事が消えたことになる。
+     *   半分を上限にすれば、増えたぶんと今月の全体像が両方残る。
+     */
+    const since = previousAsOf(this.slug(ctx))
+    const byMaterial = (a: ChangeEvent, b: ChangeEvent) => materialScore(b) - materialScore(a)
+    const added = started.filter((e) => freshnessOf(e, since) !== 'known').sort(byMaterial)
+    const rest = started.filter((e) => freshnessOf(e, since) === 'known').sort(byMaterial)
+
+    const addedRoom = Math.min(added.length, Math.ceil(MAX_ITEMS / 2))
     const kept =
       started.length <= MAX_ITEMS
         ? started
-        : [...started].sort((a, b) => materialScore(b) - materialScore(a)).slice(0, MAX_ITEMS)
+        : [
+            ...added.slice(0, addedRoom),
+            ...rest.slice(0, MAX_ITEMS - addedRoom),
+          ]
 
     // 記事は配信開始日順に書くので、最後に日付で並べ直す
     kept.sort((a, b) => a.at!.localeCompare(b.at!))
@@ -134,9 +177,12 @@ export const arrivalsArticle: ArticleType = {
 
   buildPrompt(items, ctx) {
     const template = readFileSync(themeFile(ctx.theme, 'templates', 'arrivals.md'), 'utf8')
-    const resolved = resolvePhrases(items, ctx)
+    const since = previousAsOf(this.slug(ctx))
+    const isUpdate = since !== undefined
+    const resolved = resolvePhrases(items, ctx, since)
     const started = startedItems(items)
     const upcoming = upcomingItems(items)
+    const added = started.filter((e) => freshnessOf(e, since) !== 'known')
 
     const system = `あなたは動画配信サービスの情報を扱う日本語ブログの編集者です。
 与えられたデータだけを使って記事を書きます。データに無い事実を書いてはいけません。
@@ -148,6 +194,22 @@ ${template}
 # この記事のジャンル
 
 **${resolved.genre}**。このジャンルの作品だけを扱います。
+
+---
+
+# 今回の版
+
+**この記事は「${isUpdate ? '更新回' : '初回'}」です。**
+
+${
+  isUpdate
+    ? `前回の版は ${since.toISOString().slice(0, 10)} 時点のものです。
+今回新たに載る作品が **${added.length}件** あります（素材に ★今回の追加分 と付けてあります）。
+**冒頭に近い位置で、今回増えたぶんを先に見せてください。**
+タイトルの先頭は 【${resolved.asOf}更新】 にします。`
+    : `このジャンルで今月**はじめて書く版**です。
+タイトルに「更新」と書いてはいけません。前の版が無いので嘘になります。`
+}
 
 ---
 
@@ -173,7 +235,7 @@ ${resolved.otherServicesIntro}
 
 ## 記事の末尾
 
-${resolved.attribution}
+${resolved.attributions.join('\n\n')}
 
 ---
 
@@ -182,7 +244,7 @@ ${OUTPUT_FORMAT}`
     const parts = [
       `以下は今月見放題配信が始まった${resolved.genre}のデータです。全${started.length}件。`,
       '',
-      started.map((e) => row(e, ctx, '配信開始日')).join('\n\n'),
+      started.map((e) => row(e, ctx, '配信開始日', freshnessOf(e, since))).join('\n\n'),
     ]
 
     if (upcoming.length) {
@@ -193,7 +255,7 @@ ${OUTPUT_FORMAT}`
         `以下は**まだ配信が始まっていない**作品です。全${upcoming.length}件。`,
         'テンプレートの構成5「これから配信開始予定」だけで扱い、上の作品と混ぜないでください。',
         '',
-        upcoming.map((e) => row(e, ctx, '配信開始予定日')).join('\n\n'),
+        upcoming.map((e) => row(e, ctx, '配信開始予定日', 'known')).join('\n\n'),
       )
     }
 
@@ -235,6 +297,34 @@ ${OUTPUT_FORMAT}`
     return { system, prompt: parts.join('\n') }
   },
 
+  /**
+   * ショート動画の台本。
+   *
+   * **配信終了記事と違い、この記事には締切が無い。** 急かせないぶん、
+   * 台本が成立するかは「まとまり」の強さだけで決まる
+   * （制作会社の一斉配信、シリーズがそろった、など）。
+   * まとまりが弱い月は、台本を作らない判断があってよい。
+   */
+  buildShortPrompt(items, ctx) {
+    const resolved = resolvePhrases(items, ctx, previousAsOf(this.slug(ctx)))
+
+    return shortScriptSection(ctx, {
+      dateLabel: '配信開始日',
+      titlesAreLocalized: false,
+      // ★ 開始予定（upcoming）は候補に入れない。まだ観られない作品を
+      //   30秒の中で「始まりました」と並べると、視聴者は今すぐ観られると誤解する。
+      //   記事では節を分けて断れるが、ショートにはその余地が無い。
+      candidates: startedItems(items),
+      closer: resolved.shortCloser,
+      extraRules: [
+        `**この記事には締切が無い。** 「今観ないと観られなくなる」は使えません。
+   「見放題に入りました」という事実の提示で終え、視聴を急かさないこと。`,
+        `**まとまりが弱いと感じたら、そう報告してください。** 無理に1本作るより、
+   その月はショートを見送るほうがチャンネルの価値を保てます。`,
+      ],
+    })
+  },
+
   tags(items, ctx) {
     const labelOf = serviceLabels(ctx)
     const services = [...new Set(startedItems(items).map((e) => labelOf.get(e.service) ?? e.service))]
@@ -253,12 +343,30 @@ ${OUTPUT_FORMAT}`
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 
-    const resolved = resolvePhrases(items, ctx)
+    const since = previousAsOf(this.slug(ctx))
+    const resolved = resolvePhrases(items, ctx, since)
 
     // --- 事故を防ぐ検査（公開を止める） ---
 
     if (!md.includes('|')) {
       err('全作品の一覧表がありません。テンプレートの構成4が守られていません。')
+    }
+    /*
+     * ★ 初回の版に「更新」と書かせない。
+     *   読者にとって「更新」は「前に読んだものが変わった」の意味で、
+     *   前の版が無いのに名乗るのは嘘になる（arrivals-service.ts と同じ検査）。
+     */
+    if (since === undefined && /【[^】]*更新[^】]*】/.test(md)) {
+      err('初回の版なのにタイトルまたは本文が「更新」を名乗っています。前の版がありません。')
+    }
+    if (since !== undefined) {
+      const notShown = startedItems(items)
+        .filter((e) => freshnessOf(e, since) !== 'known')
+        .map((e) => e.work.localizedTitle ?? e.work.title)
+        .filter((title) => title && !md.includes(title))
+      if (notShown.length > 0) {
+        err(`今回の追加分が本文にありません: ${notShown.map((t) => clip(t, 24)).join(' / ')}`)
+      }
     }
     if (!/U-NEXT|Hulu|DMM/.test(md)) {
       err('他サービスでの検索リンクがありません。テンプレートの構成6が守られていません。')
@@ -394,7 +502,12 @@ const startedItems = (items: ChangeEvent[]) => items.filter((e) => e.kind === 'n
 const upcomingItems = (items: ChangeEvent[]) => items.filter((e) => e.kind === 'upcoming')
 
 /** 1作品ぶんのプロンプト行 */
-function row(e: ChangeEvent, ctx: ArticleContext, dateLabel: string): string {
+function row(
+  e: ChangeEvent,
+  ctx: ArticleContext,
+  dateLabel: string,
+  freshness: Freshness,
+): string {
   const w = e.work
   const links = buildSearchLinks(w, ctx.theme.search_links ?? [])
   const title = w.localizedTitle ?? w.title
@@ -407,6 +520,8 @@ function row(e: ChangeEvent, ctx: ArticleContext, dateLabel: string): string {
     w.originalTitle && w.originalTitle !== w.localizedTitle ? `  原語表記: ${w.originalTitle}` : '',
     `  サービス: ${serviceLabels(ctx).get(e.service) ?? e.service}`,
     `  ${dateLabel}: ${e.at ? formatMonthDay(e.at, offset) : '★未定（日付を書かないこと）'}`,
+    // ★ 誤情報を止める要。LLM に日付を突き合わせさせない（shared.ts）。
+    freshnessNote(freshness),
     w.year ? `  公開年: ${w.year}年` : '',
     w.rating ? `  評価: ${w.rating}/100（★表にだけ書き、地の文には書かないこと）` : '',
     w.genres.length ? `  ジャンル: ${w.genres.join(' / ')}` : '',
@@ -432,16 +547,28 @@ interface ResolvedPhrases {
   leadCloser: string
   upcomingIntro: string
   otherServicesIntro: string
-  attribution: string
+  /** 素材の出どころに応じた出典表記。**複数になることがある** */
+  attributions: string[]
+  /** ショート動画の締め */
+  shortCloser: string
   /** 記事作成日。「8月9日」形式 */
   asOf: string
   /** アニメ / 洋画・海外ドラマ / 邦画・国内ドラマ */
   genre: string
 }
 
-/** 固定文言に今月の値を差し込む。プロンプトと検査で同じ結果になることが要件。 */
-function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhrases {
+/**
+ * 固定文言に今月の値を差し込む。プロンプトと検査で同じ結果になることが要件。
+ *
+ * @param since 前回の版の基準日。undefined なら初回の版。
+ */
+function resolvePhrases(
+  items: ChangeEvent[],
+  ctx: ArticleContext,
+  since: Date | undefined,
+): ResolvedPhrases {
   const started = startedItems(items)
+  const added = started.filter((e) => freshnessOf(e, since) !== 'known')
   const vars = {
     月: articleMonth(ctx),
     ジャンル: ctx.variant?.label ?? '',
@@ -449,16 +576,32 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
     基準日: asOfLabel(ctx),
     // ★ 配信開始予定は数に入れない。リードの本数は「今観られる本数」。
     本数: started.length,
+    追加本数: added.length,
   }
   const get = phraseReader(fixedPhrases(ctx, REQUIRED_PHRASES), vars)
+  const isUpdate = since !== undefined
 
   return {
-    leadPrefix: `【${vars.月}月配信開始】`,
-    leadFirstSentence: get('arrivals-lead-first-sentence'),
+    leadPrefix: isUpdate ? `【${vars.基準日}更新】` : `【${vars.月}月配信開始】`,
+    leadFirstSentence: get(
+      isUpdate ? 'arrivals-update-lead-first-sentence' : 'arrivals-lead-first-sentence',
+    ),
     leadCloser: get('arrivals-lead-closer'),
     upcomingIntro: get('arrivals-upcoming-intro'),
     otherServicesIntro: get('other-services-intro'),
-    attribution: get('attribution'),
+    /*
+     * ★ ジャンル別記事は**複数のサービスが混ざる。**
+     *   U-NEXT 由来の作品が1件でもあれば U-NEXT の表記が要り、
+     *   API 由来が1件でもあれば API の表記が要る（両方あれば両方）。
+     *   判定は pipeline/core/verify.ts の ATTRIBUTIONS と同じ条件にすること。
+     */
+    attributions: [
+      started.some((e) => e.work.meta.source !== 'u-next') ? get('attribution') : '',
+      started.some((e) => e.work.meta.source === 'u-next')
+        ? get('attribution-unext-arrivals')
+        : '',
+    ].filter(Boolean),
+    shortCloser: get('short-closer'),
     asOf: vars.基準日,
     genre: vars.ジャンル,
   }

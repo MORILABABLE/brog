@@ -9,6 +9,9 @@ dist/
 public/cards/
 public/sections/
 public/heroes/
+# 表の各行に出す作品サムネイル（scripts/make-thumbs.mjs）。
+# ポスターは取得物、ジャンル汎用画像は生成物。どちらも毎ビルドで作り直す。
+public/thumbs/
 
 # ビルド時に取得した作品ポスターの原本（scripts/posters.mjs）。
 # 手元で同じ画像を何度も落とさないためだけの置き場。消しても動く。

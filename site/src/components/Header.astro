@@ -1,17 +1,22 @@
 ---
-import { SITE, CATEGORIES } from '../config'
+import { SITE, CATEGORY_HUBS } from '../config'
+import PostSearch from './PostSearch.astro'
+
+/**
+ * ★ メニューは CATEGORIES ではなく **CATEGORY_HUBS** から作る。
+ *   カテゴリは4つあるが、読者に見せる入口は3つ（2026-08-26）。
+ *   「配信終了予定」と「終了済み」を1つの入口にまとめてある。理由は config.ts。
+ */
 ---
 
 <header>
   <div class="wrap inner">
     <a class="brand" href="/">{SITE.name}</a>
     <nav aria-label="カテゴリ">
-      {
-        Object.values(CATEGORIES).map((c) => (
-          <a href={`/category/${c.slug}`}>{c.label}</a>
-        ))
-      }
+      {CATEGORY_HUBS.map((h) => <a href={`/category/${h.slug}`}>{h.label}</a>)}
     </nav>
+    {/* JavaScript が動かない環境では、この枠ごと出ない */}
+    <PostSearch />
   </div>
 </header>
 
@@ -27,9 +32,19 @@ import { SITE, CATEGORIES } from '../config'
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.6rem 1rem;
     flex-wrap: wrap;
     padding-block: 0.7rem;
+  }
+  /*
+   * 狭い画面では「サイト名 ＋ 検索窓」を1行目、メニューを2行目にする。
+   * 3つとも同じ行に押し込むと、メニューが1文字ずつ折り返して読めなくなる。
+   */
+  @media (max-width: 47rem) {
+    nav {
+      order: 3;
+      width: 100%;
+    }
   }
   .brand {
     font-weight: 700;

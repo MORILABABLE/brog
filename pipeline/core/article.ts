@@ -94,6 +94,18 @@ export interface ArticleType {
   select(events: ChangeEvent[], ledger: Ledger, ctx: ArticleContext): ChangeEvent[]
   /** LLMへの指示を組み立てる */
   buildPrompt(items: ChangeEvent[], ctx: ArticleContext): { system: string; prompt: string }
+  /**
+   * ショート動画の台本の指示を組み立てる。**実装した記事タイプだけが台本を持つ。**
+   *
+   * 未実装なら台本を作らない。`ended`（見放題終了済み）が意図的に未実装なのは、
+   * 「もう観られない」を30秒で言うと誤解を生みやすく、
+   * 記事側でも MISLEADING 検査で公開を止めている性質の記事だから。
+   * 短い尺で誤解なく伝える型が見つかっていない以上、たたき台も作らない。
+   *
+   * 台本は記事の品質ゲートを通らない（`data/draft/short.md` に別ファイルで書く）。
+   * 検査はすべて warn で、台本の不備が記事の公開を止めることは無い。
+   */
+  buildShortPrompt?(items: ChangeEvent[], ctx: ArticleContext): string
   tags(items: ChangeEvent[], ctx: ArticleContext): string[]
   slug(ctx: ArticleContext): string
   /**

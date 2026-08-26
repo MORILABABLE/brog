@@ -26,8 +26,16 @@
  * どんな記事があるかはテーマパックの `article-types/index.ts` が決める。
  * この CLI は記事タイプの中身を知らないまま、一覧・選択・実行だけを担う。
  * 記事を1種類増やしてもこのファイルは変わらない。
+ *
+ * ■ ショート動画の台本（2026-08-25 追加）
+ * `buildShortPrompt` を実装した記事タイプは、記事と同時に台本のたたき台を作る。
+ *   --emit  … prompt.md の末尾に台本の指示が付く
+ *   --apply … data/draft/short.md があれば shorts/<スラッグ>.md に書き出す
+ * **台本は記事の品質ゲートを通らない**（別ファイル・検査はすべて warn）。
+ * 台本の不備で記事の公開が止まるのは優先順位が逆なので、そう作ってある。
+ * B（LLM API）経路では台本を作らない。/article だけが作る。
  */
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { loadArticleTypes, loadTheme, type Theme } from '../theme.ts'
 import { loadLedger, readAllEvents, saveLedger } from '../core/events.ts'
@@ -35,10 +43,22 @@ import { currentYearMonth } from '../core/datetime.ts'
 import {
   buildMarkdown,
   parseArticle,
+  type ArticleContext,
   type ArticleType,
   type ArticleVariant,
 } from '../core/article.ts'
 import { hasError, verifyArticle } from '../core/verify.ts'
+import {
+  articleUrl,
+  buildShortMarkdown,
+  estimateSeconds,
+  hashtags,
+  parseShort,
+  speechChars,
+  verifyShort,
+} from '../core/short.ts'
+import { loadFixedPhrases, render } from '../core/fixed-phrases.ts'
+import { themeFile } from '../theme.ts'
 import { createProvider } from '../llm/index.ts'
 import { ATTRIBUTION } from '../sources/streaming-availability.ts'
 import type { ChangeEvent } from '../sources/types.ts'
@@ -54,6 +74,14 @@ const DRAFT_DIR = join('data', 'draft')
 const PROMPT_PATH = join(DRAFT_DIR, 'prompt.md')
 const CONTEXT_PATH = join(DRAFT_DIR, 'context.json')
 const RESPONSE_PATH = join(DRAFT_DIR, 'response.md')
+/** ショート動画の台本の下書き。★ response.md に混ぜない（下の finalizeShort 参照） */
+const SHORT_DRAFT_PATH = join(DRAFT_DIR, 'short.md')
+/**
+ * 出来上がった台本の置き場。**docs/ でも data/ でもなくリポジトリ直下。**
+ * ユーザーが手で開いて詰める前提のファイルなので、生成物置き場にも読み物にも入れない。
+ * git で管理して、手を入れた内容が残るようにする。
+ */
+const SHORTS_DIR = 'shorts'
 const MAX_TOKENS = 16_000
 
 function arg(name: string): string | undefined {
@@ -150,6 +178,9 @@ async function existingTitles(excludeSlug: string): Promise<string[]> {
 /**
  * 生成された本文を検証し、記事として書き出す。
  * API経由でもターミナル経由でも、必ずここを通る。
+ *
+ * 書き出したスラッグ・タイトル・タグを返すのは、ショート動画の台本が
+ * それらを必要とするため（記事URLと概要欄の組み立て）。
  */
 async function finalize(
   raw: string,
@@ -159,7 +190,7 @@ async function finalize(
   now: Date,
   targetMonth: string,
   stopReason?: string,
-): Promise<void> {
+): Promise<{ slug: string; title: string; tags: string[] }> {
   const { type } = recipe
   const parsed = parseArticle(raw)
   if (!parsed) {
@@ -191,10 +222,11 @@ async function finalize(
   }
   if (issues.length === 0) console.log('  品質ゲート: 問題なし')
 
+  const tags = type.tags(items, ctx)
   const md = buildMarkdown({
     parsed,
     category: type.category,
-    tags: type.tags(items, ctx),
+    tags,
     sources: sourcesFor(items),
     dataAsOf: now,
     pubDate: now,
@@ -212,7 +244,103 @@ async function finalize(
   console.log(`\n書き出し: ${path}`)
   console.log(`タイトル: ${parsed.title}`)
   console.log(`本文: ${parsed.body.replace(/\s/g, '').length}字`)
-  console.log('\n確認: cd site && npm run build')
+
+  return { slug, title: parsed.title, tags }
+}
+
+/**
+ * ショート動画の台本を書き出す。
+ *
+ * ■ 記事とは完全に切り離す
+ * 記事の書き出しが**成功したあとにだけ**呼ばれ、ここで何が起きても記事は取り消さない。
+ * 台本の下書きが無ければ黙って何もしない。検査は `verifyShort` がすべて warn で返す。
+ * 台本は人が詰めて完成させるたたき台で、この時点で公開されるものではない。
+ * ここを厳しくすると、台本の粗が記事の公開を止めることになり優先順位が逆転する。
+ *
+ * ■ frontmatter と概要欄は人にもLLMにも書かせない
+ * 記事URL・出典表記は機械的に決まる事実で、**出典表記は動画にも義務がある**
+ * （YouTube は記事とは別の配布先）。人が毎回書く形にすると、
+ * 忘れた回がそのまま規約違反になる。
+ */
+async function finalizeShort(
+  article: { slug: string; title: string; tags: string[] },
+  recipe: Recipe,
+  items: ChangeEvent[],
+  theme: Theme,
+  now: Date,
+): Promise<void> {
+  if (!recipe.type.buildShortPrompt) return
+
+  let raw: string
+  try {
+    raw = await readFile(SHORT_DRAFT_PATH, 'utf8')
+  } catch {
+    console.log(`\n（${SHORT_DRAFT_PATH} が無いので台本は作りませんでした）`)
+    return
+  }
+
+  const short = parseShort(raw)
+  if (!short) {
+    console.log(`\n[警告] ${SHORT_DRAFT_PATH} を解釈できませんでした。記事はそのまま書き出してあります。`)
+    console.log('       NOTE: / ---CUTS--- / カット表 の3つが必要です。')
+    return
+  }
+
+  // 締めの固定文言。プロンプトに出したものと同じ値でなければ検査が意味を持たない。
+  const phrases = loadFixedPhrases(themeFile(theme, 'templates', 'fixed-phrases.md'), [
+    'short-closer',
+    'short-description',
+  ])
+  const closer = phrases.get('short-closer')!
+
+  const issues = verifyShort({
+    short,
+    items,
+    closer,
+    offsetMinutes: theme.utc_offset_minutes,
+  })
+  for (const i of issues) console.log(`  [台本/警告] ${i.message}`)
+
+  const url = articleUrl(article.slug)
+
+  /*
+   * ★ 出典は記事の frontmatter と**同じ関数**から作る。
+   *   概要欄用に別で書き起こすと、U-NEXT の記事に API の帰属表示が付くような
+   *   食い違いが静かに生まれる。出どころが違えば表示も違う。
+   */
+  const sources = sourcesFor(items)
+    .map((s) => `${s.label.replace(/^>\s*/, '')}\n${s.url}`)
+    .join('\n')
+
+  const description = render(phrases.get('short-description')!, {
+    記事タイトル: article.title,
+    記事URL: url,
+    出典: sources,
+    ハッシュタグ: hashtags(article.tags),
+  })
+
+  const md = buildShortMarkdown({
+    slug: article.slug,
+    typeId: recipe.type.id,
+    variantKey: recipe.variant?.key,
+    articleTitle: article.title,
+    articleUrl: url,
+    short,
+    description,
+    generatedAt: now,
+    offsetMinutes: theme.utc_offset_minutes,
+  })
+
+  const path = join(SHORTS_DIR, `${article.slug}.md`)
+  await mkdir(SHORTS_DIR, { recursive: true })
+  await writeFile(path, md, 'utf8')
+
+  const chars = short.cuts.reduce((n, c) => n + speechChars(c.narration), 0)
+  console.log(`\n台本: ${path}`)
+  console.log(
+    `      ${short.cuts.length}カット / 読み上げ ${chars}字 / 推定 ${estimateSeconds(short.cuts).toFixed(1)}秒`,
+  )
+  console.log('      カット画像: cd site && npm run shorts')
 }
 
 /** --apply: 手元で書いた本文を取り込む */
@@ -254,7 +382,10 @@ async function applyDraft(theme: Theme): Promise<void> {
     `下書きを適用します（${recipeLabel({ type, variant })} / 対象 ${targetMonth} / ` +
       `素材${draft.items.length}件 / ${draft.createdAt}）\n`,
   )
-  await finalize(response, { type, variant }, draft.items, theme, now, targetMonth)
+  const recipe = { type, variant }
+  const article = await finalize(response, recipe, draft.items, theme, now, targetMonth)
+  await finalizeShort(article, recipe, draft.items, theme, now)
+  console.log('\n確認: cd site && npm run build')
 }
 
 /** --emit: プロンプトと素材をファイルに書き出す */
@@ -263,10 +394,25 @@ async function emitDraft(
   prompt: string,
   recipe: Recipe,
   items: ChangeEvent[],
-  now: Date,
-  targetMonth: string,
+  ctx: ArticleContext,
 ): Promise<void> {
   await mkdir(DRAFT_DIR, { recursive: true })
+
+  /*
+   * ショート動画の台本。**記事タイプが実装しているときだけ付く。**
+   * CLI は台本の中身を知らない（記事タイプの構成を知らないのと同じ扱い）。
+   * `ended` のように意図的に実装していないタイプでは、この節がそのまま消える。
+   */
+  const shortSection = recipe.type.buildShortPrompt?.(items, ctx)
+
+  /*
+   * ★ 前の記事の台本を消しておく。
+   *   消さないと、記事Aで書いた台本が残ったまま記事Bを --emit → --apply したとき、
+   *   **記事Bの台本として記事Aの内容が書き出される**。
+   *   記事本体（response.md）は固定文言の検査が食い違いを弾くが、
+   *   台本にはそういう歯止めが無いので、ここで断ち切る。
+   */
+  await rm(SHORT_DRAFT_PATH, { force: true })
 
   const doc = `# 記事の下書き依頼
 
@@ -275,7 +421,7 @@ async function emitDraft(
 
 - 出力形式（TITLE / DESCRIPTION / ---BODY---）を必ず守ること
 - frontmatter は書かないこと（日付・出典はパイプラインが機械的に組み立てる）
-
+${shortSection ? `- 記事を書いたら、続けて**ショート動画の台本**を \`${SHORT_DRAFT_PATH}\` に書くこと（末尾の節）\n` : ''}
 ---
 
 ## 役割・記事の仕様
@@ -287,7 +433,7 @@ ${system}
 ## 素材
 
 ${prompt}
-`
+${shortSection ? `\n---\n\n${shortSection}\n` : ''}`
 
   await writeFile(PROMPT_PATH, doc, 'utf8')
   await writeFile(
@@ -295,8 +441,8 @@ ${prompt}
     JSON.stringify(
       {
         typeId: recipe.type.id,
-        createdAt: now.toISOString(),
-        targetMonth,
+        createdAt: ctx.now.toISOString(),
+        targetMonth: ctx.targetMonth,
         variantKey: recipe.variant?.key,
         items,
       } satisfies DraftContext,
@@ -311,6 +457,7 @@ ${prompt}
   console.log('\n次の手順:')
   console.log(`  1. ${PROMPT_PATH} を読んで記事を書く`)
   console.log(`  2. その内容を ${RESPONSE_PATH} に保存する`)
+  if (shortSection) console.log(`  2b. ショート動画の台本を ${SHORT_DRAFT_PATH} に保存する`)
   console.log('  3. npm run write -- --apply')
   console.log('\n（このセッションなら /article で1〜3を自動化できます）')
 }
@@ -439,7 +586,7 @@ async function main(): Promise<void> {
     return
   }
 
-  if (flag('emit')) return await emitDraft(system, prompt, recipe, items, now, targetMonth)
+  if (flag('emit')) return await emitDraft(system, prompt, recipe, items, ctx)
 
   // --- API で生成 ---
   const llm = createProvider({ provider: arg('provider'), model: arg('model') })
@@ -459,7 +606,10 @@ async function main(): Promise<void> {
     `完了: 入力 ${result.usage.inputTokens} / 出力 ${result.usage.outputTokens} トークン  ${cost}\n`,
   )
 
+  // ★ API経路では台本を作らない。台本には別の指示が要り、2度目の呼び出しになる。
+  //   台本は `/article`（このセッションで書く経路）だけが作る。
   await finalize(result.text, recipe, items, theme, now, targetMonth, result.stopReason)
+  console.log('\n確認: cd site && npm run build')
 }
 
 main().catch((err: unknown) => {

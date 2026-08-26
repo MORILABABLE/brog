@@ -4,6 +4,7 @@ import sitemap from '@astrojs/sitemap'
 import { loadEnv } from 'vite'
 import { SITE } from './src/config.ts'
 import { rehypeAffiliate } from './plugins/rehype-affiliate.ts'
+import { rehypeWorkLinks } from './plugins/rehype-work-links.ts'
 
 // astro.config は Astro が .env を読み込む前に評価されるため、
 // ここでは import.meta.env が使えない。Vite の loadEnv で明示的に読む。
@@ -25,7 +26,15 @@ export default defineConfig({
     //
     //   本文のリンクにトラッキングIDと rel="sponsored" を付ける。
     //   IDを記事に焼き込まないのは、変更のたびに全記事を再生成したくないため。
-    rehypePlugins: [[rehypeAffiliate, { amazonTag: env.PUBLIC_AMAZON_TAG ?? '' }]],
+    //
+    // ★ 並び順を入れ替えないこと。
+    //   rehypeWorkLinks が表の作品名を <a> にし、rehypeAffiliate が
+    //   その <a> に tag= と rel を付ける。逆順にすると、表のリンクだけ
+    //   トラッキングIDも rel="sponsored" も付かないまま公開される。
+    rehypePlugins: [
+      rehypeWorkLinks,
+      [rehypeAffiliate, { amazonTag: env.PUBLIC_AMAZON_TAG ?? '' }],
+    ],
   },
 
   build: {

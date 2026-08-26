@@ -387,6 +387,67 @@ h3 {
   border-bottom: none;
 }
 
+/*
+ * --- 表の中の作品リンク ---
+ *
+ * 記事本文の表は plugins/rehype-work-links.ts が、常設ページの表は
+ * components/WorkTable.astro が、**同じ形の HTML** を出す。
+ *
+ *   <a class="work-link"><img class="work-thumb"><span class="work-name">作品名</span></a>
+ *
+ * ★ 記事と常設ページで見た目を揃えてある。片方だけ直すと段差が出る。
+ * ★ 絵と作品名を**1つのリンクにまとめている**のは、
+ *   「なんとなく気になった」読者が狙わずに押せる大きさを確保するため。
+ *   分けると当たり判定が小さくなり、絵と文字で2本のリンクにも数えられる。
+ */
+.work-link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  /* 表の中では地の文と同じ色。青字が何十行も並ぶと表が読めなくなる。 */
+  color: inherit;
+  text-decoration: none;
+}
+.work-link:hover .work-name {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/*
+ * 絵のある行は余白を詰め、他の列を中央に寄せる。
+ * 72px の絵に既定の余白を足すと1行が90px近くなり、
+ * 80行の表がスクロールだけで終わってしまう。
+ */
+.prose tr:has(.work-link) > td,
+.prose tr:has(.work-link) > th {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  vertical-align: middle;
+}
+
+/*
+ * ★ 寸法は3か所で揃える。**1か所だけ直さないこと。**
+ *   ここ / plugins/rehype-work-links.ts の THUMB / components/WorkTable.astro の THUMB
+ *   （書き出す実寸は表示の2倍。scripts/make-thumbs.mjs の THUMB）
+ *
+ * `.prose img` は幅いっぱい・上下マージン付きなので、記事の中では
+ * **わざわざ打ち消す必要がある**（セレクタを2つ並べているのはそのため）。
+ */
+.work-thumb,
+.prose img.work-thumb {
+  display: block;
+  flex: none;
+  width: 48px;
+  height: 72px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  object-fit: cover;
+  /* 画像が届くまでの下地。空白のままだと行が白く抜けて見える */
+  background: var(--bg-subtle);
+}
+
 /* --- 汎用パーツ --- */
 .muted {
   color: var(--text-muted);

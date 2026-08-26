@@ -4,8 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AdSlot from '../../components/AdSlot.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
-import LeadImage from '../../components/LeadImage.astro'
-import { CATEGORIES } from '../../config'
+import { CATEGORIES, hubFor } from '../../config'
 import { formatDate, isoDate } from '../../utils/date'
 
 export async function getStaticPaths() {
@@ -16,6 +15,13 @@ export async function getStaticPaths() {
 const { post } = Astro.props
 const { Content } = await render(post)
 const cat = CATEGORIES[post.data.category]
+/*
+ * パンくずの行き先は**カテゴリではなくハブ**。
+ * 「配信終了済み」の記事は /category/ended ではなく /category/leaving に載っている
+ * （ページを1つにまとめたため。config.ts の CATEGORY_HUBS）。
+ * ここを cat.slug のままにすると、生成されないURLへのリンクになる。
+ */
+const hub = hubFor(post.data.category)
 ---
 
 <BaseLayout
@@ -28,14 +34,25 @@ const cat = CATEGORIES[post.data.category]
   <article>
     <nav class="breadcrumb" aria-label="パンくず">
       <a href="/">ホーム</a> ›
-      <a href={`/category/${cat.slug}`}>{cat.label}</a>
+      <a href={`/category/${hub.slug}`}>{hub.label}</a>
     </nav>
 
     {/*
-      見出しの直上に置く、この記事固有の画像。
-      未設定なら何も描かれない。frontmatter の heroImage に入る。
+      ★ 見出しの直上のヘッダー画像は**出していない**（2026-08-25 に非表示）。
+
+      表の全作品にサムネイル付きのリンクが並ぶようになり、
+      冒頭にもう1枚ポスターを置く意味が無くなった。
+      **記事の本題（表）に届くまでのスクロールを削るほうが効く。**
+
+      frontmatter の `heroImage` は残してある。**一覧カードの左サムネイル**
+      （PostCard.astro → Thumb.astro）がこれを読んでいるので、
+      トップページ・カテゴリ一覧・新着記事枠には今までどおりポスターが出る。
+      生成（scripts/make-sections.mjs）も変えていない。
+
+      また出したくなったら、LeadImage を import して
+      `<LeadImage src={post.data.heroImage} alt="" />` をここに戻すだけでよい。
+      （常設ページ側の LeadImage は今も使っている。消さないこと）
     */}
-    <LeadImage src={post.data.heroImage} alt="" />
 
     <h1>{post.data.title}</h1>
 

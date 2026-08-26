@@ -3,6 +3,7 @@ import { AFFILIATE } from '../config'
 import { relFor, withAmazonTag } from '../lib/affiliate'
 import { normalizeForSearch } from '../lib/normalize'
 import { amazonVideoLink, otherServiceLinks } from '../lib/search-links'
+import { workLinkById } from '../lib/work-links'
 import { formatDate, isoDate } from '../utils/date'
 import type { WorkRow } from '../lib/events-data'
 
@@ -10,9 +11,18 @@ interface Props {
   groups: { date: Date; works: WorkRow[] }[]
   /** 日付見出しの意味づけ。「終了」「配信開始」など。 */
   dateNoun: string
+  /**
+   * このページが対象にしているサービスキー（`netflix` など）。
+   *
+   * ★ 作品名のリンク先をこのサービスの作品ページに合わせるために要る。
+   *   渡さないと「最後に観測したサービス」に落ちるので、
+   *   同じ作品が複数サービスに出ている場合（実測17件）に
+   *   **Netflixの一覧から Apple TV の作品ページへ飛ぶ行**が混ざる。
+   */
+  service?: string
 }
 
-const { groups, dateNoun } = Astro.props
+const { groups, dateNoun, service } = Astro.props
 
 /**
  * 作品一覧の表。常設ページ（配信終了予定 / 新着配信）で共有する。
@@ -26,6 +36,31 @@ function decorate(link: { label: string; url: string }) {
   const url = withAmazonTag(link.url, AFFILIATE.amazonTag)
   return { label: link.label, url, rel: relFor(url) }
 }
+
+/**
+ * 作品名そのものの送り先とサムネイル。
+ *
+ * ★ 「他で探す」列とは役割が違う。
+ *   こちらは**その作品が今あるサービスの作品ページ**（Netflixの作品ページなど）で、
+ *   1クリックで再生画面まで届く。「他で探す」は別のサービスに在庫があるかの確認。
+ *   決め方は src/lib/work-links.ts に集約してある。
+ *
+ * 台帳に無ければ undefined を返し、行は**文字だけ**に戻る（表は成立する）。
+ */
+function primary(w: WorkRow) {
+  const hit = workLinkById(w.workId, service)
+  if (!hit) return undefined
+  const url = withAmazonTag(hit.url, AFFILIATE.amazonTag)
+  return { url, rel: relFor(url), thumb: hit.thumb }
+}
+
+/**
+ * サムネイルの表示寸法。**属性に焼き込む。**
+ * 書かないと画像が届くまで行の高さが決まらず、表全体がガタつく。
+ * ★ plugins/rehype-work-links.ts の THUMB と styles/global.css の
+ *   `.work-thumb` を必ず揃えること。
+ */
+const THUMB = { w: 48, h: 72 }
 
 /**
  * 作品検索（WorkSearch.astro）が突き合わせる文字列を行に焼き込む。
@@ -67,19 +102,49 @@ function searchText(title: string, originalTitle?: string): string {
               /* data-work-* は作品検索（WorkSearch.astro）が読む。消さないこと */
               <tr data-work-row data-work-text={searchText(w.title, w.originalTitle)}>
                 <th scope="row">
-                  {w.title}
-                  {w.originalTitle && <span class="original">（原題: {w.originalTitle}）</span>}
+                  {(() => {
+                    const p = primary(w)
+                    const name = (
+                      <span class="work-name">
+                        {w.title}
+                        {w.originalTitle && (
+                          <span class="original">（原題: {w.originalTitle}）</span>
+                        )}
+                      </span>
+                    )
+                    /* 送り先が決まらなければリンクにしない。文字だけの行に戻る。 */
+                    if (!p) return name
+                    return (
+                      <a class="work-link" href={p.url} rel={p.rel} target="_blank">
+                        {p.thumb && (
+                          <img
+                            class="work-thumb"
+                            src={p.thumb}
+                            alt=""
+                            width={THUMB.w}
+                            height={THUMB.h}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        )}
+                        {name}
+                      </a>
+                    )
+                  })()}
                 </th>
                 <td>{w.year ? `${w.year}年` : '—'}</td>
                 <td>{w.rating ? `${w.rating}/100` : '—'}</td>
                 <td class="links">
-                  {[...otherServiceLinks(w.title), amazonVideoLink(w.title)]
-                    .map(decorate)
-                    .map((l) => (
-                      <a href={l.url} rel={l.rel} target="_blank">
-                        {l.label}
-                      </a>
-                    ))}
+                  {/* 幅を抑えるための入れ物。理由は下の .links-inner を参照 */}
+                  <span class="links-inner">
+                    {[...otherServiceLinks(w.title), amazonVideoLink(w.title)]
+                      .map(decorate)
+                      .map((l) => (
+                        <a href={l.url} rel={l.rel} target="_blank">
+                          {l.label}
+                        </a>
+                      ))}
+                  </span>
                 </td>
               </tr>
             ))}
@@ -118,6 +183,18 @@ function searchText(title: string, originalTitle?: string): string {
     text-align: left;
     vertical-align: top;
   }
+  /*
+   * 絵のある行は余白を詰め、他の列を中央に寄せる。
+   * ★ styles/global.css の `.prose tr:has(.work-link)` と同じ値にすること。
+   *   記事の表と常設ページの表で行の高さが違うと、行き来したときに段差が出る。
+   *   （こちらに書いてあるのは、スコープ付きスタイルのほうが強いため）
+   */
+  tr:has(.work-link) > th,
+  tr:has(.work-link) > td {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+    vertical-align: middle;
+  }
   thead th {
     font-size: 0.78rem;
     color: var(--text-muted);
@@ -130,14 +207,50 @@ function searchText(title: string, originalTitle?: string): string {
   tbody th {
     font-weight: 600;
   }
+  /*
+   * 余った幅は**全部**作品名の列に渡す。
+   * 他の列は中身の幅しか要らない（上で nowrap にしてある）。
+   * これが無いと、サムネイルの48pxぶん作品名が押し出されて
+   * 「ノースマン 導かれ／し復讐者」のように途中で折り返る。
+   */
+  th:first-child {
+    width: 100%;
+  }
   .original {
     display: block;
     font-size: 0.76rem;
     font-weight: 400;
     color: var(--text-muted);
   }
+  /*
+   * 「他で探す」は4本並ぶので、放っておくと**表の幅の半分**を占める。
+   * その皺寄せは全部いちばん左の作品名に行き、題名が途中で折り返る
+   * （実測: 表673pxのうち342pxをこの列が取り、作品名は202pxしか残らなかった）。
+   *
+   * ★ セルに max-width を書いても効かない。表の自動レイアウトは
+   *   セルの max-content 幅を先に満たしてから残りを配るため。
+   *   **中に置いた inline-block に max-width を掛ける**のが確実。
+   * 行の高さはサムネイル(72px)で決まっているので、2行になっても伸びない。
+   */
+  /* ★ `tbody` から書くこと。上の `tbody td` のほうが詳細度が高く、負けて nowrap のままになる。 */
+  tbody td.links {
+    white-space: normal;
+  }
+  /*
+   * ★ flex にすること。inline-block ＋ margin では折り返らない。
+   *   リンクは JSX の map が隣り合わせで書き出すので**間に空白文字が無く**、
+   *   行を折る手がかりが存在しない（実測: 192px の箱に326px ぶんが1行で入り、
+   *   はみ出したぶんが切れて「Amazon（レ…」で終わっていた）。
+   */
+  .links-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.1rem 0.6rem;
+    max-width: 12rem;
+  }
   .links a {
-    margin-right: 0.6rem;
     font-size: 0.8rem;
+    /* 折り返してよいのは**リンクとリンクの間だけ**。「U-」「NEXT」で切らせない。 */
+    white-space: nowrap;
   }
 </style>

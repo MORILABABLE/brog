@@ -12,6 +12,13 @@
  *   3. `article-types/<新しいタイプ>.ts` を作る（共通処理は `shared.ts` にある）
  *   4. このファイルの ARTICLE_TYPES に足す
  *
+ * ■ ショート動画の台本を付けるかどうか
+ * `buildShortPrompt` を実装すれば付く。実装しなければ付かない。それだけ。
+ * 中身は `shared.ts` の `shortScriptSection()` に集めてあるので、
+ * 記事タイプ側は「日付の呼び方・素材が邦題か・固有の注意」の3つを渡すだけでよい。
+ * 現状 `leaving` と `arrivals` が実装し、`ended` は意図的に実装していない
+ * （理由は `ended.ts` の冒頭）。
+ *
  * ■ 総合記事とジャンル別記事を並べる場合
  * 1つの記事タイプに2つのモードを持たせず、別々のタイプとして登録する。
  * 総合とジャンル別では読者に渡すものが違い、テンプレートも分かれるため。
@@ -21,5 +28,11 @@ import type { ArticleType } from '../../../pipeline/core/article.ts'
 import { leavingArticle } from './leaving.ts'
 import { endedArticle } from './ended.ts'
 import { arrivalsArticle } from './arrivals.ts'
+import { arrivalsServiceArticle } from './arrivals-service.ts'
 
-export const ARTICLE_TYPES: ArticleType[] = [leavingArticle, endedArticle, arrivalsArticle]
+export const ARTICLE_TYPES: ArticleType[] = [
+  leavingArticle,
+  endedArticle,
+  arrivalsArticle,
+  arrivalsServiceArticle,
+]

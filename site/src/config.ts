@@ -66,7 +66,9 @@ export const ATTRIBUTION = {
  *   leaving = これから終了する（まだ観られる）
  *   ended   = すでに終了した（もう観られない）
  *   読者に渡すものが正反対なので、ラベルでも明確に区別する。
- *   ここの並び順がヘッダーのメニュー順になる。
+ *
+ * ★ **これは記事に付けるラベル（バッジ）の定義であって、メニューではない。**
+ *   読者に見せる入口は下の CATEGORY_HUBS で3つに束ねてある。
  */
 export const CATEGORIES = {
   leaving: { slug: 'leaving', label: '配信終了予定' },
@@ -76,6 +78,63 @@ export const CATEGORIES = {
 } as const
 
 export type CategorySlug = keyof typeof CATEGORIES
+
+/**
+ * 一覧ページ（＝ハブ）の定義。**ヘッダーのメニューはここから作る。**
+ *
+ * ■ なぜカテゴリと分けるか
+ * カテゴリは4つあるが、**読者にとっての入口は3つでよい**（2026-08-26）。
+ * 「終了予定」と「終了済み」は記事の性質としては正反対でも、
+ * 読者の用事はどちらも「終了まわりを見に来た」で同じ。
+ * 入口で分けると、探しているものがどちらにあるか読者が判断させられる。
+ *
+ * 区別そのものは**カテゴリバッジの色と文言が担う**（アンバー＝予定 / グレー＝済み）。
+ * 一覧の中で1行ずつ見分けが付くので、ページを分ける必要がない。
+ *
+ * ★ `includes` の**先頭がそのハブのURL**になる（`/category/<先頭>`）。
+ *   2番目以降のカテゴリには専用ページを作らない。
+ *   `public/_redirects` で先頭へ転送すること。**片方だけ直すと404が出る。**
+ */
+export const CATEGORY_HUBS = [
+  {
+    slug: 'leaving',
+    label: '配信終了済み・予定',
+    /** ページの h1。ナビは短く、見出しは中身の順に合わせる */
+    heading: '配信終了予定・終了済み',
+    description: '見放題配信が終了する予定の作品と、すでに終了した作品の記事一覧です。',
+    includes: ['leaving', 'ended'],
+  },
+  {
+    slug: 'arrivals',
+    label: '新着配信',
+    heading: '新着配信',
+    description: '新しく見放題配信が始まった作品の記事一覧です。',
+    includes: ['arrivals'],
+  },
+  {
+    slug: 'ranking',
+    label: 'ランキング',
+    heading: 'ランキング',
+    description: 'ランキング記事の一覧です。',
+    includes: ['ranking'],
+  },
+] as const satisfies readonly {
+  slug: CategorySlug
+  label: string
+  heading: string
+  description: string
+  includes: readonly CategorySlug[]
+}[]
+
+/**
+ * そのカテゴリの記事が載るハブ。パンくずのリンク先に使う。
+ * どのハブにも属さないカテゴリがあれば、そのカテゴリ自身を指す
+ * （リンクは切れるが、ビルドは落とさない）。
+ */
+export function hubFor(category: CategorySlug): { slug: CategorySlug; label: string } {
+  const hit = CATEGORY_HUBS.find((h) => (h.includes as readonly string[]).includes(category))
+  return hit ?? { slug: category, label: CATEGORIES[category].label }
+}
 
 /**
  * AdSense のパブリッシャーID。

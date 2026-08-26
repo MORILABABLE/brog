@@ -19,6 +19,17 @@
  *   - 「お見逃しなく」「今のうちに」の類は verify が公開を止める
  *   - 他サービス検索リンクの節が、補足ではなく記事の中心になる
  *
+ * ■ ショート動画の台本を作らない（buildShortPrompt を実装していない）
+ * leaving / arrivals には台本が付くが、この記事タイプには意図的に付けていない。
+ *
+ * この記事の要点は「もう観られない」で、それを30秒で誤解なく伝える型が無い。
+ * 短い尺では但し書きを添えられず、「終了」の2文字だけが残って
+ * **まだ間に合うと読まれる**（同じ危険があるから記事側では MISLEADING 検査で
+ * 公開を止めている）。型が見つかっていない以上、たたき台も作らない。
+ *
+ * 作れるようになったら `buildShortPrompt` を実装すれば、それだけで台本が付く。
+ * CLI もスラッシュコマンドも変えなくてよい。
+ *
  * ■ 文章の型は2つのファイルに分かれている
  *   templates/ended.md            構成と文体のルール
  *   templates/fixed-phrases.md    毎月そのまま使う文言（ended- で始まるキー）
@@ -43,6 +54,7 @@ import {
   itemTitles,
   normalizeBody,
   phraseReader,
+  publishable,
   ratingMentionsInProse,
   serviceLabels,
   serviceNames,
@@ -107,7 +119,10 @@ export const endedArticle: ArticleType = {
   category: 'ended',
   description: '今月見放題が終了した作品（配信終了予定を取得できないサービス）',
 
-  select(events, _ledger: Ledger, ctx) {
+  select(rawEvents, _ledger: Ledger, ctx) {
+    // ★ 出さないと決めた作品を最初に外す（data/excluded-works.json）
+    const events = publishable(rawEvents)
+
     const target = events
       .filter((e) => e.kind === 'removed')
       .filter((e) => (TARGET_SERVICES as readonly string[]).includes(e.service))

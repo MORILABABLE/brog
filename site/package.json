@@ -7,11 +7,13 @@
     "dev": "astro dev",
     "cards": "node scripts/make-cards.mjs",
     "sections": "node scripts/make-sections.mjs",
+    "shorts": "node scripts/make-shorts.mjs",
     "posters:purge": "node scripts/purge-posters.mjs",
-    "prebuild": "node scripts/make-cards.mjs && node scripts/make-sections.mjs",
+    "prebuild": "node scripts/make-cards.mjs && node scripts/make-sections.mjs && node scripts/make-thumbs.mjs",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "thumbs": "node scripts/make-thumbs.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.2.2",

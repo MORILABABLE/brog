@@ -30,9 +30,11 @@ import {
   itemTitles,
   normalizeBody,
   phraseReader,
+  publishable,
   ratingMentionsInProse,
   serviceLabels,
   serviceNames,
+  shortScriptSection,
 } from './shared.ts'
 
 /**
@@ -145,6 +147,8 @@ const REQUIRED_PHRASES = [
   'attribution',
   // U-NEXT の記事に API の帰属表示を付けると出典を偽ることになるため別文言
   'attribution-unext',
+  // ショート動画の締め（記事と同時に作る台本で使う）
+  'short-closer',
 ] as const
 
 /**
@@ -196,10 +200,13 @@ export const leavingArticle: ArticleType = {
   variantNoun: 'サービス',
   minItems: MIN_ITEMS,
 
-  select(events, _ledger: Ledger, ctx) {
+  select(rawEvents, _ledger: Ledger, ctx) {
     const service = ctx.variant?.key
     if (!service) return []
     const traits = traitsOf(service)
+
+    // ★ 出さないと決めた作品を最初に外す（data/excluded-works.json）
+    const events = publishable(rawEvents)
 
     const target = events
       .filter((e) => e.kind === 'expiring')
@@ -375,6 +382,35 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     return { system, prompt }
   },
 
+  /**
+   * ショート動画の台本。
+   *
+   * **配信終了予定はショートに最も向く記事タイプ。** 締切があるので
+   * 「あと何日で見放題が終わる」がそのまま30秒の軸になる。
+   * サイトのタグライン（消える前に、気づける。）とも噛み合う。
+   */
+  buildShortPrompt(items, ctx) {
+    const traits = traitsOf(ctx.variant?.key)
+    const resolved = resolvePhrases(items, ctx)
+
+    return shortScriptSection(ctx, {
+      dateLabel: '終了日',
+      titlesAreLocalized: traits.localizedTitles,
+      candidates: items,
+      closer: resolved.shortCloser,
+      extraRules: [
+        `**この記事タイプの強みは締切。** 「${articleMonth(ctx)}月◯日で見放題が終わる」を軸に置く。
+   ただし急かすのは終了日という事実の提示までとし、視聴を命令しない。`,
+        traits.hasLineup
+          ? `**「見放題が終了する」であって「観られなくなる」ではありません。**
+   ${ctx.variant?.label ?? 'このサービス'} にはポイント（レンタル・購入）での取り扱いがあり、
+   見放題が終わっても残る作品があります。30秒では但し書きを添えられないので、
+   ナレーションもテロップも必ず「見放題」を付けてください。`
+          : '',
+      ].filter(Boolean),
+    })
+  },
+
   tags(items, ctx) {
     const labelOf = serviceLabels(ctx)
     const services = [...new Set(items.map((e) => labelOf.get(e.service) ?? e.service))]
@@ -518,6 +554,8 @@ interface ResolvedPhrases {
   leadCloser: string
   otherServicesIntro: string
   attribution: string
+  /** ショート動画の締め */
+  shortCloser: string
   /** 記事作成日。「8月9日」形式 */
   asOf: string
 }
@@ -540,6 +578,7 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
     // ★ データの出どころが違えば出典表記も違う。機械的に API の帰属表示を
     //   付けると、取得していないAPIを出典として偽ることになる。
     attribution: get(traitsOf(ctx.variant?.key).attributionKey),
+    shortCloser: get('short-closer'),
     asOf: vars.基準日,
   }
 }

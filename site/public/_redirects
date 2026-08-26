@@ -1,0 +1,18 @@
+# Cloudflare Pages のリダイレクト設定。
+# このファイルは public/ から dist/ の直下にコピーされ、Pages が読み取る。
+# 書式は「元のパス  行き先  ステータス」。1行1つ。
+#
+# ★ カテゴリページを「ハブ」にまとめた（2026-08-26）。
+#   「配信終了予定」と「終了済み」は /category/leaving の1ページに並べている。
+#   /category/ended はもう生成されないので、ここで恒久転送する。
+#   （まとめた理由は site/src/config.ts の CATEGORY_HUBS）
+#
+# ★ ハブの構成を変えたら、この表も必ず直すこと。
+#   config.ts だけ直すと、生成されないURLが 404 のまま残る。
+/category/ended  /category/leaving  301
+
+# ★ 総合1本だった頃の配信終了記事。サービス別2本に置き換えたので退役させた
+#   （2026-08-26）。旧記事の65作品は新しい2本が漏れなく引き継いでいる
+#   （2026-09-leaving-netflix 36本 / 2026-09-leaving-prime-video 30本）。
+#   行き先を片方の記事にすると、もう片方を読者が見つけられない。ハブへ送る。
+/posts/2026-09-leaving  /category/leaving  301

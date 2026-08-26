@@ -26,8 +26,12 @@
 
 上から下、外から内の順。
 
-    ヘッダー（サイト名・メニュー）
+    ヘッダー（サイト名・メニュー・記事検索窓）
       → site/src/components/Header.astro
+      メニューの項目   → site/src/config.ts の CATEGORY_HUBS
+                         ★ CATEGORIES ではない。カテゴリは4つ、メニューは3つ
+      記事検索窓       → site/src/components/PostSearch.astro
+                         ★ 常設ページの「作品検索」(WorkSearch.astro) とは別物
 
     左の枠 ＝ 常設枠（「最新の配信終了・配信開始一覧」）
       見た目・並び        → site/src/components/LeftRail.astro
@@ -57,6 +61,9 @@
     常設ページ（終了予定） → site/src/pages/leaving/[service].astro
     常設ページ（新着）     → site/src/pages/arrivals/[service].astro
     カテゴリ一覧          → site/src/pages/category/[category].astro
+                            ★ 生成されるのは CATEGORY_HUBS の3枚だけ。
+                              /category/ended は public/_redirects で
+                              /category/leaving へ転送している
     トップページ          → site/src/pages/index.astro
     運営者情報・規約など   → site/src/pages/about.astro / privacy.astro / contact.astro
     見放題の増減（統計）   → site/src/pages/stats.astro
@@ -66,12 +73,36 @@
 
 
 --------------------------------------------------------------------------
+## 表の中の作品リンク
+
+記事の表も常設ページの表も、作品名がリンクとサムネイルになっている。
+**同じ形のHTMLを2か所が別々に出しているので、片方だけ直すと段差が出る。**
+
+    どこへ飛ばすか      → site/src/lib/work-links.ts の resolveUrl()
+                          （作品ページの直リンクと検索の使い分け。**方針はここだけ**）
+    記事の表に貼る処理  → site/plugins/rehype-work-links.ts
+                          ビルド時にセルの中身が作品名と完全一致したら <a> で包む
+                          ★ astro.config.mjs で rehype-affiliate より**前**に置くこと
+    常設ページの表      → site/src/components/WorkTable.astro
+    見た目（共通）      → site/src/styles/global.css の .work-link / .work-thumb
+    サムネイルの用意    → site/scripts/make-thumbs.mjs
+    画像が無いとき      → site/scripts/genre-art.mjs（ジャンル別の汎用画像）
+
+> **記事にURLは書かれていない。** 記事側は素の作品名だけを書き、
+> リンクはビルド時に貼る。送り先やトラッキングIDを変えても
+> **記事を作り直さなくてよい**のはこのため。
+
+
+--------------------------------------------------------------------------
 ## カード（一覧に並ぶ横長のやつ）
 
     記事のカード       → site/src/components/PostCard.astro
     常設ページのカード → site/src/components/EvergreenCard.astro
     左の正方形サムネ   → site/src/components/Thumb.astro
     見出しの上の画像   → site/src/components/LeadImage.astro
+                         ★ いま使っているのは常設ページだけ。
+                           個別記事の冒頭は 2026-08-25 に非表示にした
+                           （戻し方は posts/[...slug].astro のコメント）
 
 > **記事のカードと常設ページのカードは同じ体裁にしてある。**
 > 片方だけ直すと一覧の中で段差が出る。どちらのファイルにも同じ注意書きがある。
@@ -150,10 +181,11 @@
       → site/src/assets/services/netflix.png など、キーと同じ名前で置くだけ
       → 置かなければ頭文字タイルのまま。壊れない
 
-    記事のヘッダー画像を手で決めたいとき
+    記事一覧のカードの左サムネイルを手で決めたいとき
       → その記事の frontmatter `heroImage` に好きなパスを書く
       → 画像は site/public/ に置く（例: heroImage: '/my-hero.jpg'）
       → **手で書いた値は自動処理が上書きしない**
+      ★ 記事ページの冒頭には出ない（2026-08-25 に非表示）。出るのは一覧カードだけ
 
 ### 自動で作られるもの（触らなくてよい）
 
@@ -161,6 +193,9 @@
     本文中のセクション画像     → site/scripts/make-sections.mjs → public/sections/
     作品ポスター               → site/scripts/posters.mjs       → public/sections/posters/
     記事のヘッダー画像         → site/scripts/make-sections.mjs → public/heroes/
+                                 （使い道は一覧カードの左サムネイルのみ）
+    表の作品サムネイル         → site/scripts/make-thumbs.mjs   → public/thumbs/
+    ジャンル別の汎用画像       → site/scripts/genre-art.mjs     → public/thumbs/genre-*.webp
 
 いずれも `npm run build` の前に自動で走る。git には入れない（毎回作り直すため）。
 絵柄そのものを変えたいときは、出力先ではなく**生成スクリプトの方**を直す。
@@ -179,8 +214,14 @@
     記事カード（OG）  → site/scripts/make-cards.mjs 先頭の W / H
                         ★ site/src/config.ts の CARD_IMAGE も同時に直すこと
     セクション画像    → site/scripts/make-sections.mjs 先頭の W / H
+    ショートのカット  → site/scripts/make-shorts.mjs 先頭の W / H / SAFE
+                        ★ SAFE は YouTube の再生UIが重なる余白。--guides で目視できる
     ポスターの表示    → global.css の img[src^='/sections/posters/'] の max-height
-    記事の先頭の画像  → site/src/components/LeadImage.astro の max-height
+    表のサムネイル    → global.css の .work-thumb
+                        ★ 3か所と揃える（rehype-work-links.ts / WorkTable.astro の
+                          THUMB、make-thumbs.mjs の THUMB は表示の2倍）
+    常設ページの先頭  → site/src/components/LeadImage.astro の max-height
+                        （個別記事の冒頭画像は非表示。APPEARANCE.md 12節）
     サイト共通のOG    → site/src/config.ts の OG_IMAGE（make-og.mjs の出力と揃える）
 
 
@@ -204,11 +245,15 @@
 ## 文言（コードの中にある文字）
 
     サイト名・キャッチコピー・説明文 → site/src/config.ts の SITE
-    カテゴリの表示名                 → site/src/config.ts の CATEGORIES
+    カテゴリの表示名（バッジ）        → site/src/config.ts の CATEGORIES
+    メニューと一覧ページの構成        → site/src/config.ts の CATEGORY_HUBS
     出典の表記                       → site/src/config.ts の ATTRIBUTION
     常設ページのタイトルの形          → site/src/lib/evergreen.ts
     記事の定型文                     → theme-packs/streaming-jp/templates/fixed-phrases.md
     記事の構成そのもの                → theme-packs/streaming-jp/templates/*.md
+    ショート台本の構成・尺・禁止事項  → theme-packs/streaming-jp/templates/short-script.md
+    ショートの締め・概要欄の型        → 同 fixed-phrases.md の short- で始まるキー
+    出来上がった台本（手で直す）      → shorts/*.md（→ shorts/README.md）
 
 
 --------------------------------------------------------------------------

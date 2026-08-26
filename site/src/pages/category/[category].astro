@@ -3,24 +3,30 @@ import { getCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
 import EvergreenCard from '../../components/EvergreenCard.astro'
-import { CATEGORIES, SITE } from '../../config'
+import { CATEGORY_HUBS, SITE } from '../../config'
 import { evergreenFor, evergreenSummary } from '../../lib/evergreen'
 
+/**
+ * ★ 生成するのは**ハブ1つにつき1ページ**（カテゴリ1つにつき1ページではない）。
+ *   「配信終了予定」と「終了済み」は同じページに並べる。理由は config.ts の
+ *   CATEGORY_HUBS を参照。**`/category/ended` は生成されない**ので、
+ *   `public/_redirects` で `/category/leaving` へ転送してある。
+ */
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
 
-  return Object.values(CATEGORIES).map((cat) => ({
-    params: { category: cat.slug },
+  return CATEGORY_HUBS.map((hub) => ({
+    params: { category: hub.slug },
     props: {
-      cat,
+      hub,
       posts: posts
-        .filter((p) => p.data.category === cat.slug)
+        .filter((p) => (hub.includes as readonly string[]).includes(p.data.category))
         .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
     },
   }))
 }
 
-const { cat, posts } = Astro.props
+const { hub, posts } = Astro.props
 
 /*
  * 常設ページを記事カードと同じ体裁で先頭に出す。
@@ -29,17 +35,13 @@ const { cat, posts } = Astro.props
  *
  * 件数と基準日はここで読む。ビルド時にしか動かないので費用はかからない。
  */
-const evergreen = evergreenFor(cat.slug).map((page) => ({
-  page,
-  ...evergreenSummary(page),
-}))
+const evergreen = hub.includes
+  .flatMap((c) => evergreenFor(c))
+  .map((page) => ({ page, ...evergreenSummary(page) }))
 ---
 
-<BaseLayout
-  title={`${cat.label}の記事一覧`}
-  description={`${SITE.name}の「${cat.label}」カテゴリの記事一覧です。`}
->
-  <h1>{cat.label}</h1>
+<BaseLayout title={`${hub.heading}の記事一覧`} description={`${SITE.name}の${hub.description}`}>
+  <h1>{hub.heading}</h1>
 
   {
     evergreen.map((e) => (
@@ -49,7 +51,7 @@ const evergreen = evergreenFor(cat.slug).map((page) => ({
 
   {
     posts.length === 0 ? (
-      <p class="muted">このカテゴリの記事はまだありません。</p>
+      <p class="muted">この分類の記事はまだありません。</p>
     ) : (
       posts.map((post) => <PostCard post={post} />)
     )

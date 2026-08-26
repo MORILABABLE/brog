@@ -18,6 +18,7 @@
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { isPublishable } from './excluded'
 
 /** サイトの基準タイムゾーン。theme.yaml の utc_offset_minutes と揃える。 */
 const JST_OFFSET_MINUTES = 9 * 60
@@ -72,7 +73,11 @@ function readAll(): RawEvent[] {
   for (const f of readdirSync(dir).filter((n) => n.endsWith('.jsonl')).sort()) {
     for (const line of readFileSync(join(dir, f), 'utf8').split('\n')) {
       const s = line.trim()
-      if (s) out.push(JSON.parse(s) as RawEvent)
+      if (!s) continue
+      const e = JSON.parse(s) as RawEvent
+      // ★ 出さないと決めた作品はここで落とす（data/excluded-works.json）。
+      //   読み込みの1か所で外すので、常設ページも定点観測も自動的に揃う。
+      if (isPublishable(e.work.id)) out.push(e)
     }
   }
   cached = out

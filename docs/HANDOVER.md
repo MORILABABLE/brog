@@ -16,21 +16,23 @@
 | サイト名 | **見放題レーダー**（2026-08-23 に「観とこう」から改名）。理由と却下案は [DEPLOY.md の改名の記録](../DEPLOY.md#取得したら) |
 | リポジトリ | https://github.com/MORILABABLE/brog （**Public**。2026-08-25 に API で確認。以前ここには Private と書いてあったが誤り） |
 | 収集パイプライン | ✅ 2026-08 で1,089件を取得済み |
-| U-NEXT の収集 | ✅ **2026-08-25 に追加**。APIの外側を実ブラウザで取る。配信終了予定210件を収集済み・作品台帳274件。記事タイプは未実装 → [UNEXT.md](./UNEXT.md) |
+| U-NEXT の収集 | ✅ **2026-08-25 に追加**。APIの外側を実ブラウザで取る。配信終了予定210件を収集済み・作品台帳274件。記事は `leaving` の**サービス別バリアント**として実装済み（記事タイプは増やしていない）・1本公開中 → [UNEXT.md](./UNEXT.md) |
 | 邦題解決 | ✅ Wikidata経由・解決率73% |
-| サイト | ✅ 20ページ生成・型エラー0。JSは**常設ページの作品検索だけ**（約1KB・インライン。LinkSwitch を有効にすると外部JSが1本入る） |
-| 記事 | ✅ 6本を公開中（`leaving`2 / `arrivals`3 / `ended`1） |
-| 記事タイプ | ✅ 5種（`npm run write -- --list` が唯一の一覧）。`leaving` は 2026-08-23 に**サービス別**へ分割 |
+| サイト | ✅ 21ページ生成・型エラー0。JSは**常設ページの作品検索だけ**（約1KB・インライン。LinkSwitch を有効にすると外部JSが1本入る） |
+| 記事 | ✅ **7本**を公開中（`leaving`3〈Netflix / Prime Video / U-NEXT〉 / `arrivals`3 / `ended`1） |
+| 記事タイプ | ✅ 3種（`leaving` / `ended` / `arrivals`）＝**7レシピ**（`npm run write -- --list` が唯一の一覧）。`leaving` は 2026-08-23 に**サービス別**へ分割し、2026-08-25 に U-NEXT を追加 |
 | 常設ページ | ✅ 6枚。**LLM不使用**・`collect` のたびに自動更新。実装は `site/src/lib/events-data.ts` |
-| ┗ 配信終了予定 | `/leaving/netflix`（111本） `/leaving/prime-video`（32本） |
-| ┗ 新着配信 | `/arrivals/netflix`（194本） `/arrivals/prime-video`（169本） `/arrivals/disney-plus`（16本） |
+| ┗ 配信終了予定 | `/leaving/netflix`（102本） `/leaving/prime-video`（31本）※2026-08-26 時点。`collect` のたびに動く |
+| ┗ 新着配信 | `/arrivals/netflix`（212本） `/arrivals/prime-video`（175本） `/arrivals/disney-plus`（17本）※2026-08-26 時点 |
 | ┗ 定点観測 | `/stats`（月次の追加・削除。**このサイトにしか出せない数字**） |
 | デザイン | ✅ 濃紺の背景＋本文カード、カテゴリ色分け（[APPEARANCE.md](./APPEARANCE.md)）。**ヘッダーバナーは 2026-08-24 に非表示**（画像はOG生成用に残置） |
-| 画像 | ✅ 記事カード（OG）・本文セクション画像・記事のヘッダー画像を**ビルド時に自動生成**。本文とヘッダーには**作品ポスター**を使う（提供元の許諾済み・[11節](./APPEARANCE.md#11-作品ポスターの取り扱い許諾取り直し契約終了)）。常設ページのサービス画像だけ未配置 |
+| 画像 | ✅ 記事カード（OG）・本文セクション画像・表の作品サムネイルを**ビルド時に自動生成**。**作品ポスター**を使う（提供元の許諾済み・[11節](./APPEARANCE.md#11-作品ポスターの取り扱い許諾取り直し契約終了)）。`heroImage` は生成しているが**記事冒頭では非表示**（一覧カードのサムネイル専用・2026-08-25）。常設ページのサービス画像だけ未配置 |
 | 記事の生成（セッション経由） | ✅ `/article` で実行。**API課金なし**。品質ゲートまで検証済み |
+| ショート動画の台本 | ✅ **2026-08-25 追加**。`/article` が記事と同時に `shorts/<スラッグ>.md` を作る（`leaving` / `arrivals` のみ。`ended` は意図的に除外）。カット画像は `cd site && npm run shorts` で 1080×1920 を生成。**動画制作そのものは未着手** → [shorts/README.md](../shorts/README.md) |
 | 記事の生成（API経由） | 🔶 実装済みだが**実通信は未検証**（APIキー未設定） |
 | アフィリエイト | ✅ 実装完了・**稼働中**（Amazonのみ。ASPは未提携）。[AFFILIATE.md](./AFFILIATE.md) |
 | 左右の枠 | ✅ **左**＝常設ページのカード（1ページ1枚）、**右**＝新着記事＋広告カード（PRだけ追従）。1200px以上でのみ表示。サムネイルは `site/src/assets/services/` に置くだけ（[APPEARANCE.md](./APPEARANCE.md)） |
+| 表の作品リンク | ✅ **2026-08-25 追加**。記事・常設ページの表の全作品が**サムネイル付きリンク**（サイト全体で約1,250本）。送り先は `site/src/lib/work-links.ts` の1か所で決める（作品ページの直リンク＞検索）。画像の無い作品はジャンル別の汎用画像 → [AFFILIATE.md](./AFFILIATE.md) の「表の作品リンク」・[APPEARANCE.md 13節](./APPEARANCE.md) |
 | 作品検索 | ✅ 常設ページの冒頭文の右。打つと該当作品の行へ自動スクロール（**絞り込みはしない**）。全角/半角・大小文字・中黒を無視。ならし方は `site/src/lib/normalize.ts` の1箇所（2026-08-24 追加） |
 | 自動デプロイ | ✅ main への push で Cloudflare Pages が自動ビルド |
 | 定期実行（収集） | ✅ **稼働中**。毎週 火・金 04:00 JST。8/10・8/13・8/17・8/21 の自動コミットを確認済み（`git log --grep='chore(collect)'`） |
@@ -48,8 +50,10 @@ npm run notify -- --dry-run     # 通知本文を確認（送らない・API消�
 npm run notify                  # 前回以降の変化を Issue で通知
 /article                        # このセッションで記事を執筆（API課金なし）
 npm run write -- --emit         #   ↑を手動でやる場合: プロンプト書き出し
-npm run write -- --apply        #   ↑ response.md を検証して記事にする
+npm run write -- --apply        #   ↑ response.md を検証して記事にする（台本もここで書き出す）
 npm run write -- --dry-run      # プロンプトだけ表示（無料）
+cd site && npm run shorts       # ショート動画のカット画像（1080×1920）
+cd site && npm run shorts -- --guides   #   ↑ YouTubeのUIが重なる余白を重ねて確認
 npm run preview                 # 収集データが記事としてどう見えるか（API消費なし）
 npm run catalogs                # 対象国のサービス一覧
 npm run typecheck
@@ -76,6 +80,7 @@ cd site && npm run build        # サイトのビルド
 | **他ジャンルのブログを増やしたい** | **[NEW-THEME.md](./NEW-THEME.md)** |
 | **背景・バナー・ロゴ・OG画像・カテゴリ色・記事内の画像** | **[APPEARANCE.md](./APPEARANCE.md)** |
 | **アフィリエイト（有効化手順・提携状況・落とし穴）** | **[AFFILIATE.md](./AFFILIATE.md)** |
+| **ショート動画の台本を直す・使える素材と使えない素材** | **[../shorts/README.md](../shorts/README.md)** |
 | ブラウザ（github.dev）で記事やデザインを直す | [EDITING.md](./EDITING.md) |
 | 全体の設計・なぜその選択をしたか | [../DESIGN.md](../DESIGN.md) |
 | セットアップ・コマンド一覧 | [../README.md](../README.md) |
@@ -110,7 +115,9 @@ cd site && npm run build        # サイトのビルド
 |---|---|
 | ポスターの取得・キャッシュ | `site/scripts/posters.mjs` |
 | セクション画像への合成 | `site/scripts/make-sections.mjs`（ポスターあり／文字だけ の2版） |
-| 使っている作品の台帳 | `data/image-manifest.json`（`npm run sections` が書き出す） |
+| 表の作品サムネイル | `site/scripts/make-thumbs.mjs` → `site/public/thumbs/` |
+| 画像が無い作品の汎用画像 | `site/scripts/genre-art.mjs`（ジャンル別26枚） |
+| 使っている作品の台帳 | `data/image-manifest.json`（`npm run sections` と `npm run thumbs` が書き出す。**2026-08-25 に58件→590件**。取り直しは2回に分ける） |
 | 6ヶ月ごとの取り直し | `npm run refresh:images` |
 | 契約終了時の全削除 | `cd site && npm run posters:purge` |
 
@@ -144,14 +151,16 @@ cd site && npm run build        # サイトのビルド
 > 経緯は [APPEARANCE.md の9節](./APPEARANCE.md#9-記事ごとのカード画像)。
 
 **記事のヘッダー画像（frontmatter の `heroImage`）も自動で入るようにした。**
-記事一覧のカードの左サムネイルと、記事ページの見出し上に出る。
 選び方は「記事タイトルと一致する作品」→「記事に最初に出てくる作品」。
 **手で別のパスを書けばその記事は自動処理から外れる**ので、絵は好きに変えられる。
 実測で7本中6本に入った（残り1本はU-NEXTのみの記事で素材が無い）。
 → [APPEARANCE.md の12節](./APPEARANCE.md#12-記事のヘッダー画像frontmatter-の-heroimage)
 
-> 記事ページの見出し上は **16:7 の切り抜きをやめた**（縦長のポスターだと
-> 中央の帯しか出ず、何の作品か分からなくなるため）。いまは高さ320pxで抑えている。
+> ★ **いま出るのは記事一覧のカードの左サムネイルだけ。**
+> 記事ページの見出し上は 2026-08-25 に非表示にした。表の全作品に
+> サムネイル付きリンクが並ぶようになり、冒頭にもう1枚置く意味が無くなったため
+> （本題の表に届くまでのスクロールを削るほうが効く）。
+> 生成も frontmatter もそのままなので、戻すのは1行。
 
 > **常設ページのサービス画像（`N` `A` `D` の頭文字タイル）は別系統で、まだ空。**
 > `site/src/assets/services/{netflix,prime-video,disney-plus}.png` を置けば出る。
@@ -176,7 +185,7 @@ cd site && npm run build        # サイトのビルド
    （`.env` はリポジトリに入らないので、Pages 側にも要る）。
    これだけで Amazon 導線・PR表記・規約文がまとめて出る。
    ASP（バリューコマース / afb）の登録は Phase B。
-   **記事6本では審査に落ちるので、10〜15本に増やしてから申請する。**
+   **記事7本では審査に落ちるので、10〜15本に増やしてから申請する。**
    手順と落とし穴は [AFFILIATE.md](./AFFILIATE.md)。
 2. **`site/src/pages/contact.astro` に実在する連絡先を設定**
    未設定だとページに警告が出る。Googleフォームが最も手軽。

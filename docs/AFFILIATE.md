@@ -1,6 +1,6 @@
 # アフィリエイト
 
-最終更新: 2026-08-23
+最終更新: 2026-08-25
 
 収益化の実装と、提携状況の調査結果。
 
@@ -24,6 +24,7 @@
 | プライバシーポリシー | ✅ 追記済み |
 | Amazon への導線（記事末尾・トップ） | ✅ **表示中** |
 | **記事本文の作品ポスター**（節ごと） | ✅ **表示中**（2026-08-25）。下の「記事本文の導線」 |
+| **表の作品リンク**（記事・常設ページ共通） | ✅ **表示中**（2026-08-25）。下の「表の作品リンク」 |
 | 右の追従枠（1200px以上） | ✅ **表示中**（6節 Phase D） |
 | 常設ページの作品別リンク | ✅ 6枚すべてに実装済み（`/leaving/…` `/arrivals/…`）。6節 Phase C |
 | ASPへの登録・提携申請 | ❌ 未着手（Phase B） |
@@ -55,6 +56,42 @@
 > 記事の再生成（`npm run sections -- --write`）だけは要る。
 > **どちらを出すかは単価と成約率で決めること。** 両方を並べるのは避ける
 > （選択肢を増やすと読者が選べなくなる。5節の方針と同じ）。
+
+### 表の作品リンク（2026-08-25 追加）
+
+**記事と常設ページの表で、作品名がそのままリンクになっている。**
+それまで表は文字だけで、記事に載せた作品のうち読者がクリックできるのは
+17%（391作品中65本）しかなかった。いまはサイト全体で 1,249本になっている。
+
+| | |
+|---|---|
+| 送り先の決定 | `site/src/lib/work-links.ts` の `resolveUrl()`（**方針はここ1か所**） |
+| 記事側 | `site/plugins/rehype-work-links.ts` がビルド時に表のセルを `<a>` で包む |
+| 常設ページ側 | `site/src/components/WorkTable.astro` |
+| ID付与 | 記事は `rehype-affiliate`、常設ページは `WorkTable` が直接 |
+
+**送り先は検索結果ではなく「作品ページ」を第一候補にする。**
+収集データの `work.link` に、そのサービス上の作品ページURLが入っている
+（実測 1,849件中1,671件・90%。U-NEXT は723件すべて）。
+検索へ渡すより1クリック短い。
+
+| 直リンクの形 | 扱い | 理由 |
+|---|---|---|
+| `www.amazon.co.jp/gp/video/detail/…` | **そのまま使う** | `tag=` が乗る。直行と成果を両立できる唯一の形 |
+| `app.primevideo.com/detail?gti=…` | **Amazon検索に落とす** | 作品ページではあるが **`tag=` が乗らない＝成果が出ない** |
+| `www.netflix.com` / `www.disneyplus.com` / `tv.apple.com` | そのまま使う | 提携先が無いので収益にはならないが、読者には最短 |
+| `video.unext.jp/title/…` | そのまま使う | LinkSwitch が変換する（**PID未設定なので現時点では0円**） |
+| 直リンクが無い / 配信終了済み(`removed`) | Amazon検索に落とす | 終了した作品の作品ページへ送ると読者の期待とずれる |
+
+> **リンクを増やしすぎない。** Amazonアソシエイトは「サイトの主目的が
+> アフィリエイトリンク」だと審査で落ちる。**地の文の比率は変えないこと。**
+> リンクを足してよいのは表とポスターまで、と決めてある。
+
+> **トラッキングIDを枠ごとに分けると、どの導線が効いたか分かる。**
+> Amazonアソシエイトは複数のIDを作れる（競合サイトは
+> カレンダー枠専用に `-svod-cal-22` を切っていた）。
+> いまは `PUBLIC_AMAZON_TAG` の1本だけ。分けるなら
+> `site/src/lib/affiliate.ts` の `withAmazonTag()` に枠の種類を渡す形になる。
 
 ---
 
@@ -132,6 +169,10 @@ TELASA・Lemino・FOD・TVer・楽天TV もプログラムなし。
 | `site/src/components/AmazonCta.astro` | Amazon への導線。文面が記事カテゴリで変わる |
 | `site/src/components/FollowRail.astro` | 本文右の余白に置く追従枠。中身は1広告主だけ |
 | `site/src/lib/search-links.ts` | 各サービスの検索URL。**theme.yaml と同内容**。片方だけ直さない |
+| `site/src/lib/work-links.ts` | **作品1つの送り先を決める単一の置き場**。作品ページの直リンクと検索の使い分け |
+| `site/plugins/rehype-work-links.ts` | ビルド時に記事の表の作品名を `<a>` にする。**rehype-affiliate より前に走らせる** |
+| `site/scripts/make-thumbs.mjs` | 表に出す作品サムネイルを用意する（`public/thumbs/`） |
+| `site/scripts/genre-art.mjs` | 画像が無い作品に使うジャンル別の汎用画像 |
 | `site/src/components/WorkTable.astro` | 常設ページの作品表。**rehype を通らないので tag と rel をここで付ける** |
 | `site/src/lib/events-data.ts` | 常設ページのデータ読み込み（終了予定 / 新着 / 定点観測） |
 | `site/src/styles/global.css` の `.layout` | 追従枠の配置と出し分け（1200px未満では従来と同一） |

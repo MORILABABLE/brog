@@ -87,12 +87,60 @@ function isJapanese(work: Work): boolean | undefined {
   return false
 }
 
+/**
+ * 収集元が自分で付けているジャンル名 → このテーマの区分。
+ *
+ * ■ なぜ要るか（2026-08-26 追加）
+ * U-NEXT は自前収集で、**`originalTitle` を1件も持っていない**（実測 723件中0件）。
+ * Wikidata の原語も imdbId / tmdbId が無いので引けない。
+ * つまり上の `isJapanese()` はU-NEXT作品に対して**必ず undefined を返す**。
+ * その結果、8月の120件が丸ごとジャンル別記事から落ちていた。
+ *
+ * ところが U-NEXT は**自分の分類を持っている**（メニューのカテゴリ名）。
+ * 推測ではなく提供元が付けた区分なので、これを使えば誤情報にならない。
+ *
+ * ★ **どちらとも取れる区分は入れないこと。**
+ *   「キッズ」「音楽・ライブ」「バラエティ」「舞台・演劇」「ドキュメンタリー」は
+ *   国内外のどちらもありうるので、意図的に対応表から外してある
+ *   （振り分けを当て推量すると、邦画記事に海外作品が混ざる）。
+ *   落ちた作品はサービス別記事（arrivals-service / leaving）で必ず拾われる。
+ *
+ * ★ 語彙が2種類ある。`work.genres` と `work.meta.mainGenreName` で
+ *   表記が違う（「韓流・アジア」と「韓流・アジアドラマ」など）。**両方を入れる。**
+ */
+const SOURCE_GENRES: Record<string, GenreKey> = {
+  洋画: 'western',
+  海外ドラマ: 'western',
+  '韓流・アジア': 'western',
+  '韓流・アジアドラマ': 'western',
+  邦画: 'japanese',
+  国内ドラマ: 'japanese',
+  アニメ: 'anime',
+}
+
+/**
+ * 収集元のジャンル名から区分を引く。当たらなければ undefined。
+ * `work.genres` を先に見る（作品ごとの値で、メニュー由来の
+ * `mainGenreName` より作品に近い）。
+ */
+function fromSourceGenres(work: Work): GenreKey | undefined {
+  for (const name of work.genres) {
+    const hit = SOURCE_GENRES[name]
+    if (hit) return hit
+  }
+  const main = work.meta.mainGenreName
+  return typeof main === 'string' ? SOURCE_GENRES[main] : undefined
+}
+
 /** 作品のジャンル。判定できなければ undefined（記事に出さない）。 */
 export function classify(work: Work): GenreKey | undefined {
   const japanese = isJapanese(work)
-  if (japanese === undefined) return undefined
-  if (japanese) return work.genres.includes(ANIMATION) ? 'anime' : 'japanese'
-  return 'western'
+  if (japanese !== undefined) {
+    return japanese ? (work.genres.includes(ANIMATION) ? 'anime' : 'japanese') : 'western'
+  }
+  // ★ 原語で決まらなかったときだけ、収集元の分類に頼る。
+  //   Wikidata と originalTitle のほうが確度が高いので、順番を入れ替えないこと。
+  return fromSourceGenres(work)
 }
 
 export function genreLabel(key: string): string {

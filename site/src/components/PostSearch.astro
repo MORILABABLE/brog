@@ -1,0 +1,248 @@
+---
+import { getCollection } from 'astro:content'
+import { CATEGORIES } from '../config'
+import { normalizeForSearch } from '../lib/normalize'
+
+/**
+ * ヘッダーの記事検索。
+ *
+ * ■ 作品検索（WorkSearch.astro）とは別物
+ *   WorkSearch … 常設ページの**表の中**を探して、該当行までスクロールする
+ *   PostSearch … **記事そのもの**を探して、その記事へ移動する
+ * 混同しないこと。名前が似ているので、片方を直すときはもう片方も確認する。
+ *
+ * ■ 索引はビルド時に焼き込む
+ * 記事は月に数本しか増えないので、全記事のタイトル・説明文・タグを
+ * そのままJSONで埋め込む。**通信も外部サービスも要らない。**
+ * 8本で約2KB。100本になっても25KB程度なので、この方式で足りる。
+ *
+ * ■ JavaScript が動かないときは何も出さない
+ * 検索窓だけ出して押せない状態にすると、読者は壊れていると受け取る。
+ * 常設ページの作品検索（WorkSearch.astro）と同じ方針。
+ *
+ * ★ 突き合わせは `lib/normalize.ts` の1か所を使う。
+ *   全角/半角・大小文字・中黒の扱いをここで書き直すと、
+ *   作品検索と挙動がずれる。
+ */
+/**
+ * サービス名の別名。**索引にだけ足す**（画面には出さない）。
+ *
+ * 記事のタイトルは「Amazon Prime Video」「Netflix」と英字で書く決まりだが、
+ * 読者が検索窓に打つのはカタカナや略称のほうが多い。
+ * 別名を索引に混ぜておけば、「アマプラ」で当たるのにタイトルは英字のまま保てる。
+ *
+ * ★ ここに足してよいのは**サービス名だけ**。作品名やジャンルの言い換えまで
+ *   持ち込むと、当たりが増えすぎて目的の記事が埋もれる。
+ * ★ 表記は theme-packs/streaming-jp/theme.yaml のサービス名と揃えること。
+ */
+const SERVICE_ALIASES: Record<string, string> = {
+  Netflix: 'ネットフリックス ネトフリ',
+  'Amazon Prime Video': 'アマゾンプライムビデオ アマプラ プライムビデオ プライム',
+  'Disney+': 'ディズニープラス ディズニー',
+  'Apple TV+': 'アップルティービープラス アップルtv',
+  'U-NEXT': 'ユーネクスト ユーネク',
+  Hulu: 'フールー',
+  'DMM TV': 'ディーエムエム',
+}
+
+/** 記事に出てくるサービス名の別名をまとめて返す */
+function aliasesFor(text: string): string[] {
+  return Object.entries(SERVICE_ALIASES)
+    .filter(([name]) => text.includes(name))
+    .map(([, alias]) => alias)
+}
+
+const posts = await getCollection('posts', ({ data }) => !data.draft)
+
+const index = posts
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .map((p) => ({
+    t: p.data.title,
+    c: CATEGORIES[p.data.category].label,
+    u: `/posts/${p.id}`,
+    /*
+     * 突き合わせ用。タイトル・説明文・タグをならして1本につなぐ。
+     * ★ 区切りに `|` を挟む。normalizeForSearch は**空白を全部落とす**ので、
+     *   詰めて繋ぐと「タイトルの末尾＋説明文の先頭」という実在しない並びに
+     *   当たってしまう（WorkTable.astro の searchText と同じ理由）。
+     */
+    k: [
+      p.data.title,
+      p.data.description,
+      ...p.data.tags,
+      ...aliasesFor(`${p.data.title} ${p.data.description} ${p.data.tags.join(' ')}`),
+    ]
+      .map((v) => normalizeForSearch(v))
+      .join('|'),
+  }))
+---
+
+<div class="post-search" data-post-search hidden>
+  <label class="visually-hidden" for="post-search-input">記事を探す</label>
+  <input
+    id="post-search-input"
+    type="search"
+    placeholder="記事を探す"
+    autocomplete="off"
+    data-post-search-input
+  />
+  <div class="results" data-post-search-results hidden></div>
+</div>
+
+<script type="application/json" data-post-search-index set:html={JSON.stringify(index)} />
+
+<script>
+  import { normalizeForSearch } from '../lib/normalize'
+
+  /**
+   * ★ このファイルは JS が動く環境でしか実行されない。
+   *   検索窓は既定で hidden にしてあり、ここで初めて外す。
+   */
+  interface Entry {
+    t: string
+    c: string
+    u: string
+    k: string
+  }
+
+  const box = document.querySelector<HTMLElement>('[data-post-search]')
+  const input = document.querySelector<HTMLInputElement>('[data-post-search-input]')
+  const list = document.querySelector<HTMLElement>('[data-post-search-results]')
+  const raw = document.querySelector<HTMLElement>('[data-post-search-index]')?.textContent
+
+  if (box && input && list && raw) {
+    let entries: Entry[] = []
+    try {
+      entries = JSON.parse(raw) as Entry[]
+    } catch {
+      entries = []
+    }
+
+    if (entries.length > 0) {
+      box.hidden = false
+
+      /** 出す件数の上限。多いとヘッダーが画面を覆ってしまう。 */
+      const MAX = 8
+
+      const render = (hits: Entry[]) => {
+        if (hits.length === 0) {
+          list.innerHTML = '<p class="empty">見つかりませんでした</p>'
+          return
+        }
+        list.innerHTML = hits
+          .slice(0, MAX)
+          .map(
+            (e) =>
+              `<a href="${e.u}"><span class="cat">${e.c}</span>${e.t.replace(/</g, '&lt;')}</a>`,
+          )
+          .join('')
+      }
+
+      const update = () => {
+        /*
+         * ★ **空白で切ってから**ならすこと。
+         *   normalizeForSearch は空白を全部落とすので、
+         *   先にならすと「ネトフリ 8月」が1語に潰れてAND検索にならない。
+         */
+        const terms = input.value
+          .split(/[\s　]+/)
+          .map((t) => normalizeForSearch(t))
+          .filter(Boolean)
+
+        if (terms.length === 0) {
+          list.hidden = true
+          list.innerHTML = ''
+          return
+        }
+        render(entries.filter((e) => terms.every((t) => e.k.includes(t))))
+        list.hidden = false
+      }
+
+      input.addEventListener('input', update)
+      input.addEventListener('focus', update)
+
+      // 外側を押したら閉じる。開いたままだと下の記事が読めない。
+      document.addEventListener('click', (ev) => {
+        if (!box.contains(ev.target as Node)) list.hidden = true
+      })
+      input.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') {
+          input.value = ''
+          list.hidden = true
+        }
+      })
+    }
+  }
+</script>
+
+<style>
+  /*
+   * ★ 幅を欲張らないこと。
+   *   これは記事を探すための補助で、ヘッダーの主役ではない。
+   *   16rem にしていたら、スマホで**検索窓だけで1行を占有**した（2026-08-26）。
+   *   11rem なら 390px 幅でもサイト名と同じ行に収まる。
+   */
+  .post-search {
+    position: relative;
+    flex: 0 1 11rem;
+    min-width: 7rem;
+  }
+  input {
+    width: 100%;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-subtle);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-family: inherit;
+  }
+  input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  /*
+   * 結果はヘッダーの下に浮かせる。
+   * ヘッダーは position:sticky なので、ここを通常フローに置くと
+   * ヘッダーの高さが伸びて本文が押し下げられる。
+   */
+  .results {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    right: 0;
+    width: min(24rem, 90vw);
+    max-height: 60vh;
+    overflow-y: auto;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+    z-index: 10;
+  }
+  .results :global(a) {
+    display: block;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+  .results :global(a:last-child) {
+    border-bottom: none;
+  }
+  .results :global(a:hover) {
+    background: var(--bg-subtle);
+  }
+  .results :global(.cat) {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  .results :global(.empty) {
+    margin: 0;
+    padding: 0.7rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+</style>
