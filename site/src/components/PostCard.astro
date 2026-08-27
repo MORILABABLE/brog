@@ -1,6 +1,6 @@
 ---
 import Thumb from './Thumb.astro'
-import { CATEGORIES } from '../config'
+import { CATEGORIES, GENRES } from '../config'
 import { formatDate, isoDate } from '../utils/date'
 import type { CollectionEntry } from 'astro:content'
 
@@ -9,6 +9,11 @@ interface Props {
 }
 const { post } = Astro.props
 const cat = CATEGORIES[post.data.category]
+/*
+ * ジャンルは**持たない記事のほうが多い**（サービス軸の記事は名乗れない）。
+ * 無ければバッジごと出さない。詳細は config.ts の GENRES。
+ */
+const genre = post.data.genre ? GENRES[post.data.genre] : undefined
 
 /**
  * 記事カード。
@@ -30,6 +35,7 @@ const cat = CATEGORIES[post.data.category]
     <div class="meta">
       {/* data-category で色が変わる。配色は styles/global.css の :root。 */}
       <span class="badge" data-category={cat.slug}>{cat.label}</span>
+      {genre && <span class="badge genre">{genre.label}</span>}
       <time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time>
     </div>
     <h2><a href={`/posts/${post.id}`}>{post.data.title}</a></h2>
@@ -50,8 +56,10 @@ const cat = CATEGORIES[post.data.category]
   }
   .meta {
     display: flex;
+    /* バッジが2つ並ぶので、狭い画面では日付が下に落ちてよい */
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.7rem;
+    gap: 0.5rem 0.7rem;
     font-size: 0.82rem;
     color: var(--text-muted);
   }

@@ -3,6 +3,7 @@ title: '【8月26日更新】見放題配信が始まった邦画・国内ドラ
 description: '2026年8月に見放題配信が始まった邦画・国内ドラマ60本を配信開始日順にまとめました。今回新たに30本を追加しています。8月21日にNetflixで「告白」「来る」、8月22日には「ディア・ファミリー」が配信開始となりました。'
 pubDate: 2026-08-26
 category: 'arrivals'
+genre: 'japanese'
 tags: ['Netflix', 'Amazon Prime Video', 'U-NEXT', '配信開始', '邦画・国内ドラマ', '2026年8月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

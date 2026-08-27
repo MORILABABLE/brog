@@ -1,0 +1,145 @@
+---
+import { getCollection } from 'astro:content'
+import { GENRE_NAV_ENABLED } from '../config'
+import { genreSections } from '../lib/genre-pages'
+
+/**
+ * 右の枠の**いちばん上**に置く「ジャンルから探す」。
+ * 中身は `/genre/<スラッグ>` へのリンクを、ジャンルの数だけ並べたもの。
+ *
+ * ■ いまは何も描画されない（2026-08-27 に枠だけ設置）
+ * `GENRE_NAV_ENABLED` が false のあいだ、この部品は**HTMLを1バイトも出さない**。
+ * ジャンル軸の記事が各ジャンル1本ずつしか無く、押した先が
+ * 記事1本きりの一覧になってしまうため（判断の理由は config.ts）。
+ * 記事が溜まったら config.ts の `GENRE_NAV_ENABLED` を true にするだけでよい。
+ * **`/genre/<スラッグ>` のページも同じフラグで一緒に出る**ので、
+ * ここだけ出してリンク先が404になることはない。
+ *
+ * ■ なぜ「最新記事」の上か
+ * ジャンルは**探し方**で、最新記事は**中身**。探し方を先に見せる。
+ * ここに置けるのは項目が3つで済むからで、増やすと下の最新記事とPR枠が
+ * 画面の下へ押し出される（LeftRail.astro が左へ移された経緯と同じ）。
+ * **ジャンルが増えても、この枠は3〜4項目までに収めること。**
+ *
+ * ■ 追従しない
+ * 追従するのは右の枠のPR枠だけ（理由は FollowRail.astro の説明）。
+ * ここは本文と一緒に流す。
+ *
+ * ■ 出す条件
+ * 画面幅 75rem(1200px) 以上（styles/global.css の `.layout`）。
+ * **狭い画面では枠ごと消える**ので、ここをジャンルの唯一の入口にしないこと。
+ */
+
+/*
+ * ★ フラグが false のときは記事を読みに行きもしない。
+ *   `getCollection` を呼ぶのは、出すと決まってから。
+ */
+const sections = GENRE_NAV_ENABLED
+  ? genreSections(await getCollection('posts', ({ data }) => !data.draft))
+  : []
+
+/** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
+const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
+---
+
+{
+  sections.length > 0 && (
+    <nav class="block" aria-label="ジャンルから探す">
+      <p class="block-title">ジャンルから探す</p>
+      <ul class="genres">
+        {sections.map((s) => {
+          const href = `/genre/${s.slug}`
+          const isCurrent = href === current
+          const Inner = (
+            <>
+              <span class="name">{s.label}</span>
+              {/* 件数。押す前に、その先に何本あるか分かるようにする */}
+              <span class="count">{s.posts.length}本</span>
+            </>
+          )
+          return (
+            <li>
+              {/* 現在地は消さずにリンクだけ外す。並びを崩さないため（LeftRail と同じ） */}
+              {isCurrent ? (
+                <span class="genre is-current" aria-current="page">
+                  {Inner}
+                </span>
+              ) : (
+                <a class="genre" href={href}>
+                  {Inner}
+                </a>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  /* 表示・非表示と配置は styles/global.css の .layout 側。ここは中身の見た目だけ。 */
+  .block {
+    max-width: 17rem;
+    margin-bottom: 0.8rem;
+  }
+  /*
+   * ★ この見出しはカードの外＝**背景の紺の上に直接載る**。
+   *   --text-muted（本文用の暗いグレー）だと紺に沈んで読めない。
+   *   FollowRail / LeftRail の .block-title と同じ色・同じ大きさにすること。
+   */
+  .block-title {
+    margin: 0 0 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--footer-text);
+  }
+
+  .genres {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  /*
+   * 1行1ジャンル。**横並びのチップにしていない。**
+   * 枠の幅は約17remしかなく、チップにすると2行に折り返して
+   * どこで切れるかが画面幅ごとに変わる。縦に並べれば幅に左右されない。
+   */
+  .genre {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.45rem 0.7rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+  }
+  a.genre:hover {
+    border-color: var(--accent);
+  }
+  /* 現在地。押せないことが分かる見た目にする（項目自体は消さない） */
+  .genre.is-current {
+    background: var(--bg-subtle);
+    border-color: var(--accent);
+  }
+  .name {
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+  }
+  a.genre:hover .name {
+    color: var(--accent);
+  }
+  /* 件数は補足。ジャンル名より小さくして、主従を保つ */
+  .count {
+    flex: none;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+</style>

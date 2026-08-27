@@ -19,6 +19,18 @@
  * 検査は `shared.ts` の `titleIssues()`（`verifyTitle` から呼ぶ）。
  * 判断の根拠と実測は docs/ARTICLE-RULES.md。
  *
+ * ★ **`axis: 'genre'` にすると、記事の frontmatter に `genre` が自動で入る**
+ *   （2026-08-27〜）。値は選ばれたバリアントの `key` で、
+ *   入れているのは `pipeline/cli/write.ts` の `articleGenre()`。記事タイプ側は何もしなくてよい。
+ *   ジャンル軸なのに `variants` を宣言していないと `--apply` がそこで止まる
+ *   （ジャンルの付いていない記事が黙って1本できるのを防ぐため）。
+ *
+ *   バリアントの `key` は `../genres.ts` の `GENRES` から来る。
+ *   **`site/src/content.config.ts` の `genre` の enum と揃っていること。**
+ *   揃っていなければサイトのビルドが落ちる。それが検知の仕組み。
+ *   ジャンルを1つ増やすときは `genres.ts` / `content.config.ts` /
+ *   `site/src/config.ts` の `GENRES` の**3か所**を直す。
+ *
  * ■ ショート動画の台本を付けるかどうか
  * `buildShortPrompt` を実装すれば付く。実装しなければ付かない。それだけ。
  * 中身は `shared.ts` の `shortScriptSection()` に集めてあるので、

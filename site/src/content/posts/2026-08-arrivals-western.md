@@ -3,6 +3,7 @@ title: '【8月26日更新】見放題配信が始まった洋画・海外ドラ
 description: '2026年8月に見放題配信が始まった洋画・海外ドラマ58本を配信開始日順にまとめました。今回新たに28本を追加しています。8月24日にApple TV+で「ボーン・アイデンティティー」、U-NEXTでは「SISU/シス 復讐の血闘」を確認しました。'
 pubDate: 2026-08-26
 category: 'arrivals'
+genre: 'western'
 tags: ['Netflix', 'Amazon Prime Video', 'U-NEXT', 'Disney+', 'Apple TV+', '配信開始', '洋画・海外ドラマ', '2026年8月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

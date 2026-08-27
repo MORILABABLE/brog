@@ -14,7 +14,7 @@
 ## まず覚える2つ
 
     site/src/styles/global.css   色・寸法・余白・文字の大きさ。**見た目の8割はここ**
-    site/src/config.ts           サイト名・URL・説明文・カテゴリ名・帰属表示の文言
+    site/src/config.ts           サイト名・URL・説明文・カテゴリ名・ジャンル名・帰属表示の文言
 
 `global.css` は**先頭の `:root` にツマミがまとまっている。**
 その下は場所ごとのスタイル。ダークモードの色は同じファイルの
@@ -48,8 +48,13 @@
     本文カード（白い箱）
       幅・角丸・余白 → site/src/styles/global.css の .content-card と --max-width
 
-    右の追従枠（最新記事＋PR枠）
+    右の追従枠（ジャンルから探す＋最新記事＋PR枠）
       → site/src/components/FollowRail.astro
+      ジャンル枠（最新記事の上）→ site/src/components/GenreRail.astro
+                       ★ **いまは何も描画されない。** config.ts の
+                         GENRE_NAV_ENABLED が false のあいだ HTMLを1バイトも出さない
+                         （ジャンル軸の記事が各ジャンル1本ずつしか無いため）。
+                         true にすると、この枠と /genre/<スラッグ> が**一緒に**出る
       ★ 「サービスから探す」は 2026-08-27 に廃止。
         同じ導線はヘッダーのメニューにある（枠は1200px未満で消えるため）
 
@@ -77,6 +82,11 @@
                               /category/ended は public/_redirects で
                               /category/leaving へ転送している
                             ★ 常設ページのカードはここには出さない（2026-08-27）
+    ジャンル一覧          → site/src/pages/genre/[genre].astro
+                            記事は frontmatter の **genre** で拾う（tags ではない）。
+                            拾い方は site/src/lib/genre-pages.ts
+                            ★ GENRE_NAV_ENABLED が false のあいだ**1枚も生成されない**。
+                              リンク元（GenreRail.astro）も同じフラグで消えるので404にならない
     カテゴリ×サービス      → site/src/pages/category/[category]/[service].astro
                             ヘッダーのメニューを開いて選んだ先。
                             serviceMenu のハブ × SERVICE_HUBS ぶん自動で増える。
@@ -139,6 +149,10 @@
     3. 出典             → 中身は記事の frontmatter `sources`
                           並べ方は [...slug].astro の <section class="sources">
     4. タグ             → 記事の frontmatter `tags`
+                          ★ ジャンル（アニメ／洋画／邦画）は**タグではなくバッジ**で出す。
+                            見出し下の日付の左、カテゴリバッジの隣。
+                            出どころは frontmatter の `genre`、見た目は
+                            global.css の `.badge.genre`
     5. フッター         → site/src/components/Footer.astro（全ページ共通）
 
 **記事本文の中**の定型文（「他のサービスで探す」の前置きなど）は記事側ではなくテンプレート。

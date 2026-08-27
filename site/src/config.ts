@@ -186,6 +186,75 @@ export const SERVICE_HUBS = [
 export type ServiceHubSlug = (typeof SERVICE_HUBS)[number]['slug']
 
 /**
+ * 記事のジャンル。**カテゴリ・サービスとは別の3本目の軸**（2026-08-27 に追加）。
+ *
+ * ■ 3つの軸の違い
+ *   カテゴリ … 何が起きたか（終了まわり／新着）。全記事が必ず1つ持つ
+ *   サービス … どのサービスの話か。frontmatter の `tags` で拾う
+ *   ジャンル … 何を観る話か（アニメ／洋画／邦画）。**持たない記事がある**
+ *
+ * ★ **ジャンルは「ジャンル軸の記事」だけが名乗る。**
+ *   「Netflixで配信開始の作品199本」のようなサービス軸の記事は
+ *   アニメも洋画も邦画も全部入っているので、1つのジャンルを名乗れない。
+ *   frontmatter の `genre` は optional で、無い記事にはバッジが出ないだけ。
+ *   （軸の考え方は pipeline/core/article.ts の `Axis`）
+ *
+ * ★ `key` は theme-packs/streaming-jp/genres.ts の `GenreKey` と揃えること。
+ *   パイプラインが frontmatter に書く値がこれ。ずれるとサイト側のビルドが落ちる
+ *   （content.config.ts の enum が検知する）。
+ *
+ * ★ `label` と `heading` を分けている理由は CATEGORY_HUBS と同じ。
+ *   バッジと枠の中は短いほうがよく（アニメ／洋画／邦画）、
+ *   ページの h1 と説明文は記事が扱う範囲を正確に言う必要がある
+ *   （洋画記事には海外ドラマが、邦画記事には国内ドラマが入っている）。
+ *
+ * ★ `tag` は記事の frontmatter `tags` に入る文字列と**完全に一致させること。**
+ *   出しているのは theme-packs/streaming-jp/genres.ts の `GENRES` の `label`。
+ *   ジャンルの軸そのものは `genre` フィールドで判定するので、
+ *   この `tag` は「タグの行にジャンルが出ているか」の確認用にとどめる。
+ */
+export const GENRES = {
+  anime: { slug: 'anime', label: 'アニメ', heading: 'アニメ', tag: 'アニメ' },
+  western: {
+    slug: 'western',
+    label: '洋画',
+    heading: '洋画・海外ドラマ',
+    tag: '洋画・海外ドラマ',
+  },
+  japanese: {
+    slug: 'japanese',
+    label: '邦画',
+    heading: '邦画・国内ドラマ',
+    tag: '邦画・国内ドラマ',
+  },
+} as const
+
+export type GenreSlug = keyof typeof GENRES
+
+/** ジャンルの並び順。**バッジ・枠・ページの並びをここ1か所で決める。** */
+export const GENRE_HUBS = [GENRES.anime, GENRES.western, GENRES.japanese] as const
+
+/**
+ * ジャンル別の導線（右の枠のジャンル欄と `/genre/<スラッグ>` のページ）を出すか。
+ *
+ * ■ いまは false（2026-08-27）
+ * ジャンル軸の記事が**各ジャンル1本ずつしか無い**。
+ * 1本しか載らない一覧ページを作っても読者には行き止まりで、
+ * 中身の薄いページをサイトマップに増やすだけになる。
+ * **枠と仕組みだけ先に入れて、出すのは記事が溜まってから。**
+ *
+ * ■ true にすると何が出るか
+ *   1. 右の枠の「ジャンルから探す」（FollowRail.astro の最新記事の上）
+ *   2. `/genre/<スラッグ>` の一覧ページ（pages/genre/[genre].astro）
+ * **この2つは必ず一緒に切り替わる。** 片方だけ出すとリンク先が404になる。
+ *
+ * ■ いつ true にするか
+ * 各ジャンルに記事が3本前後たまったら。目安であって機械的な条件ではない。
+ * 記事が0本のジャンルは true にしても枠に出ない（GenreRail.astro が落とす）。
+ */
+export const GENRE_NAV_ENABLED = false
+
+/**
  * そのカテゴリの記事が載るハブ。パンくずのリンク先に使う。
  * どのハブにも属さないカテゴリがあれば、そのカテゴリ自身を指す
  * （リンクは切れるが、ビルドは落とさない）。

@@ -258,6 +258,16 @@ export interface Source {
 export interface BuildOptions {
   parsed: ParsedArticle
   category: Category
+  /**
+   * 記事のジャンル（`anime` / `western` / `japanese`）。
+   *
+   * ★ **ジャンル軸（`axis: 'genre'`）の記事にだけ入れる。**
+   *   サービス軸の記事はアニメも洋画も邦画も含んでいるので、
+   *   1つのジャンルを名乗らせてはいけない。省略すれば frontmatter に行が出ない。
+   *   値は site/src/content.config.ts の enum と
+   *   theme-packs/streaming-jp/genres.ts の `GenreKey` に揃っていること。
+   */
+  genre?: string
   tags: string[]
   sources: Source[]
   /** 配信情報の基準日 */
@@ -278,6 +288,8 @@ export function buildMarkdown(o: BuildOptions): string {
     `description: ${yamlString(o.parsed.description)}`,
     `pubDate: ${formatIsoDate(o.pubDate.toISOString(), o.offsetMinutes)}`,
     `category: '${o.category}'`,
+    // ジャンル軸の記事だけが名乗る。持たない記事では行ごと消える
+    ...(o.genre ? [`genre: '${o.genre}'`] : []),
     `tags: [${o.tags.map(yamlString).join(', ')}]`,
     'sources:',
     ...o.sources.flatMap((s) => [`  - label: ${yamlString(s.label)}`, `    url: '${s.url}'`]),

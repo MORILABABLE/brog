@@ -1,0 +1,108 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PostCard from '../../components/PostCard.astro'
+import { GENRE_HUBS, GENRE_NAV_ENABLED, SITE } from '../../config'
+import { genrePosts } from '../../lib/genre-pages'
+
+/**
+ * ジャンル別の一覧ページ。右の枠の「ジャンルから探す」（GenreRail.astro）の行き先。
+ *
+ * ■ カテゴリ・サービスのページと軸が違う
+ *   カテゴリ … 何が起きたか（終了まわり／新着）で束ねる
+ *   サービス … 契約しているサービスで束ねる
+ *   ここ     … **何を観る話か**（アニメ／洋画／邦画）で束ねる
+ * 同じ記事が複数から辿れるが、読者の探し方が違うので競合しない。
+ *
+ * ■ 記事は frontmatter の `genre` で拾う。**`tags` では拾わない**
+ * サービス別ページ（/service/…）はタグで拾っているが、こちらは違う。
+ * ジャンルは「この記事はこのジャンルの記事である」という宣言であって、
+ * 本文にジャンル名が出てくることではない。拾い方は lib/genre-pages.ts に置いてある。
+ *
+ * ★ **いまはページが1枚も生成されない**（2026-08-27）。
+ *   config.ts の `GENRE_NAV_ENABLED` が false のあいだ getStaticPaths が空を返す。
+ *   ジャンル軸の記事が各ジャンル1本ずつしか無く、1本きりの一覧ページを
+ *   サイトマップに増やす意味がないため。**リンクしている GenreRail.astro も
+ *   同じフラグで消えている**ので、404にはならない。
+ *   記事が溜まったらフラグを true にするだけで、枠とページが一緒に出る。
+ *
+ * ★ 記事が0本のジャンルはページを作らない。
+ *   空のページを索引に出さないため（サービス側は noindex で残しているが、
+ *   あちらはヘッダーのメニューが必ず指している＝404にできないという事情がある。
+ *   ジャンルの入口は右の枠だけで、そこは0本のジャンルを並べない）。
+ */
+export async function getStaticPaths() {
+  if (!GENRE_NAV_ENABLED) return []
+
+  const posts = await getCollection('posts', ({ data }) => !data.draft)
+
+  return GENRE_HUBS.map((genre) => ({ genre, posts: genrePosts(posts, genre.slug) }))
+    .filter(({ posts }) => posts.length > 0)
+    .map(({ genre, posts }) => ({ params: { genre: genre.slug }, props: { genre, posts } }))
+}
+
+const { genre, posts } = Astro.props
+
+const title = `${genre.heading}の配信情報まとめ`
+const description =
+  `${genre.heading}で見放題配信が始まった作品と終了する作品の記事をまとめています。` +
+  `${SITE.name}が追いかけている${genre.heading}の情報はこのページから辿れます。`
+---
+
+<BaseLayout title={title} description={description}>
+  <h1>{genre.heading}の記事一覧</h1>
+
+  {
+    /*
+     * 他のジャンルへの移動。**ヘッダーのメニューには無い導線**なので、
+     * ここに置かないと隣のジャンルへ1手で移れない
+     * （カテゴリのハブが .services を持っているのと同じ理由）。
+     */
+    <nav class="genres" aria-label="ジャンルで絞り込む">
+      {GENRE_HUBS.map((g) =>
+        g.slug === genre.slug ? (
+          <span class="genre is-current" aria-current="page">
+            {g.label}
+          </span>
+        ) : (
+          <a class="genre" href={`/genre/${g.slug}`}>
+            {g.label}
+          </a>
+        ),
+      )}
+    </nav>
+  }
+
+  {posts.map((post) => <PostCard post={post} />)}
+</BaseLayout>
+
+<style>
+  /* カテゴリのハブの .services と同じ見た目にすること（あちらは category/[category].astro） */
+  .genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.4rem;
+  }
+  .genre {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--text);
+    text-decoration: none;
+  }
+  a.genre:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  /* 現在地。押せないことが分かる見た目にする（項目自体は消さない） */
+  .genre.is-current {
+    background: var(--bg-subtle);
+    border-color: var(--accent);
+    color: var(--text-muted);
+  }
+</style>

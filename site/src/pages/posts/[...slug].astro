@@ -4,7 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AdSlot from '../../components/AdSlot.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
-import { CATEGORIES, hubFor } from '../../config'
+import { CATEGORIES, GENRES, hubFor } from '../../config'
 import { formatDate, isoDate } from '../../utils/date'
 
 export async function getStaticPaths() {
@@ -15,6 +15,11 @@ export async function getStaticPaths() {
 const { post } = Astro.props
 const { Content } = await render(post)
 const cat = CATEGORIES[post.data.category]
+/*
+ * ジャンル（アニメ／洋画／邦画）。**ジャンル軸の記事だけが持つ**ので、
+ * 無ければバッジを出さない。詳細は config.ts の GENRES。
+ */
+const genre = post.data.genre ? GENRES[post.data.genre] : undefined
 /*
  * パンくずの行き先は**カテゴリではなくハブ**。
  * 「配信終了済み」の記事は /category/ended ではなく /category/leaving に載っている
@@ -59,6 +64,8 @@ const hub = hubFor(post.data.category)
     <div class="meta">
       {/* 記事単体で開かれたときも、色で種別が分かるようにする。 */}
       <span class="badge" data-category={cat.slug}>{cat.label}</span>
+      {/* ジャンル軸の記事だけ。何を観る話かが、本文を読む前に分かるようにする */}
+      {genre && <span class="badge genre">{genre.label}</span>}
       <time datetime={isoDate(post.data.pubDate)}>公開 {formatDate(post.data.pubDate)}</time>
       {
         post.data.updatedDate && (

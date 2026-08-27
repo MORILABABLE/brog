@@ -213,6 +213,43 @@ async function existingTitles(excludeSlug: string): Promise<string[]> {
 }
 
 /**
+ * 記事の frontmatter に入れるジャンル（`anime` / `western` / `japanese`）。
+ *
+ * ■ 軸で決める。バリアントの有無では決めない
+ * ジャンルを名乗るのは**軸がジャンルの記事タイプだけ**（`ArticleType.axis`）。
+ * サービス軸の記事にもバリアントはあるが、あちらのバリアントはサービスなので、
+ * `recipe.variant.key` をそのまま渡すと `genre: 'netflix'` になる。
+ * **`axis` を見ずにバリアントを渡さないこと。**
+ *
+ * ■ ジャンル軸なのにジャンルが無い記事は書き出さない
+ * ジャンル軸の記事タイプを新しく足したときに、`variants` を宣言し忘れると
+ * ここが undefined になり、**ジャンルの付いていない記事が黙って1本できる**。
+ * 黙って落とすと、サイト側でも気づけない（`genre` は optional なので
+ * スキーマ検証は通ってしまう）。ここで止める。
+ *
+ * ★ キーの値はテーマパックが決める（theme-packs/…/genres.ts の `GENRES`）。
+ *   site/src/content.config.ts の enum と揃っていない値を入れると
+ *   **サイトのビルドが落ちる。それが検知の仕組み**なので、ここでは値を検査しない。
+ */
+function articleGenre(recipe: Recipe): string | undefined {
+  if (recipe.type.axis !== 'genre') return undefined
+
+  const key = recipe.variant?.key
+  if (!key) {
+    console.error(
+      `記事タイプ ${recipe.type.id} は軸がジャンル（axis: 'genre'）なのに、` +
+        'ジャンルが決まっていません。',
+    )
+    console.error(
+      '  ジャンル軸の記事タイプには variants が要ります' +
+        '（theme-packs/<テーマ>/article-types/ の該当ファイル）。',
+    )
+    process.exit(1)
+  }
+  return key
+}
+
+/**
  * 生成された本文を検証し、記事として書き出す。
  * API経由でもターミナル経由でも、必ずここを通る。
  *
@@ -267,6 +304,7 @@ async function finalize(
     parsed,
     // 特報のようにカテゴリが実行時に決まる記事タイプがある（ArticleType.categoryOf）
     category: type.categoryOf?.(ctx) ?? type.category,
+    genre: articleGenre(recipe),
     tags,
     sources: sourcesFor(items),
     dataAsOf: now,

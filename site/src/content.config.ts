@@ -16,6 +16,19 @@ const posts = defineCollection({
     updatedDate: z.coerce.date().optional(),
     // pipeline/core/article.ts の Category と揃えること
     category: z.enum(['leaving', 'arrivals', 'ranking', 'ended']),
+    /**
+     * 記事のジャンル。**ジャンル軸の記事だけが持つ**ので optional。
+     *
+     * ★ site/src/config.ts の GENRES と
+     *   theme-packs/streaming-jp/genres.ts の `GenreKey` の**3つを揃えること。**
+     *   パイプラインが書き込む値がここを通る。ずれればビルドが落ちる（それが検知の仕組み）。
+     *
+     * ★ **サービス軸の記事には付けない。**
+     *   「Netflixで配信開始の作品199本」はアニメも洋画も邦画も含んでいて、
+     *   1つのジャンルを名乗ると読者に嘘をつくことになる。
+     *   付いていない記事はジャンルのバッジが出ないだけで、他は何も変わらない。
+     */
+    genre: z.enum(['anime', 'western', 'japanese']).optional(),
     tags: z.array(z.string()).default([]),
     /** 出典。API利用規約の帰属表示義務を満たすため必須。 */
     sources: z

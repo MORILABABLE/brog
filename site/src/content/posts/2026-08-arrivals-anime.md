@@ -3,6 +3,7 @@ title: '8月に見放題配信が始まったアニメ34本 京都アニメー�
 description: 'Netflix・Amazon Prime Video・Disney+で2026年8月に見放題配信が始まったアニメ34本を紹介。京都アニメーション作品の一斉配信、クレヨンしんちゃん劇場版4作、ONE PIECE STAMPEDEなど。'
 pubDate: 2026-08-21
 category: 'arrivals'
+genre: 'anime'
 tags: ['Netflix', 'Amazon Prime Video', 'Disney+', '配信開始', 'アニメ', '2026年8月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

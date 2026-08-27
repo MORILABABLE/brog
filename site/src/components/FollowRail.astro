@@ -1,14 +1,22 @@
 ---
 import { getCollection } from 'astro:content'
+import GenreRail from './GenreRail.astro'
 import Thumb from './Thumb.astro'
 import { AFFILIATE, CATEGORIES } from '../config'
 import { withAmazonTag } from '../lib/affiliate'
 
 /**
- * 本文の右の余白に置く追従枠。上から2ブロック。
+ * 本文の右の余白に置く追従枠。上から3ブロック。
  *
- *   1. 最新記事 … カテゴリ横断の新しい記事。記事ごとの絵つき
- *   2. PR      … 広告カード。**ここだけ追従する**
+ *   1. ジャンルから探す … アニメ／洋画／邦画。**いまは何も出ない**（下記）
+ *   2. 最新記事        … カテゴリ横断の新しい記事。記事ごとの絵つき
+ *   3. PR             … 広告カード。**ここだけ追従する**
+ *
+ * ★ 1 は 2026-08-27 に**枠だけ**入れたもの。中身は GenreRail.astro にあり、
+ *   config.ts の `GENRE_NAV_ENABLED` が false のあいだ HTMLを1バイトも出さない。
+ *   ジャンル軸の記事が各ジャンル1本ずつしか無いため。
+ *   記事が溜まったらフラグを true にすれば、この枠と `/genre/<スラッグ>` の
+ *   ページが一緒に出る。**並びは必ず最新記事の上**（探し方 → 中身の順）。
  *
  * ★ 最新記事の絵は frontmatter の `heroImage`（`public/heroes/…`）。
  *   記事カード（PostCard.astro）と**同じ絵・同じ部品**（Thumb.astro）を使う。
@@ -23,7 +31,7 @@ import { withAmazonTag } from '../lib/affiliate'
  * ★ 「新着配信・終了一覧」は**左の枠**（LeftRail.astro）に移した
  *   （2026-08-24）。ここに戻すと、その下の最新記事とPR枠が画面外へ落ちる。
  *
- * ■ 追従するのは 2 だけ
+ * ■ 追従するのは 3 だけ
  * 枠全体を追従させると、画面に収まらないときPR枠に手が届かなくなる。
  * 枠内スクロールで解決すると読者がスクロールを2回することになる。
  * 最新記事は流し、PR枠だけを sticky にするのが両立する唯一の形。
@@ -64,6 +72,15 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
 ---
 
 <aside class="follow-rail">
+  {/*
+    ジャンルから探す。**最新記事の上**に置く（探し方が先、中身が後）。
+    いまは何も描画されない（GenreRail.astro と config.ts の GENRE_NAV_ENABLED）。
+
+    ★ ここを div などで囲まないこと。下のPR枠の sticky は
+      .follow-rail を基準にしていて、途中にラッパーが入ると効く範囲が変わる。
+  */}
+  <GenreRail />
+
   {
     posts.length > 0 && (
       <nav class="block" aria-label="最新記事">
@@ -136,6 +153,7 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
    * **ラッパーで囲むとその高さまでしか追従しなくなる**ので、
    * .follow-rail の直下に置いている。div でくくらないこと。
    */
+  /* ★ ジャンル枠の .block は GenreRail.astro 側に同じ値で書いてある（scoped なので共有されない） */
   .block,
   .rail-ad {
     max-width: 17rem;
@@ -162,7 +180,7 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     color: var(--footer-text);
   }
 
-  /* --- 1. 最新記事 --- */
+  /* --- 2. 最新記事 --- */
   .badge {
     font-size: 0.68rem;
     padding: 0.05rem 0.45rem;
@@ -228,7 +246,7 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     color: var(--text-muted);
   }
 
-  /* --- 2. 広告 --- */
+  /* --- 3. 広告 --- */
   .rail-ad {
     padding: 0.85rem 0.9rem 1rem;
     background: var(--bg);
