@@ -6,6 +6,16 @@ const year = new Date().getFullYear()
 <footer>
   <div class="wrap">
     <nav aria-label="サイト情報">
+      {/*
+        ★ `/sitemap`（人が見るサイトマップ）へはここからリンクしない。**意図的**。
+          運営者が全ページを目視するためのページで、読者向けの導線ではない。
+          リンクを張ると、作品ページ508枚へのクロール経路がここから生まれ、
+          「記事からの内部リンクを入れる前後で比べる」という段取りが崩れる
+          （docs/WORK-PAGES.md 12節）。
+          読者にも出すことにしたら、この行を戻したうえで
+          pages/sitemap.astro の noindex と astro.config.mjs の filter も一緒に外すこと。
+          **3つのうち1つだけ変えても意図どおりにならない。**
+      */}
       <a href="/about">運営者情報</a>
       <a href="/privacy">プライバシーポリシー</a>
       <a href="/contact">お問い合わせ</a>

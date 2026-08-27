@@ -10,6 +10,8 @@
 | **記事の軸・タイトルの決まりと根拠** | **[docs/ARTICLE-RULES.md](./docs/ARTICLE-RULES.md)** |
 | **作業を再開する / 引き継ぐ** | **[docs/HANDOVER.md](./docs/HANDOVER.md)** |
 | **他ジャンルでブログを増やす** | **[docs/NEW-THEME.md](./docs/NEW-THEME.md)** |
+| **検索流入を増やす（施策と根拠）** | **[docs/GROWTH.md](./docs/GROWTH.md)** |
+| **作品ページを実装する（設計）** | **[docs/WORK-PAGES.md](./docs/WORK-PAGES.md)** |
 | **U-NEXT の収集（APIの外側）** | **[docs/UNEXT.md](./docs/UNEXT.md)** |
 | 設計の全体像・判断の理由 | [DESIGN.md](./DESIGN.md) |
 | ドメイン・GitHub・Cloudflare の操作 | [DEPLOY.md](./DEPLOY.md) |

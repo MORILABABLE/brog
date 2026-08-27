@@ -43,12 +43,24 @@ const root = join(here, '..')
 const repo = join(root, '..')
 const postsDir = join(root, 'src', 'content', 'posts')
 const outDir = join(root, 'public', 'thumbs')
+const posterOutDir = join(root, 'public', 'posters')
 
 /**
  * 書き出す1枚の大きさ。表示は48×72で、その2倍。
  * ★ 変えたら styles/global.css の `.work-thumb` も直すこと。
  */
 const THUMB = { w: 96, h: 144 }
+
+/**
+ * 作品ページ（`/works/<ID>`）に出すポスター。表示は240×360で、その2倍。
+ *
+ * ★ **取得は増えない。** PosterCache が原本をディスクに持つので、
+ *   同じURLに poster() を2回呼んでもネットワークアクセスは1回
+ *   （scripts/posters.mjs の original()）。かかるのは変換の時間だけ。
+ *
+ * ★ 変えたら src/pages/works/[id].astro の `.poster` も直すこと。
+ */
+const POSTER = { w: 480, h: 720 }
 
 /**
  * 同時に走らせる取得の数。
@@ -86,6 +98,29 @@ function readEvents() {
 }
 
 /**
+ * 作品ページ（`/works/<ID>`）を持つ作品のID。**ポスターを書き出す対象。**
+ *
+ * ★ **掲載判定の本体は src/lib/works.ts の `isWorkPagePublishable()`。**
+ *   ここはそれより**ゆるい条件**（配信API由来 かつ expiring/removed を持つ）に
+ *   してある。実測で本体が620件、ここが653件。
+ *   スクリプトから .ts を読めないので条件を書き写すことになるが、
+ *   **ゆるい側に倒しておけば「ページはあるのに絵が無い」が起きない。**
+ *   逆に厳しくすると絵の無いページが出るので、条件を足すときは注意する。
+ *
+ * ★ U-NEXT を入れないこと。作品ページは配信API由来の作品だけで作る
+ *   （理由は docs/GROWTH.md 2-3）。
+ */
+function workPageIds(events) {
+  const API_SERVICES = ['netflix', 'prime-video', 'disney-plus', 'apple-tv']
+  const ids = new Set()
+  for (const e of events) {
+    if (!API_SERVICES.includes(e.service)) continue
+    if (e.kind === 'expiring' || e.kind === 'removed') ids.add(String(e.work.id))
+  }
+  return ids
+}
+
+/**
  * サムネイルを用意する作品を決める。
  *
  * ★ 常設ページの条件は src/lib/events-data.ts の loadLeaving / loadArrivals と
@@ -102,6 +137,7 @@ function worksToRender(events) {
   const ARRIVALS_WINDOW_DAYS = 60
 
   const latest = new Map()
+  const pageIds = workPageIds(events)
   for (const e of events) {
     const key = String(e.work.id)
     const cur = latest.get(key)
@@ -114,6 +150,8 @@ function worksToRender(events) {
   const take = (work) => picked.set(String(work.id), work)
 
   for (const e of latest.values()) {
+    // 作品ページを持つ作品は期間で切らない。**ページがあるのに絵が無い**を防ぐ。
+    if (pageIds.has(String(e.work.id))) take(e.work)
     const at = e.at ? Date.parse(e.at) : NaN
     if (!Number.isFinite(at)) continue
     if (e.kind === 'expiring' && LEAVING_SERVICES.includes(e.service) && at >= now) take(e.work)
@@ -186,12 +224,12 @@ async function mapLimit(items, limit, fn) {
  * 使われなくなったサムネイルを消す。
  * 残しても壊れはしないが、public/ に古い作品の絵が溜まり続ける。
  */
-function prune(keep) {
-  if (!existsSync(outDir)) return 0
+function prune(dir, keep) {
+  if (!existsSync(dir)) return 0
   let removed = 0
-  for (const name of readdirSync(outDir)) {
+  for (const name of readdirSync(dir)) {
     if (!name.endsWith('.webp') || keep.has(name)) continue
-    rmSync(join(outDir, name), { force: true })
+    rmSync(join(dir, name), { force: true })
     removed++
   }
   return removed
@@ -211,9 +249,15 @@ if (AUDIT) {
 }
 
 mkdirSync(outDir, { recursive: true })
+mkdirSync(posterOutDir, { recursive: true })
+
+/** 作品ページを持つ作品。ポスター（480×720）を書き出す対象。 */
+const pageIds = workPageIds(events)
 
 /** public/thumbs に残すファイル名。ここに無いものは prune が消す。 */
 const keep = new Set()
+/** public/posters に残すファイル名。 */
+const keepPosters = new Set()
 
 // --- 1. ジャンル汎用画像（key ごとに1枚だけ） --------------------------------
 for (const g of GENRE_ART) {
@@ -230,6 +274,7 @@ const posters = NO_POSTERS ? null : new PosterCache(repo, { force: REFRESH })
 /** 台帳に載せる作品（refresh:images の対象になる） */
 const usedWorks = {}
 let made = 0
+let madePosters = 0
 let fellBack = 0
 
 await mapLimit(works, CONCURRENCY, async (w) => {
@@ -254,13 +299,27 @@ await mapLimit(works, CONCURRENCY, async (w) => {
   keep.add(`${id}.webp`)
   usedWorks[id] = { id, title, url, expiresAt: expiryOf(url) }
   made++
+
+  // 作品ページを持つ作品には大きいほうも書く。
+  // 原本はキャッシュ済みなので、**ここで新しい取得は起きない**（POSTER の注意書き）。
+  if (!pageIds.has(id)) return
+  const big = await posters.poster(url, POSTER.w, POSTER.h, { label: title })
+  if (!big) return
+  writeFileSync(join(posterOutDir, `${id}.webp`), big)
+  keepPosters.add(`${id}.webp`)
+  madePosters++
 })
 
-const removed = prune(keep)
+const removed = prune(outDir, keep)
+const removedPosters = prune(posterOutDir, keepPosters)
 
 console.log(
   `作品サムネイル: ${made}枚（対象 ${works.length}作品 / ジャンル汎用に落ちたもの ${fellBack}件）` +
     (removed ? ` / 不要になった ${removed}枚を削除` : ''),
+)
+console.log(
+  `作品ページのポスター: ${madePosters}枚（対象 ${pageIds.size}作品）` +
+    (removedPosters ? ` / 不要になった ${removedPosters}枚を削除` : ''),
 )
 console.log(`ジャンル汎用画像: ${GENRE_ART.length}枚`)
 

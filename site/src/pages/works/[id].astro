@@ -1,0 +1,386 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AffiliateNotice from '../../components/AffiliateNotice.astro'
+import AmazonCta from '../../components/AmazonCta.astro'
+import { AFFILIATE, ATTRIBUTION, SITE, hubFor } from '../../config'
+import { relFor, withAmazonTag } from '../../lib/affiliate'
+import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
+import { otherServiceLinks } from '../../lib/search-links'
+import { STATE_CATEGORY, STATE_LABEL, publishableWorkPages, workPage } from '../../lib/works'
+import type { WorkPage, WorkServiceState } from '../../lib/works'
+import { formatDate, isoDate } from '../../utils/date'
+
+/**
+ * 作品ページ `/works/<作品ID>`。
+ *
+ * ■ 何のためにあるか
+ * 記事も常設ページも「その月に何が起きたか」の軸で、
+ * **1作品を名指しで探しに来た読者の受け皿が無かった**。
+ * 狙うのは「〇〇 いつまで Netflix」「〇〇 どこで見れる」のような語で、
+ * **終了日を出せるサイトがほとんど無い**ぶん当てられる。
+ * 設計は docs/WORK-PAGES.md、位置づけは docs/GROWTH.md 3-1。
+ *
+ * ■ LLMを使わない
+ * 出すのは作品名・日付・年・監督・出演といった事実だけ。
+ * **文言はすべて状態と日付から組み立てる。手書きの説明文を置かない。**
+ * 置くとビルドのたびに古くなる（常設ページと同じ方針。lib/events-data.ts 冒頭）。
+ *
+ * ■ 絶対に守ること
+ * **「配信中」と書かない。** 持っているのは「変化の観測」であって
+ * 「現在の在庫」ではない。言い回しの規則は lib/works.ts の `WorkState`。
+ */
+export function getStaticPaths() {
+  // ★ 掲載判定を通らない作品は**ここで返さない**（noindex で隠すのではない）。
+  //   返さなければサイトマップにも載らず、リンクを張らない工夫も要らない。
+  return publishableWorkPages().map((w) => ({ params: { id: w.id }, props: { work: w } }))
+}
+
+interface Props {
+  work: WorkPage
+}
+
+// props から受け取る。getStaticPaths が渡しているので再検索は要らないが、
+// 念のため落ちない形にしておく（dev の単発描画で props が欠ける場合の保険）。
+const { work } = Astro.props as Props
+const w = work ?? workPage(Astro.params.id!)!
+
+// --- 言い回し ------------------------------------------------------------------
+
+/**
+ * 状態ごとの一行。**ここが「言ってよいこと」の実体。**
+ * lib/works.ts の `WorkState` の表と1対1で対応させること。
+ */
+function sentence(s: WorkServiceState): string {
+  const d = formatDate(s.at)
+  switch (s.state) {
+    case 'leaving':
+      return `${d}に見放題配信が終了する予定です`
+    // ★ `passed` を `ended` に丸めない。予定日を過ぎたことは観測しているが、
+    //   実際に終わったことは観測していない（延長されることがある）。
+    case 'passed':
+      return `見放題の終了予定日は${d}でした（この日を過ぎています）`
+    case 'ended':
+      return `${d}に見放題配信が終了しました`
+    // ★ 「配信中」と言い換えない。始まったことは観測した事実、
+    //   いま観られることは観測していない推測。
+    case 'started':
+      return `${d}に見放題配信が始まりました`
+  }
+}
+
+const head = w.services[0]!
+const yearPart = w.year ? `（${w.year}年）` : ''
+
+/*
+ * h1。**作品名だけにしない。**
+ * 作品名だけの見出しは公式・Wikipedia・レビューサイトと同じ的を撃つことになる。
+ * 読者が打った質問をそのまま見出しにするほうが、競合の薄い語に当たる。
+ */
+const title =
+  w.state === 'ended'
+    ? `「${w.title}」の見放題配信は終了しました`
+    : `「${w.title}」${yearPart}はいつまで見られる？`
+
+/*
+ * meta description。全角120字に収める（config.ts の SITE.description と同じ基準）。
+ * ここも状態と日付から組む。
+ */
+const description = `「${w.title}」は${head.label}で${sentence(head)}。${
+  w.services.length > 1 ? `${w.services.length}サービスの` : ''
+}配信状況の確認先と、レンタル・購入で観る方法をまとめています。`
+
+// パンくずの親。作品ページは公開日を持たないので、状態で親を決める。
+const hub = hubFor(w.state === 'started' ? 'arrivals' : 'leaving')
+
+// --- 外部リンク ----------------------------------------------------------------
+
+/*
+ * 「他のサービスで探す」。**在庫は主張しない。**
+ * U-NEXT / Hulu / DMM TV の配信状況データは持っていないので、
+ * 渡せるのは検索結果へのリンクだけ（lib/search-links.ts 冒頭）。
+ *
+ * ★ tag= と rel はここで付ける。常設ページは .astro なので rehype を通らない
+ *   （components/WorkTable.astro と同じ理由・同じ関数を使う）。
+ */
+const findLinks = otherServiceLinks(w.title).map((l) => {
+  const url = withAmazonTag(l.url, AFFILIATE.amazonTag)
+  return { label: l.label, url, rel: relFor(url) }
+})
+
+function decorate(url: string) {
+  const tagged = withAmazonTag(url, AFFILIATE.amazonTag)
+  return { url: tagged, rel: relFor(tagged) }
+}
+
+/*
+ * 関連する常設ページ。**そのサービスのページが実在するときだけ出す。**
+ * LEAVING_SERVICES / ARRIVALS_SERVICES に無いサービス（Apple TV+ など）へ
+ * 機械的にリンクを組むと 404 になる。
+ */
+const related = w.services.flatMap((s) => {
+  const out: { href: string; label: string }[] = []
+  if (LEAVING_SERVICES.some((x) => x.key === s.service)) {
+    out.push({ href: `/leaving/${s.service}`, label: `${s.label}の終了予定一覧` })
+  }
+  if (ARRIVALS_SERVICES.some((x) => x.key === s.service)) {
+    out.push({ href: `/arrivals/${s.service}`, label: `${s.label}の新着配信` })
+  }
+  return out
+})
+
+// --- 構造化データ --------------------------------------------------------------
+
+/*
+ * Movie / TVSeries。
+ *
+ * ★ **`offers` も `WatchAction` も出さない。**
+ *   価格も「いま観られるか」も観測していない。
+ *   画面で断定しないものを構造化データでだけ断定してはいけない。
+ */
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': w.type === 'series' ? 'TVSeries' : 'Movie',
+  name: w.title,
+  ...(w.originalTitle ? { alternateName: w.originalTitle } : {}),
+  ...(w.year ? { datePublished: String(w.year) } : {}),
+  ...(w.poster ? { image: new URL(w.poster, Astro.site ?? SITE.url).href } : {}),
+  ...(w.genres.length > 0 ? { genre: w.genres } : {}),
+  ...(w.directors.length > 0
+    ? { director: w.directors.map((n) => ({ '@type': 'Person', name: n })) }
+    : {}),
+  ...(w.cast.length > 0 ? { actor: w.cast.map((n) => ({ '@type': 'Person', name: n })) } : {}),
+  /*
+   * ★ `description` を出さない。配信APIのあらすじは**全件が英語**で、
+   *   画面に出していないものを構造化データにだけ入れることになる。
+   * ★ `inLanguage` も出さない。持っているのは日本語に訳した言語名で、
+   *   この項目が想定する言語コードではない。**確かでない値を入れない。**
+   */
+}
+---
+
+<BaseLayout title={title} description={description} jsonLd={jsonLd}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a> ›
+    <a href={`/category/${hub.slug}`}>{hub.label}</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  <AffiliateNotice />
+
+  {/* 読者は「いつまで観られるか」を知りに来ている。答えを先に出す。 */}
+  <section class="status" aria-label="配信状況">
+    <ul class="states">
+      {
+        w.services.map((s) => (
+          <li>
+            <span class="badge" data-category={STATE_CATEGORY[s.state]}>
+              {STATE_LABEL[s.state]}
+            </span>
+            <span class="line">
+              <strong>{s.label}</strong>で
+              <time datetime={isoDate(s.at)}>{sentence(s)}</time>
+            </span>
+            <a class="go" href={decorate(s.url).url} rel={decorate(s.url).rel} target="_blank">
+              {s.label}で見る
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
+  <p class="notice">
+    配信情報は<strong>{formatDate(w.dataAsOf)}時点</strong>のものです。
+    その後の配信状況は各サービスの都合で変わることがあります。ご視聴前に公式サイトでご確認ください。
+  </p>
+
+  <section class="detail">
+    <h2>作品の情報</h2>
+    <div class="detail-body">
+      {
+        w.poster && (
+          <img
+            class="poster"
+            src={w.poster}
+            alt=""
+            width="240"
+            height="360"
+            loading="lazy"
+            decoding="async"
+          />
+        )
+      }
+      <dl>
+        {w.originalTitle && (<><dt>原題</dt><dd>{w.originalTitle}</dd></>)}
+        {w.year && (<><dt>製作年</dt><dd>{w.year}年</dd></>)}
+        <dt>種別</dt>
+        <dd>{w.type === 'series' ? 'シリーズ' : '映画'}</dd>
+        {w.genres.length > 0 && (<><dt>ジャンル</dt><dd>{w.genres.join('・')}</dd></>)}
+        {/* ★ 「製作国」ではなく「原語」。origins.json は Wikidata の P364。 */}
+        {w.languages.length > 0 && (<><dt>原語</dt><dd>{w.languages.join('・')}</dd></>)}
+        {/*
+          ★ 人名は「、」で区切る。**「・」で繋がない。**
+            カタカナの人名は「ヒラリー・ダフ」のように中黒を含むので、
+            中黒で連結すると区切りが消える
+            （「ヒラリー・ダフ・イアン・マクシェーン」＝1人に見える）。
+        */}
+        {w.directors.length > 0 && (<><dt>監督</dt><dd>{w.directors.join('、')}</dd></>)}
+        {/* ★ 「主演」と書かない。Wikidata の並びは主演順ではない。 */}
+        {w.cast.length > 0 && (<><dt>出演</dt><dd>{w.cast.join('、')}</dd></>)}
+        {w.rating && (<><dt>評価</dt><dd>{w.rating}/100</dd></>)}
+      </dl>
+    </div>
+    {/*
+      ★ あらすじは出さない。配信APIの overview は**実測780件すべてが英語**で、
+        日本語のページに英文を貼ることになる。日本語のあらすじを持てるように
+        なったら、ここに足す（lib/works.ts の掲載判定も一緒に見直すこと）。
+    */}
+  </section>
+
+  <section class="find">
+    <h2>他のサービスで探す</h2>
+    <p class="find-note">
+      当サイトが配信状況を把握しているのは Netflix・Amazon Prime Video・Disney+・Apple TV+
+      の4サービスです。下のリンクは各サービスの検索結果に飛ぶだけで、配信の有無を保証するものではありません。
+    </p>
+    <p class="find-links">
+      {
+        findLinks.map((l) => (
+          <a href={l.url} rel={l.rel} target="_blank">
+            {l.label}で探す
+          </a>
+        ))
+      }
+    </p>
+  </section>
+
+  <AmazonCta category={STATE_CATEGORY[w.state]} query={w.title} />
+
+  {
+    related.length > 0 && (
+      <p class="related">
+        関連する一覧:
+        {related.map((r) => (
+          <a href={r.href}>{r.label}</a>
+        ))}
+      </p>
+    )
+  }
+
+  <section class="sources">
+    <h2>出典</h2>
+    <ul>
+      <li>
+        <a href={ATTRIBUTION.url} rel="noopener noreferrer" target="_blank">
+          {ATTRIBUTION.text}
+        </a>
+      </li>
+      <li>
+        <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">
+          作品タイトル・監督・出演・原語（Wikidata・CC0）
+        </a>
+      </li>
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  /* --- 配信状況 --- */
+  .status {
+    margin: 1.6rem 0 1rem;
+  }
+  .states {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.7rem;
+  }
+  .states li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-subtle);
+  }
+  .line {
+    flex: 1 1 14rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+  .go {
+    flex: none;
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .go:hover {
+    opacity: 0.9;
+  }
+
+  /* --- 作品の情報 --- */
+  .detail h2,
+  .find h2,
+  .sources h2 {
+    font-size: 1rem;
+  }
+  .detail-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: flex-start;
+  }
+  .poster {
+    flex: none;
+    width: 160px;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  dl {
+    flex: 1 1 16rem;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.35rem 1rem;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  dt {
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  dd {
+    margin: 0;
+  }
+
+  /* --- 他で探す --- */
+  .find-note {
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+
+  .related a {
+    margin-left: 0.7rem;
+  }
+  .sources ul {
+    padding-left: 1.2rem;
+    font-size: 0.86rem;
+  }
+</style>

@@ -15,7 +15,27 @@ export default defineConfig({
   // 独自ドメイン取得後にここを差し替える。
   // sitemap / RSS / canonical URL がこの値を基準に生成される。
   site: SITE.url,
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      /*
+       * `/sitemap`（人が見るサイトマップ）を**XMLサイトマップから外す。**
+       *
+       * あれは運営者が全ページを目視するためのページで、読者向けではない。
+       * 載せると2つ困る。
+       *   1. 検索エンジンにとっての発見経路になる（サイト内リンクを外した意味が消える）
+       *   2. ページ側が noindex なので、Search Console に
+       *      「noindex のURLを送信しました」の注意が出続ける
+       *
+       * ★ `/sitemap-index.xml` `/sitemap-0.xml` を巻き込まないこと。
+       *   `startsWith('/sitemap')` で書くと**XMLサイトマップ自身が消える**。
+       *   末尾一致（`/sitemap` で終わるURLだけ）で判定する。
+       *
+       * ★ 読者にも出すことにしたら、ここと components/Footer.astro の
+       *   リンク、pages/sitemap.astro の noindex を**3つまとめて**外すこと。
+       */
+      filter: (page) => !/\/sitemap\/?$/.test(page),
+    }),
+  ],
 
   // 比較表の横スクロールは rehype プラグインではなく CSS で処理している
   // （styles/global.css の .prose table を参照）。

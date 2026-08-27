@@ -43,19 +43,56 @@ function findEventsDir(): string | null {
   return null
 }
 
-interface RawEvent {
+/**
+ * 収集データ1件。**JSONの構造そのまま。**
+ *
+ * ★ 常設ページ（このファイル）が使うのは一部だけだが、
+ *   作品ページ（lib/works.ts）は `meta` や `genres` まで使う。
+ *   読み込みを2か所に増やさないため、**型はJSONの全体を書いておき、
+ *   使う側が必要な分だけ触る**という形にしてある。
+ */
+export interface RawWork {
+  id: number | string
+  title: string
+  localizedTitle?: string
+  type?: string
+  year?: number
+  rating?: number
+  overview?: string
+  genres?: string[]
+  posterUrl?: string
+  link?: string
+  /** 配信API由来のみ。Wikidata の突き合わせキーになる（lib/works.ts） */
+  meta?: { imdbId?: string; tmdbId?: string; [k: string]: unknown }
+}
+
+export interface RawEvent {
   collectedAt: string
   service: string
   kind: string
   at?: string
-  work: {
-    id: number | string
-    title: string
-    localizedTitle?: string
-    year?: number
-    rating?: number
-  }
+  work: RawWork
 }
+
+/**
+ * 収集対象のサービス（**配信API由来の4社**）。
+ *
+ * ★ **U-NEXT を入れてはいけない。**
+ *   U-NEXT は API の外側にあり、データ利用について規約に明言が無い。
+ *   作品ページ（lib/works.ts）はこの一覧で対象を絞っている。
+ *   判断の理由は docs/GROWTH.md 2-3。**ここに1行足すと作品ページが公開される。**
+ */
+export const API_SERVICES = [
+  { key: 'netflix', label: 'Netflix' },
+  { key: 'prime-video', label: 'Amazon Prime Video' },
+  { key: 'disney-plus', label: 'Disney+' },
+  { key: 'apple-tv', label: 'Apple TV+' },
+] as const
+
+/** サービスキー → 表示名。作品ページの表で使う。 */
+export const LABEL_BY_SERVICE = new Map<string, string>(
+  API_SERVICES.map((s) => [s.key, s.label] as [string, string]),
+)
 
 let cached: RawEvent[] | null = null
 
@@ -82,6 +119,17 @@ function readAll(): RawEvent[] {
   }
   cached = out
   return out
+}
+
+/**
+ * 収集データ全件（**出さないと決めた作品を除いたもの**）。
+ *
+ * ★ 作品ページ（lib/works.ts）のための口。**読み込みを2か所に増やさないために公開している。**
+ *   `data/events` の場所探し・壊れた行の扱い・除外の適用が
+ *   ここ1か所にしか無い状態を保つこと。
+ */
+export function loadAllEvents(): RawEvent[] {
+  return readAll()
 }
 
 /** JST の年月（`YYYY-MM`）。UTC で切ると9時間ぶんが前月に落ちる。 */
@@ -243,13 +291,14 @@ export interface MonthStat {
   inProgress: boolean
 }
 
-/** 定点観測に出すサービス。収集対象の4社すべて。 */
-const STAT_SERVICES = [
-  { key: 'netflix', label: 'Netflix' },
-  { key: 'prime-video', label: 'Amazon Prime Video' },
-  { key: 'disney-plus', label: 'Disney+' },
-  { key: 'apple-tv', label: 'Apple TV+' },
-] as const
+/**
+ * 定点観測に出すサービス。収集対象の4社すべて。
+ *
+ * ★ 上の `API_SERVICES` と**同じ一覧を指している**（2026-08-27 に統合）。
+ *   同じ4社を2か所に書いていて、片方だけ増やす事故があり得たため。
+ *   定点観測だけ対象を変えたくなったら、ここで別の配列に戻せばよい。
+ */
+const STAT_SERVICES = API_SERVICES
 
 export interface StatsData {
   months: MonthStat[]

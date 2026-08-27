@@ -21,6 +21,17 @@ interface Props {
    * カードは `cd site && node scripts/make-cards.mjs` で生成する。
    */
   ogImagePath?: string
+  /**
+   * このページ専用の構造化データ。渡すと既定（Article / WebSite）を**置き換える**。
+   *
+   * 作品ページが `Movie` / `TVSeries` を出すために開けてある口
+   * （docs/WORK-PAGES.md 9節）。渡さなければ今までどおりの挙動。
+   *
+   * ★ 配信の可否や価格を主張する型（`offers` / `WatchAction`）を入れないこと。
+   *   このサイトは「いま観られるか」を観測していない。
+   *   画面で断定しないものを、構造化データでだけ断定してはいけない。
+   */
+  jsonLd?: Record<string, unknown>
 }
 
 const {
@@ -30,6 +41,7 @@ const {
   updatedAt,
   noindex = false,
   ogImagePath,
+  jsonLd: jsonLdOverride,
 } = Astro.props
 
 /**
@@ -59,8 +71,8 @@ const ogSize = ogImagePath ? CARD_IMAGE : OG_IMAGE
 const isHome = publicPath === '/'
 const fullTitle = isHome ? `${SITE.name}｜${SITE.tagline}` : `${title}｜${SITE.name}`
 
-// 記事なら Article、それ以外は WebSite として構造化データを出す
-const jsonLd = publishedAt
+// ページから渡されればそれを使う。無ければ記事は Article、それ以外は WebSite。
+const jsonLd = jsonLdOverride ?? (publishedAt
   ? {
       '@context': 'https://schema.org',
       '@type': 'Article',
@@ -78,7 +90,7 @@ const jsonLd = publishedAt
       name: SITE.name,
       description: SITE.description,
       url: SITE.url,
-    }
+    })
 ---
 
 <!doctype html>

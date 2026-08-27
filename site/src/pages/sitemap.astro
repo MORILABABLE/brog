@@ -1,0 +1,329 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import {
+  CATEGORY_HUBS,
+  SERVICE_HUBS,
+  SERVICE_MENU_HUBS,
+  SITE,
+} from '../config'
+import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../lib/events-data'
+import { EVERGREEN_PAGES, evergreenSummary, evergreenTitle } from '../lib/evergreen'
+import { serviceHasContent, serviceSection } from '../lib/service-pages'
+import { STATE_CATEGORY, STATE_LABEL, STATE_ORDER_KEYS, publishableWorkPages } from '../lib/works'
+import type { WorkState } from '../lib/works'
+import { formatDate } from '../utils/date'
+
+/**
+ * サイトマップ（読者と運営者が見るほうの一覧）。
+ *
+ * ■ `sitemap-0.xml` とは別物
+ *   `/sitemap-index.xml` `/sitemap-0.xml` … 検索エンジンが読む。@astrojs/sitemap が自動生成
+ *   `/sitemap`（このページ）              … **人が見る。** 全ページを目で追える形に並べる
+ *
+ * ■ 誰のためのページか（2026-08-27）
+ * **運営者が全ページを目視するためのページ。読者向けの導線ではない。**
+ * 作品ページを508枚足したので、何がどう出ているかを1枚で確かめられるようにした。
+ *
+ * ■ 検索エンジンから隠してある。**3か所そろって初めて効く。**
+ *
+ * | 何を | どこ |
+ * |---|---|
+ * | サイト内のどこからもリンクしない | `components/Footer.astro`（リンクを張らない旨のコメントがある） |
+ * | XMLサイトマップに載せない | `astro.config.mjs` の `sitemap({ filter })` |
+ * | 索引に入れない | このファイルの `noindex`（下） |
+ *
+ * **1つだけ変えても意図どおりにならない。** 読者にも出すことにしたら3つまとめて外す。
+ *
+ * ★ `robots.txt` で `Disallow` にはしていない。2つ理由がある。
+ *   1. `Disallow: /sitemap` は**前方一致なので `/sitemap-index.xml` まで巻き込む**
+ *   2. クロールを止めると `noindex` を読んでもらえず、かえって索引に残ることがある
+ *
+ * ★ **URLを知っている人は見られる。** 静的サイトなので認証はかかっていない。
+ *   本当に鍵をかけるなら Cloudflare Access（Zero Trust）でパスを保護する。
+ *
+ * ★ **リンク先は実在するページだけ。**
+ *   中身が0件のサービス別ページ（noindex）は載せない。
+ *   判定は lib/service-pages.ts の serviceHasContent() を通す。**ここで書き直さない。**
+ *
+ * ★ **枚数を手で書かない。** 数字はこのページが数えたものを出す。
+ *   固定値を書くと、ページが増えたときに静かに嘘になる。
+ */
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+)
+
+// --- 常設ページ ---------------------------------------------------------------
+
+const evergreen = EVERGREEN_PAGES.map((page) => ({ page, ...evergreenSummary(page) }))
+
+// --- 一覧ページ（カテゴリ / サービス）------------------------------------------
+
+const categoryPages = CATEGORY_HUBS.map((h) => ({
+  href: `/category/${h.slug}`,
+  label: h.heading,
+  count: posts.filter((p) => (h.includes as readonly string[]).includes(p.data.category)).length,
+}))
+
+/*
+ * カテゴリ×サービス。ページ自体は SERVICE_MENU_HUBS × SERVICE_HUBS ぶん必ず作られるが、
+ * **中身が0件のものは noindex** なのでここには出さない
+ * （pages/category/[category]/[service].astro と同じ判定を使う）。
+ */
+const categoryServicePages = SERVICE_MENU_HUBS.flatMap((hub) =>
+  SERVICE_HUBS.map((service) => ({
+    href: `/category/${hub.slug}/${service.slug}`,
+    label: `${service.label}の${hub.label}`,
+    hasContent: serviceHasContent(serviceSection(posts, service, hub.includes)),
+  })),
+).filter((p) => p.hasContent)
+
+/* サービス別まとめ。**中身が0件だとページ自体が作られない**（pages/service/[service].astro）。 */
+const servicePages = SERVICE_HUBS.map((service) => ({
+  href: `/service/${service.slug}`,
+  label: service.label,
+  hasContent: serviceHasContent(serviceSection(posts, service)),
+})).filter((p) => p.hasContent)
+
+// --- 作品ページ ---------------------------------------------------------------
+
+const works = publishableWorkPages()
+
+/*
+ * 状態ごとに束ねる。**同じ用の作品がまとまる。**
+ * 「終了予定」を先頭にするのは、読者にとって行動が要る順に並べるため
+ * （作品ページの表と同じ考え方。lib/works.ts の STATE_ORDER_KEYS）。
+ */
+const workGroups = STATE_ORDER_KEYS.map((state) => ({
+  state,
+  label: STATE_LABEL[state],
+  // 終了予定は近い順、それ以外は新しい順。どちらも「先に見るべきものが上」。
+  items: works
+    .filter((w) => w.state === state)
+    .sort((a, b) =>
+      state === 'leaving'
+        ? a.services[0]!.at.getTime() - b.services[0]!.at.getTime()
+        : b.services[0]!.at.getTime() - a.services[0]!.at.getTime(),
+    ),
+})).filter((g) => g.items.length > 0)
+
+// --- 数える -------------------------------------------------------------------
+
+const fixedPages = [
+  { href: '/', label: 'トップページ' },
+  { href: '/stats', label: '見放題の増減（定点観測）' },
+  { href: '/about', label: '運営者情報' },
+  { href: '/privacy', label: 'プライバシーポリシー' },
+  { href: '/contact', label: 'お問い合わせ' },
+  { href: '/sitemap', label: 'サイトマップ（このページ）' },
+]
+
+const total =
+  fixedPages.length +
+  evergreen.length +
+  posts.length +
+  categoryPages.length +
+  categoryServicePages.length +
+  servicePages.length +
+  works.length
+
+/*
+ * 基準日。常設ページと同じく「いつ時点の一覧か」を先に伝える。
+ * 作品ページのデータが最も新しいので、そこから採る。
+ */
+const dataAsOf = works.reduce<Date | null>(
+  (m, w) => (m === null || w.dataAsOf > m ? w.dataAsOf : m),
+  null,
+)
+
+const title = evergreenTitle('サイトマップ', dataAsOf)
+const description = `${SITE.name}の全ページ一覧です。作品ページ${works.length}枚、記事${posts.length}本、常設の作品一覧${evergreen.length}枚を含む${total}ページを掲載しています。`
+---
+
+{/* noindex の理由は冒頭のコメント。フッターのリンクと astro.config の filter とセット。 */}
+<BaseLayout title={title} description={description} noindex>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  <p class="summary">
+    このサイトの全ページ（<strong>{total}ページ</strong>）の一覧です。
+    検索エンジン向けのXMLサイトマップは <a href="/sitemap-index.xml">/sitemap-index.xml</a> にあります。
+  </p>
+
+  <p class="notice">
+    <strong>このページは運営者用です。</strong>
+    検索結果には出さず（noindex）、サイト内のどこからもリンクしていません。
+    URLを直接開いたときだけ表示されます。
+  </p>
+
+  <section>
+    <h2>作品ページ<span class="count">{works.length}</span></h2>
+    <p class="lead">
+      1作品につき1枚。その作品が<strong>いつまで見放題で観られるか</strong>と、
+      配信状況の確認先をまとめています。
+      対象は Netflix・Amazon Prime Video・Disney+・Apple TV+ です。
+    </p>
+    {
+      workGroups.map((g) => (
+        <div class="group">
+          <h3>
+            <span class="badge" data-category={STATE_CATEGORY[g.state as WorkState]}>
+              {g.label}
+            </span>
+            <span class="count">{g.items.length}</span>
+          </h3>
+          <ul class="works">
+            {g.items.map((w) => (
+              <li>
+                <a href={`/works/${w.id}`}>{w.title}</a>
+                <span class="meta">
+                  {w.services[0]!.label}・{formatDate(w.services[0]!.at)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </section>
+
+  <section>
+    <h2>常設の作品一覧<span class="count">{evergreen.length}</span></h2>
+    <p class="lead">収集のたびに中身が入れ替わります。記事と違って古くなりません。</p>
+    <ul>
+      {
+        evergreen.map((e) => (
+          <li>
+            <a href={e.page.href}>{evergreenTitle(e.page.titleBase, e.dataAsOf)}</a>
+            <span class="meta">{e.count}本</span>
+          </li>
+        ))
+      }
+      <li>
+        <a href="/stats">見放題の増減（毎月更新）</a>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>記事<span class="count">{posts.length}</span></h2>
+    <ul>
+      {
+        posts.map((p) => (
+          <li>
+            <a href={`/posts/${p.id}`}>{p.data.title}</a>
+            <span class="meta">{formatDate(p.data.pubDate)}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <h2>
+      記事の一覧ページ<span class="count">
+        {categoryPages.length + categoryServicePages.length + servicePages.length}
+      </span>
+    </h2>
+    <h3>カテゴリ</h3>
+    <ul>
+      {
+        categoryPages.map((c) => (
+          <li>
+            <a href={c.href}>{c.label}</a>
+            <span class="meta">{c.count}本</span>
+          </li>
+        ))
+      }
+    </ul>
+    <h3>カテゴリ × サービス</h3>
+    <ul>
+      {categoryServicePages.map((c) => (<li><a href={c.href}>{c.label}</a></li>))}
+    </ul>
+    <h3>サービス別まとめ</h3>
+    <ul>
+      {servicePages.map((s) => (<li><a href={s.href}>{s.label}</a></li>))}
+    </ul>
+  </section>
+
+  <section>
+    <h2>サイト情報</h2>
+    <ul>
+      {
+        fixedPages
+          .filter((p) => p.href !== '/stats')
+          .map((p) => (<li><a href={p.href}>{p.label}</a></li>))
+      }
+      <li><a href="/rss.xml">RSS</a></li>
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .summary {
+    font-size: 0.92rem;
+    line-height: 1.8;
+  }
+  section {
+    margin-top: 2.4rem;
+  }
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.1rem;
+  }
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 1.4rem 0 0.6rem;
+    font-size: 0.95rem;
+  }
+  .count {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--bg-subtle);
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .lead {
+    margin: 0.8rem 0;
+    font-size: 0.86rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+  ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.9rem;
+    line-height: 1.9;
+  }
+  /*
+   * 作品ページは数が多い（実測508件）。段組みにして縦の長さを抑える。
+   * 狭い画面では1段に落ちる。
+   */
+  .works {
+    columns: 22rem auto;
+    column-gap: 2rem;
+  }
+  .works li {
+    break-inside: avoid;
+  }
+  .meta {
+    margin-left: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+</style>
