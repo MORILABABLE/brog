@@ -20,11 +20,17 @@
 import { loadTheme } from '../theme.ts'
 import { readAllEvents } from '../core/events.ts'
 import {
+  loadCastCache,
   loadCompanyCache,
+  loadDirectorCache,
   loadOriginCache,
+  resolveCast,
   resolveCompanies,
+  resolveDirectors,
   resolveOrigins,
+  saveCastCache,
   saveCompanyCache,
+  saveDirectorCache,
   saveOriginCache,
   titleCacheKey,
   type TitleRef,
@@ -66,6 +72,35 @@ async function main(): Promise<void> {
     await resolveCompanies(refs, theme.site_language, companies)
     await saveCompanyCache(companies)
     const resolved = [...targets].filter((k) => companies[k]?.length).length
+    console.log(`  → ${resolved}/${targets.size}件`)
+  }
+
+  // --- 監督 ---
+  //
+  // ★ 人名をローマ字のまま記事に出さないために引く（2026-08-27 追加）。
+  //   記事側で漢字に起こすのは推測になるので、Wikidata の日本語ラベルを使う。
+  const directors = await loadDirectorCache()
+  const directorsPending = [...targets].filter((k) => !(k in directors))
+  if (directorsPending.length === 0) {
+    console.log(`監督: 解決済み（未解決 0件）`)
+  } else {
+    console.log(`監督: 未解決 ${directorsPending.length}件を照会します...`)
+    await resolveDirectors(refs, theme.site_language, directors)
+    await saveDirectorCache(directors)
+    const resolved = [...targets].filter((k) => directors[k]?.length).length
+    console.log(`  → ${resolved}/${targets.size}件`)
+  }
+
+  // --- 出演者 ---
+  const cast = await loadCastCache()
+  const castPending = [...targets].filter((k) => !(k in cast))
+  if (castPending.length === 0) {
+    console.log(`出演者: 解決済み（未解決 0件）`)
+  } else {
+    console.log(`出演者: 未解決 ${castPending.length}件を照会します...`)
+    await resolveCast(refs, theme.site_language, cast)
+    await saveCastCache(cast)
+    const resolved = [...targets].filter((k) => cast[k]?.length).length
     console.log(`  → ${resolved}/${targets.size}件`)
   }
 

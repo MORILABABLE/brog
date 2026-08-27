@@ -24,7 +24,7 @@ import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
 import type { ChangeEvent } from '../../../pipeline/sources/types.ts'
 import type { Ledger } from '../../../pipeline/core/events.ts'
 import { GENRES, classify } from '../genres.ts'
-import { productionCompanies } from '../work-context.ts'
+import { castNames, directorNames, productionCompanies } from '../work-context.ts'
 import {
   articleMonth,
   asOfLabel,
@@ -36,7 +36,9 @@ import {
   halfWidthSymbols,
   isTargetMonth,
   itemTitles,
+  namingRules,
   normalizeBody,
+  peopleLine,
   phraseReader,
   publishable,
   previousAsOf,
@@ -44,6 +46,8 @@ import {
   serviceLabels,
   serviceNames,
   shortScriptSection,
+  titleIssues,
+  variantKey,
   type Freshness,
 } from './shared.ts'
 
@@ -108,7 +112,10 @@ const PROPER_ENDING = /(です|ます|ました|ません|でした|でしょう
 export const arrivalsArticle: ArticleType = {
   id: 'arrivals',
   category: 'arrivals',
-  description: '今月見放題配信が始まった作品（ジャンル別）',
+  // ★ ジャンル軸は**サービスを横断してよい唯一の軸**。
+  //   実測でも、横断しなければ成立しないジャンルがある（docs/ARTICLE-RULES.md 2-2）。
+  axis: 'genre',
+  description: '今月見放題配信が始まった作品（ジャンル別・サービス横断）',
   variants: GENRES,
 
   select(rawEvents, _ledger: Ledger, ctx) {
@@ -191,6 +198,10 @@ ${template}
 
 ---
 
+${namingRules(ctx)}
+
+---
+
 # この記事のジャンル
 
 **${resolved.genre}**。このジャンルの作品だけを扱います。
@@ -206,7 +217,8 @@ ${
     ? `前回の版は ${since.toISOString().slice(0, 10)} 時点のものです。
 今回新たに載る作品が **${added.length}件** あります（素材に ★今回の追加分 と付けてあります）。
 **冒頭に近い位置で、今回増えたぶんを先に見せてください。**
-タイトルの先頭は 【${resolved.asOf}更新】 にします。`
+タイトルは **【${ctx.targetMonth.split('-')[0]}年${articleMonth(ctx)}月】で始め**、本数の直後に 【${resolved.asOf}更新】 を置いてください。
+**先頭を 【${resolved.asOf}更新】 にしないこと。**`
     : `このジャンルで今月**はじめて書く版**です。
 タイトルに「更新」と書いてはいけません。前の版が無いので嘘になります。`
 }
@@ -286,7 +298,9 @@ ${OUTPUT_FORMAT}`
    与えられた公開年・ジャンル・制作会社・監督・出演者の範囲だけで1文にしてください。
 9. 「★邦題が未確認」と書かれた作品は、**与えられた原題をそのまま**使ってください。
    日本語タイトルを推測して書いてはいけません。
-10. 監督名・出演者名はローマ字で与えられています。**日本語表記に直さないでください。**
+10. **人名は素材に出ているものだけを書いてください。**
+    素材の人名は日本語表記です。人名の行が無い作品は、人名に触れずに書きます。
+    あらすじの英文に人名が出てきても、**地の文に写さないでください**（ローマ字が記事に残ります）。
 11. 制作会社は素材に与えられたものだけを書いてください。
     シリーズの新作に触れるときは「新作が続いています」までとし、
     **放送開始日・公開日・シーズン番号は書かないでください**（誤情報になります）。
@@ -333,7 +347,15 @@ ${OUTPUT_FORMAT}`
   },
 
   slug(ctx) {
-    return `${ctx.targetMonth}-arrivals-${ctx.variant?.key ?? 'all'}`
+    return `${ctx.targetMonth}-arrivals-${variantKey(ctx, this.id)}`
+  },
+
+  verifyTitle(title, ctx) {
+    return titleIssues(title, ctx, {
+      axis: 'genre',
+      verbPhrase: '見放題配信が始まった',
+      isUpdate: previousAsOf(this.slug(ctx)) !== undefined,
+    })
   },
 
   verify(raw, items, ctx): VerifyIssue[] {
@@ -527,8 +549,9 @@ function row(
     w.genres.length ? `  ジャンル: ${w.genres.join(' / ')}` : '',
     // 「同じ制作会社の作品が一斉に入った」を推測でなく事実として書くための材料
     productionCompanies(w)?.length ? `  制作: ${productionCompanies(w)!.join(' / ')}` : '',
-    w.directors?.length ? `  監督: ${w.directors.join(' / ')}（★ローマ字のまま書くこと）` : '',
-    w.cast?.length ? `  出演: ${w.cast.join(' / ')}（★ローマ字のまま書くこと）` : '',
+    // ★ 日本語で取れたものだけ渡す。取れなければ行ごと出ない（shared.ts の peopleLine）
+    peopleLine('監督', directorNames(w)),
+    peopleLine('出演', castNames(w), true),
     w.overview.length > 10
       ? `  あらすじ(英語原文): ${w.overview}`
       : '  あらすじ: ★未提供（内容を推測して書かないこと）',

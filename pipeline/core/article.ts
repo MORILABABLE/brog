@@ -42,6 +42,44 @@ export interface ArticleVariant {
   label: string
 }
 
+/**
+ * 記事が名乗る軸。**1本の記事が名乗る軸は必ず1つだけ。**
+ *
+ *   `service` … サービス1社の記事。**他社を混ぜない**
+ *   `genre`   … ジャンル1つの記事。**サービスを横断してよい**
+ *   `topic`   … 主題1つの記事（特報）。**サービスを横断してよい**
+ *
+ * 読者はサービスごとの最新情報を求めて来るので、複数サービスを1本にまとめた記事は作らない。
+ * 横断してよいのは「その作品／そのジャンルがどこで観られるか」を知りたい読者に向けた記事だけ。
+ * 判断の根拠と実測は [docs/ARTICLE-RULES.md](../../docs/ARTICLE-RULES.md)。
+ *
+ * ★ **必須にしてある。** 軸を名乗らない記事タイプは、
+ *   対象サービスが1社増えた瞬間に横断まとめ記事に変わる。
+ *   実際 `ended` は対象1社のあいだだけ1社記事に見えていた（2026-08-27 に是正）。
+ */
+export type Axis = 'service' | 'genre' | 'topic'
+
+/**
+ * 記事タイプが必要とする、バリアント以外のCLIフラグ。
+ *
+ * ■ 何のためにあるか
+ * 特報（`special`）のように、**何を書くかを毎回ユーザーが決める**記事タイプがある。
+ * 主題も対象も月ごとに違うので、`variants` のように列挙できない。
+ *
+ * ■ CLI は中身を知らない
+ * `variants` と同じで、**必要なフラグは記事タイプが宣言し、CLI は渡すだけ**。
+ * 記事タイプを増やしても `write.ts` は変わらない。
+ * 値は `ArticleContext.flags` に入り、`--apply` のために下書きにも保存される。
+ */
+export interface ArticleFlag {
+  /** CLI のフラグ名。`--topic` なら `topic` */
+  name: string
+  /** エラー文と `--list` のヘルプに出る説明 */
+  description: string
+  /** 無いと記事を作れないか */
+  required?: boolean
+}
+
 export interface ArticleContext {
   theme: Theme
   now: Date
@@ -55,11 +93,21 @@ export interface ArticleContext {
   targetMonth: string
   /** 選択中のバリアント。バリアントを持たない記事タイプでは undefined。 */
   variant?: ArticleVariant
+  /**
+   * 記事タイプが `flags` で宣言したフラグの値（`--topic "…"` → `{ topic: '…' }`）。
+   * 宣言していない記事タイプでは空。
+   */
+  flags?: Readonly<Record<string, string>>
 }
 
 export interface ArticleType {
   readonly id: string
   readonly category: Category
+  /**
+   * この記事が名乗る軸。サービス1社か、ジャンル1つか、主題1つか。
+   * 何を混ぜてよいかがここで決まる（`Axis` のコメント）。
+   */
+  readonly axis: Axis
   /** 記事タイプの説明。`npm run write -- --list` に出る。 */
   readonly description: string
   /**
@@ -84,6 +132,19 @@ export interface ArticleType {
   readonly variantFlag?: string
   readonly variantNoun?: string
   /**
+   * バリアント以外に必要なCLIフラグ（`ArticleFlag`）。
+   * 宣言すると `--list` に「要指示」と出て、`--emit` 時に必須のものが揃っているか確かめられる。
+   */
+  readonly flags?: readonly ArticleFlag[]
+  /**
+   * カテゴリが実行時に決まる記事タイプのための上書き。
+   *
+   * 特報は同じ記事タイプで「配信開始の特報」も「終了予定の特報」も書くので、
+   * `category` を1つに固定できない。実装しなければ `category` がそのまま使われる。
+   * ★ 返す値は `Category` のいずれかで、サイト側の CATEGORIES と揃っていること。
+   */
+  categoryOf?(ctx: ArticleContext): Category
+  /**
    * 記事として成立する最低の素材数。`--list` の状態表示にだけ使う。
    *
    * **生成を機械的に止めはしない。** 少ない月でも出す判断はありうるので、
@@ -99,7 +160,7 @@ export interface ArticleType {
    *
    * 未実装なら台本を作らない。`ended`（見放題終了済み）が意図的に未実装なのは、
    * 「もう観られない」を30秒で言うと誤解を生みやすく、
-   * 記事側でも MISLEADING 検査で公開を止めている性質の記事だから。
+   * 記事側でも MISLEADING_AFTER_END 検査で公開を止めている性質の記事だから。
    * 短い尺で誤解なく伝える型が見つかっていない以上、たたき台も作らない。
    *
    * 台本は記事の品質ゲートを通らない（`data/draft/short.md` に別ファイルで書く）。
@@ -116,6 +177,20 @@ export interface ArticleType {
    * 公開を止める根拠にはならないため必ず warn にする。
    */
   verify(md: string, items: ChangeEvent[], ctx: ArticleContext): VerifyIssue[]
+  /**
+   * タイトルの検証。**本文の `verify` はタイトルを受け取らない**ので別に分けてある。
+   *
+   * ■ なぜ分けるか
+   * `verify` に渡しているのは `parsed.body` だけ。タイトルまで渡す形に変えると
+   * 4つの記事タイプの引数がすべて変わるうえ、本文の検査とタイトルの検査は
+   * 見ているものが違う（片方は事実誤り、片方は記事の名乗り方）。
+   *
+   * ■ 中身はテーマパック側にある
+   * 「【2026年9月】Netflixで…」という型は日本語の配信ブログの都合であって、
+   * パイプラインが知るべきことではない。共通処理は `article-types/shared.ts` の
+   * `titleIssues()` にあり、記事タイプはそこへ軸と動詞句を渡すだけでよい。
+   */
+  verifyTitle?(title: string, ctx: ArticleContext): VerifyIssue[]
 }
 
 // --- LLM出力のパース -----------------------------------------------------

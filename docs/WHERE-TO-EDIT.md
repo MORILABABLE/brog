@@ -30,10 +30,17 @@
       → site/src/components/Header.astro
       メニューの項目   → site/src/config.ts の CATEGORY_HUBS
                          ★ CATEGORIES ではない。カテゴリは4つ、メニューは3つ
+      メニューを押すと開くサービス名
+                       → site/src/config.ts の SERVICE_HUBS（4サービス）
+                         ★ 記事が出ないサービスは並べない（Hulu・Apple TV+）
+                         ★ 開くかどうかは CATEGORY_HUBS の serviceMenu
+                           行き先は /category/<ハブ>/<サービス>
       記事検索窓       → site/src/components/PostSearch.astro
                          ★ 常設ページの「作品検索」(WorkSearch.astro) とは別物
+      並び             → サイト名だけ左、メニューと検索窓は右
+                         （Header.astro の .inner / .brand）
 
-    左の枠 ＝ 常設枠（「最新の配信終了・配信開始一覧」）
+    左の枠 ＝ 常設枠（「新着配信・終了一覧」）
       見た目・並び        → site/src/components/LeftRail.astro
       何を並べるか        → site/src/lib/evergreen.ts の EVERGREEN_PAGES
       カードの見出し・日付 → site/src/lib/evergreen.ts の evergreenTitle / evergreenStamp
@@ -41,9 +48,10 @@
     本文カード（白い箱）
       幅・角丸・余白 → site/src/styles/global.css の .content-card と --max-width
 
-    右の追従枠（サービスから探す＋最新記事＋PR枠）
+    右の追従枠（最新記事＋PR枠）
       → site/src/components/FollowRail.astro
-      サービスの3項目 → site/src/config.ts の SERVICE_HUBS
+      ★ 「サービスから探す」は 2026-08-27 に廃止。
+        同じ導線はヘッダーのメニューにある（枠は1200px未満で消えるため）
 
     フッター（運営者情報・出典・著作権）
       → site/src/components/Footer.astro
@@ -68,6 +76,13 @@
                             ★ 生成されるのは CATEGORY_HUBS の3枚だけ。
                               /category/ended は public/_redirects で
                               /category/leaving へ転送している
+                            ★ 常設ページのカードはここには出さない（2026-08-27）
+    カテゴリ×サービス      → site/src/pages/category/[category]/[service].astro
+                            ヘッダーのメニューを開いて選んだ先。
+                            serviceMenu のハブ × SERVICE_HUBS ぶん自動で増える。
+                            記事も常設ページも0件なら noindex
+                            （判定は site/src/lib/service-pages.ts）
+                            ※ いまは全ページに中身がある
     トップページ          → site/src/pages/index.astro
     運営者情報・規約など   → site/src/pages/about.astro / privacy.astro / contact.astro
     見放題の増減（統計）   → site/src/pages/stats.astro
@@ -251,10 +266,13 @@
     サイト名・キャッチコピー・説明文 → site/src/config.ts の SITE
     カテゴリの表示名（バッジ）        → site/src/config.ts の CATEGORIES
     メニューと一覧ページの構成        → site/src/config.ts の CATEGORY_HUBS
+    メニューに出すサービス名          → site/src/config.ts の SERVICE_HUBS
     出典の表記                       → site/src/config.ts の ATTRIBUTION
     常設ページのタイトルの形          → site/src/lib/evergreen.ts
     記事の定型文                     → theme-packs/streaming-jp/templates/fixed-phrases.md
     記事の構成そのもの                → theme-packs/streaming-jp/templates/*.md
+    記事タイトルの形・軸の決まり      → theme-packs/streaming-jp/templates/naming.md
+    特報の構成・文体                  → theme-packs/streaming-jp/templates/special.md
     ショート台本の構成・尺・禁止事項  → theme-packs/streaming-jp/templates/short-script.md
     ショートの締め・概要欄の型        → 同 fixed-phrases.md の short- で始まるキー
     出来上がった台本（手で直す）      → shorts/*.md（→ shorts/README.md）

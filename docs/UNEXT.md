@@ -350,7 +350,7 @@ Netflix / Prime Video とまったく同じ構成・同じテンプレート・�
 2. **指示の段階** — 「観られなくなります」「配信が終了します」を明示的に禁止し、
    ポイントで残る作品には `★見放題は終了するが、ポイントでの取り扱いは続く` を素材に付ける
 3. **検査の段階** — `UNAVAILABLE_CLAIM` に当たる表現があれば **error にして公開を止める**
-   （`ended.ts` の `MISLEADING` と同じ考え方）
+   （`shared.ts` の `MISLEADING_AFTER_END` と同じ考え方）
 
 > この検査は `hasLineup` のサービスにだけ効かせている。
 > Netflix / Prime Video の見放題終了はサービスからの退出そのものなので、

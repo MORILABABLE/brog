@@ -3,8 +3,8 @@ import { getCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
 import EvergreenCard from '../../components/EvergreenCard.astro'
-import { SERVICE_HUBS, SITE } from '../../config'
-import { evergreenForService, evergreenSummary } from '../../lib/evergreen'
+import { SERVICE_HUBS, SERVICE_MENU_HUBS, SITE } from '../../config'
+import { serviceHasContent, serviceSection } from '../../lib/service-pages'
 
 /**
  * サービス別のまとめページ。
@@ -26,27 +26,30 @@ import { evergreenForService, evergreenSummary } from '../../lib/evergreen'
  * そのサービスの `/leaving/…` `/arrivals/…` があれば先頭に置く。
  * 中身が `collect` のたびに入れ替わるので、月次記事より鮮度が高い。
  * U-NEXT には常設ページが無い（データの取り方が違う）。**無くても崩れない。**
+ *
+ * ★ **中身が0件のサービスのページは作らない。**
+ *   ヘッダーのメニューが指しているのはカテゴリ×サービスのページ
+ *   （/category/<ハブ>/<サービス>）で、ここではない。
+ *   メニューの行き先ではないので、空のページを増やす理由がない。
+ *   リンクしている側（category/[category]/[service].astro）も
+ *   同じ判定でリンクごと出し分けているので、404にはならない。
+ *
+ * ★ 記事の絞り込みは lib/service-pages.ts に寄せてある。
+ *   カテゴリ×サービスのページと同じ関数を使うので、拾い方がずれない。
  */
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
 
-  return SERVICE_HUBS.map((hub) => ({
+  return SERVICE_HUBS.filter((hub) => serviceHasContent(serviceSection(posts, hub))).map((hub) => ({
     params: { service: hub.slug },
-    props: {
-      hub,
-      posts: posts
-        .filter((p) => p.data.tags.includes(hub.tag))
-        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
-    },
+    props: { hub, posts },
   }))
 }
 
 const { hub, posts } = Astro.props
 
-const evergreen = evergreenForService(hub.slug).map((page) => ({
-  page,
-  ...evergreenSummary(page),
-}))
+/* カテゴリを問わず、このサービスの記事と常設ページを全部拾う */
+const section = serviceSection(posts, hub)
 
 const title = `${hub.label}の配信情報まとめ`
 const description =
@@ -63,22 +66,30 @@ const description =
   <h1>{hub.label}</h1>
   <p class="lead">
     {hub.label}の配信終了と新着をまとめています。
-    {evergreen.length > 0 && '常に最新の一覧は上の2枚から見られます。'}
+    {section.evergreen.length > 0 && '常に最新の一覧は上の2枚から見られます。'}
   </p>
 
+  {/*
+    カテゴリで絞った一覧への導線。ヘッダーのメニューと同じ行き先で、
+    こちらは「サービス → カテゴリ」の順に辿ってきた読者向け。
+  */}
+  <nav class="hubs" aria-label="カテゴリで絞り込む">
+    {
+      SERVICE_MENU_HUBS.map((h) => (
+        <a class="hub" href={`/category/${h.slug}/${hub.slug}`}>
+          {hub.label}の{h.label}
+        </a>
+      ))
+    }
+  </nav>
+
   {
-    evergreen.map((e) => (
+    section.evergreen.map((e) => (
       <EvergreenCard page={e.page} count={e.count} dataAsOf={e.dataAsOf} />
     ))
   }
 
-  {
-    posts.length === 0 ? (
-      <p class="muted">このサービスの記事はまだありません。</p>
-    ) : (
-      posts.map((post) => <PostCard post={post} />)
-    )
-  }
+  {section.posts.map((post) => <PostCard post={post} />)}
 </BaseLayout>
 
 <style>
@@ -88,8 +99,30 @@ const description =
     color: var(--text-muted);
   }
   .lead {
-    margin: 0 0 1.4rem;
+    margin: 0 0 1rem;
     font-size: 0.9rem;
     color: var(--text-muted);
+  }
+  /* カテゴリの絞り込み。カテゴリ×サービスのページのサービス切り替えと同じ形 */
+  .hubs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.4rem;
+  }
+  .hub {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .hub:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 </style>

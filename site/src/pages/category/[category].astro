@@ -2,15 +2,20 @@
 import { getCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
-import EvergreenCard from '../../components/EvergreenCard.astro'
-import { CATEGORY_HUBS, SITE } from '../../config'
-import { evergreenFor, evergreenSummary } from '../../lib/evergreen'
+import { CATEGORY_HUBS, SERVICE_HUBS, SITE } from '../../config'
 
 /**
  * ★ 生成するのは**ハブ1つにつき1ページ**（カテゴリ1つにつき1ページではない）。
  *   「配信終了予定」と「終了済み」は同じページに並べる。理由は config.ts の
  *   CATEGORY_HUBS を参照。**`/category/ended` は生成されない**ので、
  *   `public/_redirects` で `/category/leaving` へ転送してある。
+ *
+ * ★ **常設ページのカード（EvergreenCard）はここに出さない**（2026-08-27）。
+ *   ここは「そのハブの記事の一覧」に徹する。
+ *   常設ページは中身が `collect` のたびに入れ替わる別の性質のものなので、
+ *   サービスを選んだ次のページ（/category/<ハブ>/<サービス>）と
+ *   左の枠（LeftRail.astro）だけに置いてある。
+ *   一覧の先頭に戻すと、記事を探しに来た読者が毎回それを読み飛ばすことになる。
  */
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
@@ -27,26 +32,26 @@ export async function getStaticPaths() {
 }
 
 const { hub, posts } = Astro.props
-
-/*
- * 常設ページを記事カードと同じ体裁で先頭に出す。
- * 「常に最新の◯◯を見る」という箱にまとめていたのをやめた（2026-08-23）。
- * サービスごとの見分けがつかず、周囲の記事カードから浮いていたため。
- *
- * 件数と基準日はここで読む。ビルド時にしか動かないので費用はかからない。
- */
-const evergreen = hub.includes
-  .flatMap((c) => evergreenFor(c))
-  .map((page) => ({ page, ...evergreenSummary(page) }))
 ---
 
 <BaseLayout title={`${hub.heading}の記事一覧`} description={`${SITE.name}の${hub.description}`}>
   <h1>{hub.heading}</h1>
 
   {
-    evergreen.map((e) => (
-      <EvergreenCard page={e.page} count={e.count} dataAsOf={e.dataAsOf} />
-    ))
+    /*
+     * サービスで絞り込む導線。ヘッダーのメニューと同じ行き先だが、
+     * **メニューを開き直さずに絞り込める**ようにここにも置く。
+     * 出すのは `serviceMenu: true` のハブだけ（ランキングには出ない）。
+     */
+    hub.serviceMenu && (
+      <nav class="services" aria-label="サービスで絞り込む">
+        {SERVICE_HUBS.map((s) => (
+          <a class="service" href={`/category/${hub.slug}/${s.slug}`}>
+            {s.label}
+          </a>
+        ))}
+      </nav>
+    )
   }
 
   {
@@ -57,4 +62,29 @@ const evergreen = hub.includes
     )
   }
 </BaseLayout>
+
+<style>
+  /* カテゴリ×サービスのページ側と同じ見た目にすること（あちらは [service].astro） */
+  .services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.4rem;
+  }
+  .service {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .service:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+</style>
 

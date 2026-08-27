@@ -213,8 +213,8 @@ body {
 
 ```
 ┌──────────────────────┐
-│ 最新の配信終了・配信開始一覧 │ ← 見出し（背景の紺の上に直接載る）
-│ 自由にタイトルを検索できます  │ ← 補足（.block-note。リンク先の検索窓の案内）
+│ 新着配信・終了一覧          │ ← 見出し（背景の紺の上に直接載る）
+│ 最新の更新タイトルは…       │ ← 補足（.block-note。リンク先の検索窓の案内）
 │ [絵] 配信終了予定 Netflix  │
 │ [絵] 配信終了予定 Prime… │   常設ページ1つにつき1枚
 │ [絵] 新着配信 Netflix     │
@@ -232,8 +232,9 @@ body {
 
 ```
 ┌──────────────────────┐
-│ 新着記事                │ ← カテゴリ横断の最新記事（既定3本）
-│ [バッジ] 記事タイトル…     │
+│ 最新記事                │ ← カテゴリ横断の最新記事（既定3本）
+│ [絵] [バッジ]            │   絵は記事の heroImage（48px・記事カードと同じ絵）
+│      記事タイトル…        │   画像の無い記事はカテゴリ色のタイル
 ├──────────────────────┤
 │ PR                    │ ← 広告カード。アフィリエイト有効時のみ。**ここだけ追従**
 │ Amazon …              │
@@ -300,16 +301,20 @@ body {
 | 対象サービスそのものの増減 | `src/lib/events-data.ts` の `LEAVING_SERVICES` / `ARRIVALS_SERVICES` |
 | 広告カードの文面 | `FollowRail.astro` の `.rail-ad` ブロック |
 | サムネイル | `src/assets/services/` にファイルを置く／消す |
-| 新着記事の本数 | `FollowRail.astro` の `RECENT_POSTS`（既定3） |
+| 最新記事の本数 | `FollowRail.astro` の `RECENT_POSTS`（既定3） |
+| 最新記事の絵 | 記事 frontmatter の `heroImage`（`public/heroes/…`）。枠側の指定は `FollowRail.astro` の `<Thumb size={48}>` |
 | 追従の対象 | `FollowRail.astro` の `.rail-ad { position: sticky }` |
 | ブロックの見出し文言 | 各コンポーネントの `.block-title` を持つ `<p>` |
-| 左の枠の補足文（「自由にタイトルを検索できます」） | `LeftRail.astro` の `.block-note` を持つ `<p>` |
+| 左の枠の補足文（「最新の更新タイトルはコチラから検索できます」） | `LeftRail.astro` の `.block-note` を持つ `<p>` |
 | **左の枠を消す** | `BaseLayout.astro` から `<LeftRail />` を外す |
 | **右の枠を消す** | `BaseLayout.astro` から `<FollowRail />` を外す |
 
 > **狭い画面（1200px未満）では左右とも枠ごと消える。**
-> 常設ページへの入口がスマホで無くなるので、カテゴリページ側にも導線を置いてある
-> （`src/pages/category/[category].astro`）。片方だけ消さないこと。
+> 常設ページへの入口がスマホで無くなるので、
+> **ヘッダーのメニュー → サービス**の先にも導線を置いてある
+> （`src/pages/category/[category]/[service].astro`）。片方だけ消さないこと。
+> 2026-08-27 に右の枠から「サービスから探す」を外し、同じ導線を
+> ヘッダーのメニューへ移したのもこの理由（枠が消える画面では存在しないのと同じだった）。
 
 > `.rail-ad` の `position: sticky` は、`html` に `overflow` が無く
 > `body` の `overflow-x: hidden` がビューポートに伝播することで成立している。

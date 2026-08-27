@@ -1,6 +1,6 @@
 {
   "note": "サイトが実際に使っている作品画像の署名付きURL。npm run refresh:images が失効の近いものだけを取り直す。手で編集しない。",
-  "updatedAt": "2026-08-26T10:28:14.900Z",
+  "updatedAt": "2026-08-27T05:59:52.882Z",
   "works": {
     "125": {
       "id": "125",
@@ -2635,6 +2635,12 @@
       "title": "The One for Sarah",
       "url": "https://cdn.movieofthenight.com/show/5308661/poster/vertical/en/480.jpg?Expires=1818617757&Signature=b4j1jxkadh-rGTKDc2x6aY76C-F80AofrJm9tCSFC~erbqPZ1GPKfRWFIetodNy1Uw4SCkzEEVLgFRjQ4uFZikvIo7-GgLqXmkicmOFV6MJZeSMm1b7zPi3CtgqPF1aBuZNmxMvaW3hohSgJpAu1m9~21Pbo68kQQoxHT6l~wnMU6xcCOsZ3lkXU8XLIfC-34-E6S4xPmko-abEPPKC81rG9ajHXtLquMA297c25LfCDK5fWQlwE08IT4gwHMa92mphvvdd~~Sr3opld37PGjxu33g699Mmsjxmm0jONU0ka0VdyFVvMpj0oXdg6ax7dVYotlJ4oz~GF9iwB4E0NUQ__&Key-Pair-Id=KK4HN3OO4AT5R",
       "expiresAt": "2027-08-18T19:35:57.000Z"
+    },
+    "5458923": {
+      "id": "5458923",
+      "title": "愛にイナズマ",
+      "url": "https://cdn.movieofthenight.com/show/5458923/poster/vertical/en/480.jpg?Expires=1805502387&Signature=hpyLx8GhC71AXEFZiPINKBDbPqfqn-kaUxPmhBUP3qFdURzFqIFzfs3iSVOGYKSIFuqa~OHbD8XzyBkRCZYW7Fqfd~MliiYUO-DDltbTOcSu4Pgbb5v0DicIbPwFRlv96Ql2iAAwk7-gU3eXPmSPbKed81PtzzlXoS4b4v49GLo3Nk1tZdBmX66jMvFiBnONbfWV8Z2TufUR7saLLp2YSRM2bRqqjRx0Vhxpt-FqEdR2Dx0l~8Uk57hDkfLS2z9YrBtGO2FHc-cPIfwuJUeVB5ynSrUXYpaYdkrTwaTesX4VfS9pPGli8xgT8tuJm05tpuzKdcomJn9rGM2iKQUM4w__&Key-Pair-Id=KK4HN3OO4AT5R",
+      "expiresAt": "2027-03-20T00:26:27.000Z"
     },
     "5460788": {
       "id": "5460788",

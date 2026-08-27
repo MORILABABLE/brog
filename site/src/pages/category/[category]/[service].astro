@@ -1,0 +1,177 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import PostCard from '../../../components/PostCard.astro'
+import EvergreenCard from '../../../components/EvergreenCard.astro'
+import { SERVICE_HUBS, SERVICE_MENU_HUBS, SITE } from '../../../config'
+import { serviceHasContent, serviceSection } from '../../../lib/service-pages'
+
+/**
+ * カテゴリ×サービスの一覧。**ヘッダーのメニューを開いて選んだ先**（2026-08-27 追加）。
+ *
+ * ■ なぜこのページが要るか
+ * 読者の用事は「終了まわりを見たい」だけでは終わらず、
+ * 続けて「で、自分が契約しているのはどれか」を必ず選ぶ。
+ * 以前はその2手目を右の枠（サービスから探す）に置いていたが、
+ * **狭い画面では枠ごと消えていた**。ヘッダーのメニューに移して、
+ * どの画面幅でも同じ2手で辿り着けるようにしてある。
+ *
+ * ■ 作るページの数
+ * `SERVICE_MENU_HUBS`（メニューを開くハブ）× `SERVICE_HUBS`（5サービス）。
+ * ハブやサービスを足すと**ここを直さなくてもページが増える**。
+ * メニュー（Header.astro）も同じ2つの配列から作っているので、ずれない。
+ *
+ * ★ 中身が0件のページも作る。メニューに並べた以上、押した先を404にしない。
+ *   代わりに noindex を付ける（判定は lib/service-pages.ts）。
+ *
+ * ★ 親の /category/<ハブ> は 1つ上の [category].astro が出している。
+ *   URLの形（/category/leaving/netflix）を変えるときは、
+ *   ヘッダーのメニューとこのファイルの両方を直すこと。
+ */
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft)
+
+  return SERVICE_MENU_HUBS.flatMap((hub) =>
+    SERVICE_HUBS.map((service) => ({
+      params: { category: hub.slug, service: service.slug },
+      props: {
+        hub,
+        service,
+        posts,
+        /*
+         * サービス別まとめ（/service/<サービス>）が作られるかどうか。
+         * ★ 中身が0件のサービスのページは作られない（service/[service].astro）。
+         *   ここと同じ判定を使って、下のリンクごと出し分ける。**404を作らないため。**
+         */
+        hasServicePage: serviceHasContent(serviceSection(posts, service)),
+      },
+    })),
+  )
+}
+
+const { hub, service, posts, hasServicePage } = Astro.props
+
+const section = serviceSection(posts, service, hub.includes)
+const hasContent = serviceHasContent(section)
+
+const title = `${service.label}の${hub.heading}記事一覧`
+
+/*
+ * 説明文は3通り。**記事0本でも常設ページだけある形があり得る**ので、
+ * 「記事0本をまとめています」と書いてしまわないよう分けてある。
+ */
+const description =
+  section.posts.length > 0
+    ? `${service.label}で${hub.heading}となった作品の記事${section.posts.length}本をまとめています。` +
+      `${SITE.name}が追いかけている${service.label}の情報はこのページから辿れます。`
+    : hasContent
+      ? `${service.label}の${hub.heading}を、収集のたびに入れ替わる常設の一覧にまとめています。` +
+        `${SITE.name}が追いかけている${service.label}の情報はこのページから辿れます。`
+      : `${service.label}の${hub.heading}の記事は現在ありません。${SITE.name}では主要サービスの配信終了と新着配信を追いかけています。`
+---
+
+<BaseLayout title={title} description={description} noindex={!hasContent}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a> ›
+    <a href={`/category/${hub.slug}`}>{hub.label}</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  {/*
+    サービスの切り替え。**同じハブの中だけを行き来する**。
+    ヘッダーのメニューと同じ内容だが、こちらは本文の中にあるので
+    メニューを開き直さずに隣のサービスへ移れる。
+  */}
+  <nav class="services" aria-label="サービスを切り替える">
+    {
+      SERVICE_HUBS.map((s) =>
+        s.slug === service.slug ? (
+          <span class="service is-current" aria-current="page">
+            {s.label}
+          </span>
+        ) : (
+          <a class="service" href={`/category/${hub.slug}/${s.slug}`}>
+            {s.label}
+          </a>
+        ),
+      )
+    }
+  </nav>
+
+  {
+    /*
+     * 常設ページを記事カードと同じ体裁で先頭に出す。
+     * ★ カテゴリのハブ（/category/<ハブ>）からは外した（2026-08-27）。
+     *   ハブは記事の一覧に徹し、常設ページはサービスを選んだ**この段**と
+     *   左の枠（LeftRail）から入る形にまとめてある。
+     */
+    section.evergreen.map((e) => (
+      <EvergreenCard page={e.page} count={e.count} dataAsOf={e.dataAsOf} />
+    ))
+  }
+
+  {section.posts.map((post) => <PostCard post={post} />)}
+
+  {
+    !hasContent && (
+      <p class="empty">
+        {service.label}の{hub.heading}の記事はまだありません。
+        <a href={`/category/${hub.slug}`}>{hub.label}の記事一覧</a>
+        から、ほかのサービスの記事を見られます。
+      </p>
+    )
+  }
+
+  {
+    hasServicePage && (
+      <p class="related">
+        <a href={`/service/${service.slug}`}>{service.label}の配信情報まとめ（カテゴリ問わず）</a>
+      </p>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  /* サービスの切り替え。押せる範囲を広めに取る（スマホで隣を押しにくくしない） */
+  .services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.4rem;
+  }
+  .service {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--text);
+    text-decoration: none;
+  }
+  a.service:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  /* 現在地。押せないことが分かる見た目にする（項目自体は消さない） */
+  .service.is-current {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .empty {
+    margin: 1.5rem 0;
+    color: var(--text-muted);
+  }
+  .related {
+    margin-top: 2rem;
+    font-size: 0.88rem;
+  }
+</style>

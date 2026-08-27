@@ -29,7 +29,7 @@ import { themeFile } from '../../../pipeline/theme.ts'
 import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
 import type { ChangeEvent } from '../../../pipeline/sources/types.ts'
 import type { Ledger } from '../../../pipeline/core/events.ts'
-import { productionCompanies } from '../work-context.ts'
+import { castNames, directorNames, productionCompanies } from '../work-context.ts'
 import {
   articleMonth,
   asOfLabel,
@@ -41,13 +41,17 @@ import {
   halfWidthSymbols,
   isTargetMonth,
   itemTitles,
+  namingRules,
   normalizeBody,
+  peopleLine,
   phraseReader,
   publishable,
   previousAsOf,
   ratingMentionsInProse,
   serviceLabels,
   shortScriptSection,
+  titleIssues,
+  variantKey,
   type Freshness,
 } from './shared.ts'
 
@@ -183,8 +187,9 @@ function detailedRow(e: ChangeEvent, ctx: ArticleContext, freshness: Freshness):
     w.rating ? `  評価: ${w.rating}/100（★表にだけ書き、地の文には書かないこと）` : '',
     w.genres.length ? `  ジャンル: ${w.genres.join(' / ')}` : '',
     productionCompanies(w)?.length ? `  制作: ${productionCompanies(w)!.join(' / ')}` : '',
-    w.directors?.length ? `  監督: ${w.directors.join(' / ')}（★ローマ字のまま書くこと）` : '',
-    w.cast?.length ? `  出演: ${w.cast.join(' / ')}（★ローマ字のまま書くこと）` : '',
+    // ★ 日本語で取れたものだけ渡す。取れなければ行ごと出ない（shared.ts の peopleLine）
+    peopleLine('監督', directorNames(w)),
+    peopleLine('出演', castNames(w), true),
     unext
       ? '  あらすじ: ★未提供（内容を推測して書かないこと）'
       : w.overview && w.overview.length > 10
@@ -213,6 +218,7 @@ function compactRow(e: ChangeEvent, ctx: ArticleContext): string {
 export const arrivalsServiceArticle: ArticleType = {
   id: 'arrivals-service',
   category: 'arrivals',
+  axis: 'service',
   description: '今月見放題配信が始まった作品（サービス別・月内更新）',
   variants: SERVICE_VARIANTS,
   variantFlag: 'service',
@@ -279,6 +285,10 @@ ${template}
 
 ---
 
+${namingRules(ctx)}
+
+---
+
 # 今回の版
 
 **この記事は「${isUpdate ? '更新回' : '初回'}」です。**
@@ -288,7 +298,8 @@ ${
     ? `前回の版は ${since!.toISOString().slice(0, 10)} 時点のものです。
 今回新たに載る作品が **${added.length}件** あります。
 テンプレートの「更新回」の指示に従い、**「今回追加された作品」の節を必ず作ってください。**
-タイトルの先頭は 【${resolved.asOf}更新】 にしてください。`
+タイトルは **【${ctx.targetMonth.split('-')[0]}年${articleMonth(ctx)}月】で始め**、本数の直後に 【${resolved.asOf}更新】 を置いてください。
+**先頭を 【${resolved.asOf}更新】 にしないこと。**`
     : `この記事は今月・${label} で**はじめて書く版**です。
 **「今回追加された作品」の節は作らないでください。**
 タイトルに「更新」と書いてはいけません。前の版が無いので嘘になります。
@@ -344,6 +355,9 @@ ${OUTPUT_FORMAT}`
         ? `作品名は与えられたものをそのまま使ってください。原題や英題を併記しないこと。`
         : `「★邦題が未確認」と書かれた作品は、**与えられた原題をそのまま**使ってください。
    日本語タイトルを推測して書いてはいけません。`,
+      `**人名は素材に出ているものだけを書いてください。**
+   素材の人名は日本語表記です。人名の行が無い作品は、人名に触れずに書きます。
+   あらすじの英文に人名が出てきても、**地の文に写さないでください**（ローマ字が記事に残ります）。`,
       `**急かさないこと。** 配信開始記事には締切がありません。
    「ぜひ観ましょう」「見逃せません」は書かない。編集部のおすすめも書かない。`,
       `サービス名は記事を通して「${label}」で統一してください。略称に言い換えないこと。`,
@@ -410,7 +424,15 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
   },
 
   slug(ctx) {
-    return `${ctx.targetMonth}-arrivals-${ctx.variant?.key ?? 'all'}`
+    return `${ctx.targetMonth}-arrivals-${variantKey(ctx, this.id)}`
+  },
+
+  verifyTitle(title, ctx) {
+    return titleIssues(title, ctx, {
+      axis: 'service',
+      verbPhrase: '見放題配信が始まった',
+      isUpdate: previousAsOf(this.slug(ctx)) !== undefined,
+    })
   },
 
   verify(md, items, ctx) {

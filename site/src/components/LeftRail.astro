@@ -5,7 +5,8 @@ import { EVERGREEN_PAGES, evergreenStamp, evergreenSummary } from '../lib/evergr
 import { serviceImage } from '../lib/images'
 
 /**
- * 本文の**左**の余白に置く枠。中身は「最新の配信終了・配信開始一覧」だけ。
+ * 本文の**左**の余白に置く枠。中身は「新着配信・終了一覧」だけ
+ * （2026-08-27 に「最新の配信終了・配信開始一覧」から改称）。
  *
  * ■ なぜ左に分けたか（2026-08-24）
  * 以前は右の追従枠（FollowRail.astro）の1ブロック目に入れていたが、
@@ -26,7 +27,9 @@ import { serviceImage } from '../lib/images'
  * ■ 出す条件
  * 画面幅 75rem(1200px) 以上（styles/global.css の `.layout`）。
  * **狭い画面では枠ごと消える**ので、常設ページへの導線は
- * カテゴリページ側にも置いてある（そちらが狭い画面での入口）。
+ * カテゴリ×サービスのページ（/category/<ハブ>/<サービス>）にも置いてある。
+ * そちらが狭い画面での入口で、ヘッダーのメニューから2手で辿り着く
+ * （2026-08-27。それまではカテゴリのハブに常設カードを並べていた）。
  */
 
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
@@ -34,14 +37,14 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
 ---
 
 <aside class="left-rail">
-  <nav class="block" aria-label="最新の配信終了・配信開始一覧">
-    <p class="block-title">最新の配信終了・配信開始一覧</p>
+  <nav class="block" aria-label="新着配信・終了一覧">
+    <p class="block-title">新着配信・終了一覧</p>
     {/*
       検索窓（WorkSearch.astro）があることを知らせて、使ってもらうための一文。
       ★ 検索できるのは各カードの**リンク先**であって、この枠ではない。
-        文面を変えるときも「ここで検索できる」と読める書き方にしないこと。
+        文面を変えるときも「この枠で検索できる」と読める書き方にしないこと。
     */}
-    <p class="block-note">自由にタイトルを検索できます</p>
+    <p class="block-note">更新タイトルを検索できます</p>
     <ul class="cards">
       {
         EVERGREEN_PAGES.map((p) => {

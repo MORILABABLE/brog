@@ -153,15 +153,36 @@ function availableThumbs(): Set<string> {
 }
 
 /**
+ * 作品ポスターを**絶対に付けてはいけない**サービス。
+ *
+ * ★ 当サイトが持つポスターは配信API（Movie of the Night）から取得したもので、
+ *   **そのAPIが扱うカタログの作品に対して**再ホストの許諾を得ている
+ *   （docs/APPEARANCE.md 11節）。
+ *   U-NEXT は自前収集（メニューを実ブラウザで読む）で、APIのカタログではない。
+ *   そこへAPI由来のポスターを結びつけて出すのは、許諾の範囲外になりうる。
+ *
+ * ★ U-NEXT の作品はそもそも `posterUrl` を持たない（実測 723件すべて）ので、
+ *   通常はジャンル別の汎用画像に落ちる。**問題は同じ題名の別作品**で、
+ *   台帳が1件に潰れているとAPI側の絵がU-NEXTの行に出た（2026-08-27 に修正）。
+ *   台帳を直したうえで、ここでも二重に止めておく。
+ */
+const NO_POSTER_SERVICES = ['u-next']
+
+/**
  * 作品のサムネイル。ポスターがあればそれ、無ければジャンル別の汎用画像。
  * どちらも用意されていなければ undefined。
+ *
+ * @param service その行が扱っているサービスキー。**必ず渡すこと。**
+ *   渡さないと、ポスターを付けてはいけないサービスの判定ができない。
  */
-export function resolveThumb(work: RawWork): string | undefined {
+export function resolveThumb(work: RawWork, service?: string): string | undefined {
   const files = availableThumbs()
   if (files.size === 0) return undefined
 
   const poster = `${String(work.id)}.webp`
-  if (files.has(poster)) return `${THUMB_BASE}/${poster}`
+  if (!(service && NO_POSTER_SERVICES.includes(service)) && files.has(poster)) {
+    return `${THUMB_BASE}/${poster}`
+  }
 
   const generic = genreThumbName(genreKeyOf(work.genres))
   return files.has(generic) ? `${THUMB_BASE}/${generic}` : undefined
@@ -187,12 +208,25 @@ export const SERVICE_BY_LABEL = new Map<string, string>([
 
 // --- 台帳 ---------------------------------------------------------------------
 
-interface Entry {
+/** 1作品の、あるサービスでの情報 */
+interface ServiceLink {
   workId: string
-  title: string
+  url: string
   thumb?: string
-  /** サービスキー → そのサービスでの送り先 */
-  urls: Map<string, string>
+}
+
+/**
+ * 題名1つぶんの台帳。
+ *
+ * ★ **サービスごとに別の作品を持つ。** 同じ題名の別作品が別々のサービスに
+ *   入ることがある（実例: 「ディア・ファミリー」が Netflix と U-NEXT に同日配信開始。
+ *   作品IDは別）。1件に潰すと、Netflixの行から U-NEXT の作品ページへ飛び、
+ *   絵も相手のものが出る。実際にそうなっていた（2026-08-27 に修正）。
+ */
+interface Entry {
+  title: string
+  /** サービスキー → その作品のそのサービスでの情報 */
+  byService: Map<string, ServiceLink>
   /** 最後に観測したサービス。サービスが指定されなかったときの既定 */
   latestService: string
 }
@@ -205,16 +239,19 @@ interface Index {
 let index: Index | null = null
 
 function toLink(entry: Entry, service?: string): WorkLink {
-  // ★ サービスを指定されたら**そのサービスの作品ページ**へ送る。
+  // ★ サービスを指定されたら**そのサービスの作品**を返す。
   //   「Netflixで配信終了予定」の一覧から Apple TV の作品ページへ飛ばすと、
   //   読者は自分がどこを見ているのか分からなくなる。
   //   指定が無い／そのサービスの記録が無いときだけ、最後に観測したものに落ちる。
-  const url = (service && entry.urls.get(service)) ?? entry.urls.get(entry.latestService)
+  // ★ `service &&` にすると空文字のときに型が string に混ざる。三項で書くこと。
+  const hit =
+    (service ? entry.byService.get(service) : undefined) ??
+    entry.byService.get(entry.latestService)
   return {
-    workId: entry.workId,
+    workId: hit?.workId ?? '',
     title: entry.title,
-    url: url ?? amazonSearchUrl(entry.title),
-    thumb: entry.thumb,
+    url: hit?.url ?? amazonSearchUrl(entry.title),
+    thumb: hit?.thumb,
   }
 }
 
@@ -225,9 +262,7 @@ function toLink(entry: Entry, service?: string): WorkLink {
  *   別名として足す。詰めて入れると、ある作品の原題が別の作品の邦題を上書きして、
  *   表の行が**まったく別の作品へ飛ぶ**（例: 原題 `Article 15` と邦題 `Article 15`）。
  *
- * ★ 送り先は**サービスごとに持つ。** 同じ作品が複数のサービスに出ることがあり
- *   （実測 1,760件中17件）、まとめて1つにすると、ページの主題と違うサービスへ
- *   飛ぶ行が混ざる。
+ * ★ 送り先も絵も**サービスごとに持つ。** 上の Entry の注意書きを参照。
  */
 function buildIndex(): Index {
   if (index) return index
@@ -263,31 +298,32 @@ function buildIndex(): Index {
     }
   }
 
-  // 観測の古い順に流し込む。後から来たものが title・thumb・latestService を上書きする。
+  // 観測の古い順に流し込む。後から来たものが latestService を上書きする。
   const ordered = [...latest.values()].sort((a, b) => a.collectedAt.localeCompare(b.collectedAt))
-  for (const e of ordered) {
-    const workId = String(e.work.id)
-    const entry: Entry = byId.get(workId) ?? {
-      workId,
-      title: '',
-      urls: new Map<string, string>(),
-      latestService: '',
-    }
-    entry.title = e.work.localizedTitle ?? e.work.title
-    entry.thumb = resolveThumb(e.work)
+
+  const put = (map: Map<string, Entry>, key: string, e: RawEvent) => {
+    const title = e.work.localizedTitle ?? e.work.title
+    const entry: Entry =
+      map.get(key) ?? { title, byService: new Map<string, ServiceLink>(), latestService: '' }
+    entry.title = title
     entry.latestService = e.service
-    entry.urls.set(e.service, resolveUrl(e.work, e.kind))
-    byId.set(workId, entry)
+    entry.byService.set(e.service, {
+      workId: String(e.work.id),
+      url: resolveUrl(e.work, e.kind),
+      thumb: resolveThumb(e.work, e.service),
+    })
+    map.set(key, entry)
   }
 
-  for (const entry of byId.values()) byTitle.set(entry.title, entry)
+  for (const e of ordered) {
+    put(byId, String(e.work.id), e)
+    put(byTitle, e.work.localizedTitle ?? e.work.title, e)
+  }
+
   // 原題は後回し。空いている文字列にだけ足す。
   for (const e of ordered) {
     const original = e.work.title
-    if (original && !byTitle.has(original)) {
-      const entry = byId.get(String(e.work.id))
-      if (entry) byTitle.set(original, entry)
-    }
+    if (original && !byTitle.has(original)) put(byTitle, original, e)
   }
 
   index = { byId, byTitle }

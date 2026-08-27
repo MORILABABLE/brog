@@ -98,6 +98,11 @@ interface DraftContext {
   targetMonth?: string
   /** 選択したバリアント（ジャンル）。同じく --apply で再現するため保存する。 */
   variantKey?: string
+  /**
+   * 記事タイプが宣言したフラグの値（特報の `--topic` など）。
+   * ★ これが無いと `--apply` で主題もスラッグも復元できず、別の記事が書き出される。
+   */
+  flags?: Record<string, string>
   items: ChangeEvent[]
 }
 
@@ -105,6 +110,8 @@ interface DraftContext {
 interface Recipe {
   type: ArticleType
   variant?: ArticleVariant
+  /** 記事タイプが `flags` で宣言したフラグの値。宣言していない記事タイプでは undefined。 */
+  flags?: Readonly<Record<string, string>>
 }
 
 /** 登録されている記事タイプから、作れる記事の組み合わせをすべて並べる。 */
@@ -112,6 +119,36 @@ function recipes(types: ArticleType[]): Recipe[] {
   return types.flatMap((type) =>
     type.variants?.length ? type.variants.map((variant) => ({ type, variant })) : [{ type }],
   )
+}
+
+/**
+ * 作れる記事のスラッグが1つも重複していないことを確かめる。
+ *
+ * ■ なぜ要るか
+ * スラッグは記事の身元そのもので、**同じスラッグ＝同じURL＝同じファイル**。
+ * 別々の記事タイプが同じスラッグに落ちると、片方がもう片方を黙って上書きする。
+ * いま `arrivals`（ジャンル別）と `arrivals-service`（サービス別）は
+ * どちらも `{月}-arrivals-{キー}` の形で、**名前空間を共有している。**
+ * 衝突していないのはジャンルキーとサービスキーがたまたま被っていないからにすぎない。
+ *
+ * 起動のたびに確かめておけば、記事タイプやバリアントを増やした**その場で**分かる。
+ */
+function assertUniqueSlugs(all: Recipe[], theme: Theme, now: Date, targetMonth: string): void {
+  // ★ ここではフラグを渡さない（--list と同じ状態）。フラグでスラッグが決まる記事タイプは
+  //   `slug()` が指定なしでも落ちない形にしておくこと（例: `2026-09-special-<slug>`）。
+  const seen = new Map<string, string>()
+  for (const r of all) {
+    const slug = r.type.slug({ theme, now, targetMonth, variant: r.variant })
+    const prev = seen.get(slug)
+    if (prev) {
+      throw new Error(
+        `記事のスラッグが重複しています: ${slug}\n` +
+          `  「${prev}」と「${recipeLabel(r)}」が同じURLになります。\n` +
+          '  1つのURLに2種類の記事は置けません。どちらかの slug() を変えてください。',
+      )
+    }
+    seen.set(slug, recipeLabel(r))
+  }
 }
 
 /** バリアントのCLIフラグ名。既定は genre（ジャンル別記事が元の形だったため）。 */
@@ -201,7 +238,7 @@ async function finalize(
     process.exit(1)
   }
 
-  const ctx = { theme, now, targetMonth, variant: recipe.variant }
+  const ctx = { theme, now, targetMonth, variant: recipe.variant, flags: recipe.flags }
   const slug = type.slug(ctx)
   const issues = [
     ...verifyArticle({
@@ -211,6 +248,9 @@ async function finalize(
       stopReason,
     }),
     ...type.verify(parsed.body, items, ctx),
+    // ★ タイトルは verify() に渡っていない（`ArticleType.verifyTitle` のコメント）。
+    //   ここを足すまで、タイトルは長さしか見られていなかった。
+    ...(type.verifyTitle?.(parsed.title, ctx) ?? []),
   ]
 
   for (const i of issues) console.log(`  [${i.level === 'error' ? 'NG' : '警告'}] ${i.message}`)
@@ -225,7 +265,8 @@ async function finalize(
   const tags = type.tags(items, ctx)
   const md = buildMarkdown({
     parsed,
-    category: type.category,
+    // 特報のようにカテゴリが実行時に決まる記事タイプがある（ArticleType.categoryOf）
+    category: type.categoryOf?.(ctx) ?? type.category,
     tags,
     sources: sourcesFor(items),
     dataAsOf: now,
@@ -377,12 +418,15 @@ async function applyDraft(theme: Theme): Promise<void> {
 
   const now = new Date(draft.createdAt)
   const targetMonth = draft.targetMonth ?? currentYearMonth(theme.utc_offset_minutes)
+  // ★ フラグも復元する。無いまま進むと、特報が主題もURLも失った別記事になる。
+  const flags = draft.flags ?? {}
+  assertRequiredFlags(type, flags)
 
   console.log(
     `下書きを適用します（${recipeLabel({ type, variant })} / 対象 ${targetMonth} / ` +
       `素材${draft.items.length}件 / ${draft.createdAt}）\n`,
   )
-  const recipe = { type, variant }
+  const recipe = { type, variant, flags: type.flags?.length ? flags : undefined }
   const article = await finalize(response, recipe, draft.items, theme, now, targetMonth)
   await finalizeShort(article, recipe, draft.items, theme, now)
   console.log('\n確認: cd site && npm run build')
@@ -444,6 +488,9 @@ ${shortSection ? `\n---\n\n${shortSection}\n` : ''}`
         createdAt: ctx.now.toISOString(),
         targetMonth: ctx.targetMonth,
         variantKey: recipe.variant?.key,
+        // ★ 特報の --topic / --slug はここに保存しないと --apply で失われ、
+        //   主題の無いタイトルと違うURLの記事が書き出される。
+        flags: recipe.flags ? { ...recipe.flags } : undefined,
         items,
       } satisfies DraftContext,
       null,
@@ -483,8 +530,18 @@ async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promis
 
   for (const r of recipes(await loadArticleTypes(theme))) {
     const ctx = { theme, now, targetMonth, variant: r.variant }
-    const items = r.type.select(events, ledger, ctx)
     const slug = r.type.slug(ctx)
+
+    // ★ 特報のように「何を書くかを毎回指示する」記事タイプは、
+    //   指示が無い状態で素材を数えても意味がない。0件と出すと
+    //   「素材が無い」と読めてしまうので、そうではないと分かる形にする。
+    if (r.type.flags?.some((f) => f.required)) {
+      const need = r.type.flags.filter((f) => f.required).map((f) => `--${f.name}`).join(' ')
+      console.log(`  ${recipeLabel(r).padEnd(32)}   —  要指示  ${need}`)
+      continue
+    }
+
+    const items = r.type.select(events, ledger, ctx)
     const min = r.type.minItems ?? 0
     const state = existing.has(slug)
       ? '作成済'
@@ -504,6 +561,34 @@ async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promis
   console.log('           区分は上の一覧に出ている形（--genre / --service）をそのまま使う')
 }
 
+/**
+ * 記事タイプが宣言したフラグ（`ArticleType.flags`）を CLI から集める。
+ *
+ * **CLI はフラグの意味を知らない。** 名前も必須かどうかも記事タイプ側の宣言だけを見る。
+ * `variants` と同じ考え方で、記事タイプを増やしてもこの関数は変わらない。
+ */
+function collectFlags(type: ArticleType): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const f of type.flags ?? []) {
+    const v = arg(f.name)
+    if (v !== undefined) out[f.name] = v
+  }
+  return out
+}
+
+/** 必須フラグが揃っているか。揃っていなければ、何を渡せばよいかを見せて落とす。 */
+function assertRequiredFlags(type: ArticleType, flags: Readonly<Record<string, string>>): void {
+  const missing = (type.flags ?? []).filter((f) => f.required && !flags[f.name])
+  if (missing.length === 0) return
+  const all = (type.flags ?? [])
+    .map((f) => `    --${f.name} <値>  ${f.required ? '【必須】' : '（任意）'}${f.description}`)
+    .join('\n')
+  throw new Error(
+    `記事タイプ ${type.id} には ${missing.map((f) => `--${f.name}`).join(' / ')} が必要です。\n` +
+      `  この記事タイプが受け取るフラグ:\n${all}`,
+  )
+}
+
 /** `--type` と バリアントのフラグ（`--genre` / `--service`）から作る記事を1つに決める。 */
 function pickRecipe(types: ArticleType[]): Recipe {
   const all = recipes(types)
@@ -516,18 +601,22 @@ function pickRecipe(types: ArticleType[]): Recipe {
     )
   }
 
-  const flag = variantFlag(type)
+  const flags = collectFlags(type)
+  assertRequiredFlags(type, flags)
+  const declared = type.flags?.length ? flags : undefined
+
+  const vFlag = variantFlag(type)
   const noun = variantNoun(type)
-  const picked = arg(flag)
+  const picked = arg(vFlag)
   if (!type.variants?.length) {
-    if (picked) throw new Error(`記事タイプ ${type.id} は${noun}で分かれていません（--${flag} は不要）`)
-    return { type }
+    if (picked) throw new Error(`記事タイプ ${type.id} は${noun}で分かれていません（--${vFlag} は不要）`)
+    return { type, flags: declared }
   }
 
   if (!picked) {
     throw new Error(
-      `記事タイプ ${type.id} には --${flag} が必要です（有効: ${type.variants.map((v) => v.key).join(' / ')}）\n` +
-        `  例: npm run write -- --type ${type.id} --${flag} ${type.variants[0]!.key} --emit`,
+      `記事タイプ ${type.id} には --${vFlag} が必要です（有効: ${type.variants.map((v) => v.key).join(' / ')}）\n` +
+        `  例: npm run write -- --type ${type.id} --${vFlag} ${type.variants[0]!.key} --emit`,
     )
   }
   const variant = type.variants.find((v) => v.key === picked)
@@ -536,7 +625,8 @@ function pickRecipe(types: ArticleType[]): Recipe {
       `不明な${noun}: ${picked}（${type.id} で有効: ${type.variants.map((v) => v.key).join(' / ')}）`,
     )
   }
-  return all.find((r) => r.type === type && r.variant === variant)!
+  const base = all.find((r) => r.type === type && r.variant === variant)!
+  return { ...base, flags: declared }
 }
 
 async function main(): Promise<void> {
@@ -551,12 +641,15 @@ async function main(): Promise<void> {
     throw new Error(`--month は YYYY-MM 形式で指定してください: ${targetMonth}`)
   }
 
+  const types = await loadArticleTypes(theme)
+  assertUniqueSlugs(recipes(types), theme, now, targetMonth)
+
   if (flag('list')) return await listRecipes(theme, targetMonth, now)
 
-  const recipe = pickRecipe(await loadArticleTypes(theme))
+  const recipe = pickRecipe(types)
   const { type } = recipe
 
-  const ctx = { theme, now, targetMonth, variant: recipe.variant }
+  const ctx = { theme, now, targetMonth, variant: recipe.variant, flags: recipe.flags }
   const events = await readAllEvents()
   const ledger = await loadLedger()
   const items = type.select(events, ledger, ctx)

@@ -22,19 +22,25 @@ import { productionCompanies } from '../work-context.ts'
 import {
   articleMonth,
   asOfLabel,
+  bareDeliveryEnd,
   clip,
   dateSections,
   fixedPhrases,
+  foundSince,
   halfWidthSymbols,
   isTargetMonth,
   itemTitles,
+  namingRules,
   normalizeBody,
   phraseReader,
+  previousAsOf,
   publishable,
   ratingMentionsInProse,
   serviceLabels,
-  serviceNames,
   shortScriptSection,
+  titleIssues,
+  UNAVAILABLE_CLAIM,
+  variantKey,
 } from './shared.ts'
 
 /**
@@ -50,14 +56,21 @@ const MAX_ITEMS = 80
  * サービス別に1本ずつ書く。
  *
  * ■ なぜサービス別なのか（2026-08-23 の実測で決めた）
- * 最初はジャンル別（アニメ / 洋画 / 邦画）を検討したが、**成立しなかった**。
- * 配信終了は洋画ライブラリの入れ替えが主因で、邦画が慢性的に枯れる。
+ * 最初はジャンル別（アニメ / 洋画 / 邦画）を検討したが、**その時点では成立しなかった**。
+ * 配信終了は洋画ライブラリの入れ替えが主因で、邦画が慢性的に枯れていた。
  *
  *     leaving 9月  合計65件 → アニメ 6 / 洋画 47 / 邦画  3
  *     leaving 8月  合計147件 → アニメ41 / 洋画 78 / 邦画 11
  *
- * 邦画は3か月分すべてで記事にならない件数だった。
  * 一方サービス別なら 9月= Netflix 35 / Prime Video 30 で両方成立する。
+ *
+ * ★ **この計測は U-NEXT を足す前（2026-08-25 より前）のもの。** U-NEXT が入った今、
+ *   8月はジャンル横断なら3ジャンルとも成立する（アニメ55 / 洋画72 / 邦画58）。
+ *   それでも**ジャンル別の終了記事は作らないと決めた**（2026-08-27）。
+ *   読者は「Netflixで何が終わるのか」を探しに来ており、ジャンルで束ねると
+ *   どのサービスの話なのかが読者側で分解できない。9月はアニメ6件・邦画3件で
+ *   そもそも成立しないという事情もある（docs/ARTICLE-RULES.md 2-2 に月別の内訳）。
+ *   **配信終了はサービス別だけ。**
  *
  * さらにサービス軸は**検索需要と一致する**。Googleサジェストの実測では
  * 「配信終了予定␣」の候補10件が10件ともサービス名だった
@@ -142,6 +155,8 @@ const MIN_ITEMS = 15
 /** fixed-phrases.md に必ずあるべきキー。欠けていれば読み込み時に落ちる。 */
 const REQUIRED_PHRASES = [
   'leaving-lead-first-sentence',
+  // 月内に同じ記事を書き直したとき用（2026-08-27 追加）
+  'leaving-update-lead-first-sentence',
   'leaving-lead-closer',
   'other-services-intro',
   'attribution',
@@ -152,40 +167,6 @@ const REQUIRED_PHRASES = [
 ] as const
 
 /**
- * ポイント（レンタル）で残る可能性がある作品を「もう観られない」と読ませる表現。
- *
- * **U-NEXT のように見放題とポイントが同居するサービスでだけ効かせる。**
- * Netflix / Prime Video の見放題終了はサービスからの退出そのものなので、
- * 同じ言い回しでも誤りにならない。ここを一律にすると、正しい記述まで止まる。
- */
-const UNAVAILABLE_CLAIM = [
-  '観られなくなり',
-  '観られなくなる',
-  '見られなくなり',
-  '見られなくなる',
-  '視聴できなくなり',
-  '視聴できなくなる',
-  '観ることができなくなり',
-  '観ることができなくなる',
-] as const
-
-/**
- * 「配信終了」と、修飾なしで書いている行。
- *
- * ★ ここに「配信が終了します」を足してはいけない。
- *   正しい書き方である**「見放題配信が終了します」もその文字列を含む**ので、
- *   単純な部分一致では区別できず、正しい記述まで error で止まる。
- *   行に「見放題」があるかどうかで見る。
- */
-function bareDeliveryEnd(md: string): string[] {
-  return md
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith('|'))
-    .filter((l) => /配信(が)?終了/.test(l) && !l.includes('見放題'))
-}
-
-/**
  * 段落を「視聴を促す形」で締めているとみなす語尾。
  * テンプレート構成2の締めルール（`templates/leaving.md`）に対応する。
  */
@@ -194,6 +175,7 @@ const CALL_TO_ACTION = /(ましょう|ください|見逃せません|お見逃�
 export const leavingArticle: ArticleType = {
   id: 'leaving',
   category: 'leaving',
+  axis: 'service',
   description: '今月見放題が終了する作品（サービス別）',
   variants: SERVICE_VARIANTS,
   variantFlag: 'service',
@@ -252,6 +234,7 @@ export const leavingArticle: ArticleType = {
     const traits = traitsOf(ctx.variant?.key)
     // 「他のサービスで探す」に自分自身を並べても意味がない
     const otherLinks = (ctx.theme.search_links ?? []).filter((l) => l.key !== ctx.variant?.key)
+    const version = versionOf(items, this.slug(ctx))
 
     const rows = items.map((e) => {
       const links = buildSearchLinks(e.work, otherLinks)
@@ -268,6 +251,10 @@ export const leavingArticle: ArticleType = {
         `- ${title}${note ? ` ${note}` : ''}`,
         `  サービス: ${labelOf.get(e.service) ?? e.service}`,
         `  終了日: ${formatMonthDay(e.at!, offset)}`,
+        // ★ 更新版の主役。LLM に日付を突き合わせさせず、素材の側でラベルを振る。
+        version.isUpdate && foundSince(e, version.since)
+          ? '  ★今回新たに判明した終了予定（前回の版には載っていない）'
+          : '',
         e.work.year ? `  公開年: ${e.work.year}年` : '',
         e.work.rating ? `  評価: ${e.work.rating}/100（★表にだけ書き、地の文には書かないこと）` : '',
         e.work.genres.length ? `  ジャンル: ${e.work.genres.join(' / ')}` : '',
@@ -290,12 +277,34 @@ export const leavingArticle: ArticleType = {
     })
 
     // 差し込み済みの固定文言。プロンプトにも検査にも同じ値を使う。
-    const resolved = resolvePhrases(items, ctx)
+    const resolved = resolvePhrases(items, ctx, version)
 
     const system = `あなたは動画配信サービスの情報を扱う日本語ブログの編集者です。
 与えられたデータだけを使って記事を書きます。データに無い事実を書いてはいけません。
 
 ${template}
+
+---
+
+${namingRules(ctx)}
+
+---
+
+# 今回の版
+
+**この記事は「${version.isUpdate ? '更新版' : '初回'}」です。**
+
+${
+  version.isUpdate
+    ? `前回の版は ${version.since!.toISOString().slice(0, 10)} 時点のものです。
+今回新たに判明した終了予定が **${version.added.length}件** あります（素材に ★ が付いています）。
+テンプレートの「更新版」の指示に従い、**今回判明した分を記事の先頭で見せてください。**
+タイトルは **【${ctx.targetMonth.split('-')[0]}年${articleMonth(ctx)}月】で始め**、本数の直後に 【${resolved.asOf}更新】 を置いてください。
+**先頭を 【${resolved.asOf}更新】 にしないこと。** 先頭が更新日だと、検索結果の一覧でどのカテゴリ・どの月の記事か分からなくなります。
+前回までに載っていた作品は落とさず、同じ表に一緒に並べます。`
+    : `この記事は今月・${ctx.variant?.label ?? ''} で**はじめて書く版**です。
+タイトルにも本文にも「更新」と書いてはいけません。前の版が無いので嘘になります。`
+}
 
 ---
 
@@ -330,6 +339,12 @@ ${OUTPUT_FORMAT}`
     // 指示は素材の性質で増減するので、番号は組み立て時に振る。
     // 手で番号を打つと、行を足したときに 6 が2つある指示ができあがる。
     const tasks = [
+      version.isUpdate
+        ? `**「今回新たに判明した終了予定」の節を、リードの直後に置くこと。**
+   対象は ★ が付いた${version.added.length}件です。
+   前回までに載っていた作品も全終了作品リストには**そのまま全件残してください**。
+   前の版の本数は書かないこと（読者が前の版を見ているとは限りません）。`
+        : '',
       `終了日を見比べて「同じ日に終了するまとまり」を探すこと。
    同一監督・同一シリーズ・同一ジャンルの集中があれば、それを記事の軸にする。`,
       `リードの2段落目では、見つけたまとまりのうち**知名度の高いものを終了日順に**、
@@ -391,7 +406,7 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
    */
   buildShortPrompt(items, ctx) {
     const traits = traitsOf(ctx.variant?.key)
-    const resolved = resolvePhrases(items, ctx)
+    const resolved = resolvePhrases(items, ctx, versionOf(items, this.slug(ctx)))
 
     return shortScriptSection(ctx, {
       dateLabel: '終了日',
@@ -419,9 +434,18 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
   },
 
   slug(ctx) {
-    // ★ 既に公開済みの 2026-08-leaving / 2026-09-leaving は総合1本だった頃のもの。
-    //   サービス別に切り替えた 2026-10 以降がこの形になる。過去分は作り直さない。
-    return `${ctx.targetMonth}-leaving-${ctx.variant?.key ?? 'all'}`
+    // ★ 既に公開済みの 2026-08-leaving は総合1本だった頃のもの（サービス横断）。
+    //   サービス別に切り替えた分がこの形になる。過去分は作り直さない。
+    //   `?? 'all'` の逃げ道は 2026-08-27 に塞いだ。軸を名乗らない記事は作れない。
+    return `${ctx.targetMonth}-leaving-${variantKey(ctx, this.id)}`
+  },
+
+  verifyTitle(title, ctx) {
+    return titleIssues(title, ctx, {
+      axis: 'service',
+      verbPhrase: '見放題配信が終了予定の',
+      isUpdate: previousAsOf(this.slug(ctx)) !== undefined,
+    })
   },
 
   verify(raw, items, ctx): VerifyIssue[] {
@@ -431,7 +455,8 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 
-    const resolved = resolvePhrases(items, ctx)
+    const version = versionOf(items, this.slug(ctx))
+    const resolved = resolvePhrases(items, ctx, version)
     const traits = traitsOf(ctx.variant?.key)
     const otherLinks = (ctx.theme.search_links ?? []).filter((l) => l.key !== ctx.variant?.key)
 
@@ -509,6 +534,26 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       err('「他のサービスで探す」の冒頭が固定文言と一致しません。fixed-phrases.md の文言をそのまま使ってください。')
     }
 
+    // --- 版の取り違え（公開を止める） ---
+
+    // ★ 初回に「更新」と書くと、前の版が無いのに更新したと読める。読者に対する嘘。
+    if (!version.isUpdate && /【[^】]*更新[^】]*】/.test(md)) {
+      err('初回の版なのに本文が「更新」を名乗っています。前の版がありません。')
+    }
+    // 更新版の主役は今回判明した分。表にも本文にも出ていないなら更新の意味が無い。
+    if (version.isUpdate && version.added.length > 0) {
+      const notShown = version.added
+        .map((e) => e.work.localizedTitle ?? e.work.title)
+        .filter((t) => t && !md.includes(t))
+      if (notShown.length > 0) {
+        err(
+          `今回新たに判明した終了予定が本文にありません: ` +
+            notShown.slice(0, 8).map((t) => clip(t, 24)).join(' / ') +
+            (notShown.length > 8 ? ' ほか' : ''),
+        )
+      }
+    }
+
     // --- 文体の検査（止めない。判定が外れることがあるため） ---
 
     const firstLine = md.split('\n', 1)[0] ?? ''
@@ -548,7 +593,7 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
 // --- 固定文言 -------------------------------------------------------------
 
 interface ResolvedPhrases {
-  /** 【8月終了】 */
+  /** 初回は 【8月終了】、更新版は 【8月27日更新】 */
   leadPrefix: string
   leadFirstSentence: string
   leadCloser: string
@@ -560,19 +605,44 @@ interface ResolvedPhrases {
   asOf: string
 }
 
+/**
+ * この記事の「版」。**更新版かどうかの判定はここ1か所。**
+ *
+ * 終了予定は月の途中で新しく判明する（収集のたびに Issue で通知している内容そのもの）。
+ * 記事を1本ずつ増やすと同じ検索語を自分同士で奪い合うので、同じスラッグを書き直す。
+ *
+ * ★ 「今回判明した分」は**収集日だけ**で決める（`foundSince`）。
+ *   終了日で判定すると、終了日は未来なので全件が今回分になる。
+ */
+function versionOf(items: ChangeEvent[], slug: string) {
+  const since = previousAsOf(slug)
+  return { since, isUpdate: since !== undefined, added: items.filter((e) => foundSince(e, since)) }
+}
+
+interface Version {
+  since: Date | undefined
+  isUpdate: boolean
+  added: ChangeEvent[]
+}
+
 /** 固定文言に今月の値を差し込む。プロンプトと検査で同じ結果になることが要件。 */
-function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhrases {
+function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext, version: Version): ResolvedPhrases {
   const vars = {
     月: articleMonth(ctx),
-    サービス: serviceNames(items, ctx),
+    // ★ items から作らない。素材が0件の月に全サービス名が並んでしまう。
+    //   1本の記事が扱うのは1社だけなので、軸のラベルがそのまま答えになる。
+    サービス: ctx.variant?.label ?? '',
     基準日: asOfLabel(ctx),
     本数: items.length,
+    追加本数: version.added.length,
   }
   const get = phraseReader(fixedPhrases(ctx, REQUIRED_PHRASES), vars)
 
   return {
-    leadPrefix: `【${vars.月}月終了】`,
-    leadFirstSentence: get('leaving-lead-first-sentence'),
+    leadPrefix: version.isUpdate ? `【${vars.基準日}更新】` : `【${vars.月}月終了】`,
+    leadFirstSentence: get(
+      version.isUpdate ? 'leaving-update-lead-first-sentence' : 'leaving-lead-first-sentence',
+    ),
     leadCloser: get('leaving-lead-closer'),
     otherServicesIntro: get('other-services-intro'),
     // ★ データの出どころが違えば出典表記も違う。機械的に API の帰属表示を

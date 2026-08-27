@@ -7,6 +7,7 @@
 | **ブラウザで記事・デザインを編集する** | **[docs/EDITING.md](./docs/EDITING.md)** |
 | **ショート動画の台本を直す・カット画像を作る** | **[shorts/README.md](./shorts/README.md)** |
 | **背景・ロゴ・バナー・OG画像を変える** | **[docs/APPEARANCE.md](./docs/APPEARANCE.md)** |
+| **記事の軸・タイトルの決まりと根拠** | **[docs/ARTICLE-RULES.md](./docs/ARTICLE-RULES.md)** |
 | **作業を再開する / 引き継ぐ** | **[docs/HANDOVER.md](./docs/HANDOVER.md)** |
 | **他ジャンルでブログを増やす** | **[docs/NEW-THEME.md](./docs/NEW-THEME.md)** |
 | **U-NEXT の収集（APIの外側）** | **[docs/UNEXT.md](./docs/UNEXT.md)** |
@@ -41,9 +42,9 @@ Streaming Availability API
 
 | change_type | 意味 | 記事タイプ |
 |---|---|---|
-| `new` | 新規配信開始 | `arrivals`（ジャンル別3本） |
+| `new` | 新規配信開始 | `arrivals`（ジャンル別）／`arrivals-service`（サービス別） |
 | `removed` | 配信終了済み | `ended`（配信終了予定を取れないサービスのみ） |
-| `expiring` | **配信終了予定（日付付き）** | `leaving` |
+| `expiring` | **配信終了予定（日付付き）** | `leaving`（サービス別） |
 | `upcoming` | 配信開始予定 | `arrivals` 末尾の「これから配信開始予定」 |
 
 収集と執筆を分けているのは、APIリクエストを節約しつつ
@@ -144,7 +145,7 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | `npm run unext:menu` | U-NEXT のジャンル・カテゴリIDを調べる |
 | `npm run notify` | **前回以降の変化を運用者に通知する（Issue→メール）。API消費なし** |
 | `npm run notify -- --dry-run` | 送らずに通知本文だけ表示する |
-| `npm run enrich` | 収集済みイベントに Wikidata の情報を後追いで足す（無料・APIキー不要） |
+| `npm run enrich` | 収集済みイベントに Wikidata の情報を後追いで足す（無料・APIキー不要）。原語・制作会社・**監督・出演者の日本語表記** |
 | `npm run write -- --list` | **作れる記事と素材件数の一覧** |
 | `/article` | **このセッションで記事を執筆（API課金なし）** |
 | `npm run write -- --type <記事> [--genre <ジャンル>] --emit` | プロンプトを `data/draft/prompt.md` に書き出す |
@@ -161,24 +162,47 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 
 ## 記事の種類
 
-`npm run write -- --list` が唯一の一覧。現在はこの5本。
+`npm run write -- --list` が唯一の一覧。現在は5タイプ。
 
-| 記事 | 内容 |
-|---|---|
-| `leaving` | 今月見放題が終了**する**作品（ジャンルを分けない総合） |
-| `ended` | 今月見放題が終了**した**作品（配信終了予定を取得できないサービス＝現在は Disney+） |
-| `arrivals --genre anime` | 今月見放題配信が始まったアニメ |
-| `arrivals --genre western` | 同・洋画・海外ドラマ |
-| `arrivals --genre japanese` | 同・邦画・国内ドラマ |
+| 記事 | 軸 | 内容 |
+|---|---|---|
+| `leaving --service <社>` | サービス | 今月見放題が終了**する**作品（Netflix / Prime Video / U-NEXT） |
+| `ended --service <社>` | サービス | 今月見放題が終了**した**作品（終了予定を取得できないサービス＝現在は Disney+） |
+| `arrivals-service --service <社>` | サービス | 今月見放題配信が始まった作品（Netflix / Prime Video / U-NEXT） |
+| `arrivals --genre <ジャンル>` | ジャンル | 同・アニメ / 洋画・海外ドラマ / 邦画・国内ドラマ |
+| `special --kind … --topic …` | 主題 | **特報**。書きたい主題と時期をそのつど指定して出す |
 
-配信開始は月に300〜400本あり1記事に収まらないので、ジャンルで分けている。
+**記事は必ず軸を1本だけ名乗る。** サービス軸の記事に他社を混ぜない。
+サービスを横断してよいのは**ジャンル軸と主題軸だけ**で、
+**配信終了はサービス軸だけ**にする（ジャンル別の終了記事は作らない）。
+タイトルは初回も更新版も `【2026年9月】…` で始め、更新日は本数の直後に置く。
+
+    初回　 【2026年9月】Netflixで見放題配信が終了予定の作品36本｜007シリーズ5作
+    更新版 【2026年9月】Netflixで見放題配信が終了予定の作品42本【9月12日更新】｜追加は踊る大捜査線
+
+決まりは [`templates/naming.md`](./theme-packs/streaming-jp/templates/naming.md)、
+根拠と実測は **[docs/ARTICLE-RULES.md](./docs/ARTICLE-RULES.md)**。
+品質ゲートが機械的に検査する（`shared.ts` の `titleIssues()`）。
+
+**同じ月・同じ軸の記事を2本作らない。** 2回目からは同じスラッグを書き直す（更新版）。
+記事が増えるのではなく、記事が育つ。
+
+**特報**は「ユーザーが明示的に作りたい時期・内容」を、月次記事と同じテンプレ・
+同じ品質ゲートで作るための記事タイプ。`/article` に指示を渡せば作れる。
+
+```bash
+npm run write -- --type special --kind expiring --topic "「007」シリーズ" --slug 007-netflix --match "007" --month 2026-09 --emit
+```
+
+配信開始は月に300〜400本あり1記事に収まらないので、ジャンルでも分けている。
 振り分けは Wikidata の原語（`data/origins.json`）と API の `originalTitle` で機械的に行う
-（`theme-packs/streaming-jp/genres.ts`）。判定できない作品は記事に出さない。
+（`theme-packs/streaming-jp/genres.ts`）。判定できない作品は記事に出さない
+（実測で終了予定の16〜27%・配信開始の22%。**だからジャンル軸は主にできない**）。
 
 **`leaving` と `ended` は別カテゴリで、混ぜてはいけない。**
 前者はまだ観られる（急ぐ意味がある）、後者はもう観られない（他サービスを探す）で、
 読者に渡すものが正反対だから。`ended` は「お見逃しなく」「今のうちに」といった
-表現を検出すると**公開を止める**（`article-types/ended.ts` の `MISLEADING`）。
+表現を検出すると**公開を止める**（`article-types/shared.ts` の `MISLEADING_AFTER_END`）。
 
 **記事の種類を増やすときに触るのは、テンプレートと記事タイプの2ファイルだけ。**
 CLI もスラッシュコマンドも変えなくてよい。手順は

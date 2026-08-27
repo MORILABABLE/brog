@@ -1,26 +1,32 @@
 ---
 import { getCollection } from 'astro:content'
-import { AFFILIATE, CATEGORIES, SERVICE_HUBS } from '../config'
+import Thumb from './Thumb.astro'
+import { AFFILIATE, CATEGORIES } from '../config'
 import { withAmazonTag } from '../lib/affiliate'
 
 /**
- * 本文の右の余白に置く追従枠。上から3ブロック。
+ * 本文の右の余白に置く追従枠。上から2ブロック。
  *
- *   1. サービスから探す … サービス別まとめページへの導線（2026-08-26 追加）
- *   2. 最新記事        … カテゴリ横断の新しい記事
- *   3. PR             … 広告カード。**ここだけ追従する**
+ *   1. 最新記事 … カテゴリ横断の新しい記事。記事ごとの絵つき
+ *   2. PR      … 広告カード。**ここだけ追従する**
  *
- * ★ 1 を 2 の上に置いている。
- *   最新記事は「今なにがあるか」、サービスは「自分の契約で探す」。
- *   契約しているサービスが決まっている読者のほうが多いので、そちらを先に出す。
+ * ★ 最新記事の絵は frontmatter の `heroImage`（`public/heroes/…`）。
+ *   記事カード（PostCard.astro）と**同じ絵・同じ部品**（Thumb.astro）を使う。
+ *   ここ専用の画像は作らない。無い記事はカテゴリ色のタイルに落ちるだけで、
+ *   枠の高さは変わらない（2026-08-27 に絵を追加）。
  *
- * ★ 「最新の配信終了・配信開始一覧」は**左の枠**（LeftRail.astro）に移した
- *   （2026-08-24）。ここに戻すと、その下の新着記事とPR枠が画面外へ落ちる。
+ * ★ 「サービスから探す」は 2026-08-27 に**廃止**した。
+ *   同じ導線をヘッダーのメニューに移してある（Header.astro）。
+ *   この枠は 1200px 未満で消えるので、狭い画面の読者には
+ *   サービス別の入口が存在しないのと同じだった。**ここに戻さないこと。**
  *
- * ■ 追従するのは 3 だけ
+ * ★ 「新着配信・終了一覧」は**左の枠**（LeftRail.astro）に移した
+ *   （2026-08-24）。ここに戻すと、その下の最新記事とPR枠が画面外へ落ちる。
+ *
+ * ■ 追従するのは 2 だけ
  * 枠全体を追従させると、画面に収まらないときPR枠に手が届かなくなる。
  * 枠内スクロールで解決すると読者がスクロールを2回することになる。
- * 上の2つは流し、PR枠だけを sticky にするのが両立する唯一の形。
+ * 最新記事は流し、PR枠だけを sticky にするのが両立する唯一の形。
  *
  * ■ 広告とそれ以外を混ぜない
  * まとめて `aria-label="広告"` にすると最新記事まで広告と称することになり、
@@ -41,7 +47,8 @@ import { withAmazonTag } from '../lib/affiliate'
 /**
  * 最新記事に出す本数。
  * ★ 増やすと枠が縦に伸び、そのぶんPR枠が画面の下から現れるのが遅くなる。
- *   サービスの導線を上に足したぶん、ここは増やさないこと（2026-08-26）。
+ *   上の「サービスから探す」を外して余裕はできたが、
+ *   PR枠を画面の上のほうに置く方針は変えていない（2026-08-27）。
  */
 const RECENT_POSTS = 3
 
@@ -57,30 +64,6 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
 ---
 
 <aside class="follow-rail">
-  <nav class="block" aria-label="サービスから探す">
-    <p class="block-title">サービスから探す</p>
-    <ul class="services">
-      {
-        SERVICE_HUBS.map((h) => {
-          const href = `/service/${h.slug}`
-          return (
-            <li>
-              {href === current ? (
-                <span class="service is-current" aria-current="page">
-                  {h.label}
-                </span>
-              ) : (
-                <a class="service" href={href}>
-                  {h.label}
-                </a>
-              )}
-            </li>
-          )
-        })
-      }
-    </ul>
-  </nav>
-
   {
     posts.length > 0 && (
       <nav class="block" aria-label="最新記事">
@@ -91,18 +74,22 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
             const isCurrent = href === current
             return (
               <li>
-                <span class="badge" data-category={post.data.category}>
-                  {CATEGORIES[post.data.category].label}
-                </span>
-                {isCurrent ? (
-                  <span class="post-title is-current" aria-current="page">
-                    {post.data.title}
+                {/* 60px。**隣の文字ブロック（バッジ＋2行）の高さに合わせた値**。下の CSS 参照 */}
+                <Thumb src={post.data.heroImage} category={post.data.category} size={60} />
+                <div class="body">
+                  <span class="badge" data-category={post.data.category}>
+                    {CATEGORIES[post.data.category].label}
                   </span>
-                ) : (
-                  <a class="post-title" href={href}>
-                    {post.data.title}
-                  </a>
-                )}
+                  {isCurrent ? (
+                    <span class="post-title is-current" aria-current="page">
+                      {post.data.title}
+                    </span>
+                  ) : (
+                    <a class="post-title" href={href}>
+                      {post.data.title}
+                    </a>
+                  )}
+                </div>
               </li>
             )
           })}
@@ -175,35 +162,7 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     color: var(--footer-text);
   }
 
-  /* --- 1. サービスから探す --- */
-  .services {
-    margin: 0;
-    padding: 0.35rem 0.4rem;
-    list-style: none;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-  .service {
-    display: block;
-    padding: 0.45rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.84rem;
-    font-weight: 700;
-    line-height: 1.4;
-    color: var(--text);
-    text-decoration: none;
-  }
-  a.service:hover {
-    background: var(--bg-subtle);
-    color: var(--accent);
-  }
-  /* 現在地は押せないことが分かるようにする（押しても同じページなので） */
-  .service.is-current {
-    color: var(--text-muted);
-  }
-
-  /* --- 2. 最新記事 --- */
+  /* --- 1. 最新記事 --- */
   .badge {
     font-size: 0.68rem;
     padding: 0.05rem 0.45rem;
@@ -215,6 +174,33 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 10px;
+  }
+  /*
+   * 絵 ＋ 本文の2列。絵の枠は画像が無くても Thumb.astro が必ず作るので、
+   * 画像の無い記事が混ざっても行の左端と高さはそろう。
+   */
+  .posts li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+  /*
+   * ★ 絵（60px四方）と、右の文字ブロックの**下端をそろえる**（2026-08-27）。
+   *   最初は絵48px・文字ブロック72pxで作ったが、タイトルが2行になると
+   *   文字だけ絵の下へはみ出して段差に見えた。
+   *
+   *   文字ブロックの高さは「バッジの行 ＋ タイトル2行」で決まる。
+   *     バッジの行 … この .body の line-height と font-size が決める（下）
+   *     タイトル   … 0.8rem × line-height 1.5 × 2行 ＝ 38.4px ＋ 上の余白 4.8px
+   *   合わせて約60pxになるよう、**バッジの行を16.8pxまで詰めてある**。
+   *   ここを触ると下端がずれる。**絵の size と3つセットで直すこと。**
+   *
+   *   ※ .post-title は自分で font-size を持っているので、この指定の影響を受けない。
+   */
+  .body {
+    min-width: 0;
+    font-size: 0.68rem;
+    line-height: 1.4;
   }
   .posts li + li {
     margin-top: 0.55rem;

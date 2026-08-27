@@ -12,6 +12,13 @@
  *   3. `article-types/<新しいタイプ>.ts` を作る（共通処理は `shared.ts` にある）
  *   4. このファイルの ARTICLE_TYPES に足す
  *
+ * ■ 軸（`axis`）は必ず決める
+ * 記事タイプは `axis: 'service' | 'genre'` を宣言しなければ型が通らない。
+ * サービス軸なら**他社を混ぜない**、ジャンル軸なら**横断してよい**。
+ * 軸とタイトルの決まりは `templates/naming.md` にあり、
+ * 検査は `shared.ts` の `titleIssues()`（`verifyTitle` から呼ぶ）。
+ * 判断の根拠と実測は docs/ARTICLE-RULES.md。
+ *
  * ■ ショート動画の台本を付けるかどうか
  * `buildShortPrompt` を実装すれば付く。実装しなければ付かない。それだけ。
  * 中身は `shared.ts` の `shortScriptSection()` に集めてあるので、
@@ -19,20 +26,26 @@
  * 現状 `leaving` と `arrivals` が実装し、`ended` は意図的に実装していない
  * （理由は `ended.ts` の冒頭）。
  *
- * ■ 総合記事とジャンル別記事を並べる場合
+ * ■ サービス別とジャンル別を並べる場合
  * 1つの記事タイプに2つのモードを持たせず、別々のタイプとして登録する。
- * 総合とジャンル別では読者に渡すものが違い、テンプレートも分かれるため。
- *   例) `leaving`（総合）と、今後足す `leaving-genre`（ジャンル別・より詳細）
+ * 軸が違えば読者に渡すものが違い、テンプレートも検査も分かれるため。
+ *   例) `arrivals-service`（サービス別）と `arrivals`（ジャンル別）は別タイプ。
+ *
+ * ★ **配信終了側にジャンル別を作らないこと**（2026-08-27 に決定）。
+ *   読者は「Netflixで何が終わるのか」を探しに来る。終了はサービス別だけにする
+ *   （docs/ARTICLE-RULES.md 1節C）。
  */
 import type { ArticleType } from '../../../pipeline/core/article.ts'
 import { leavingArticle } from './leaving.ts'
 import { endedArticle } from './ended.ts'
 import { arrivalsArticle } from './arrivals.ts'
 import { arrivalsServiceArticle } from './arrivals-service.ts'
+import { specialArticle } from './special.ts'
 
 export const ARTICLE_TYPES: ArticleType[] = [
   leavingArticle,
   endedArticle,
   arrivalsArticle,
   arrivalsServiceArticle,
+  specialArticle,
 ]

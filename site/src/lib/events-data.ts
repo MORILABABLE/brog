@@ -198,7 +198,16 @@ export const ARRIVALS_SERVICES = [
 /** 新着として載せる期間。これより古いものは「新着」と呼べない。 */
 const ARRIVALS_WINDOW_DAYS = 60
 
-/** 指定サービスで最近見放題に入った作品を、新しい順に返す。 */
+/**
+ * 指定サービスで最近見放題に入った作品を、**配信開始日の古い順**に返す。
+ *
+ * ★ 2026-08-27 に新しい順から入れ替えた。
+ *   ページは「直近◯日間に入った作品」を頭から順に読ませる作りで、
+ *   新しい順だと表が「今日 → さかのぼる」向きになり、
+ *   説明文（配信開始日順にまとめています）と読み口が食い違っていた。
+ *   終了予定ページ（loadLeaving）が終了日の早い順＝古い順なので、
+ *   **常設ページはどちらも上から時間の進む向き**でそろう。
+ */
 export function loadArrivals(service: string): WorkListData {
   const since = Date.now() - ARRIVALS_WINDOW_DAYS * 86400000
   const events = readAll().filter(
@@ -208,7 +217,7 @@ export function loadArrivals(service: string): WorkListData {
   return {
     works: latest
       .map(toRow)
-      .sort((a, b) => b.at.getTime() - a.at.getTime() || a.title.localeCompare(b.title, 'ja')),
+      .sort((a, b) => a.at.getTime() - b.at.getTime() || a.title.localeCompare(b.title, 'ja')),
     dataAsOf: asOf(latest),
   }
 }

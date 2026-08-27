@@ -30,6 +30,8 @@ const ENDPOINT = 'https://query.wikidata.org/sparql'
 export const TITLE_CACHE_PATH = join('data', 'titles.json')
 export const ORIGIN_CACHE_PATH = join('data', 'origins.json')
 export const COMPANY_CACHE_PATH = join('data', 'companies.json')
+export const DIRECTOR_CACHE_PATH = join('data', 'directors.json')
+export const CAST_CACHE_PATH = join('data', 'cast.json')
 
 /** 1クエリあたりのID数。URL長とWDQSの負荷を考えた値。 */
 const BATCH_SIZE = 50
@@ -56,6 +58,20 @@ const P_ORIGINAL_LANGUAGE = 'P364'
  * 推測ではなく事実として書くために引く。
  */
 const P_PRODUCTION_COMPANY = 'P272'
+/**
+ * 監督（P57）と出演者（P161）。
+ *
+ * ■ なぜ Wikidata から引くのか（2026-08-27 追加）
+ * 配信APIが返す人名は**ローマ字**（`Tetsuya Nakashima`）で、日本の読者向けの記事に
+ * そのまま出すと読みにくい。かといって記事側で漢字に起こすのは**推測**になり、
+ * 同姓同名や表記ゆれで誤りが混ざる（テンプレートが禁じているのはそのため）。
+ *
+ * Wikidata なら**作品のIDから人物を辿る**ので名前の突き合わせが要らず、
+ * 日本語ラベルをそのまま使える。制作会社（P272）で既に実証済みの経路。
+ * 取れなかった作品はローマ字のまま出す（記事側がそう書き分ける）。
+ */
+const P_DIRECTOR = 'P57'
+const P_CAST = 'P161'
 
 /** 作品を指すID群。API はどちらも返すが、片方しか無いこともある。 */
 export interface TitleRef {
@@ -285,6 +301,10 @@ export const loadOriginCache = () => loadLabelCache(ORIGIN_CACHE_PATH)
 export const saveOriginCache = (cache: LabelCache) => saveLabelCache(ORIGIN_CACHE_PATH, cache)
 export const loadCompanyCache = () => loadLabelCache(COMPANY_CACHE_PATH)
 export const saveCompanyCache = (cache: LabelCache) => saveLabelCache(COMPANY_CACHE_PATH, cache)
+export const loadDirectorCache = () => loadLabelCache(DIRECTOR_CACHE_PATH)
+export const saveDirectorCache = (cache: LabelCache) => saveLabelCache(DIRECTOR_CACHE_PATH, cache)
+export const loadCastCache = () => loadLabelCache(CAST_CACHE_PATH)
+export const saveCastCache = (cache: LabelCache) => saveLabelCache(CAST_CACHE_PATH, cache)
 
 interface PropertyQuery {
   /** 引く Wikidata プロパティ（P364 など） */
@@ -430,5 +450,41 @@ export function resolveCompanies(
     property: P_PRODUCTION_COMPANY,
     labelLang: `${lang},en`,
     name: '制作会社',
+  })
+}
+
+/**
+ * 監督を解決する。ラベルはサイトの言語で持つ（記事にそのまま出すため）。
+ *
+ * ★ 日本語ラベルが無い人物は英語ラベルで返る。**それは推測ではないのでそのまま使ってよい。**
+ *   記事側は「日本語で取れたか」を見て書き分ける（work-context.ts）。
+ */
+export function resolveDirectors(
+  refs: TitleRef[],
+  lang: string,
+  cache: LabelCache,
+): Promise<LabelCache> {
+  return resolveProperty(refs, cache, {
+    property: P_DIRECTOR,
+    labelLang: `${lang},en`,
+    name: '監督',
+  })
+}
+
+/**
+ * 出演者を解決する。
+ *
+ * ★ 1作品で数十人返ることがある（P161 は主演に限らない）。
+ *   **記事に何人出すかは記事側で絞る。** ここでは取れたものをそのまま持つ。
+ */
+export function resolveCast(
+  refs: TitleRef[],
+  lang: string,
+  cache: LabelCache,
+): Promise<LabelCache> {
+  return resolveProperty(refs, cache, {
+    property: P_CAST,
+    labelLang: `${lang},en`,
+    name: '出演者',
   })
 }

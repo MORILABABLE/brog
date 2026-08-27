@@ -1855,7 +1855,9 @@
     "article:2026-08-arrivals-japanese",
     "article:2026-08-arrivals-japanese",
     "article:2026-08-arrivals-japanese",
+    "article:2026-08-arrivals-netflix",
     "article:2026-08-arrivals-prime-video",
+    "article:2026-08-arrivals-u-next",
     "article:2026-08-arrivals-western",
     "article:2026-08-arrivals-western",
     "article:2026-08-ended",
@@ -1863,5 +1865,5 @@
     "article:2026-09-leaving-netflix",
     "article:2026-09-leaving-prime-video"
   ],
-  "updatedAt": "2026-08-26T04:33:50.553Z"
+  "updatedAt": "2026-08-27T01:02:06.632Z"
 }

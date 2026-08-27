@@ -18,7 +18,8 @@ import {
   narrationBudget,
 } from '../../../pipeline/core/short.ts'
 import { themeFile } from '../../../pipeline/theme.ts'
-import type { ArticleContext } from '../../../pipeline/core/article.ts'
+import type { ArticleContext, Axis } from '../../../pipeline/core/article.ts'
+import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
 import type { ChangeEvent } from '../../../pipeline/sources/types.ts'
 
 // --- 固定文言 -------------------------------------------------------------
@@ -37,6 +38,17 @@ export function fixedPhrases(ctx: ArticleContext, required: readonly string[]): 
     }
   }
   return cache.phrases
+}
+
+/**
+ * 記事の軸とタイトルの決まり（`templates/naming.md`）をそのまま返す。
+ *
+ * ★ 記事タイプごとのテンプレートとは**別に渡す**。
+ *   タイトルの型は全記事タイプで同じなので、4つのテンプレートに書き写すと
+ *   必ずどれかが古くなる。品質ゲート（`titleIssues`）もこの1枚に対応している。
+ */
+export function namingRules(ctx: ArticleContext): string {
+  return readFileSync(themeFile(ctx.theme, 'templates', 'naming.md'), 'utf8')
 }
 
 /** 固定文言に値を差し込む小さなヘルパ */
@@ -60,6 +72,25 @@ export function articleMonth(ctx: ArticleContext): number {
 /** 記事作成日。「8月9日」形式 */
 export function asOfLabel(ctx: ArticleContext): string {
   return formatMonthDay(ctx.now.toISOString(), ctx.theme.utc_offset_minutes)
+}
+
+/**
+ * スラッグに使うバリアントのキー。**無ければ落とす。**
+ *
+ * ★ 以前は `?? 'all'` で「総合1本」のスラッグに落としていた。
+ *   それは**軸を名乗らない記事＝サービス横断のまとめ**が作れる穴で、
+ *   実際 `2026-08-leaving`（Netflix・Prime Video の合同記事）がそれで生まれている。
+ *   落ちるようにしておけば、次に同じ形の記事を作ろうとした時点で気づける。
+ */
+export function variantKey(ctx: ArticleContext, typeId: string): string {
+  const key = ctx.variant?.key
+  if (!key) {
+    throw new Error(
+      `${typeId} は軸（サービス／ジャンル）ごとに1本ずつ書く記事です。` +
+        '--service または --genre を指定してください。',
+    )
+  }
+  return key
 }
 
 /**
@@ -99,6 +130,45 @@ export function serviceLabels(ctx: ArticleContext): Map<string, string> {
 export function isTargetMonth(iso: string, ctx: ArticleContext): boolean {
   const shifted = new Date(Date.parse(iso) + ctx.theme.utc_offset_minutes * 60_000)
   return shifted.toISOString().slice(0, 7) === ctx.targetMonth
+}
+
+// --- 人名 -------------------------------------------------------------------
+
+/**
+ * 素材に出す「監督」「出演」の行。
+ *
+ * ■ **日本語で取れた人名だけを渡す。取れなければ何も渡さない。**
+ * 配信APIが返す人名はローマ字（`Tetsuya Nakashima`）。読者は日本語圏なので、
+ * 記事にローマ字が並ぶと読みにくく、体裁も崩れる。
+ * かといって記事側で漢字に起こすのは**推測**で、同姓同名や表記ゆれで誤る。
+ *
+ * そこで `npm run enrich` が Wikidata から日本語ラベルを引いておき
+ * （theme-packs/streaming-jp/work-context.ts）、**取れたものだけを素材に出す。**
+ * 取れなかった作品は人名に触れずに書く。人名は作品を説明する材料のひとつで、
+ * 日付や題名と違って**欠けても記事は成立する**（2026-08-27 にこの方針へ変更）。
+ *
+ * ★ 以前はローマ字を「★ローマ字のまま書くこと」付きで渡していた。
+ *   規則としては正しく動いていたが、**読者から見れば直っていないのと同じ**だったので、
+ *   渡すのをやめた。ローマ字を素材に出さなければ、記事に出ることもない。
+ *
+ * ★ **Wikidata の並び順は主演順ではない。**
+ *   実測で「告白」の先頭が芦田愛菜（助演）、「アリー/ スター誕生」の2番目が
+ *   デイヴ・シャペルになった。配信API側は主演順だが、
+ *   日本語名とローマ字名を突き合わせる手段が無いので並べ替えられない。
+ *   そこで**順番に意味を持たせない書き方**を素材の注記で指示する。
+ *
+ * @param label 「監督」「出演」
+ * @param japanese Wikidata から日本語で取れた名前（無ければ行ごと出さない）
+ * @param unordered 並び順に意味が無いなら true（出演者はこちら）
+ */
+export function peopleLine(
+  label: string,
+  japanese: string[] | undefined,
+  unordered = false,
+): string {
+  if (!japanese?.length) return ''
+  const note = unordered ? '（★並び順は主演順ではない。「主演」「1番手」と書かないこと）' : ''
+  return `  ${label}: ${japanese.join(' / ')}${note}`
 }
 
 // --- 出さない作品 -----------------------------------------------------------
@@ -204,6 +274,22 @@ export function freshnessOf(e: ChangeEvent, since: Date | undefined): Freshness 
  * 素材に添える、書き方を指示する1行。**LLM に日付を突き合わせさせない。**
  * 「今回の追加分」でなければ空文字（行ごと落とす前提）。
  */
+/**
+ * 前回の版のあとに把握した作品か。**配信終了記事の更新版はこれで区別する。**
+ *
+ * ★ 終了記事で `freshnessOf()` を使ってはいけない。あれは
+ *   「配信開始日が前回の版より後か」を見るもので、終了記事が持っているのは終了日。
+ *   終了日はほぼ常に未来なので、全件が `started`（＝今回配信開始）になってしまう。
+ *
+ * 終了記事で意味があるのは「前回の版に載っていたかどうか」だけ。
+ * 月の途中で新しい終了予定が判明するのが更新の実体なので、収集日だけを見る。
+ */
+export function foundSince(e: ChangeEvent, since: Date | undefined): boolean {
+  if (!since) return false
+  const collected = Date.parse(e.collectedAt)
+  return Number.isFinite(collected) && collected >= since.getTime()
+}
+
 export function freshnessNote(f: Freshness): string {
   if (f === 'started') {
     return '  ★今回の追加分（前回の更新以降に配信開始）。「新たに見放題配信が始まりました」と書いてよい'
@@ -212,6 +298,226 @@ export function freshnessNote(f: Freshness): string {
     return '  ★今回の追加分（配信開始は前回より前。今回はじめて確認した）。「新たに配信が始まった」とは書かないこと。「今回新たに確認されました」と書く'
   }
   return ''
+}
+
+// --- 事故を防ぐ言い回し -----------------------------------------------------
+//
+// ★ **記事タイプごとに書き写さないこと。** 同じ危険が複数の記事タイプに出る
+//   （終了済みの記事も、終了済みを扱う特報も、同じ嘘をつきうる）。
+//   写すと片方だけ直され、もう片方から誤情報が漏れる。
+
+/**
+ * もう観られない作品を「まだ観られる」と読ませる表現。
+ *
+ * **1つでもあれば公開を止める。** 読者を直接裏切る誤情報であり、
+ * 文体の好みの問題ではないため warn ではなく error。
+ * 終了「済み」を扱う記事（`ended` と、kind が removed の特報）で効かせる。
+ */
+export const MISLEADING_AFTER_END = [
+  'お見逃しなく',
+  'お見逃しがないように',
+  '見逃せません',
+  '今のうちに',
+  'まだ間に合',
+  '観ておきましょう',
+  '見ておきましょう',
+  'チェックしておきましょう',
+  '配信中です',
+  '視聴できます',
+  '観られます',
+] as const
+
+/**
+ * ポイント（レンタル）で残る可能性がある作品を「もう観られない」と読ませる表現。
+ *
+ * **見放題とポイントが同居するサービス（U-NEXT）でだけ効かせる。**
+ * Netflix / Prime Video の見放題終了はサービスからの退出そのものなので、
+ * 同じ言い回しでも誤りにならない。一律にすると正しい記述まで止まる。
+ */
+export const UNAVAILABLE_CLAIM = [
+  '観られなくなり',
+  '観られなくなる',
+  '見られなくなり',
+  '見られなくなる',
+  '視聴できなくなり',
+  '視聴できなくなる',
+  '観ることができなくなり',
+  '観ることができなくなる',
+] as const
+
+/**
+ * 「配信終了」と、修飾なしで書いている行。
+ *
+ * ★ ここに「配信が終了します」を足してはいけない。
+ *   正しい書き方である**「見放題配信が終了します」もその文字列を含む**ので、
+ *   単純な部分一致では区別できず、正しい記述まで error で止まる。
+ *   行に「見放題」があるかどうかで見る。
+ */
+export function bareDeliveryEnd(md: string): string[] {
+  return md
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('|'))
+    .filter((l) => /配信(が)?終了/.test(l) && !l.includes('見放題'))
+}
+
+// --- タイトル ---------------------------------------------------------------
+//
+// タイトルの型は全記事タイプで共通なので、ここに1つだけ置く。
+// 文章としての決まりは templates/naming.md にあり、**この関数はその写し**。
+// 片方だけ直すと、テンプレートが要求する形と検査が食い違う。
+
+/**
+ * タイトルに出うるサービスの呼び方。**略称・カタカナ表記も入れる。**
+ *
+ * 正式表記だけを見ると「Netflixの記事に『アマプラ』が入っている」を見逃す。
+ * キーは theme.yaml の catalogs（と unext）と揃えること。
+ */
+const SERVICE_NAMES: { key: string; pattern: RegExp }[] = [
+  { key: 'netflix', pattern: /Netflix|ネットフリックス|ネトフリ/i },
+  {
+    key: 'prime-video',
+    pattern: /Amazon Prime Video|Prime Video|プライムビデオ|プライム・ビデオ|アマプラ/i,
+  },
+  { key: 'u-next', pattern: /U-?NEXT|ユーネクスト/i },
+  { key: 'disney-plus', pattern: /Disney\s?\+|ディズニープラス|ディズニー\+/i },
+  { key: 'apple-tv', pattern: /Apple TV\s?\+|アップルTV/i },
+]
+
+/** 正式表記でない呼び方。読者がサービスを取り違えるほどではないが、表記は揃える。 */
+const ABBREVIATIONS =
+  /(アマプラ|プライムビデオ|プライム・ビデオ|ネトフリ|ネットフリックス|ディズニープラス|ユーネクスト)/
+
+/** 中身を伴わない煽り。事実だけで成立する記事なので使わない。 */
+const HYPE = /(衝撃|必見|神作|話題沸騰|驚愕)/
+
+export interface TitleRule {
+  /** この記事が名乗る軸 */
+  axis: Axis
+  /**
+   * 記事タイプごとに固定の動詞句。`見放題配信が始まった` など。
+   * templates/naming.md の表と1文字も違えないこと。
+   */
+  verbPhrase: string
+  /** 更新版か（`previousAsOf()` が前の版を見つけたか） */
+  isUpdate: boolean
+  /**
+   * タイトルに必ず出る軸の呼び名。既定は `ctx.variant?.label`。
+   * 特報のようにバリアントを持たない記事タイプが、主題を渡すために使う。
+   */
+  axisLabel?: string
+  /**
+   * 本数（◯本）を求めるか。既定は求める。
+   * 特報は1作品だけを扱うことがあるので、その場合に false を渡す。
+   */
+  requiresCount?: boolean
+}
+
+/**
+ * タイトルが「【期間】＋軸」の型を守っているかを見る。
+ *
+ * ■ ここを検査にしている理由
+ * 読者は検索結果の一覧で、**いつの・どこの情報かだけを見て**開くかどうかを決める。
+ * 「見放題配信が始まった作品まとめ」は、その2つがどちらも無い。
+ * 品質ゲートに入れないかぎり、月によって型が揺れる（実際11本中6本が揺れていた）。
+ *
+ * ■ error と warn の分け方
+ * 期間・軸・動詞句は**記事の名乗り**なので error（公開を止める）。
+ * 本数・字数・煽りは読みやすさの話なので warn。
+ */
+export function titleIssues(title: string, ctx: ArticleContext, rule: TitleRule): VerifyIssue[] {
+  const issues: VerifyIssue[] = []
+  const err = (message: string) => issues.push({ level: 'error', message })
+  const warn = (message: string) => issues.push({ level: 'warn', message })
+
+  const [y, m] = ctx.targetMonth.split('-')
+  const monthLabel = `${y}年${Number(m)}月`
+  const updateMark = `【${asOfLabel(ctx)}更新】`
+
+  // --- 期間（先頭の【】） ---
+  //
+  // ★ 初回も更新版も**先頭は同じ**（【2026年9月】）。
+  //   更新の日付は本数の直後に置く。
+  //
+  //     【2026年9月】Netflixで見放題配信が終了予定の作品42本【9月12日更新】｜追加は踊る大捜査線
+  //
+  //   先頭を 【9月12日更新】 にすると、検索結果の一覧で
+  //   **どのカテゴリ・どの月の記事なのかが頭から消える。**
+  //   読者が最初に見るのは先頭の数文字なので、そこは版によらず固定する。
+  if (!title.startsWith(`【${monthLabel}】`)) {
+    err(`タイトルは「【${monthLabel}】」で始めます。現在: 「${clip(title, 30)}」`)
+  }
+
+  if (rule.isUpdate) {
+    if (!title.includes(updateMark)) {
+      err(
+        `更新版のタイトルに「${updateMark}」がありません。**本数の直後**に置きます。\n` +
+          `      例: 【${monthLabel}】…作品42本${updateMark}｜…`,
+      )
+    } else {
+      if (title.startsWith(updateMark)) {
+        err(`「${updateMark}」を先頭に置かないでください。先頭は「【${monthLabel}】」です。`)
+      }
+      // 見どころ（｜のあと）より後ろに置くと、更新したことが本文の要約に埋もれる
+      const bar = title.indexOf('｜')
+      if (bar >= 0 && title.indexOf(updateMark) > bar) {
+        err(`「${updateMark}」は「｜」より前（本数の直後）に置きます。`)
+      }
+    }
+  } else if (title.includes('更新')) {
+    // 前の版が無いのに「更新」と名乗るのは読者に対する嘘
+    err('初回の版なのにタイトルが「更新」を名乗っています。前の版がありません。')
+  }
+
+  // --- 軸 ---
+  const label = rule.axisLabel ?? ctx.variant?.label
+  if (label && !title.includes(label)) {
+    err(`タイトルに軸（${label}）がありません。期間と軸が無いタイトルは作りません。`)
+  }
+
+  const named = SERVICE_NAMES.filter((s) => s.pattern.test(title))
+  if (rule.axis === 'service') {
+    const others = named.filter((s) => s.key !== ctx.variant?.key)
+    if (others.length > 0) {
+      err(
+        `サービス別の記事のタイトルに他社名があります（${others.map((s) => s.key).join(' / ')}）。` +
+          '1本の記事が扱うのは1社だけです。',
+      )
+    }
+  } else if (rule.axis === 'genre' && named.length > 0) {
+    err(
+      `ジャンル別の記事のタイトルにサービス名があります（${named.map((s) => s.key).join(' / ')}）。` +
+        'ジャンル記事はサービスを横断するので、特定の1社を名乗りません。',
+    )
+  }
+  // ★ 主題軸（特報）はサービス名を出してよい。
+  //   「Netflixで『007』シリーズが終了」は主題の記事であって横断まとめではなく、
+  //   どこの話かを名乗るほうが読者の役に立つ。横断も許される軸なので社数も問わない。
+
+  const abbr = ABBREVIATIONS.exec(title)
+  if (abbr) {
+    err(`サービス名の略称（${abbr[0]}）を使っています。タイトルも本文も正式表記で揃えます。`)
+  }
+
+  // --- 動詞句 ---
+  if (!title.includes(rule.verbPhrase)) {
+    err(
+      `タイトルに「${rule.verbPhrase}」がありません。記事タイプごとに固定の言い方です` +
+        '（「見放題配信開始の」「見放題終了する」などに言い換えないこと）。',
+    )
+  }
+
+  // --- 止めない指摘 ---
+  if (rule.requiresCount !== false && !/\d+本/.test(title)) {
+    warn('タイトルに本数（◯本）がありません。読者が規模を掴めません。')
+  }
+  if (title.length > 60) {
+    warn(`タイトルが${title.length}字です。60字以内に収めてください（検索結果で切れます）。`)
+  }
+  const hype = HYPE.exec(title)
+  if (hype) warn(`タイトルに煽り表現（${hype[0]}）があります。事実だけで書きます。`)
+
+  return issues
 }
 
 // --- 本文の走査 -----------------------------------------------------------

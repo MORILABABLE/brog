@@ -1,6 +1,6 @@
 # 引き継ぎ
 
-最終更新: 2026-08-24
+最終更新: 2026-08-27
 
 このファイルは**次に作業を再開する人（未来の自分を含む）が最初に読む1枚**。
 設計の詳細は他のファイルにあるので、ここでは「今どこにいるか」「次に何をするか」
@@ -18,9 +18,12 @@
 | 収集パイプライン | ✅ 2026-08 で1,089件を取得済み |
 | U-NEXT の収集 | ✅ **2026-08-25 に追加**。APIの外側を実ブラウザで取る。配信終了予定210件を収集済み・作品台帳274件。記事は `leaving` の**サービス別バリアント**として実装済み（記事タイプは増やしていない）・1本公開中 → [UNEXT.md](./UNEXT.md) |
 | 邦題解決 | ✅ Wikidata経由・解決率73% |
+| 人名の日本語化 | ✅ **2026-08-27 追加**。監督・出演者を Wikidata の日本語ラベルで引く（`npm run enrich`）。監督 706/1042件・出演者 594/1042件。引けなかった作品はローマ字のまま出す（記事側が書き分ける）。★ 出演者の並びは**主演順ではない** |
 | サイト | ✅ 21ページ生成・型エラー0。JSは**常設ページの作品検索だけ**（約1KB・インライン。LinkSwitch を有効にすると外部JSが1本入る） |
 | 記事 | ✅ **7本**を公開中（`leaving`3〈Netflix / Prime Video / U-NEXT〉 / `arrivals`3 / `ended`1） |
-| 記事タイプ | ✅ 3種（`leaving` / `ended` / `arrivals`）＝**7レシピ**（`npm run write -- --list` が唯一の一覧）。`leaving` は 2026-08-23 に**サービス別**へ分割し、2026-08-25 に U-NEXT を追加 |
+| 記事タイプ | ✅ 5種（`leaving` / `ended` / `arrivals` / `arrivals-service` / `special`）（`npm run write -- --list` が唯一の一覧）。`leaving` は 2026-08-23 に**サービス別**へ分割し、2026-08-25 に U-NEXT を追加。2026-08-27 に `ended` もサービス別へ |
+| 特報（`special`） | ✅ **2026-08-27 追加**。「作りたい時期・内容」をそのつど指定して出す記事。軸は**主題**でサービス横断可。`/article` に指示を渡すとフラグに翻訳される（`--kind` / `--topic` / `--slug` が必須）。構成・文体・品質ゲートは月次記事と同じ |
+| 記事の軸とタイトル | ✅ **2026-08-27 追加**。記事は**軸（サービス1社／ジャンル1つ／主題1つ）を必ず1本だけ名乗る**。サービス軸に他社を混ぜない・横断はジャンル軸と主題軸だけ・**配信終了はサービス軸のみ**・タイトルは初回も更新版も `【2026年9月】` で始め更新日は本数の直後・同じ月の2本目は作らず書き直す。決まりは `templates/naming.md`、根拠と実測は [ARTICLE-RULES.md](./ARTICLE-RULES.md)。品質ゲートが機械的に検査する |
 | 常設ページ | ✅ 6枚。**LLM不使用**・`collect` のたびに自動更新。実装は `site/src/lib/events-data.ts` |
 | ┗ 配信終了予定 | `/leaving/netflix`（102本） `/leaving/prime-video`（31本）※2026-08-26 時点。`collect` のたびに動く |
 | ┗ 新着配信 | `/arrivals/netflix`（212本） `/arrivals/prime-video`（175本） `/arrivals/disney-plus`（17本）※2026-08-26 時点 |
@@ -85,7 +88,9 @@ cd site && npm run build        # サイトのビルド
 | 全体の設計・なぜその選択をしたか | [../DESIGN.md](../DESIGN.md) |
 | セットアップ・コマンド一覧 | [../README.md](../README.md) |
 | ドメイン取得・GitHub・Cloudflare の操作手順 | [../DEPLOY.md](../DEPLOY.md) |
+| **記事の軸・タイトルの決まりと、その根拠** | **[ARTICLE-RULES.md](./ARTICLE-RULES.md)** |
 | 記事の構成・文体を変えたい | `theme-packs/streaming-jp/templates/leaving.md` ほか |
+| 記事の軸とタイトルの決まりそのもの（プロンプトに入る） | `theme-packs/streaming-jp/templates/naming.md` |
 
 ---
 
@@ -200,8 +205,11 @@ cd site && npm run build        # サイトのビルド
 ### そのあと
 
 4. 記事を10〜15本に増やす（Phase B のASP審査を通すため）
-5. 記事タイプ `ranking` を追加（`arrivals` と `ended` は実装済み）
-   → `theme-packs/streaming-jp/article-types/ended.ts` が最も新しい実装例
+5. 記事タイプ `ranking` を追加
+   → 最も新しい実装例は `theme-packs/streaming-jp/article-types/special.ts`
+   → 新しい記事タイプは **`axis`（サービス／ジャンル／主題）の宣言が必須**（型が通らない）
+   → `special` は**フラグ宣言（`ArticleType.flags`）とカテゴリの実行時決定（`categoryOf`）**
+     を使っている。CLI を触らずに記事タイプを増やせる仕組みはここを読む
 6. `upcoming` を収集の既定から外すか判断する
    → 全実行・全サービスで**0件**が続いており、月12リクエストの空振り。
      API側が返し始める可能性はあるので、四半期に一度 `--kinds upcoming` で手動確認する運用も可

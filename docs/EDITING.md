@@ -213,12 +213,16 @@ git pull
 
 # 記事テンプレートを編集する
 
-毎月の配信終了記事を「どう書くか」は、**コードではなく Markdown 3枚**で決まっている。
-この3枚はプログラムを触らずに編集してよい。
+記事を「どう書くか」は、**コードではなく Markdown** で決まっている。
+これらはプログラムを触らずに編集してよい。
+下の表は配信終了記事を例にしたもので、配信開始記事なら `arrivals.md` /
+`arrivals-service.md`、終了済みなら `ended.md` を同じように読み替える。
 
 | 変えたいもの | ファイル |
 |---|---|
 | **記事の構成・文体・禁止事項** | `theme-packs/streaming-jp/templates/leaving.md` |
+| **タイトルの形・軸・更新版の扱い**（全記事タイプ共通） | `theme-packs/streaming-jp/templates/naming.md` |
+| **特報の構成・文体** | `theme-packs/streaming-jp/templates/special.md` |
 | **毎月そのまま使う固定文言** | `theme-packs/streaming-jp/templates/fixed-phrases.md` |
 | **お手本として見せる文例** | `theme-packs/streaming-jp/templates/examples/leaving-excerpt.md` |
 
@@ -231,6 +235,16 @@ git pull
 
 「セクションの最後は『〜しましょう』で締める」「記号は全角に統一する」
 「記事の作り方の解説を書かない」といった方針はここを直す。
+
+### naming.md — 軸とタイトル
+
+**全記事タイプ共通**なので1枚にまとめてある。「1本の記事はサービス1社かジャンル1つだけを名乗る」
+「サービス軸に他社を混ぜない」「タイトルは【2026年9月】＋軸で始める」
+「同じ月の2本目を作らず書き直す」といった決まりはここ。
+
+★ ここを直すときは、品質ゲート側（`article-types/shared.ts` の `titleIssues()`）も
+同時に見ること。**片方だけ直すと、テンプレートが要求する形と検査が食い違う。**
+決めた根拠と実測は [ARTICLE-RULES.md](./ARTICLE-RULES.md)。
 
 ### fixed-phrases.md — 固定文言
 

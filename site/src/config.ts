@@ -94,6 +94,12 @@ export type CategorySlug = keyof typeof CATEGORIES
  * ★ `includes` の**先頭がそのハブのURL**になる（`/category/<先頭>`）。
  *   2番目以降のカテゴリには専用ページを作らない。
  *   `public/_redirects` で先頭へ転送すること。**片方だけ直すと404が出る。**
+ *
+ * ★ `serviceMenu: true` のハブは、ヘッダーで**押すとサービス名が開く**
+ *   （2026-08-27）。読者は「終了まわりを見たい」の次に必ず
+ *   「どのサービスの話か」を選ぶので、その1手をメニューの中で済ませる。
+ *   開いた先は `/category/<ハブ>/<サービス>`（category/[category]/[service].astro）。
+ *   `false` のハブは今までどおり、押すとそのまま一覧へ飛ぶ。
  */
 export const CATEGORY_HUBS = [
   {
@@ -103,6 +109,7 @@ export const CATEGORY_HUBS = [
     heading: '配信終了予定・終了済み',
     description: '見放題配信が終了する予定の作品と、すでに終了した作品の記事一覧です。',
     includes: ['leaving', 'ended'],
+    serviceMenu: true,
   },
   {
     slug: 'arrivals',
@@ -110,6 +117,7 @@ export const CATEGORY_HUBS = [
     heading: '新着配信',
     description: '新しく見放題配信が始まった作品の記事一覧です。',
     includes: ['arrivals'],
+    serviceMenu: true,
   },
   {
     slug: 'ranking',
@@ -117,6 +125,13 @@ export const CATEGORY_HUBS = [
     heading: 'ランキング',
     description: 'ランキング記事の一覧です。',
     includes: ['ranking'],
+    /*
+     * ★ ランキングだけメニューを開かない。
+     *   記事がまだ1本も無く、サービスで割るとすべて空になる。
+     *   記事が増えてサービス別に意味が出たら true にすればよい
+     *   （ページ側は CATEGORY_HUBS を見て自動で増える）。
+     */
+    serviceMenu: false,
   },
 ] as const satisfies readonly {
   slug: CategorySlug
@@ -124,28 +139,48 @@ export const CATEGORY_HUBS = [
   heading: string
   description: string
   includes: readonly CategorySlug[]
+  serviceMenu: boolean
 }[]
 
+/** ヘッダーでサービス名を開くハブ。サービス別ページもこのハブ×SERVICE_HUBSぶん作る。 */
+export const SERVICE_MENU_HUBS = CATEGORY_HUBS.filter((h) => h.serviceMenu)
+
 /**
- * サービス別のまとめページ。**右の枠から入る導線**（2026-08-26 追加）。
+ * サービスの一覧。**ヘッダーのメニューを開いたときに出る5つ**（2026-08-27 に変更）。
  *
  * ■ カテゴリのハブ（CATEGORY_HUBS）と軸が違う
  *   カテゴリ … 「終了まわり」「新着」で束ねる。**何が起きたか**で探す読者向け
  *   サービス … 「プライムビデオの話だけ見たい」。**契約しているサービス**で探す読者向け
- * 同じ記事が両方から辿れるが、探し方が違うので競合しない。
+ * ヘッダーは「カテゴリ → サービス」の順に選ばせる形にしてあるので、
+ * この一覧は次の3か所すべてに効く。
+ *   1. ヘッダーのメニュー（Header.astro）
+ *   2. カテゴリ×サービスのページ `/category/<ハブ>/<サービス>`
+ *   3. サービス別まとめ `/service/<サービス>`（カテゴリをまたぐ従来のページ）
  *
  * ★ `tag` は記事の frontmatter `tags` に入る文字列と**完全に一致させること。**
- *   まとめページはタグで記事を拾う。1文字でも違うと0件のページができる。
+ *   ページはタグで記事を拾う。1文字でも違うと0件のページができる。
  *   タグを出しているのは各記事タイプの `tags()`（theme-packs/…/article-types/）。
  *
- * ★ Disney+ と Apple TV+ は入れていない。
- *   実測（2026-08）で Disney+ は記事2本・新着14件、Apple TV+ は記事1本・新着5件しかなく、
- *   まとめページを作っても中身が薄い。件数が増えたらここに足す。
+ * ★ **記事が出ないサービスは並べない。**
+ *   Hulu は一度メニューに入れたが外した（2026-08-27）。収集対象ですらなく
+ *   （theme.yaml の catalogs 節。APIの日本カバレッジに無い）、記事が
+ *   永久に0本のままで、押した先が空のページにしかならないため。
+ *   Hulu の作品を扱えるようになったら、ここに1行足せば
+ *   メニューもページも自動で戻る。
+ *
+ * ★ Apple TV+ も入れていない。記事1本・新着5件（2026-08 実測）で、
+ *   メニューに常時1枠使うほどの量がない。
+ *
+ * ★ それでも**中身が0件になる組み合わせは起こりうる**
+ *   （新しいサービスを足した直後・ハブを増やした直後）。
+ *   0件のページは noindex にしてある。判定は
+ *   lib/service-pages.ts の `serviceHasContent()` 1か所。
  */
 export const SERVICE_HUBS = [
   { slug: 'prime-video', label: 'Amazon Prime Video', tag: 'Amazon Prime Video' },
   { slug: 'netflix', label: 'Netflix', tag: 'Netflix' },
   { slug: 'u-next', label: 'U-NEXT', tag: 'U-NEXT' },
+  { slug: 'disney-plus', label: 'Disney+', tag: 'Disney+' },
 ] as const
 
 export type ServiceHubSlug = (typeof SERVICE_HUBS)[number]['slug']

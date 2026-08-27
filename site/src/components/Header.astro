@@ -1,11 +1,27 @@
 ---
-import { SITE, CATEGORY_HUBS } from '../config'
+import { SITE, CATEGORY_HUBS, SERVICE_HUBS } from '../config'
 import PostSearch from './PostSearch.astro'
 
 /**
  * ★ メニューは CATEGORIES ではなく **CATEGORY_HUBS** から作る。
  *   カテゴリは4つあるが、読者に見せる入口は3つ（2026-08-26）。
  *   「配信終了予定」と「終了済み」を1つの入口にまとめてある。理由は config.ts。
+ *
+ * ■ 2段のメニュー（2026-08-27）
+ * `serviceMenu: true` のハブ（配信終了済み・予定／新着配信）は、
+ * **押すとサービス名が開く**。選ぶと `/category/<ハブ>/<サービス>` へ飛ぶ。
+ * 読者は「終了まわりを見たい」の次に必ず「どのサービスか」を選ぶので、
+ * その2手目をメニューの中で済ませる。
+ * 開いた先の一番上に「すべて見る」を置いてあるので、
+ * **ハブ全体の一覧（従来の行き先）にもメニューから入れる。**
+ *
+ * ★ `<details>` で作ってある。JavaScript が無くても開閉できる。
+ *   下のスクリプトが足しているのは「他のメニューを閉じる」「外を押したら閉じる」
+ *   「Escで閉じる」だけで、**無くてもメニューとして成立する。**
+ *
+ * ■ 並びは サイト名 ｜ メニュー＋検索窓
+ * サイト名だけ左に置き、**メニューと検索窓は右にまとめる**（2026-08-27）。
+ * 読者が操作するものが右に揃うので、視線の移動が1か所で済む。
  */
 ---
 
@@ -13,12 +29,65 @@ import PostSearch from './PostSearch.astro'
   <div class="wrap inner">
     <a class="brand" href="/">{SITE.name}</a>
     <nav aria-label="カテゴリ">
-      {CATEGORY_HUBS.map((h) => <a href={`/category/${h.slug}`}>{h.label}</a>)}
+      {
+        CATEGORY_HUBS.map((h) =>
+          h.serviceMenu ? (
+            <details class="menu" data-menu>
+              <summary>{h.label}</summary>
+              <div class="panel">
+                {/* ハブ全体の一覧。サービスを選ばない読者の行き先を残す */}
+                <a class="panel-all" href={`/category/${h.slug}`}>
+                  {h.label}をすべて見る
+                </a>
+                <ul>
+                  {SERVICE_HUBS.map((s) => (
+                    <li>
+                      <a href={`/category/${h.slug}/${s.slug}`}>{s.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          ) : (
+            <a class="plain" href={`/category/${h.slug}`}>
+              {h.label}
+            </a>
+          ),
+        )
+      }
     </nav>
     {/* JavaScript が動かない環境では、この枠ごと出ない */}
     <PostSearch />
   </div>
 </header>
+
+<script>
+  /**
+   * メニューの開閉の補助。**開閉そのものは <details> が担う。**
+   * ここが無くても壊れないこと（JSが動かない環境でもメニューは使える）。
+   */
+  const menus = Array.from(document.querySelectorAll<HTMLDetailsElement>('[data-menu]'))
+
+  for (const menu of menus) {
+    // 同時に開くのは1つだけ。2つ開くと下の記事が見えなくなる。
+    menu.addEventListener('toggle', () => {
+      if (!menu.open) return
+      for (const other of menus) if (other !== menu) other.open = false
+    })
+  }
+
+  // 外を押したら閉じる。開いたままだと本文が読めない。
+  document.addEventListener('click', (ev) => {
+    for (const menu of menus) {
+      if (!menu.contains(ev.target as Node)) menu.open = false
+    }
+  })
+
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape') return
+    for (const menu of menus) menu.open = false
+  })
+</script>
 
 <style>
   header {
@@ -28,25 +97,21 @@ import PostSearch from './PostSearch.astro'
     top: 0;
     z-index: 5;
   }
+  /*
+   * サイト名は左、メニューと検索窓は右。
+   * `justify-content: flex-end` ＋ サイト名の `margin-right: auto` で作る。
+   * （space-between に戻すとメニューが真ん中に離れて、右の検索窓と分かれる）
+   */
   .inner {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 0.6rem 1rem;
     flex-wrap: wrap;
     padding-block: 0.7rem;
   }
-  /*
-   * 狭い画面では「サイト名 ＋ 検索窓」を1行目、メニューを2行目にする。
-   * 3つとも同じ行に押し込むと、メニューが1文字ずつ折り返して読めなくなる。
-   */
-  @media (max-width: 47rem) {
-    nav {
-      order: 3;
-      width: 100%;
-    }
-  }
   .brand {
+    margin-right: auto;
     font-weight: 700;
     font-size: 1.1rem;
     color: var(--text);
@@ -54,9 +119,15 @@ import PostSearch from './PostSearch.astro'
     white-space: nowrap;
   }
   nav {
+    /*
+     * メニューを開いたときの位置の基準。
+     * 狭い画面では、開いた枠を**メニューの行いっぱい**に広げるのに使う（下の @media）。
+     */
+    position: relative;
     display: flex;
     /* カテゴリが増えても折り返して収まるようにする */
     flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 0.5rem 0.9rem;
     font-size: 0.88rem;
   }
@@ -66,5 +137,130 @@ import PostSearch from './PostSearch.astro'
   }
   nav a:hover {
     color: var(--accent);
+  }
+
+  /* --- 押すと開くメニュー --- */
+  .menu {
+    position: relative;
+  }
+  summary {
+    /* 既定の三角は消して、下の ::after で自前の印を出す */
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    white-space: nowrap;
+    /* 指で押す範囲。狭いと隣のメニューを押してしまう */
+    padding-block: 0.15rem;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary:hover {
+    color: var(--accent);
+  }
+  summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* 開くことを示す下向きの印。開いている間は上向きに返す */
+  summary::after {
+    content: '';
+    width: 0.4rem;
+    height: 0.4rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-0.12rem) rotate(45deg);
+  }
+  .menu[open] > summary::after {
+    transform: translateY(0.06rem) rotate(-135deg);
+  }
+  .menu[open] > summary {
+    color: var(--accent);
+  }
+
+  /*
+   * 開いた枠。ヘッダーの下に**浮かせる**。
+   * 通常フローに置くとヘッダーの高さが伸びて本文が押し下げられる
+   * （記事検索の結果と同じ理由・PostSearch.astro）。
+   */
+  .panel {
+    position: absolute;
+    top: calc(100% + 0.45rem);
+    left: 0;
+    /* 「◯◯をすべて見る」が1行に収まる幅。狭めると2行に割れて読みにくい */
+    min-width: 15rem;
+    padding: 0.35rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+    z-index: 10;
+  }
+  .panel ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .panel a {
+    display: block;
+    padding: 0.45rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .panel a:hover {
+    background: var(--bg-subtle);
+    color: var(--accent);
+  }
+  /*
+   * 「すべて見る」はサービス名より弱く見せる。主役は下のサービス名。
+   * ★ セレクタは `.panel a` より1段強くしてある（`!important` を使わないため）。
+   *   ここを `.panel-all` だけに戻すと、上の `.panel a` に負けて効かない。
+   */
+  .panel a.panel-all {
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    border-radius: 6px 6px 0 0;
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.6;
+    /* 文が長いので折り返しを許す（サービス名は1行で収まるので nowrap のまま） */
+    white-space: normal;
+    color: var(--text-muted);
+  }
+  .panel a.panel-all:hover {
+    color: var(--accent);
+  }
+
+  /*
+   * 狭い画面では「サイト名 ＋ 検索窓」を1行目、メニューを2行目にする。
+   * 3つとも同じ行に押し込むと、メニューが1文字ずつ折り返して読めなくなる。
+   */
+  @media (max-width: 47rem) {
+    nav {
+      order: 3;
+      width: 100%;
+    }
+    /*
+     * 開いた枠はメニューの**行いっぱい**に広げる。
+     * 項目の真下に出すと、右端のメニューでは枠が画面からはみ出す
+     * （body は overflow-x: hidden なので、はみ出した側は切られて読めなくなる）。
+     */
+    .menu {
+      position: static;
+    }
+    .panel {
+      left: 0;
+      right: 0;
+      min-width: 0;
+    }
   }
 </style>
