@@ -1,5 +1,5 @@
 ---
-import { SITE, OG_IMAGE, CARD_IMAGE } from '../config'
+import { SITE, OG_IMAGE, CARD_IMAGE, GA_MEASUREMENT_ID } from '../config'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
 import LinkSwitch from '../components/LinkSwitch.astro'
@@ -84,6 +84,32 @@ const jsonLd = publishedAt
 <!doctype html>
 <html lang="ja">
   <head>
+    {/*
+      Google アナリティクス（GA4）。全ページ共通なのでここに1か所だけ置く。
+
+      ★ is:inline を外さないこと。
+        Astro は通常の <script> をバンドルして module として読み込むため、
+        gtag() がグローバルに定義されず、あとから
+        gtag('event', ...) を書いたときに ReferenceError になる。
+        JSON-LD と同じで、書いたものをそのまま出す必要がある。
+
+      ★ define:vars は使わない。
+        Astro がスクリプトを IIFE で包むので gtag が関数スコープに閉じる
+        （LinkSwitch.astro の注意書きと同じ理由）。IDの差し込みは set:html で行う。
+
+      測定IDは config.ts の GA_MEASUREMENT_ID。
+    */}
+    <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+    ></script>
+    <script
+      is:inline
+      set:html={`window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '${GA_MEASUREMENT_ID}');`}
+    />
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>

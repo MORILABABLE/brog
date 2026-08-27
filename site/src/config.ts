@@ -196,6 +196,15 @@ export function hubFor(category: CategorySlug): { slug: CategorySlug; label: str
 }
 
 /**
+ * Google アナリティクス（GA4）の測定ID（`G-` で始まる）。
+ *
+ * AdSense やアフィリエイトと違って .env ではなくここに直接書いている。
+ * 測定IDは HTML にそのまま出る公開値で、隠す意味がないため。
+ * タグの出力は BaseLayout.astro（＝全ページ共通の <head>）。
+ */
+export const GA_MEASUREMENT_ID = 'G-MZBL57S5MY'
+
+/**
  * AdSense のパブリッシャーID。
  * **審査に通るまでは未設定のままにすること。** 未設定なら広告枠は描画されない。
  * 設定するときは site/.env に PUBLIC_ADSENSE_CLIENT=ca-pub-xxxx を置く。
