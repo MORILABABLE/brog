@@ -10,7 +10,9 @@
  *
  *   ポスターが揃った節 … `public/sections/posters/<節>-1.webp` … **絵だけ**。
  *                        枠も日付も見出しも描かない。導線リンクで包んで挿す
- *   揃わなかった節     … `public/sections/<節>.jpg` … 従来の枠つきカード
+ *   ポスターが無い節   … `public/sections/tiles/<節>-1.webp` … **自前で描く生成ポスター**。
+ *                        ジャンルの色と絵柄に作品名を組んだもの。下記
+ *   どちらも作れない節 … `public/sections/<節>.jpg` … 従来の枠つきカード
  *
  * **絵に文字を描かないのは、すぐ上の小見出しと重複するから**（2026-08-25 の変更）。
  * 日付も主題も作品名も見出しに書いてある。画像にも入れると同じ文字が2回出る。
@@ -28,6 +30,29 @@
  * **作中キャプチャ（本編の場面写真）は使えない。** 著作権があり、
  * 広告のある当サイトでは引用の要件を満たさない。APIが返すのもポスターと
  * キーアートだけで、本編の画像は含まれない。
+ *
+ * ■ 生成ポスター（tiles）— ポスターが無い作品のための版
+ *
+ * **U-NEXT 由来の作品には画像が付いてこない**（収集がメニュー経由のため。実測で
+ * 台帳776件すべて）。そこが従来は「文字だけのカード」に落ちていて、
+ * 絵が1枚も無いうえに**導線リンクにもなっていなかった**。
+ *
+ * かわりに、ジャンルの色と絵柄（scripts/genre-art.mjs）に作品名を組んだ
+ * 1枚をその場で描く。**第三者の権利が一切絡まない**ので、許諾も出典表記も
+ * URLの失効も無く、どの作品にも必ず1枚用意できる。
+ *
+ * ★ **作品ポスターと同じ 480×720・同じレイアウト・同じ導線リンク**にしてある。
+ *   記事の見た目が配信元によって食い違わない。CSSも共有する
+ *   （styles/global.css の `/sections/posters/` と `/sections/tiles/`）。
+ *
+ * ★ **タイルには作品名を描く。** ポスターは絵柄で作品が分かるが、
+ *   ジャンルの絵だけでは何のリンクか分からない。リンクである以上、
+ *   押す前に行き先が分かる必要がある。「絵に文字を描かない」原則より
+ *   こちらを優先した。**日付と節の主題は描かない**（見出しと重複するため）。
+ *
+ * ★ **どの外部データベースを使っても3割は必ずここに落ちる。** U-NEXT 台帳の
+ *   実測で 音楽・ライブ111 + 舞台・演劇57 + 報道45 = 213件（27%）は、
+ *   映画データベースに存在しない種類の作品。生成ポスターは代替ではなく土台。
  *
  * ■ 画像が取れなくても記事は崩れない
  * 署名付きURLの失効・CDN障害・オフラインで取得は必ず失敗しうる。
@@ -59,6 +84,8 @@ import {
   posterLink,
   saveManifest,
 } from './posters.mjs'
+import { genreKeyOf, genreMotif } from './genre-art.mjs'
+import { createSafeText, missingReport } from './font-safe.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..')
@@ -72,6 +99,13 @@ const outDir = join(root, 'public', 'sections')
  * styles/global.css の `img[src^='/sections/posters/']` を参照。
  */
 const posterDir = join(outDir, 'posters')
+/**
+ * 生成ポスターの版。**ポスターと分けてあるのは出どころが違うため。**
+ * `posters/` は提供元から取得した第三者の画像、`tiles/` は自前で描いた絵。
+ * CSS の扱いは同じ（どちらも枠なしの 2:3）だが、混ぜると
+ * 「契約を終えたら消すもの」と「消さなくてよいもの」の区別が付かなくなる。
+ */
+const tileDir = join(outDir, 'tiles')
 /**
  * 記事ごとのヘッダー画像。frontmatter の `heroImage` から参照される。
  * 記事一覧のカードの左サムネイルと、記事ページの見出し上に出る。
@@ -89,6 +123,8 @@ const H = 350
 const WRITE = process.argv.includes('--write')
 const REFRESH = process.argv.includes('--refresh')
 const NO_POSTERS = process.argv.includes('--no-posters')
+/** 生成ポスターも使わず、文字だけのカードまで落とす（従来の版の確認用） */
+const NO_TILES = process.argv.includes('--no-tiles')
 
 /**
  * 作品行の組版（**ポスターが無いときの版**）。カードの内側に必ず収まる値にすること。
@@ -114,11 +150,35 @@ const PAD_X = CARD.x + 48
  */
 const POSTER = { w: 480, h: 720 }
 
+/**
+ * 生成ポスター1枚の組版。**大きさはポスターと同じ**（レイアウトを共有するため）。
+ *
+ * ★ 表示は `max-height: 280px`。480幅の絵が画面上では約187px幅になるので、
+ *   **ここの文字サイズは実寸の 0.39 倍で読まれる**。46px は約18px。
+ *   これより小さくすると、長い題名の作品が読めなくなる。
+ */
+const TILE = {
+  pad: 44,
+  titleSize: 46,
+  titleStep: 60,
+  titleTop: 168,
+  titleLines: 6,
+  yearSize: 30,
+  yearY: 648,
+}
+
 /** make-cards.mjs と同じ同梱フォント（SIL OFL 1.1 / scripts/fonts/OFL.txt） */
 const font = {
   bold: opentype.parse(readFileSync(join(here, 'fonts', 'ZenKakuGothicNew-Bold.ttf')).buffer),
   regular: opentype.parse(readFileSync(join(here, 'fonts', 'ZenKakuGothicNew-Regular.ttf')).buffer),
 }
+/**
+ * 同梱フォントに無い文字を、描ける文字に置き換える。
+ * **測るときと描くときの両方に掛けている**（片方だけだと幅がずれて枠からはみ出す）。
+ * 理由と実測は scripts/font-safe.mjs の冒頭。
+ */
+const safeText = createSafeText(font)
+
 
 /**
  * 記事のヘッダー画像（frontmatter の `heroImage`）に使う作品を選ぶときの、
@@ -153,7 +213,7 @@ function textPath(weight, text, x, y, size) {
   const f = font[weight]
   const path = new opentype.Path()
   let cx = x
-  for (const ch of [...text]) {
+  for (const ch of [...safeText(text)]) {
     const g = f.charToGlyph(ch)
     path.extend(g.getPath(cx, y, size))
     cx += (g.advanceWidth / f.unitsPerEm) * size
@@ -178,17 +238,47 @@ function roundCommands(path) {
 function textWidth(weight, text, size) {
   const f = font[weight]
   let w = 0
-  for (const ch of [...text]) w += (f.charToGlyph(ch).advanceWidth / f.unitsPerEm) * size
+  for (const ch of [...safeText(text)]) w += (f.charToGlyph(ch).advanceWidth / f.unitsPerEm) * size
   return w
 }
 
+/**
+ * 英数字。**この連なりの途中では改行しない。**
+ *
+ * 1文字ずつ折ると「モーニング娘｡ コンサートツアー200 / 6春」のように
+ * 数字が割れる（実測）。日本語は1文字で折ってよいが、英数字は語として読むので、
+ * 割れると読み手が一度つまずく。
+ */
+const WORD_CHAR = /[0-9A-Za-z]/
+
 function wrap(weight, text, size, maxWidth, maxLines) {
+  /*
+   * ★ **ここで一度だけ置き換える。** 折り返しの判定に NO_LINE_START を使うので、
+   *   行頭に来てはいけない記号（`〜` など）を**置き換えた後の姿で**見る必要がある。
+   *   置き換え前の `～`(U+FF5E) のまま判定すると、行頭に来てしまう。
+   */
+  text = safeText(text)
   const lines = []
   let line = ''
   for (const ch of [...text]) {
     if (line !== '' && textWidth(weight, line + ch, size) > maxWidth && !NO_LINE_START.includes(ch)) {
-      lines.push(line)
-      line = ch
+      let head = line
+      let carry = ch
+      /*
+       * 行末が英数字の連なりで、次の文字も英数字なら、**連なりごと次の行へ送る。**
+       * ただし送り先でも収まらない長さ（長い英字列）なら送っても解決しないので
+       * そのまま折る。行の全部が連なりのときも折る
+       * （送ると行が空になり、先へ進めなくなる）。
+       */
+      if (WORD_CHAR.test(ch)) {
+        const run = /[0-9A-Za-z]+$/.exec(head)?.[0]
+        if (run && run.length < head.length && textWidth(weight, run + ch, size) <= maxWidth) {
+          head = head.slice(0, -run.length)
+          carry = run + ch
+        }
+      }
+      lines.push(head)
+      line = carry
       if (lines.length === maxLines) return lines
     } else {
       line += ch
@@ -205,21 +295,32 @@ function ellipsize(weight, text, size, maxWidth) {
   return s + '…'
 }
 
-// --- 収集データ（公開年を引くため） ---------------------------------------
+// --- 収集データ（公開年とジャンルを引くため） -----------------------------
 
-function loadWorkYears() {
+/**
+ * 収集ログから、作品名 → 公開年 / ジャンル を引けるようにする。
+ *
+ * **2つを別の Map にしているのは、揃っている率が違うから。**
+ * 公開年は空のことがある（実測: U-NEXT の記事に出る160作のうち1作）が、
+ * ジャンルは U-NEXT が公式のものを付けてくるので必ず入る。
+ * 年が無くても生成ポスターは作れるように、片方だけで判断できる形にしてある。
+ */
+function loadWorkMeta() {
   const dir = join(repo, 'data', 'events')
-  const map = new Map()
-  if (!existsSync(dir)) return map
+  const years = new Map()
+  const genres = new Map()
+  if (!existsSync(dir)) return { years, genres }
   for (const f of readdirSync(dir).filter((f) => f.endsWith('.jsonl'))) {
     for (const line of readFileSync(join(dir, f), 'utf8').trim().split('\n')) {
       if (!line) continue
       const e = JSON.parse(line)
       const title = e.work.localizedTitle ?? e.work.title
-      if (title && e.work.year && !map.has(title)) map.set(title, e.work.year)
+      if (!title) continue
+      if (e.work.year && !years.has(title)) years.set(title, e.work.year)
+      if (e.work.genres?.length && !genres.has(title)) genres.set(title, e.work.genres)
     }
   }
-  return map
+  return { years, genres }
 }
 
 // --- 記事の解析 -----------------------------------------------------------
@@ -438,6 +539,70 @@ function buildSvg(section, years) {
 </svg>`
 }
 
+/**
+ * 生成ポスター1枚の SVG。**ポスターが取れない作品のための版。**
+ *
+ * ジャンルの色と絵柄（genre-art.mjs）を土台に、作品名と公開年を組む。
+ * 第三者の画像を1枚も使っていないので、許諾も出典表記も期限も無い。
+ *
+ * ★ 描くのは**作品名と年だけ**。日付と節の主題は描かない。
+ *   すぐ上の小見出しに書いてあるので、ここに入れると同じ文字が2回出る
+ *   （ポスターの版と同じ考え方）。
+ *
+ * ★ 絵柄は**透かし**として敷く。主役は題名で、絵柄は「何の種類の作品か」を
+ *   色と形で添えるだけ。濃くすると題名が読めなくなる。
+ */
+function buildTileSvg(title, year, genreKey) {
+  const { path, hue } = genreMotif(genreKey)
+  // 彩度と明度は全ジャンル共通で、**色相だけを変える**（genreSvg と同じ約束）。
+  // 何枚並べても1組のデザインに見える。
+  const top = `hsl(${hue} 34% 30%)`
+  const bottom = `hsl(${hue} 40% 19%)`
+  const ink = `hsl(${hue} 60% 96%)`
+  const sub = `hsl(${hue} 45% 74%)`
+  const art = `hsl(${hue} 52% 74%)`
+  const motif = path.replaceAll('CURRENT', art)
+
+  const innerW = POSTER.w - TILE.pad * 2
+  const lines = wrap('bold', title, TILE.titleSize, innerW, TILE.titleLines)
+  /*
+   * wrap() は入りきらないぶんを**黙って捨てる**。
+   * 捨てたことが読者に分かるよう、最後の行を「…」で終わらせる。
+   * 題名が途中で切れているのに切れて見えないのが一番まずい。
+   */
+  if ([...lines.join('')].length < [...title].length && lines.length > 0) {
+    const dots = textWidth('bold', '…', TILE.titleSize)
+    const last = lines[lines.length - 1]
+    lines[lines.length - 1] = ellipsize('bold', last, TILE.titleSize, innerW - dots) + '…'
+  }
+
+  const parts = []
+  parts.push(`<rect width="${POSTER.w}" height="${POSTER.h}" fill="url(#bg)"/>`)
+  parts.push(
+    `<g transform="translate(120 300) scale(3.2)" fill="none" stroke="${art}"` +
+      ` stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.16">${motif}</g>`,
+  )
+  // 題名の上の短い罫。文字だけの版の区切り線と同じ役目
+  parts.push(
+    `<rect x="${TILE.pad}" y="96" width="64" height="6" rx="3" fill="${sub}" opacity="0.85"/>`,
+  )
+  lines.forEach((line, i) => {
+    const y = TILE.titleTop + i * TILE.titleStep
+    parts.push(`<path d="${textPath('bold', line, TILE.pad, y, TILE.titleSize).d}" fill="${ink}"/>`)
+  })
+  if (year) {
+    const d = textPath('bold', `${year}年`, TILE.pad, TILE.yearY, TILE.yearSize).d
+    parts.push(`<path d="${d}" fill="${sub}"/>`)
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${POSTER.w}" height="${POSTER.h}" viewBox="0 0 ${POSTER.w} ${POSTER.h}">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
+    <stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/>
+  </linearGradient></defs>
+  ${parts.join('\n  ')}
+</svg>`
+}
+
 /** 節を一意に指す8桁。見出しから作るので、節を並べ替えても参照が壊れない。 */
 function hashFor(slug, heading) {
   return createHash('sha1').update(`${slug}\n${heading}`).digest('hex').slice(0, 8)
@@ -450,6 +615,14 @@ function nameFor(slug, heading) {
 
 /** ポスター1枚のファイル名。節の中の並び順で連番にする。 */
 function posterNameFor(slug, heading, index) {
+  return `${slug}-${hashFor(slug, heading)}-${index + 1}.webp`
+}
+
+/**
+ * 生成ポスター1枚のファイル名。**ポスターと同じ形**にしてある。
+ * ディレクトリが違うので衝突しない（`tiles/` と `posters/`）。
+ */
+function tileNameFor(slug, heading, index) {
   return `${slug}-${hashFor(slug, heading)}-${index + 1}.webp`
 }
 
@@ -543,8 +716,9 @@ function heroCandidates(sections, articleTitle) {
 // --- 実行 -----------------------------------------------------------------
 
 mkdirSync(posterDir, { recursive: true }) // outDir も一緒にできる
+mkdirSync(tileDir, { recursive: true })
 mkdirSync(heroDir, { recursive: true })
-const years = loadWorkYears()
+const { years, genres } = loadWorkMeta()
 
 /**
  * 画像の出どころは2つある。**期限が先のほうを採る。**
@@ -580,6 +754,7 @@ function imageFor(title) {
 let images = 0
 let inserted = 0
 let withPosters = 0
+let withTiles = 0
 let withText = 0
 let heroes = 0
 let heroesWritten = 0
@@ -613,6 +788,20 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
       if (!(arts.length > 0 && arts.every(Boolean))) arts = []
     }
 
+    /*
+     * ポスターが無い節を**生成ポスター**に落とせるか。
+     * **節の全員ぶんジャンルが引けるときだけ**使う。ポスターの版と同じ規律で、
+     * 1枚だけ欠けた中途半端な並びを作らない。
+     *
+     * 引けないのは、表の作品名が収集ログのどれとも一致しないとき（人が記事を
+     * 手直しして題名が変わった、など）。その節は従来どおり文字だけのカードに戻る。
+     */
+    const tileable =
+      !NO_TILES &&
+      arts.length === 0 &&
+      shown.length > 0 &&
+      shown.every((w) => genres.has(w.title))
+
     if (arts.length > 0) {
       /*
        * ポスターがある節は**絵だけ**を置く。枠も日付も見出しも描かない。
@@ -631,6 +820,24 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
       }
       refs.set(s.heading, links.join(' '))
       withPosters++
+    } else if (tileable) {
+      /*
+       * 生成ポスター。**ポスターの版と1行も違わない形で挿す**
+       * （同じ大きさ・同じ並べ方・同じ導線リンク）。読者から見て、
+       * 配信元による記事の作りの違いが出ない。
+       */
+      const links = []
+      for (const [i, w] of shown.entries()) {
+        const svg = buildTileSvg(w.title, years.get(w.title), genreKeyOf(genres.get(w.title)))
+        const buf = await sharp(Buffer.from(svg)).webp({ quality: 90 }).toBuffer()
+        const name = tileNameFor(slug, s.heading, i)
+        writeFileSync(join(tileDir, name), buf)
+        const label = labelFor(w.title, years)
+        links.push(`[![${label}](/sections/tiles/${name})](${posterLink(w.title)})`)
+        images++
+      }
+      refs.set(s.heading, links.join(' '))
+      withTiles++
     } else {
       const name = nameFor(slug, s.heading)
       await sharp(Buffer.from(buildSvg(s, years, 0)))
@@ -724,13 +931,22 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
 
 console.log(
   `セクション画像: ${images}枚を生成` +
-    `（ポスターの節 ${withPosters} / 文字だけの節 ${withText}）` +
+    `（ポスターの節 ${withPosters} / 生成ポスターの節 ${withTiles} / 文字だけの節 ${withText}）` +
     (WRITE ? ` / 参照 ${inserted}件を記事に反映` : ''),
 )
 console.log(
   `ヘッダー画像: ${heroes}本の記事に用意` +
     (WRITE ? ` / frontmatter ${heroesWritten}件を更新` : ''),
 )
+/*
+ * フォントに無い文字があれば最後に出す。**黙って〓になるのを防ぐため。**
+ * 出たら scripts/font-safe.mjs の FOLD に寄せ先を足すか、フォントを見直す。
+ */
+{
+  const report = missingReport(safeText.missing)
+  if (report) console.log(report)
+}
+
 
 if (posters) {
   posters.report()

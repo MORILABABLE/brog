@@ -22,7 +22,7 @@ heroImage: '/heroes/2026-08-arrivals-japanese.webp'
 
 ## 8月21日：Netflixで中島哲也監督の2作が同じ日に見放題配信開始
 
-[![告白（2010年）](/sections/posters/2026-08-arrivals-japanese-5b838d91-1.webp)](https://www.amazon.co.jp/s?k=%E5%91%8A%E7%99%BD&i=instant-video) [![来る（2018年）](/sections/posters/2026-08-arrivals-japanese-5b838d91-2.webp)](https://www.amazon.co.jp/s?k=%E6%9D%A5%E3%82%8B&i=instant-video)
+[![告白（2010年）](/sections/posters/2026-08-arrivals-japanese-1afb1046-1.webp)](https://www.amazon.co.jp/s?k=%E5%91%8A%E7%99%BD&i=instant-video) [![来る（2018年）](/sections/posters/2026-08-arrivals-japanese-1afb1046-2.webp)](https://www.amazon.co.jp/s?k=%E6%9D%A5%E3%82%8B&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -52,7 +52,7 @@ heroImage: '/heroes/2026-08-arrivals-japanese.webp'
 
 ## 8月21日：U-NEXTで「石岡タロー」など今回10本が見放題配信開始
 
-![8月21日：U-NEXTで「石岡タロー」など今回10本が見放題配信開始。石岡タロー（2022年）、どうしても触れたくない（2014年）ほか8作](/sections/2026-08-arrivals-japanese-8aa258e6.jpg)
+[![石岡タロー（2022年）](/sections/tiles/2026-08-arrivals-japanese-8aa258e6-1.webp)](https://www.amazon.co.jp/s?k=%E7%9F%B3%E5%B2%A1%E3%82%BF%E3%83%AD%E3%83%BC&i=instant-video) [![どうしても触れたくない（2014年）](/sections/tiles/2026-08-arrivals-japanese-8aa258e6-2.webp)](https://www.amazon.co.jp/s?k=%E3%81%A9%E3%81%86%E3%81%97%E3%81%A6%E3%82%82%E8%A7%A6%E3%82%8C%E3%81%9F%E3%81%8F%E3%81%AA%E3%81%84&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -75,7 +75,7 @@ U-NEXTでは8月21日と8月24日に、邦画が10本まとめて新たに見放
 
 ## 8月15日：U-NEXTの作品を今回新たに確認しました
 
-![8月15日：U-NEXTの作品を今回新たに確認しました。チェイサーゲームＷ 水魚の交わり（2026年）、ゼンブ・オブ・トーキョー（2024年）ほか6作](/sections/2026-08-arrivals-japanese-1b1fb71a.jpg)
+[![チェイサーゲームＷ 水魚の交わり（2026年）](/sections/tiles/2026-08-arrivals-japanese-1b1fb71a-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%81%E3%82%A7%E3%82%A4%E3%82%B5%E3%83%BC%E3%82%B2%E3%83%BC%E3%83%A0%EF%BC%B7%20%E6%B0%B4%E9%AD%9A%E3%81%AE%E4%BA%A4%E3%82%8F%E3%82%8A&i=instant-video) [![ゼンブ・オブ・トーキョー（2024年）](/sections/tiles/2026-08-arrivals-japanese-1b1fb71a-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%BC%E3%83%B3%E3%83%96%E3%83%BB%E3%82%AA%E3%83%96%E3%83%BB%E3%83%88%E3%83%BC%E3%82%AD%E3%83%A7%E3%83%BC&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |

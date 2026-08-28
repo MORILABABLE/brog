@@ -57,7 +57,7 @@ heroImage: '/heroes/2026-08-arrivals-western.webp'
 
 ## 8月5日：U-NEXTの作品を今回新たに確認しました
 
-![8月5日：U-NEXTの作品を今回新たに確認しました。SISU/シス 復讐の血闘（2025年）、アウトローズ（2025年）ほか5作](/sections/2026-08-arrivals-western-6ceda848.jpg)
+[![SISU/シス 復讐の血闘（2025年）](/sections/tiles/2026-08-arrivals-western-6ceda848-1.webp)](https://www.amazon.co.jp/s?k=SISU%20%E3%82%B7%E3%82%B9%20%E5%BE%A9%E8%AE%90%E3%81%AE%E8%A1%80%E9%97%98&i=instant-video) [![アウトローズ（2025年）](/sections/tiles/2026-08-arrivals-western-6ceda848-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%A2%E3%82%A6%E3%83%88%E3%83%AD%E3%83%BC%E3%82%BA&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |

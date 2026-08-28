@@ -17,7 +17,7 @@ heroImage: '/heroes/2026-08-arrivals-u-next.webp'
 
 ## 8月5日：「SISU/シス 復讐の血闘」など洋画20本がまとめて見放題配信開始
 
-![8月5日：「SISU/シス 復讐の血闘」など洋画20本がまとめて見放題配信開始。センチメンタル・バリュー（2025年）、アウトローズ（2025年）ほか8作](/sections/2026-08-arrivals-u-next-d4e2b979.jpg)
+[![センチメンタル・バリュー（2025年）](/sections/tiles/2026-08-arrivals-u-next-d4e2b979-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%BB%E3%83%B3%E3%83%81%E3%83%A1%E3%83%B3%E3%82%BF%E3%83%AB%E3%83%BB%E3%83%90%E3%83%AA%E3%83%A5%E3%83%BC&i=instant-video) [![アウトローズ（2025年）](/sections/tiles/2026-08-arrivals-u-next-d4e2b979-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%A2%E3%82%A6%E3%83%88%E3%83%AD%E3%83%BC%E3%82%BA&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -42,7 +42,7 @@ U-NEXTの作品はあらすじを当サイトでは取得していないため�
 
 ## 8月14日：韓国の作品を中心に24本が見放題配信開始
 
-![8月14日：韓国の作品を中心に24本が見放題配信開始。僕にはとても大切な君（2021年）、スーパーガール (2026)（2026年）ほか6作](/sections/2026-08-arrivals-u-next-6662edb9.jpg)
+[![僕にはとても大切な君（2021年）](/sections/tiles/2026-08-arrivals-u-next-6662edb9-1.webp)](https://www.amazon.co.jp/s?k=%E5%83%95%E3%81%AB%E3%81%AF%E3%81%A8%E3%81%A6%E3%82%82%E5%A4%A7%E5%88%87%E3%81%AA%E5%90%9B&i=instant-video) [![スーパーガール (2026)（2026年）](/sections/tiles/2026-08-arrivals-u-next-6662edb9-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%82%AC%E3%83%BC%E3%83%AB%20(2026)&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -63,7 +63,7 @@ U-NEXTの作品はあらすじを当サイトでは取得していないため�
 
 ## 8月17日：香港アクションを含む20本が見放題配信開始
 
-![8月17日：香港アクションを含む20本が見放題配信開始。ヴェンジェンス 報仇（1970年）、暗黒街 若き英雄伝説（1997年）ほか8作](/sections/2026-08-arrivals-u-next-cc821890.jpg)
+[![ヴェンジェンス 報仇（1970年）](/sections/tiles/2026-08-arrivals-u-next-cc821890-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%B4%E3%82%A7%E3%83%B3%E3%82%B8%E3%82%A7%E3%83%B3%E3%82%B9%20%E5%A0%B1%E4%BB%87&i=instant-video) [![暗黒街 若き英雄伝説（1997年）](/sections/tiles/2026-08-arrivals-u-next-cc821890-2.webp)](https://www.amazon.co.jp/s?k=%E6%9A%97%E9%BB%92%E8%A1%97%20%E8%8B%A5%E3%81%8D%E8%8B%B1%E9%9B%84%E4%BC%9D%E8%AA%AC&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -86,7 +86,7 @@ U-NEXTの作品はあらすじを当サイトでは取得していないため�
 
 ## 8月19日：「ザ・スーパーマリオギャラクシー・ムービー」と「ヤンヤン夏の想い出 4Kレストア版」
 
-![8月19日：「ザ・スーパーマリオギャラクシー・ムービー」と「ヤンヤン夏の想い出 4Kレストア版」。ザ・スーパーマリオギャラクシー・ムービー（2026年）、ヤンヤン夏の想い出 4Kレストア版（2000年）ほか5作](/sections/2026-08-arrivals-u-next-47f3a9b5.jpg)
+[![ザ・スーパーマリオギャラクシー・ムービー（2026年）](/sections/tiles/2026-08-arrivals-u-next-47f3a9b5-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%B6%E3%83%BB%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%83%9E%E3%83%AA%E3%82%AA%E3%82%AE%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%B7%E3%83%BC%E3%83%BB%E3%83%A0%E3%83%BC%E3%83%93%E3%83%BC&i=instant-video) [![ヤンヤン夏の想い出 4Kレストア版（2000年）](/sections/tiles/2026-08-arrivals-u-next-47f3a9b5-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%A4%E3%83%B3%E3%83%A4%E3%83%B3%E5%A4%8F%E3%81%AE%E6%83%B3%E3%81%84%E5%87%BA%204K%E3%83%AC%E3%82%B9%E3%83%88%E3%82%A2%E7%89%88&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -104,7 +104,7 @@ U-NEXTの作品はあらすじを当サイトでは取得していないため�
 
 ## 8月21日・8月24日：「石岡タロー」「ディア・ファミリー」など邦画が中心
 
-![8月21日・8月24日：「石岡タロー」「ディア・ファミリー」など邦画が中心。石岡タロー（2022年）、どうしても触れたくない（2014年）ほか8作](/sections/2026-08-arrivals-u-next-b74eb747.jpg)
+[![石岡タロー（2022年）](/sections/tiles/2026-08-arrivals-u-next-b74eb747-1.webp)](https://www.amazon.co.jp/s?k=%E7%9F%B3%E5%B2%A1%E3%82%BF%E3%83%AD%E3%83%BC&i=instant-video) [![どうしても触れたくない（2014年）](/sections/tiles/2026-08-arrivals-u-next-b74eb747-2.webp)](https://www.amazon.co.jp/s?k=%E3%81%A9%E3%81%86%E3%81%97%E3%81%A6%E3%82%82%E8%A7%A6%E3%82%8C%E3%81%9F%E3%81%8F%E3%81%AA%E3%81%84&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |

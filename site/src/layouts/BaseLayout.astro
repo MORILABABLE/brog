@@ -111,6 +111,34 @@ const jsonLd = jsonLdOverride ?? (publishedAt
 
       測定IDは config.ts の GA_MEASUREMENT_ID。
     */}
+    {/*
+      ローカル開発とプレビュー環境を計測から外す。
+
+      `window['ga-disable-<測定ID>'] = true` は GA 公式のオプトアウト用フラグで、
+      立っているとタグは読み込まれても計測データを送らない。
+      タグごと消さないのは、gtag() を未定義にしないため
+      （上の ★ と同じ理由。dev で gtag('event', ...) が ReferenceError になる）。
+
+      ★ このスクリプトは gtag.js の <script> より**前**に置くこと。
+        後ろだと読み込み完了のタイミング次第で最初の1発が送られてしまう。
+
+      ★ ここで正規表現リテラルを使わないこと。
+        set:html の中身はテンプレートリテラルなので、`\[` のような
+        バックスラッシュはHTMLに出る前に潰れる（`\[::1\]` が `[::1]` になり、
+        IPv6アドレスのつもりが文字クラスになる）。配列の includes なら
+        バックスラッシュが要らないので、この罠を踏まない。
+
+      除外するホスト:
+        localhost / 127.0.0.1 / [::1] … npm run dev, astro preview
+        *.pages.dev                    … Cloudflare Pages のプレビュー配信
+      本番は mihoudairader.com（config.ts の SITE.url）だけが計測対象になる。
+    */}
+    <script
+      is:inline
+      set:html={`window['ga-disable-${GA_MEASUREMENT_ID}'] =
+        ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) ||
+        location.hostname.endsWith('.pages.dev');`}
+    />
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
     ></script>
     <script

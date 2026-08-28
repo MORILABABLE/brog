@@ -67,10 +67,19 @@ const SERVICES = ['Netflix', 'Amazon Prime Video', 'Disney+', 'Apple TV+']
 /** 行頭に置いてはいけない文字（最低限の禁則処理） */
 const NO_LINE_START = '、。，．・：；！？」』）］｝〉》”’ー〜%％'
 
+import { createSafeText, missingReport } from './font-safe.mjs'
+
 const font = {
   bold: opentype.parse(readFileSync(FONTS.bold).buffer),
   regular: opentype.parse(readFileSync(FONTS.regular).buffer),
 }
+/**
+ * 同梱フォントに無い文字を、描ける文字に置き換える。
+ * **測るときと描くときの両方に掛けている**（片方だけだと幅がずれて枠からはみ出す）。
+ * 理由と実測は scripts/font-safe.mjs の冒頭。
+ */
+const safeText = createSafeText(font)
+
 
 /**
  * 文字列をパスデータに変換する。
@@ -81,7 +90,7 @@ function textPath(weight, text, x, y, size) {
   const f = font[weight]
   const path = new opentype.Path()
   let cx = x
-  for (const ch of [...text]) {
+  for (const ch of [...safeText(text)]) {
     const glyph = f.charToGlyph(ch)
     path.extend(glyph.getPath(cx, y, size))
     cx += (glyph.advanceWidth / f.unitsPerEm) * size
@@ -115,12 +124,18 @@ function roundCommands(path) {
 function textWidth(weight, text, size) {
   const f = font[weight]
   let w = 0
-  for (const ch of [...text]) w += (f.charToGlyph(ch).advanceWidth / f.unitsPerEm) * size
+  for (const ch of [...safeText(text)]) w += (f.charToGlyph(ch).advanceWidth / f.unitsPerEm) * size
   return w
 }
 
 /** 幅に収まるところで折り返す。日本語は単語の区切りが無いので実寸で測る。 */
 function wrap(weight, text, size, maxWidth, maxLines) {
+  /*
+   * ★ **ここで一度だけ置き換える。** 折り返しの判定に NO_LINE_START を使うので、
+   *   行頭に来てはいけない記号（`〜` など）を**置き換えた後の姿で**見る必要がある。
+   *   置き換え前の `～`(U+FF5E) のまま判定すると、行頭に来てしまう。
+   */
+  text = safeText(text)
   const lines = []
   let line = ''
   for (const ch of [...text]) {

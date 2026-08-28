@@ -68,10 +68,19 @@ const COLOR = {
 }
 
 /** 同梱フォント（SIL Open Font License 1.1 / scripts/fonts/OFL.txt） */
+import { createSafeText, missingReport } from './font-safe.mjs'
+
 const font = {
   bold: opentype.parse(readFileSync(join(here, 'fonts', 'ZenKakuGothicNew-Bold.ttf')).buffer),
   regular: opentype.parse(readFileSync(join(here, 'fonts', 'ZenKakuGothicNew-Regular.ttf')).buffer),
 }
+/**
+ * 同梱フォントに無い文字を、描ける文字に置き換える。
+ * **測るときと描くときの両方に掛けている**（片方だけだと幅がずれて枠からはみ出す）。
+ * 理由と実測は scripts/font-safe.mjs の冒頭。
+ */
+const safeText = createSafeText(font)
+
 
 const NO_LINE_START = '、。，．・：；！？」』）］｝〉》”’ー〜%％'
 
@@ -88,7 +97,7 @@ function textPath(weight, text, x, y, size) {
   const f = font[weight]
   const path = new opentype.Path()
   let cx = x
-  for (const ch of [...text]) {
+  for (const ch of [...safeText(text)]) {
     const g = f.charToGlyph(ch)
     path.extend(g.getPath(cx, y, size))
     cx += (g.advanceWidth / f.unitsPerEm) * size
@@ -113,11 +122,17 @@ function roundCommands(path) {
 function textWidth(weight, text, size) {
   const f = font[weight]
   let w = 0
-  for (const ch of [...text]) w += (f.charToGlyph(ch).advanceWidth / f.unitsPerEm) * size
+  for (const ch of [...safeText(text)]) w += (f.charToGlyph(ch).advanceWidth / f.unitsPerEm) * size
   return w
 }
 
 function wrap(weight, text, size, maxWidth, maxLines) {
+  /*
+   * ★ **ここで一度だけ置き換える。** 折り返しの判定に NO_LINE_START を使うので、
+   *   行頭に来てはいけない記号（`〜` など）を**置き換えた後の姿で**見る必要がある。
+   *   置き換え前の `～`(U+FF5E) のまま判定すると、行頭に来てしまう。
+   */
+  text = safeText(text)
   const lines = []
   let line = ''
   for (const ch of [...text]) {
@@ -384,3 +399,12 @@ if (overLength > 0) {
   console.log(`${overLength}本が30秒を超えています。台本のナレーションを短くして、もう一度実行してください。`)
 }
 console.log('※ 秒数は 6字/秒 での目安です。実際に読み上げて確かめてください。')
+/*
+ * フォントに無い文字があれば最後に出す。**黙って〓になるのを防ぐため。**
+ * 出たら scripts/font-safe.mjs の FOLD に寄せ先を足すか、フォントを見直す。
+ */
+{
+  const report = missingReport(safeText.missing)
+  if (report) console.log(report)
+}
+

@@ -225,10 +225,15 @@
     記事ごとのカード画像（OG） → site/scripts/make-cards.mjs   → public/cards/
     本文中のセクション画像     → site/scripts/make-sections.mjs → public/sections/
     作品ポスター               → site/scripts/posters.mjs       → public/sections/posters/
+    生成ポスター（自前の絵）   → site/scripts/make-sections.mjs → public/sections/tiles/
+                                 （ポスターが無い作品ぶん。U-NEXT はすべてこれ）
     記事のヘッダー画像         → site/scripts/make-sections.mjs → public/heroes/
                                  （使い道は一覧カードの左サムネイルのみ）
     表の作品サムネイル         → site/scripts/make-thumbs.mjs   → public/thumbs/
     ジャンル別の汎用画像       → site/scripts/genre-art.mjs     → public/thumbs/genre-*.webp
+                                 （絵柄は生成ポスターにも使う。genreMotif()）
+    フォントに無い文字の処理   → site/scripts/font-safe.mjs
+                                 （3つの生成スクリプトが共有。～ が消えるのを防ぐ）
 
 いずれも `npm run build` の前に自動で走る。git には入れない（毎回作り直すため）。
 絵柄そのものを変えたいときは、出力先ではなく**生成スクリプトの方**を直す。
@@ -250,6 +255,9 @@
     ショートのカット  → site/scripts/make-shorts.mjs 先頭の W / H / SAFE
                         ★ SAFE は YouTube の再生UIが重なる余白。--guides で目視できる
     ポスターの表示    → global.css の img[src^='/sections/posters/'] の max-height
+                        ★ 生成ポスター（/sections/tiles/）も同じ規則で描く。
+                          セレクタは両方に効かせてあるので、片方だけ直さない
+    生成ポスターの中身 → make-sections.mjs の TILE（余白・文字の大きさ・行数）
     表のサムネイル    → global.css の .work-thumb
                         ★ 3か所と揃える（rehype-work-links.ts / WorkTable.astro の
                           THUMB、make-thumbs.mjs の THUMB は表示の2倍）

@@ -299,7 +299,14 @@ h3 {
 }
 
 /*
- * 作品ポスター（`/sections/posters/` 配下）。**扱いが上とほぼ逆になる。**
+ * 作品ポスター（`/sections/posters/`）と生成ポスター（`/sections/tiles/`）。
+ * **扱いが上とほぼ逆になる。**
+ *
+ * ★ 2つのディレクトリを同じ見た目にしているのは意図的。
+ *   前者は提供元から取得した第三者の画像、後者はジャンルの色と絵柄に
+ *   作品名を組んだ自前の生成物（scripts/make-sections.mjs の buildTileSvg）。
+ *   **出どころは違うが、読者から見た役割は同じ**なので組版を分けない。
+ *   U-NEXT 由来の作品にはポスターが1枚も無く、そこが後者になる。
  *
  * ★ 幅いっぱいにしない。2:3 の絵を本文幅(736px)に広げると高さが 500px を超え、
  *   記事の本題（表）に届くまでのスクロールが増える。**高さで抑える。**
@@ -311,19 +318,22 @@ h3 {
  * inline-block で並べると空白1文字ぶんがはみ出し、狭い画面で2枚目が
  * 下に落ちる（実測: 390px 幅で縦積みになった）。
  */
-.prose p:has(> a > img[src^='/sections/posters/']) {
+.prose p:has(> a > img[src^='/sections/posters/']),
+.prose p:has(> a > img[src^='/sections/tiles/']) {
   display: flex;
   gap: 0.5rem;
   align-items: flex-start;
   margin: 1.4rem 0;
 }
-.prose p:has(> a > img[src^='/sections/posters/']) > a {
+.prose p:has(> a > img[src^='/sections/posters/']) > a,
+.prose p:has(> a > img[src^='/sections/tiles/']) > a {
   /* 画面が狭いときに縮めるため。既定の min-width:auto だと縮まない */
   min-width: 0;
   /* ポスターはアフィリエイトの導線を兼ねる。絵に下線は要らない */
   text-decoration: none;
 }
-.prose img[src^='/sections/posters/'] {
+.prose img[src^='/sections/posters/'],
+.prose img[src^='/sections/tiles/'] {
   display: inline-block;
   width: auto;
   height: auto;

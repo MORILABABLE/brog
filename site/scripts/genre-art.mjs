@@ -192,6 +192,24 @@ const MOTIF = {
 }
 
 /**
+ * ジャンル1つぶんの「絵柄と色」を取り出す。
+ *
+ * genreSvg() は 48×72 のサムネ用に組み上がった1枚を返すが、
+ * make-sections.mjs は**同じ絵柄をポスター大（480×720）で組み直す**ので、
+ * 出来上がりではなく部品が要る。ここはその窓口。
+ *
+ * `path` の中の `CURRENT` は塗り色のプレースホルダなので、
+ * **呼び出し側が必ず置換すること**（genreSvg() と同じ約束）。
+ *
+ * @param {string} key
+ * @returns {{ path: string, hue: number, label: string }}
+ */
+export function genreMotif(key) {
+  const g = GENRE_BY_KEY.get(key) ?? GENRE_BY_KEY.get(FALLBACK_GENRE)
+  return { path: MOTIF[g.key] ?? MOTIF.other, hue: g.hue, label: g.label }
+}
+
+/**
  * ジャンル1枚ぶんの SVG。
  *
  * ★ `<text>` を使わないこと。SVG のテキストは描画するマシンのフォントで出るため、

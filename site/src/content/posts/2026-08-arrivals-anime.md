@@ -39,7 +39,7 @@ heroImage: '/heroes/2026-08-arrivals-anime.webp'
 
 ## 8月3日：東映アニメーション作品が「ONE PIECE STAMPEDE」など3作で配信開始
 
-![8月3日：東映アニメーション作品が「ONE PIECE STAMPEDE」など3作で配信開始。ONE PIECE STAMPEDE（2019年）、デジタルモンスター（1999年）ほか1作](/sections/2026-08-arrivals-anime-b8d73870.jpg)
+[![ONE PIECE STAMPEDE（2019年）](/sections/tiles/2026-08-arrivals-anime-b8d73870-1.webp)](https://www.amazon.co.jp/s?k=ONE%20PIECE%20STAMPEDE&i=instant-video) [![デジタルモンスター（1999年）](/sections/tiles/2026-08-arrivals-anime-b8d73870-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
