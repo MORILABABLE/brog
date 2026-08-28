@@ -53,6 +53,7 @@ import { endedArticle } from './ended.ts'
 import { arrivalsArticle } from './arrivals.ts'
 import { arrivalsServiceArticle } from './arrivals-service.ts'
 import { specialArticle } from './special.ts'
+import { upcomingArticle } from './upcoming.ts'
 
 export const ARTICLE_TYPES: ArticleType[] = [
   leavingArticle,
@@ -60,4 +61,5 @@ export const ARTICLE_TYPES: ArticleType[] = [
   arrivalsArticle,
   arrivalsServiceArticle,
   specialArticle,
+  upcomingArticle,
 ]

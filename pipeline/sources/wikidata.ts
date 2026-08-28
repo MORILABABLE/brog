@@ -192,6 +192,83 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out
 }
 
+// --- 邦題から作品を特定する（逆引き） ----------------------------------------
+
+/**
+ * 邦題1件に対する候補。
+ * **1件に絞れないことがある**ので、選ぶのは呼び出し側の仕事にしてある。
+ */
+export interface LabelMatch {
+  imdbId: string
+  /** instance of の英語ラベル（film / television series / anime television series …） */
+  type?: string
+  /** 公開年（P577）。同名作品を区別する主な手掛かり */
+  year?: number
+}
+
+/**
+ * SPARQL の文字列リテラルに埋め込める形にする。
+ * 邦題には `"` を含むものがある（例: Perfume "コールドスリープ"）。
+ */
+function sparqlString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
+
+/**
+ * **現地語タイトルから IMDb ID を引く（resolveTitles の逆向き）。**
+ *
+ * ■ 何のためにあるか
+ * 配信各社の月次告知には作品名しか無い（→ pipeline/sources/announcement.ts）。
+ * IMDb ID さえ分かれば Streaming Availability API の `/shows/{imdbId}` を引けて、
+ * **記事の画像を従来と同じ許諾済みの経路で用意できる。**
+ *
+ * ■ 別名（skos:altLabel）は引かない
+ * 引くと当たる数は増えるが、副題違い・シリーズ名との混同で
+ * **別作品のポスターを載せる**危険が上がる。画像は間違えると記事の信用に直結し、
+ * 落としても代替（ジャンル別の自前タイル）があるので、正確さを優先する。
+ *
+ * ■ 同名は素直に複数返す
+ * 「ダンケルク」は1964年の映画と2017年の映画の両方が返る。
+ * ここでは絞らず、種別と年を添えて全部返す。
+ */
+export async function resolveImdbIdsByLabel(
+  labels: string[],
+  lang: string,
+): Promise<Map<string, LabelMatch[]>> {
+  const out = new Map<string, LabelMatch[]>()
+  const targets = [...new Set(labels.filter(Boolean))]
+
+  // URL 長と WDQS の負荷を見て、タイトルは短めの単位で問い合わせる
+  for (const group of chunk(targets, 40)) {
+    const values = group.map((t) => `"${sparqlString(t)}"@${lang}`).join(' ')
+    const sparql = `SELECT ?label ?imdb ?type ?year WHERE {
+  VALUES ?label { ${values} }
+  ?item rdfs:label ?label .
+  ?item wdt:${P_IMDB} ?imdb .
+  FILTER(STRSTARTS(?imdb, "tt"))
+  OPTIONAL { ?item wdt:P31 ?class . ?class rdfs:label ?type . FILTER(LANG(?type) = "en") }
+  OPTIONAL { ?item wdt:P577 ?date . BIND(YEAR(?date) AS ?year) }
+}`
+    for (const b of await runBindings(sparql)) {
+      const label = b.label?.value
+      const imdbId = b.imdb?.value
+      if (!label || !imdbId) continue
+      const list = out.get(label) ?? []
+      const found = list.find((m) => m.imdbId === imdbId)
+      const year = b.year?.value ? Number(b.year.value) : undefined
+      if (found) {
+        // 同じ作品が type 違いで複数行返る。情報の多いほうを残す
+        found.type ??= b.type?.value
+        found.year ??= year
+      } else {
+        list.push({ imdbId, type: b.type?.value, year })
+      }
+      out.set(label, list)
+    }
+  }
+  return out
+}
+
 /**
  * 作品群の現地語タイトルを解決する。キャッシュ済みは問い合わせない。
  *

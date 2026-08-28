@@ -330,6 +330,29 @@ export class StreamingAvailabilitySource implements Source {
     })
     return { posterUrl: pickPoster(show), backdropUrl: pickBackdrop(show) }
   }
+
+  /**
+   * 作品1件を引く。**1作品につき1リクエスト**。
+   *
+   * `showId` には API の作品IDのほか **IMDb ID（tt…）をそのまま渡せる**
+   * （2026-08-28 に実測: `/shows/tt1375666` → Inception）。
+   *
+   * これがあると「配信各社の告知にある邦題」から作品を特定できる。
+   *   邦題 → Wikidata で IMDb ID → ここで作品 → ポスター・年・ジャンル
+   * 告知そのものには画像も年もジャンルも無いので、
+   * **記事の画像を従来と同じ経路（許諾済み）で用意する唯一の道**になる。
+   *   → pipeline/sources/title-lookup.ts / `npm run collect:announce`
+   *
+   * 見つからなければ 404 で例外になるので、呼び出し側で握って undefined にすること。
+   */
+  async fetchShow(showId: string): Promise<Work> {
+    const show = await this.#get<ApiShow>(`/shows/${encodeURIComponent(showId)}`, {
+      country: this.theme.country,
+      output_language: this.theme.api_language,
+      series_granularity: 'show',
+    })
+    return toWork(show)
+  }
 }
 
 /**

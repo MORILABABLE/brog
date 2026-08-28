@@ -10,6 +10,7 @@ import { parse } from 'yaml'
 import type { SearchLinkConfig } from './core/search-links.ts'
 import type { ArticleType } from './core/article.ts'
 import type { UnextConfig } from './sources/unext.ts'
+import type { AnnouncementConfig } from './sources/announcement.ts'
 
 export interface CatalogConfig {
   /** テーマ内で使う安定したキー。記事やファイル名で使う。 */
@@ -62,6 +63,15 @@ export interface Theme {
    * 未設定なら U-NEXT の収集を行わない。
    */
   unext?: UnextConfig
+  /**
+   * 各社が前月末に出す「翌月の配信開始ラインナップ」の告知。
+   *
+   * catalogs（API）とも unext（実ブラウザ）とも別枠なのは、取れるものが違うため。
+   * ここから取れるのは**まだ始まっていない配信の予定**だけで、
+   * API の `upcoming` が日本では0件を返し続けている穴を埋める。
+   * 未設定なら告知の取り込みを行わない。
+   */
+  announcements?: AnnouncementConfig[]
 }
 
 export const THEME_ROOT = 'theme-packs'
@@ -114,6 +124,20 @@ export async function loadTheme(key = activeThemeKey()): Promise<Theme> {
     }
     const gd = u.genres.map((g) => g.key).filter((k, i, a) => a.indexOf(k) !== i)
     if (gd.length) throw new Error(`${path}: unext.genres.key が重複しています: ${gd.join(', ')}`)
+  }
+
+  // announcements も任意。1つでも欠けると収集が静かに空振りするので、ここで落とす。
+  for (const a of theme.announcements ?? []) {
+    const lack = (['service', 'label', 'publisher', 'parser', 'url'] as const).filter((k) => !a[k])
+    if (lack.length) {
+      throw new Error(`${path}: announcements[${a.service ?? '?'}] の ${lack.join(', ')} が未設定です`)
+    }
+    if (!a.url.includes('{')) {
+      throw new Error(
+        `${path}: announcements[${a.service}].url に月を埋める場所がありません` +
+          '（{year} / {month_en} / {month} のいずれかを含めます）',
+      )
+    }
   }
 
   return theme

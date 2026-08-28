@@ -38,6 +38,15 @@ const ATTRIBUTIONS: {
     reason: '出どころと基準日を読者に示す必要があります',
   },
   {
+    // 各社が前月末に出す翌月ラインナップの告知（pipeline/sources/announcement.ts）。
+    // ★ これを Movie of the Night 側に落とすと、**取得していないAPIを出典として偽る**。
+    //   加えて、告知は「予定」であって配信中の事実ではない。
+    //   予定が動きうることまで含めて読者に示す義務がこちら側にある。
+    match: (e) => e.work.meta.source === 'announcement',
+    marker: '公式発表',
+    reason: '予定は変更されうるので、出どころと基準日を読者に示す必要があります',
+  },
+  {
     match: () => true,
     marker: 'Movie of the Night',
     reason: 'API利用規約上の義務です',

@@ -216,6 +216,10 @@ cd site && npm run build        # サイトのビルド
 6. `upcoming` を収集の既定から外すか判断する
    → 全実行・全サービスで**0件**が続いており、月12リクエストの空振り。
      API側が返し始める可能性はあるので、四半期に一度 `--kinds upcoming` で手動確認する運用も可
+   → ★ **配信開始予定そのものは各社の告知から取れるようになった**（2026-08-28）。
+     `npm run collect:announce` / [ANNOUNCEMENTS.md](./ANNOUNCEMENTS.md)。
+     解析器があるのは Prime Video だけなので、**次は Disney+ か U-NEXT を足す**
+     （どちらも前月25日〜月末に告知が出る。URLの規則性は ANNOUNCEMENTS.md 3節）
 7. `bench.ts`（同じ素材を各LLMに流してコスト・品質・検証通過率を比較）
 8. GitHub Actions で記事のPR自動作成（P3）
    → **収集の定期実行と更新通知は稼働済み。** 残るのは記事生成を Actions から回す部分

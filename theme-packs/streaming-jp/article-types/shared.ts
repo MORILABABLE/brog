@@ -328,6 +328,30 @@ export const MISLEADING_AFTER_END = [
 ] as const
 
 /**
+ * **まだ始まっていない配信**を「もう観られる」と読ませる表現。
+ *
+ * 配信開始「予定」の記事（kind が upcoming の特報）で効かせる。
+ * 記事の性格は終了済みの記事と裏返しで、誤ると読者は
+ * **観られない作品を観に行かされる**。よって warn ではなく error。
+ *
+ * ★ 「観られます」「視聴できます」は入れない。
+ *   「9月1日から観られます」は予定の記事でも正しい書き方で、
+ *   部分一致で止めると正しい文まで公開できなくなる。
+ *   ここに置くのは**いま観られると読める言い方だけ**。
+ */
+export const NOT_YET_AVAILABLE_CLAIM = [
+  '配信中です',
+  '配信が始まりました',
+  '配信が開始されました',
+  '配信開始しました',
+  '見放題に加わりました',
+  '見放題に追加されました',
+  'すでに配信',
+  '今すぐ観られます',
+  '今すぐ視聴',
+] as const
+
+/**
  * ポイント（レンタル）で残る可能性がある作品を「もう観られない」と読ませる表現。
  *
  * **見放題とポイントが同居するサービス（U-NEXT）でだけ効かせる。**
@@ -397,8 +421,20 @@ export interface TitleRule {
   /**
    * 記事タイプごとに固定の動詞句。`見放題配信が始まった` など。
    * templates/naming.md の表と1文字も違えないこと。
+   *
+   * ★ 空文字なら検査しない。**先頭の【】が動詞まで名乗る記事タイプ**
+   *   （配信開始予定＝`periodLabel` が「2026年9月配信開始」）でだけ空にする。
+   *   同じことをタイトルに2回書かせないため。
    */
   verbPhrase: string
+  /**
+   * 先頭の【】に入れる期間の名乗り。既定は `{年}年{月}月`。
+   *
+   * ★ 配信開始「予定」の記事だけ「2026年9月配信開始」にしている。
+   *   同じ月には配信終了予定の記事も並ぶので（【2026年9月】Netflixで…終了予定）、
+   *   **先頭の数文字だけを見る読者に、開始と終了を取り違えさせない**ため。
+   */
+  periodLabel?: string
   /** 更新版か（`previousAsOf()` が前の版を見つけたか） */
   isUpdate: boolean
   /**
@@ -444,8 +480,9 @@ export function titleIssues(title: string, ctx: ArticleContext, rule: TitleRule)
   //   先頭を 【9月12日更新】 にすると、検索結果の一覧で
   //   **どのカテゴリ・どの月の記事なのかが頭から消える。**
   //   読者が最初に見るのは先頭の数文字なので、そこは版によらず固定する。
-  if (!title.startsWith(`【${monthLabel}】`)) {
-    err(`タイトルは「【${monthLabel}】」で始めます。現在: 「${clip(title, 30)}」`)
+  const period = rule.periodLabel ?? monthLabel
+  if (!title.startsWith(`【${period}】`)) {
+    err(`タイトルは「【${period}】」で始めます。現在: 「${clip(title, 30)}」`)
   }
 
   if (rule.isUpdate) {
@@ -500,7 +537,8 @@ export function titleIssues(title: string, ctx: ArticleContext, rule: TitleRule)
   }
 
   // --- 動詞句 ---
-  if (!title.includes(rule.verbPhrase)) {
+  // 空文字は「先頭の【】が動詞まで名乗るので検査しない」の意（TitleRule 参照）
+  if (rule.verbPhrase && !title.includes(rule.verbPhrase)) {
     err(
       `タイトルに「${rule.verbPhrase}」がありません。記事タイプごとに固定の言い方です` +
         '（「見放題配信開始の」「見放題終了する」などに言い換えないこと）。',

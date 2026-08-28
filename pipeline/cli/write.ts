@@ -176,9 +176,32 @@ function recipeLabel(r: Recipe): string {
 function sourcesFor(items: ChangeEvent[]): { label: string; url: string }[] {
   const out: { label: string; url: string }[] = []
 
-  if (items.some((e) => e.work.meta.source !== 'u-next')) {
+  const announced = items.filter((e) => e.work.meta.source === 'announcement')
+  /*
+   * ★ 「u-next 以外はAPI」と書いてはいけない。
+   *   各社の告知（announcement）由来の作品はAPIから取っていないので、
+   *   一律に載せると**取得していないAPIを出典として偽る**。
+   *   ただし告知由来でも、画像と公開年をAPIから引いた作品（apiShowId がある）は
+   *   **実際にAPIのデータを使っている**ので、そのときは出典に要る。
+   */
+  const usesApi = items.some((e) => {
+    const source = e.work.meta.source
+    if (source === 'u-next') return false
+    if (source === 'announcement') return typeof e.work.meta.apiShowId === 'string'
+    return true
+  })
+
+  if (usesApi) {
     out.push({ label: ATTRIBUTION.text, url: ATTRIBUTION.url })
+  }
+  if (usesApi || announced.length > 0) {
+    // 邦題（API由来）も、告知の邦題から作品を特定する経路も Wikidata を通る
     out.push({ label: '作品タイトル（Wikidata・CC0）', url: 'https://www.wikidata.org/' })
+  }
+  if (announced.length > 0) {
+    const publisher = String(announced[0]!.work.meta.publisher ?? '各社')
+    const url = String(announced[0]!.work.meta.announcementUrl ?? '')
+    out.push({ label: `配信開始日は ${publisher} が公表した公式発表`, url })
   }
   if (items.some((e) => e.work.meta.source === 'u-next')) {
     out.push({

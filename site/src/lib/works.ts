@@ -352,6 +352,14 @@ function build(): Map<string, WorkPage> {
   for (const e of loadAllEvents()) {
     // ★ ここが U-NEXT を落とす唯一の場所（docs/GROWTH.md 2-3）。
     if (!API_SERVICE_KEYS.has(e.service)) continue
+    /*
+     * ★ 配信開始「予定」（各社の告知）は作品ページに出さない。
+     *   このページは「いま観られるか・いつまで観られるか」を伝える場所で、
+     *   `stateOf()` は expiring / removed 以外をすべて `started`（配信開始）と
+     *   扱う。予定を混ぜると**まだ始まっていない配信を「配信開始」と表示する。**
+     *   告知は記事（特報 --kind upcoming）の素材としてだけ使う。
+     */
+    if (e.kind === 'upcoming') continue
     const id = String(e.work.id)
 
     const svc = byWork.get(id) ?? new Map<string, RawEvent[]>()

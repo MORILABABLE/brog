@@ -13,6 +13,7 @@
 | **検索流入を増やす（施策と根拠）** | **[docs/GROWTH.md](./docs/GROWTH.md)** |
 | **作品ページを実装する（設計）** | **[docs/WORK-PAGES.md](./docs/WORK-PAGES.md)** |
 | **U-NEXT の収集（APIの外側）** | **[docs/UNEXT.md](./docs/UNEXT.md)** |
+| **翌月のラインナップを先出しで書く** | **[docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md)** |
 | 設計の全体像・判断の理由 | [DESIGN.md](./DESIGN.md) |
 | ドメイン・GitHub・Cloudflare の操作 | [DEPLOY.md](./DEPLOY.md) |
 
@@ -47,7 +48,7 @@ Streaming Availability API
 | `new` | 新規配信開始 | `arrivals`（ジャンル別）／`arrivals-service`（サービス別） |
 | `removed` | 配信終了済み | `ended`（配信終了予定を取れないサービスのみ） |
 | `expiring` | **配信終了予定（日付付き）** | `leaving`（サービス別） |
-| `upcoming` | 配信開始予定 | `arrivals` 末尾の「これから配信開始予定」 |
+| `upcoming` | 配信開始予定 | `upcoming`（サービス×ジャンルの先出し記事）／`arrivals` 末尾の「これから配信開始予定」 |
 
 収集と執筆を分けているのは、APIリクエストを節約しつつ
 **記事生成だけを何度でもやり直せる**ようにするため。
@@ -110,6 +111,17 @@ npm run collect -- --kinds new,expiring
 
 以降は毎週 火・金 の 04:00 JST に自動収集し、変化があれば自動コミットされる。
 
+ワークフローは3本ある。**見に行く先と頻度が違うので分けてある。**
+
+| ワークフロー | いつ | 何をするか |
+|---|---|---|
+| `collect` | 毎週 火・金 04:00 JST | 配信APIから変化を収集 |
+| `collect-unext` | 毎週 火・金 06:00 JST | U-NEXT を実ブラウザで収集 |
+| **`announce`** | **毎月 25〜31日 05:00 JST** | **翌月ラインナップの告知が出たら取り込む**（→ [docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md)） |
+
+`announce` は「出ているか」を先に判定し、記事1本ぶんの本数が出た日にだけ
+取り込んで通知する。出ていない日（404）は静かに終わる。
+
 ### 更新の通知（サイトには出ない）
 
 収集しただけでは何が増減したか分からないので、収集のたびに**Issue が立ち、
@@ -143,6 +155,8 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 |---|---|
 | `npm run collect` | 配信状況の変化を収集して記録 |
 | `npm run collect:unext` | **U-NEXT の新着・配信終了予定を収集する（APIキー不要）**→ [docs/UNEXT.md](./docs/UNEXT.md) |
+| `npm run collect:announce` | **各社が前月末に出す翌月ラインナップの告知を取り込む**→ [docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md) |
+| `npm run collect:announce -- --check` | 告知が出ているかだけ見る（何も書かない・API消費なし） |
 | `npm run unext:refresh` | U-NEXT の作品台帳を取り直す（**終了日の変更を見つける**） |
 | `npm run unext:menu` | U-NEXT のジャンル・カテゴリIDを調べる |
 | `npm run notify` | **前回以降の変化を運用者に通知する（Issue→メール）。API消費なし** |
@@ -247,7 +261,15 @@ Ghost         → ゴースト/ニューヨークの幻
 | Apple TV+ | 取れない | 更新が月2〜3件と少なく、記事にならない |
 
 `upcoming`（配信開始予定）は4社とも0件で、`arrivals` の「これから配信開始予定」節は
-一度も出力されていない。詳細は `theme-packs/streaming-jp/theme.yaml` の catalogs 節。
+APIの素材では一度も出力されていない。詳細は `theme-packs/streaming-jp/theme.yaml` の catalogs 節。
+
+**この穴は各社の告知で埋めている（2026-08-28〜）。** 配信各社は前月末に翌月の
+ラインナップを自社サイトで告知しているので、そこから作品名・配信開始日・独占区分だけを
+読み取り、`kind: upcoming` として記録する（`npm run collect:announce`）。
+配信が始まる前に「9月から配信開始」の記事を書けるのはこの経路だけ。
+画像も Wikidata と配信APIを経由して**従来と同じ許諾済みの経路**で用意する。
+
+- 何が動いているか・各社の告知の出方 → **[docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md)**
 
 対象外の Hulu / DMM TV には**検索リンク方式**で導線を作る。
 作品別の配信状況を取れるAPIは月2.2万円〜（TMDB商用）で見合わないため、

@@ -78,7 +78,21 @@ function originLanguages(work: Work): string[] | undefined {
  */
 function isJapanese(work: Work): boolean | undefined {
   const langs = originLanguages(work)
-  if (langs) return langs.includes('Japanese')
+  if (langs) {
+    /*
+     * ★ **日本語を含むだけでは日本の作品と言えない**（2026-08-28 に修正）。
+     *   「インセプション」の P364 は French / English / Japanese で、
+     *   これを「日本語を含む＝邦画」と読むと**ノーラン作品が邦画記事に載る**。
+     *
+     *   かといって「含むけれど単独ではない＝海外作品」と決めると、
+     *   英語のせりふがある邦画が洋画記事に落ちる。どちらも誤りなので、
+     *   **判定できないもの（undefined）として扱う。**
+     *   その先は収集元が付けた区分（fromSourceGenres）が決め、
+     *   それも無ければ記事に出さない。このファイルの方針どおり。
+     */
+    if (langs.length === 1) return langs[0] === 'Japanese'
+    return langs.includes('Japanese') ? undefined : false
+  }
 
   const original = work.originalTitle
   if (!original) return undefined
@@ -119,6 +133,33 @@ const SOURCE_GENRES: Record<string, GenreKey> = {
 }
 
 /**
+ * 各社の告知が自分で付けている見出し → このテーマの区分。
+ *
+ * ■ なぜ要るか（2026-08-28 追加）
+ * 告知から取り込んだ作品（`meta.source === 'announcement'`）は、
+ * **配信APIで特定できたものにしかジャンルも原語も付かない**（実測 84件中37件）。
+ * 残りは上の `isJapanese()` も `work.genres` も空振りし、ジャンル別記事から丸ごと落ちる。
+ *
+ * 告知には「映画（海外・韓国）」「テレビアニメ（日本）」のような見出しがあり、
+ * これは**提供元が付けた区分**なので推測にならない。U-NEXT のカテゴリ名と同じ扱いにする。
+ *
+ * ★ 「バラエティー」「スポーツ」は意図的に対応させない。
+ *   国内外のどちらもありうるうえ、ジャンル別記事の3区分のどれでもない。
+ *   当て推量で邦画記事に入れるより、落とすほうが読者にとって害が小さい。
+ */
+function fromAnnouncementCategory(work: Work): GenreKey | undefined {
+  if (work.meta.source !== 'announcement') return undefined
+  const category = work.meta.category
+  if (typeof category !== 'string') return undefined
+
+  // ★ 見る順番に意味がある。「アニメ映画（日本）」は アニメ であって 邦画 ではない。
+  if (/アニメ/.test(category)) return /日本/.test(category) ? 'anime' : 'western'
+  if (/海外|韓国|中国|アジア/.test(category)) return 'western'
+  if (/日本|国内/.test(category)) return 'japanese'
+  return undefined
+}
+
+/**
  * 収集元のジャンル名から区分を引く。当たらなければ undefined。
  * `work.genres` を先に見る（作品ごとの値で、メニュー由来の
  * `mainGenreName` より作品に近い）。
@@ -129,7 +170,8 @@ function fromSourceGenres(work: Work): GenreKey | undefined {
     if (hit) return hit
   }
   const main = work.meta.mainGenreName
-  return typeof main === 'string' ? SOURCE_GENRES[main] : undefined
+  if (typeof main === 'string' && SOURCE_GENRES[main]) return SOURCE_GENRES[main]
+  return fromAnnouncementCategory(work)
 }
 
 /** 作品のジャンル。判定できなければ undefined（記事に出さない）。 */

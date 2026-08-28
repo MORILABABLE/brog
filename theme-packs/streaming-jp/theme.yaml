@@ -132,6 +132,35 @@ search_links:
 #    supports_upcoming: false
 
 # =============================================================
+# 翌月の配信開始ラインナップの告知（先出し記事の素材）
+#
+# ★ API の upcoming（配信開始予定）は4社とも0件のまま（上の実測を参照）。
+#   一方で各社は**前月末に翌月のラインナップを自社サイトで告知している。**
+#   配信が始まる前に「9月から配信開始」を書ける素材はここにしかない。
+#
+# 取るのは事実だけ（作品名・配信開始日・見放題／独占の区分）。
+# 紹介文と画像は取らない。理由は pipeline/sources/announcement.ts の冒頭。
+#
+#   npm run collect:announce                  翌月ぶんを取り込む
+#   npm run collect:announce -- --check       出ているかだけ見る（書き込まない）
+#
+# url の {year} {month_en} {month} は対象月で置換される。
+# parser は pipeline/sources/announcement.ts の PARSERS のキー。
+#
+# ★ 各社の告知の出方（2026-08-28 調査）
+#   Prime Video : About Amazon に前月末。日付・独占区分つきで最も構造的
+#   Disney+     : 前月25日前後。公式の一覧ページはあるが月ごとのURLが安定しない
+#   Netflix     : **日本には月次の公式ページが無い**（報道と公式Xが実質の告知）
+#   U-NEXT      : プレスルームに月末2〜3日前（/ja/press-room/{年}-{月}-unext-lineups）
+#   → 解析器を書けるのは URL が規則的な Prime Video から。他社は増やすときに足す。
+announcements:
+  - service: prime-video
+    label: Amazon Prime Video
+    publisher: About Amazon
+    parser: about-amazon
+    url: https://www.aboutamazon.jp/news/entertainment/amazon-prime-video-new-content-{month_en}-{year}
+
+# =============================================================
 # U-NEXT（Streaming Availability API の外側にあるサービス）
 #
 # ★ このAPIの日本カタログに U-NEXT は存在しない（2026-08-24 再確認）。

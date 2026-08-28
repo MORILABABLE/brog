@@ -34,10 +34,16 @@ const { image, src, alt = '' } = Astro.props
   (image || src) && (
     <figure class="lead">
       {image ? (
-        <Image src={image} alt={alt} widths={[480, 736]} sizes="(max-width: 47rem) 100vw, 640px" />
+        <Image
+          class="service"
+          src={image}
+          alt={alt}
+          widths={[480, 736]}
+          sizes="(max-width: 47rem) 100vw, 640px"
+        />
       ) : (
         /* public/ 配下は astro:assets を通せないので素の img */
-        <img src={src} alt={alt} loading="eager" decoding="async" />
+        <img class="poster" src={src} alt={alt} loading="eager" decoding="async" />
       )}
     </figure>
   )
@@ -49,22 +55,45 @@ const { image, src, alt = '' } = Astro.props
   }
   .lead :global(img) {
     display: block;
-    /*
-     * **切り抜かない。高さで抑える。**
-     *
-     * 以前は 16:7 で切り抜いていた。縦長の絵がそのまま入ると本文が押し下げられ、
-     * 記事の本題（表）に届くまでのスクロールが増えるため。
-     * ところが記事のヘッダー画像は作品のポスター（2:3）になったので、
-     * 切り抜くと顔も題字も消えて何の作品か分からない帯になる。
-     *
-     * 高さの上限だけを決めれば、押し下げの問題は同じように防げる。
-     * 横長の画像を人が指定した場合も、そのまま自然な形で出る。
-     */
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  /*
+   * ■ 常設ページのサービス画像（`image`）… **本文幅いっぱいに敷いて 16:7 で切り抜く**
+   *
+   * 人が `src/assets/services/` に置く、そのサービスを表す横長の絵。
+   * 高さの上限（320px）だけで抑えると、16:9 の絵は 567px で頭打ちになり、
+   * 本文幅 673px の中で**右に106px の空きが出て、置き忘れのように見えた**
+   * （2026-08-28 に実測して直した）。
+   *
+   * 幅を100%にして比率で高さを決めれば、どの画面幅でも本文と左右がそろう。
+   * 16:7 なら 1200px 時点で約294pxに収まり、上限に当たらないまま
+   * 本題（表）までのスクロールも増えない。狭い画面では比率どおり縮む
+   * （375px なら約164px）ので、スマホで画面を占領することもない。
+   *
+   * ★ 切り抜いてよいのは、**この絵が「中央に主題を置く」約束だから**
+   *   （src/assets/services/README.md）。上下が落ちても主題は残る。
+   */
+  .lead :global(img.service) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 7;
+    max-height: 320px;
+    object-fit: cover;
+  }
+
+  /*
+   * ■ 記事のヘッダー画像（`src`）… **切り抜かない。高さで抑える。**
+   *
+   * こちらは作品のポスター（2:3）が入る。切り抜くと顔も題字も消えて
+   * 何の作品か分からない帯になるので、**比率には触れない**。
+   * 押し下げは高さの上限だけで防ぐ。
+   */
+  .lead :global(img.poster) {
     width: auto;
     height: auto;
     max-width: 100%;
     max-height: 320px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
   }
 </style>

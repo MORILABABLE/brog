@@ -84,7 +84,7 @@ import {
   posterLink,
   saveManifest,
 } from './posters.mjs'
-import { genreKeyOf, genreMotif } from './genre-art.mjs'
+import { FALLBACK_GENRE, genreKeyOf, genreMotif, genreSvg } from './genre-art.mjs'
 import { createSafeText, missingReport } from './font-safe.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -186,9 +186,26 @@ const safeText = createSafeText(font)
  *
  * 短くしすぎると事故る。「日常」（2文字）のような作品名は、
  * 記事タイトルの地の文にたまたま出てくる。4文字あれば実データでは誤爆しない。
- * 逆に**短い題名の作品は選ばれない**。その場合は次点の規則（記事の最初の画像）に落ちる。
+ *
+ * ★ ただし**これ未満でも、区切りに挟まれて題名まるごとが出ていれば認める**
+ *   （`isNamedWhole`）。「｜告白・来るとディア・ファミリー」の「告白」「来る」が
+ *   これに当たる。2026-08-28 まではここで弾いていたため、
+ *   **タイトルの先頭に置いた短い題名が候補にすら入らず**、
+ *   後ろに書いた長い題名（ディア・ファミリー）の絵が選ばれていた。
  */
 const HERO_MATCH_MIN = 4
+
+/**
+ * 短い題名を「記事タイトルが名指しした」と認めてよい区切り文字。
+ *
+ * 地の文に紛れ込んだ偶然の一致（「日常系アニメ」の中の「日常」）を落とし、
+ * 作品名を並べた部分（「｜告白・来るとディア・ファミリー」）だけを拾うための境目。
+ * 前後がこのどれか、または文字列の端であれば名指しとみなす。
+ *
+ * ★ 「と」も区切りに入れてある。タイトルの作品名は
+ *   「A・BとC」の形で並べるため、これが無いと最後の1つ手前が拾えない。
+ */
+const HERO_NAME_EDGE = '｜|・、，,。．.／/「」『』（）()【】〔〕〜~と　 '
 
 /**
  * 画像で大きく見せる作品数。
@@ -661,31 +678,69 @@ function frontmatter(md) {
   }
 }
 
+/** その位置の一致が、前後を区切り文字（または文字列の端）で挟まれているか。 */
+function isNamedWhole(articleTitle, at, len) {
+  const before = at === 0 ? '' : articleTitle[at - 1]
+  const after = at + len >= articleTitle.length ? '' : articleTitle[at + len]
+  return (
+    (before === '' || HERO_NAME_EDGE.includes(before)) &&
+    (after === '' || HERO_NAME_EDGE.includes(after))
+  )
+}
+
 /**
- * 記事タイトルと作品名の一致の強さ。一致しなければ 0。
+ * 記事タイトルの中で作品名が名指しされている位置と強さ。無ければ null。
  *
  * 記事タイトルに作品名がそのまま入っているとは限らない。
  * 「クレヨンしんちゃん劇場版」に対して作品名は
  * 「クレヨンしんちゃん ブリブリ王国の秘宝」のように**後ろが長い**。
  * そこで作品名を後ろから削りながら、記事タイトルに含まれる
  * いちばん長い前方一致を探す。長く一致したものほど強い。
+ *
+ * ★ `HERO_MATCH_MIN` 未満の一致は、**題名まるごとが区切りに挟まれて出ている**
+ *   ときだけ認める（2026-08-28）。前方一致の途中では認めない。
+ *   「来る」で認めてしまうと、別作品「来るべき明日」も同じ2文字で引っかかる。
+ *
+ * @returns {{ at: number, score: number } | null}
+ *   `at` … 記事タイトルの中で名前が出てくる位置。**採用順はこれで決める**
+ *   `score` … 一致した文字数。同じ位置に複数並んだときの絞り込みに使う
  */
-function titleMatchScore(articleTitle, workTitle) {
+function titleMatch(articleTitle, workTitle) {
   const chars = [...workTitle]
   for (let n = chars.length; n >= HERO_MATCH_MIN; n--) {
-    if (articleTitle.includes(chars.slice(0, n).join(''))) return n
+    const at = articleTitle.indexOf(chars.slice(0, n).join(''))
+    if (at >= 0) return { at, score: n }
   }
-  return 0
+  // 短い題名。まるごと・区切り付きのときだけ。1文字は誤爆が防げないので対象外。
+  if (chars.length >= 2 && chars.length < HERO_MATCH_MIN) {
+    const at = articleTitle.indexOf(workTitle)
+    if (at >= 0 && isNamedWhole(articleTitle, at, workTitle.length)) {
+      return { at, score: chars.length }
+    }
+  }
+  return null
 }
 
 /**
  * ヘッダー画像の候補を、**使いたい順**に返す。
  *
- *   1. 記事タイトルと一致する作品（一致が長い順）
+ *   1. 記事タイトルが名指しした作品（**タイトルに出てくる順**）
  *   2. 記事に最初に出てくる作品（＝いちばん上の節で取り上げた作品）
  *
  * 実際にどれを使うかは、ポスターが取れるかどうかで決まる。
  * 呼び出し側が先頭から試して、最初に取れたものを採用する。
+ *
+ * ★ 1の並びは**一致の長さではなくタイトルでの登場順**（2026-08-28 に変更）。
+ *   タイトルの作品名は編集上の優先順で並べている。
+ *   「｜告白・来るとディア・ファミリー」なら主役は先頭の「告白」で、
+ *   長さ順にすると最後に書いた「ディア・ファミリー」が勝ってしまう。
+ *
+ * ★ **記事の全作品に落ちる3段目は置かない**（2026-08-28 に削除）。
+ *   U-NEXT の作品にはポスターが無い（配信情報の出どころが別で画像を持たない）ため、
+ *   3段目があると候補を最後まで舐めて、**記事が一言も触れていない作品**の絵を
+ *   ヘッダーに据えてしまう。実際に U-NEXT の新着記事が、別記事と同じ
+ *   「ディア・ファミリー」を使っていた。
+ *   **候補が尽きた記事はジャンル別の汎用画像に落とす**（呼び出し側）。
  */
 function heroCandidates(sections, articleTitle) {
   const seen = new Set()
@@ -699,18 +754,51 @@ function heroCandidates(sections, articleTitle) {
   }
 
   const matched = all
-    .map((c) => ({ ...c, score: titleMatchScore(articleTitle, c.title) }))
-    .filter((c) => c.score > 0)
-    .sort((a, b) => b.score - a.score || a.order - b.order)
+    .map((c) => ({ ...c, m: titleMatch(articleTitle, c.title) }))
+    .filter((c) => c.m)
+    // 登場順 → 同じ位置なら長い一致（＝より具体的な題名）→ 記事での出現順
+    .sort((a, b) => a.m.at - b.m.at || b.m.score - a.m.score || a.order - b.order)
 
   // 次点。記事の先頭の節が取り上げた作品を、地の文の順で。
   const firstShown = sections.length > 0 ? pickHighlights(sections[0]).map((r) => r.title) : []
 
   const out = []
-  for (const t of [...matched.map((m) => m.title), ...firstShown, ...all.map((a) => a.title)]) {
+  for (const t of [...matched.map((m) => m.title), ...firstShown]) {
     if (!out.includes(t)) out.push(t)
   }
   return out
+}
+
+/**
+ * 記事を代表するジャンルの key を、**その記事の作品に多い順**で返す。
+ *
+ * ポスターが1枚も取れない記事のヘッダーに使う汎用画像を選ぶためのもの。
+ * 作品ごとに `genreKeyOf()` を通してから数える。
+ * **ジャンル名の集合をまとめて `genreKeyOf()` に渡してはいけない。**
+ * あれは rank の小さいものが勝つので、記事のどこかに1本ホラーがあるだけで
+ * 記事全体がホラー扱いになる。ここで知りたいのは「多数派はどれか」。
+ *
+ * 同数のときは記事に先に出てくるほうを優先する（並びが実行ごとに揺れないように）。
+ */
+function articleGenreKeys(sections, genres) {
+  const count = new Map()
+  const firstAt = new Map()
+  let i = 0
+  const seen = new Set()
+  for (const s of sections) {
+    for (const r of s.rows) {
+      if (seen.has(r.title)) continue
+      seen.add(r.title)
+      const g = genres.get(r.title)
+      if (!g?.length) continue
+      const key = genreKeyOf(g)
+      count.set(key, (count.get(key) ?? 0) + 1)
+      if (!firstAt.has(key)) firstAt.set(key, i++)
+    }
+  }
+  return [...count.entries()]
+    .sort((a, b) => b[1] - a[1] || firstAt.get(a[0]) - firstAt.get(b[0]))
+    .map(([key]) => key)
 }
 
 // --- 実行 -----------------------------------------------------------------
@@ -758,6 +846,26 @@ let withTiles = 0
 let withText = 0
 let heroes = 0
 let heroesWritten = 0
+let genericHeroes = 0
+
+/**
+ * すでにどれかの記事のヘッダー画像に使った作品。
+ *
+ * **同じ絵を2本の記事に出さない。** 記事一覧はカードが縦に並ぶので、
+ * 隣り合う2枚が同じ絵だと「更新されていない」ように見える
+ * （2026-08-28 に U-NEXT と邦画の新着記事で実際に起きた）。
+ * 取られていたら次の候補へ送る。候補が尽きた記事は絵なしになる。
+ */
+const usedHeroWorks = new Set()
+
+/**
+ * すでに汎用画像として使ったジャンル。
+ *
+ * 汎用画像はジャンルごとに1枚しか絵柄が無いので、
+ * 素直に多数派を採ると、ポスターの無い記事どうしで同じ絵になりうる。
+ * 取られていたら、その記事の2番目に多いジャンルへずらす。
+ */
+const usedHeroGenres = new Set()
 
 for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   const slug = file.replace(/\.md$/, '')
@@ -866,14 +974,40 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
 
   if (posters && fm && (!fm.heroImage || fm.heroImage === heroPath)) {
     for (const title of heroCandidates(sections, fm.title)) {
+      if (usedHeroWorks.has(title)) continue
       const src = imageFor(title)
       if (!src) continue
       const buf = await posters.poster(src.url, POSTER.w, POSTER.h, { label: title })
       if (!buf) continue
       writeFileSync(join(heroDir, `${slug}.webp`), buf)
+      usedHeroWorks.add(title)
       heroRef = heroPath
       heroes++
       break
+    }
+    /*
+     * ポスターが1枚も取れなかった記事は、**ジャンル別の汎用画像**にする。
+     *
+     * U-NEXT だけの記事がこれに当たる（配信情報の出どころが別で画像を持たない）。
+     * ここを空にすると一覧でその記事だけ絵の無いカードになり、
+     * 記事が抜け落ちたように見える。表の作品サムネイルが同じ事情で
+     * ジャンル汎用画像に落ちるので（13節）、**同じ絵柄・同じ理屈**でそろえる。
+     *
+     * ★ 幾何学図形をその場で描くだけなので、許諾も出典表記も要らず、
+     *   URLの失効も無い。定義は scripts/genre-art.mjs の1か所。
+     * ★ 縦横比は `POSTER`（2:3）と `genreSvg` の viewBox（100×150）で一致させてある。
+     *   ここを片方だけ変えると余白が入る。
+     */
+    if (!heroRef) {
+      const keys = articleGenreKeys(sections, genres)
+      const key = keys.find((k) => !usedHeroGenres.has(k)) ?? keys[0] ?? FALLBACK_GENRE
+      const svg = genreSvg(key, POSTER.w, POSTER.h)
+      const buf = await sharp(Buffer.from(svg)).webp({ quality: 90 }).toBuffer()
+      writeFileSync(join(heroDir, `${slug}.webp`), buf)
+      usedHeroGenres.add(key)
+      heroRef = heroPath
+      heroes++
+      genericHeroes++
     }
   }
 
@@ -908,6 +1042,12 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
    * frontmatter は**最後に触る**。ここは記事の先頭なので、
    * 先に1行足すと上で数えた節の行番号がすべて1つずれる。
    */
+  /*
+   * ★ `heroRef` が無いときは**何もしない**。行を消しにいかないこと。
+   *   `--no-posters` では上のブロックごと飛ぶので heroRef が付かない。
+   *   ここで「絵が無い＝行を取り下げる」と書くと、そのフラグを付けた1回で
+   *   全記事の heroImage が消える。絵を用意できない記事は上で汎用画像に落ちる。
+   */
   if (heroRef && fm) {
     const at = lines.findIndex((l, i) => i < fm.endLine && /^heroImage:/.test(l))
     const line = `heroImage: '${heroRef}'`
@@ -935,7 +1075,7 @@ console.log(
     (WRITE ? ` / 参照 ${inserted}件を記事に反映` : ''),
 )
 console.log(
-  `ヘッダー画像: ${heroes}本の記事に用意` +
+  `ヘッダー画像: ${heroes}本の記事に用意（うち汎用画像 ${genericHeroes}本）` +
     (WRITE ? ` / frontmatter ${heroesWritten}件を更新` : ''),
 )
 /*

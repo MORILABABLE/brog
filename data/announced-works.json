@@ -1,0 +1,457 @@
+{
+  "note": "告知の邦題から特定した作品。npm run collect:announce が書く。手で編集しない（手で決めたいものは data/announcement-pins.json）。",
+  "updatedAt": "2026-08-28T11:39:10.834Z",
+  "works": {
+    "prime-video|#5 MLB NEXT PITCH|": {
+      "title": "#5 MLB NEXT PITCH",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|3月のライオン　シーズンS1~2|": {
+      "title": "3月のライオン　シーズンS1~2",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|G.I.ジョー バック2リベンジ|": {
+      "title": "G.I.ジョー バック2リベンジ",
+      "imdbId": "tt1583421",
+      "checkedAt": "2026-08-28T11:39:02.799Z",
+      "apiShowId": "2502"
+    },
+    "prime-video|G.I.ジョー|": {
+      "title": "G.I.ジョー",
+      "imdbId": "tt1046173",
+      "checkedAt": "2026-08-28T11:39:02.799Z",
+      "apiShowId": "2120"
+    },
+    "prime-video|M.I.S.S.I.O.N. 歌劇な潜入捜査官|": {
+      "title": "M.I.S.S.I.O.N. 歌劇な潜入捜査官",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.799Z"
+    },
+    "prime-video|Prime Video Boxing 16|": {
+      "title": "Prime Video Boxing 16",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|Star Song Special シーズン4|": {
+      "title": "Star Song Special シーズン4",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|『怪獣８号』オリジナルショートアニメ「鳴海の平日」|": {
+      "title": "『怪獣８号』オリジナルショートアニメ「鳴海の平日」",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|あなたとは違う恋愛|": {
+      "title": "あなたとは違う恋愛",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|かまいたちの知らんけど（見逃し配信）|": {
+      "title": "かまいたちの知らんけど（見逃し配信）",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|こびと観察入門 S1~5|": {
+      "title": "こびと観察入門 S1~5",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|しろくまカフェ|": {
+      "title": "しろくまカフェ",
+      "imdbId": "tt2177954",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "31332"
+    },
+    "prime-video|ゆるキャン△ SEASON２|": {
+      "title": "ゆるキャン△ SEASON２",
+      "imdbId": "tt7742120",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "13915"
+    },
+    "prime-video|ゆるキャン△ SEASON３|": {
+      "title": "ゆるキャン△ SEASON３",
+      "imdbId": "tt7742120",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "13915"
+    },
+    "prime-video|ゆるキャン△|": {
+      "title": "ゆるキャン△",
+      "imdbId": "tt7742120",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "13915"
+    },
+    "prime-video|インセプション|": {
+      "title": "インセプション",
+      "imdbId": "tt1375666",
+      "checkedAt": "2026-08-28T11:39:02.799Z",
+      "apiShowId": "70"
+    },
+    "prime-video|インターステラー|": {
+      "title": "インターステラー",
+      "imdbId": "tt0816692",
+      "checkedAt": "2026-08-28T11:39:02.799Z",
+      "apiShowId": "86"
+    },
+    "prime-video|インディ・ジョーンズ／クリスタル・スカルの王国|": {
+      "title": "インディ・ジョーンズ／クリスタル・スカルの王国",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.799Z"
+    },
+    "prime-video|ウィキッド 永遠の約束|": {
+      "title": "ウィキッド 永遠の約束",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|エクソシスト　信じる者|": {
+      "title": "エクソシスト　信じる者",
+      "imdbId": "tt12921446",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "5045017"
+    },
+    "prime-video|オッケー・グァン姉妹|": {
+      "title": "オッケー・グァン姉妹",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|オッペンハイマー|": {
+      "title": "オッペンハイマー",
+      "imdbId": "tt15398776",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "4029331"
+    },
+    "prime-video|グッド・ネイバー|": {
+      "title": "グッド・ネイバー",
+      "imdbId": "tt2262315",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "15645"
+    },
+    "prime-video|ザ・ランナー|": {
+      "title": "ザ・ランナー",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|シャークネード　ラスト・チェーンソー|": {
+      "title": "シャークネード　ラスト・チェーンソー",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|シャークネード　ワールド・タイフーン|": {
+      "title": "シャークネード　ワールド・タイフーン",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|スマッシング・マシーン|": {
+      "title": "スマッシング・マシーン",
+      "imdbId": "tt11214558",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "17583047"
+    },
+    "prime-video|スラムドッグス|": {
+      "title": "スラムドッグス",
+      "imdbId": "tt15153532",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "2878438"
+    },
+    "prime-video|ソーシャル・ネットワーク|": {
+      "title": "ソーシャル・ネットワーク",
+      "imdbId": "tt1285016",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "342"
+    },
+    "prime-video|ダークナイト ライジング|": {
+      "title": "ダークナイト ライジング",
+      "imdbId": "tt1345836",
+      "checkedAt": "2026-08-28T11:39:02.799Z",
+      "apiShowId": "88"
+    },
+    "prime-video|ダークナイト|": {
+      "title": "ダークナイト",
+      "imdbId": "tt0468569",
+      "checkedAt": "2026-08-28T11:39:02.799Z",
+      "apiShowId": "68"
+    },
+    "prime-video|チェンソーマン レゼ篇|": {
+      "title": "チェンソーマン レゼ篇",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|チャクペ-相棒-|": {
+      "title": "チャクペ-相棒-",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|チャーリーとチョコレート工場|": {
+      "title": "チャーリーとチョコレート工場",
+      "imdbId": "tt0367594",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "662"
+    },
+    "prime-video|テネット|": {
+      "title": "テネット",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.799Z"
+    },
+    "prime-video|デーヴァラ|": {
+      "title": "デーヴァラ",
+      "imdbId": "tt11821912",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "8863494"
+    },
+    "prime-video|ドラマ１０「シバのおきて～われら犬バカ編集部～」|": {
+      "title": "ドラマ１０「シバのおきて～われら犬バカ編集部～」",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|ニーグリー|": {
+      "title": "ニーグリー",
+      "imdbId": "tt33539520",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "25483264"
+    },
+    "prime-video|バイオハザード ダムネーション|": {
+      "title": "バイオハザード ダムネーション",
+      "imdbId": "tt1753496",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "13976"
+    },
+    "prime-video|バイオハザード ディジェネレーション|": {
+      "title": "バイオハザード ディジェネレーション",
+      "imdbId": "tt1174954",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "10855"
+    },
+    "prime-video|バイオハザードII アポカリプス|": {
+      "title": "バイオハザードII アポカリプス",
+      "imdbId": "tt0318627",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "2232"
+    },
+    "prime-video|バイオハザードIII|": {
+      "title": "バイオハザードIII",
+      "imdbId": "tt0432021",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "2283"
+    },
+    "prime-video|バイオハザードIV アフターライフ|": {
+      "title": "バイオハザードIV アフターライフ",
+      "imdbId": "tt1220634",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "2657"
+    },
+    "prime-video|バイオハザードV リトリビューション|": {
+      "title": "バイオハザードV リトリビューション",
+      "imdbId": "tt1855325",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "3205"
+    },
+    "prime-video|バイオハザード|": {
+      "title": "バイオハザード",
+      "imdbId": "tt0120804",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "1481"
+    },
+    "prime-video|バイオハザード：ウェルカム・トゥ・ラクーンシティ|": {
+      "title": "バイオハザード：ウェルカム・トゥ・ラクーンシティ",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|バイオハザード：ザ・ファイナル|": {
+      "title": "バイオハザード：ザ・ファイナル",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|バイオハザード：デスアイランド|": {
+      "title": "バイオハザード：デスアイランド",
+      "imdbId": "tt26674627",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "2956537"
+    },
+    "prime-video|バイオハザード：ヴェンデッタ|": {
+      "title": "バイオハザード：ヴェンデッタ",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|バットマン ビギンズ|": {
+      "title": "バットマン ビギンズ",
+      "imdbId": "tt0372784",
+      "checkedAt": "2026-08-28T11:39:02.799Z",
+      "apiShowId": "98"
+    },
+    "prime-video|ラブ・ハイポセシス|": {
+      "title": "ラブ・ハイポセシス",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|ランニング・マン|": {
+      "title": "ランニング・マン",
+      "imdbId": "tt14107334",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "14625258"
+    },
+    "prime-video|不思議の国でアリスと -Dive in Wonderland-|": {
+      "title": "不思議の国でアリスと -Dive in Wonderland-",
+      "imdbId": "tt35487769",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "18427428"
+    },
+    "prime-video|人生最高の贈り物|": {
+      "title": "人生最高の贈り物",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|俺ではない炎上|": {
+      "title": "俺ではない炎上",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.799Z"
+    },
+    "prime-video|免許返納!?|": {
+      "title": "免許返納!?",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.799Z"
+    },
+    "prime-video|六つの顔|": {
+      "title": "六つの顔",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.799Z"
+    },
+    "prime-video|劇場版「緊急取調室 THE FINAL」|": {
+      "title": "劇場版「緊急取調室 THE FINAL」",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.799Z"
+    },
+    "prime-video|夜ドラ「いつか、無重力の宙で」|": {
+      "title": "夜ドラ「いつか、無重力の宙で」",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|太陽と月の秘密～離人心上～|": {
+      "title": "太陽と月の秘密～離人心上～",
+      "imdbId": "tt12763414",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "51288"
+    },
+    "prime-video|契約結婚3年目～恋に落ちるなんて聞いてません！～|": {
+      "title": "契約結婚3年目～恋に落ちるなんて聞いてません！～",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|女優杏子|": {
+      "title": "女優杏子",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|女神様の縁結び|": {
+      "title": "女神様の縁結び",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|宝くじの不時着 1等当選くじが飛んでいきました|": {
+      "title": "宝くじの不時着 1等当選くじが飛んでいきました",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|愛しい僕のラッキーガール|": {
+      "title": "愛しい僕のラッキーガール",
+      "imdbId": "tt11137378",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "39073"
+    },
+    "prime-video|旅と日々|": {
+      "title": "旅と日々",
+      "imdbId": "tt37538491",
+      "checkedAt": "2026-08-28T11:39:02.799Z",
+      "apiShowId": "21761191"
+    },
+    "prime-video|極限境界線　救出までの18日間|": {
+      "title": "極限境界線　救出までの18日間",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|流転の花嫁 -Rewriting Destiny-|": {
+      "title": "流転の花嫁 -Rewriting Destiny-",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|滄棲花|": {
+      "title": "滄棲花",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|独占密着 9.27 PRIME VIDEO BOXING 16 WBC世界バンタム級タイトルマッチ 井上拓真 vs 那須川天心 2 エピソード2|": {
+      "title": "独占密着 9.27 PRIME VIDEO BOXING 16 WBC世界バンタム級タイトルマッチ 井上拓真 vs 那須川天心 2 エピソード2",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|男が愛する時|": {
+      "title": "男が愛する時",
+      "imdbId": "tt2926368",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "31264"
+    },
+    "prime-video|白夜行|": {
+      "title": "白夜行",
+      "imdbId": "tt1613028",
+      "checkedAt": "2026-08-28T11:39:02.799Z",
+      "apiShowId": "116440"
+    },
+    "prime-video|白狐伝～神君に捧ぐ霜花の誓い～|": {
+      "title": "白狐伝～神君に捧ぐ霜花の誓い～",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|純真ロマンス～最強の花嫁～|": {
+      "title": "純真ロマンス～最強の花嫁～",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|花咲く合縁奇縁|": {
+      "title": "花咲く合縁奇縁",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|花咲舞が黙ってない (2014)|2014": {
+      "title": "花咲舞が黙ってない (2014)",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|花咲舞が黙ってない (2015)|2015": {
+      "title": "花咲舞が黙ってない (2015)",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|花咲舞が黙ってない (2024)|2024": {
+      "title": "花咲舞が黙ってない (2024)",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|警視庁捜査資料管理室 シーズン1～2|": {
+      "title": "警視庁捜査資料管理室 シーズン1～2",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|赤羽骨子のボディガード|": {
+      "title": "赤羽骨子のボディガード",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.799Z"
+    },
+    "prime-video|踊る大捜査線捜査資料管理室～青島俊作、空白の１３年～|": {
+      "title": "踊る大捜査線捜査資料管理室～青島俊作、空白の１３年～",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    },
+    "prime-video|黄金の虹|": {
+      "title": "黄金の虹",
+      "imdbId": "tt3362466",
+      "checkedAt": "2026-08-28T11:39:02.800Z",
+      "apiShowId": "57858"
+    },
+    "prime-video|鼠小僧次郎吉|": {
+      "title": "鼠小僧次郎吉",
+      "imdbId": null,
+      "checkedAt": "2026-08-28T11:39:02.800Z"
+    }
+  }
+}

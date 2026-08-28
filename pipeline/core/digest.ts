@@ -75,13 +75,23 @@ export function buildDigest(events: ChangeEvent[], opts: DigestOptions): Digest 
     // 日付不明は末尾へ。並べ替えの基準が無いものを先頭に置くと読み手が混乱する。
     .sort((a, b) => (a.at ?? '9999').localeCompare(b.at ?? '9999'))
 
-  const subject = `[収集] ${when} 新規${events.length}件` + (expiring.length ? ` / 終了予定${expiring.length}件` : '')
+  // 配信開始予定（各社が前月末に出す翌月のラインナップ）。
+  // 終了予定と違って**月に一度まとまって出る**ので、出た月だけこの欄が付く。
+  const upcoming = events
+    .filter((e) => e.kind === 'upcoming')
+    .sort((a, b) => (a.at ?? '9999').localeCompare(b.at ?? '9999'))
+
+  const subject =
+    `[収集] ${when} 新規${events.length}件` +
+    (expiring.length ? ` / 終了予定${expiring.length}件` : '') +
+    (upcoming.length ? ` / 開始予定${upcoming.length}件` : '')
 
   const lines: string[] = []
   lines.push(`収集 **${when}** ／ 前回の通知以降に増えた変化 **${events.length}件**`, '')
 
   lines.push(...breakdownSection(events, label))
   if (expiring.length) lines.push(...expiringSection(expiring, label, tz, now))
+  if (upcoming.length) lines.push(...upcomingSection(upcoming, label, tz))
   if (usage) lines.push(...quotaSection(usage))
 
   lines.push(
@@ -160,6 +170,50 @@ function expiringSection(
     out.push('', `※ 終了日の近い ${MAX_EXPIRING_ROWS}件のみ表示（残り ${expiring.length - MAX_EXPIRING_ROWS}件）。`)
   }
   out.push('')
+  return out
+}
+
+/**
+ * 新たに公表された配信開始予定（＝翌月のラインナップ）。
+ *
+ * ■ 終了予定と役割が違う
+ * 終了予定は「差分を追い続ける」欄だが、こちらは**月に一度、まとめて出る**。
+ * 各社が前月末に翌月のラインナップを告知した回にだけ現れ、
+ * それは同時に「先出しの記事を1本書ける」という合図になる。
+ * だから件数と日付の範囲を出したうえで、**書き出しのコマンドまで載せる。**
+ *
+ * 作品名を全部並べない（数十〜百件になる）。並べるのは日付ごとの件数だけで、
+ * 中身は記事を書くときに `npm run write -- --emit` が渡してくれる。
+ */
+function upcomingSection(
+  upcoming: ChangeEvent[],
+  label: Map<string, string>,
+  tz: number,
+): string[] {
+  const out = ['## 新たに公表された配信開始予定', '']
+
+  const services = [...new Set(upcoming.map((e) => e.service))]
+  for (const s of services) {
+    const list = upcoming.filter((e) => e.service === s)
+    const dated = list.filter((e) => e.at)
+    const range =
+      dated.length > 0
+        ? `${formatMonthDay(dated[0]!.at!, tz)}〜${formatMonthDay(dated.at(-1)!.at!, tz)}`
+        : '日付未定'
+    out.push(`- **${label.get(s) ?? s}** ${list.length}件（${range}）`)
+  }
+
+  out.push(
+    '',
+    '記事にするには（サービスと対象月は読み替えてください）。ジャンルごとに1本ずつ:',
+    '',
+    '```',
+    'npm run write -- --type upcoming --genre anime    --service <サービス> --month YYYY-MM --emit',
+    'npm run write -- --type upcoming --genre western  --service <サービス> --month YYYY-MM --emit',
+    'npm run write -- --type upcoming --genre japanese --service <サービス> --month YYYY-MM --emit',
+    '```',
+    '',
+  )
   return out
 }
 

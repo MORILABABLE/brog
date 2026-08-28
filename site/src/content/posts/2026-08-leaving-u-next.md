@@ -8,6 +8,7 @@ sources:
   - label: '配信状況・見放題終了日は U-NEXT の作品ページに掲載されている情報'
     url: 'https://video.unext.jp/'
 dataAsOf: 2026-08-25
+heroImage: '/heroes/2026-08-leaving-u-next.webp'
 ---
 【8月終了】U-NEXTで見放題配信が終了する作品を、終了日順にまとめました！記事作成時点（8月25日時点）では80本が見放題終了対象です。
 

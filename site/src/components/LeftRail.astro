@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets'
+import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
 import { EVERGREEN_PAGES, evergreenStamp, evergreenSummary } from '../lib/evergreen'
 import { serviceImage } from '../lib/images'
@@ -58,15 +58,21 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
           const stamp = evergreenStamp(evergreenSummary(p).dataAsOf)
           const Inner = (
             <>
-              <span class="thumb-slot">
-                {serviceImage(p.thumbKey) ? (
-                  <Image class="thumb" src={serviceImage(p.thumbKey)!} alt="" width={48} height={48} />
-                ) : (
-                  <span class="thumb thumb-fallback" aria-hidden="true">
-                    {p.label.charAt(0)}
-                  </span>
-                )}
-              </span>
+              {/*
+                ★ サムネイルは **Thumb.astro に任せる**（2026-08-28）。
+                  以前はここで自前に <Image width={48} height={48}> を書いていたが、
+                  等倍の48pxしか出さないので高精細画面でぼやけていた
+                  （画像が無く頭文字だったころは誰も気づけなかった）。
+                  Thumb は表示サイズの2倍を書き出す。記事カード・追従枠と同じ部品。
+                  画像が無いときのタイルもカテゴリ色にそろう（それが Thumb の設計）。
+              */}
+              <Thumb
+                image={serviceImage(p.thumbKey)}
+                category={p.category}
+                size={48}
+                radius={8}
+                initial={p.label.charAt(0)}
+              />
               <span class="body">
                 <span class="badge" data-category={p.category}>
                   {CATEGORIES[p.category].label}
@@ -160,26 +166,7 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
     background: var(--bg-subtle);
     border-color: var(--accent);
   }
-  .thumb-slot {
-    flex: none;
-    width: 48px;
-    height: 48px;
-  }
-  .thumb {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    object-fit: cover;
-  }
-  .thumb-fallback {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-subtle);
-    color: var(--text-muted);
-    font-size: 1.15rem;
-    font-weight: 700;
-  }
+  /* サムネイルの見た目は Thumb.astro が持つ。ここで上書きしないこと。 */
   .body {
     display: flex;
     flex-direction: column;

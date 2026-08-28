@@ -40,6 +40,7 @@ import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
 import type { ChangeEvent } from '../../../pipeline/sources/types.ts'
 import type { Ledger } from '../../../pipeline/core/events.ts'
 import { castNames, directorNames, productionCompanies } from '../work-context.ts'
+import { classify, GENRES, type GenreKey } from '../genres.ts'
 import {
   articleMonth,
   asOfLabel,
@@ -51,6 +52,7 @@ import {
   itemTitles,
   MISLEADING_AFTER_END,
   namingRules,
+  NOT_YET_AVAILABLE_CLAIM,
   normalizeBody,
   peopleLine,
   phraseReader,
@@ -66,12 +68,17 @@ import {
  * 1記事に載せる上限。
  * 特報は絞り込んだ主題を扱うので、月次記事より小さくてよい。
  * これを超えるなら、それは特報ではなく月次記事で扱う範囲。
+ *
+ * ★ ただし配信開始予定（upcoming）だけは別（`KindTraits.maxItems`）。
+ *   素材が**各社が公表したラインナップそのもの**で、これを担当する月次記事が無い。
+ *   40件で切ると、公表された一覧より少ない本数を「◯本」と名乗ることになる。
  */
 const MAX_ITEMS = 40
 
 /** fixed-phrases.md に必ずあるべきキー。欠けていれば読み込み時に落ちる。 */
 const REQUIRED_PHRASES = [
   'special-new-lead-first-sentence',
+  'special-upcoming-lead-first-sentence',
   'special-leaving-lead-first-sentence',
   'special-ended-lead-first-sentence',
   // 締めは月次記事と同じ役割なので流用する（新しい文言を作らない）
@@ -81,6 +88,8 @@ const REQUIRED_PHRASES = [
   'other-services-intro',
   'attribution',
   'attribution-unext',
+  // 各社の公式発表（配信開始予定）由来の素材に付ける
+  'attribution-announcement',
 ] as const
 
 /**
@@ -92,11 +101,19 @@ const REQUIRED_PHRASES = [
  */
 interface KindTraits {
   /** 収集データの kind */
-  kind: 'new' | 'expiring' | 'removed'
+  kind: 'new' | 'expiring' | 'removed' | 'upcoming'
   /** frontmatter のカテゴリ */
   category: Category
-  /** タイトルに必ず入る言い方（templates/naming.md の表と揃える） */
+  /**
+   * タイトルに必ず入る言い方（templates/naming.md の表と揃える）。
+   * **空文字なら検査しない**（先頭の【】が動詞まで名乗る場合。下の periodSuffix）。
+   */
   verbPhrase: string
+  /**
+   * 先頭の【】に足す語。既定は無しで「【2026年9月】」。
+   * `'配信開始'` を渡すと「【2026年9月配信開始】」になる。
+   */
+  periodSuffix?: string
   /** 素材に出す日付の呼び方 */
   dateLabel: string
   /** リードの1文目に使う固定文言のキー */
@@ -105,6 +122,8 @@ interface KindTraits {
   closerKey: string
   /** 日付が未来のものだけを残すか（true）、過去のものだけか（false）、問わないか（undefined） */
   future?: boolean
+  /** 1記事に載せる上限（既定は MAX_ITEMS） */
+  maxItems?: number
 }
 
 const KINDS: Record<string, KindTraits> = {
@@ -115,6 +134,29 @@ const KINDS: Record<string, KindTraits> = {
     dateLabel: '配信開始日',
     leadKey: 'special-new-lead-first-sentence',
     closerKey: 'arrivals-lead-closer',
+  },
+  upcoming: {
+    kind: 'upcoming',
+    category: 'arrivals',
+    /*
+     * ★ 先頭の【】が動詞まで名乗る唯一の記事タイプ。
+     *
+     *   【2026年9月配信開始】Amazon Prime Videoの見放題アニメ10本｜…
+     *   【2026年9月】Netflixで見放題配信が終了予定の作品36本｜…
+     *
+     * 同じ月に「開始」と「終了」の記事が並ぶ。読者が検索結果で見るのは
+     * 先頭の数文字なので、そこで**開始と終了を取り違えさせない**。
+     * そのぶん本文側の動詞句は求めない（同じことを2回書かせない）。
+     */
+    verbPhrase: '',
+    periodSuffix: '配信開始',
+    dateLabel: '配信開始予定日',
+    leadKey: 'special-upcoming-lead-first-sentence',
+    closerKey: 'arrivals-lead-closer',
+    // まだ始まっていないものだけ。始まった作品は new 側で扱う
+    future: true,
+    // 公表されたラインナップを丸ごと扱う。月次記事（100〜200件）と同じ規模になる
+    maxItems: 120,
   },
   expiring: {
     kind: 'expiring',
@@ -147,10 +189,45 @@ function kindOf(ctx: ArticleContext): KindTraits {
   if (!traits) {
     throw new Error(
       `--kind は ${Object.keys(KINDS).join(' / ')} のいずれかです（指定: ${key || 'なし'}）\n` +
-        '  new=配信開始の特報 / expiring=終了予定の特報 / removed=終了済みの特報',
+        '  new=配信開始の特報 / upcoming=配信開始予定の特報（まだ始まっていない）\n' +
+        '  expiring=終了予定の特報 / removed=終了済みの特報',
     )
   }
   return traits
+}
+
+/**
+ * `--genre` の値。指定が無ければ undefined（ジャンルで絞らない）。
+ *
+ * ■ なぜ特報にジャンルの絞り込みがあるか（2026-08-28 追加）
+ * 配信開始予定（`--kind upcoming`）の素材は**各社が公表したラインナップ丸ごと**で、
+ * 1社ぶんが80件を超える。1本にまとめると読者は自分の観たいものに辿り着けない。
+ * ジャンル別記事（`arrivals`）と**同じ3区分**で切って、サービス×ジャンルで出す。
+ *
+ *   npm run write -- --type special --kind upcoming --service prime-video --genre anime \
+ *     --topic "アニメ" --slug prime-video-anime --month 2026-09 --emit
+ *
+ * ★ 区分を独自に増やさないこと。ジャンルの呼び方がサイト内で2種類になる。
+ */
+function genreOf(ctx: ArticleContext): GenreKey | undefined {
+  const key = ctx.flags?.genre
+  if (!key) return undefined
+  const known = GENRES.find((g) => g.key === key)
+  if (!known) {
+    throw new Error(
+      `--genre は ${GENRES.map((g) => g.key).join(' / ')} のいずれかです（指定: ${key}）`,
+    )
+  }
+  return key as GenreKey
+}
+
+/**
+ * タイトル先頭の【】に入れる名乗り。既定は「2026年9月」。
+ * 配信開始予定だけ「2026年9月配信開始」になる（KindTraits.periodSuffix）。
+ */
+function periodLabelOf(ctx: ArticleContext): string {
+  const [y, m] = ctx.targetMonth.split('-')
+  return `${y}年${Number(m)}月${kindOf(ctx).periodSuffix ?? ''}`
 }
 
 /** 見放題とポイントが同居するサービス。「観られなくなる」と書けない */
@@ -172,11 +249,20 @@ export const specialArticle: ArticleType = {
   description: '特報（主題を指定して書く。--kind / --topic / --slug が必要）',
 
   flags: [
-    { name: 'kind', description: 'new=配信開始 / expiring=終了予定 / removed=終了済み', required: true },
+    {
+      name: 'kind',
+      description:
+        'new=配信開始 / upcoming=配信開始予定 / expiring=終了予定 / removed=終了済み',
+      required: true,
+    },
     { name: 'topic', description: '記事の主題。タイトルと本文にそのまま出る（例: 「007」シリーズ）', required: true },
     { name: 'slug', description: 'URLに使う半角英数字とハイフン（例: 007-netflix）', required: true },
     { name: 'match', description: '作品名で絞る正規表現（例: 007|ジェームズ・ボンド）' },
     { name: 'service', description: '1社に絞る場合のサービスキー（例: netflix）' },
+    {
+      name: 'genre',
+      description: 'ジャンルで絞る（anime / western / japanese）。--match の代わりになる',
+    },
     { name: 'from', description: '対象期間の開始日 YYYY-MM-DD（既定は対象月の初日）' },
     { name: 'to', description: '対象期間の終了日 YYYY-MM-DD（既定は対象月の末日）' },
   ],
@@ -194,15 +280,16 @@ export const specialArticle: ArticleType = {
     //   同じ内容を2本出すと同じ検索語を自分同士で奪い合う。
     //   --service だけでも同じ（1社の当月全件＝月次記事そのもの）なので、
     //   **主題を切り出す条件**（作品名か期間）を必ず1つは求める。
-    if (!ctx.flags.match && !ctx.flags.from && !ctx.flags.to) {
+    if (!ctx.flags.match && !ctx.flags.from && !ctx.flags.to && !ctx.flags.genre) {
       throw new Error(
-        '特報には絞り込みが要ります。--match / --from / --to のどれかを指定してください。\n' +
+        '特報には絞り込みが要ります。--match / --genre / --from / --to のどれかを指定してください。\n' +
           '  絞り込みが無いとその月の全件になり、それは月次記事（leaving / ended / arrivals…）の担当です。\n' +
-          '  例: --match "007|ジェームズ・ボンド"   例: --from 2026-09-01 --to 2026-09-01',
+          '  例: --match "007|ジェームズ・ボンド"   例: --genre anime   例: --from 2026-09-01 --to 2026-09-01',
       )
     }
 
     const service = ctx.flags.service
+    const genre = genreOf(ctx)
     const match = ctx.flags.match ? new RegExp(ctx.flags.match, 'i') : undefined
     const from = ctx.flags.from ? Date.parse(`${ctx.flags.from}T00:00:00+09:00`) : undefined
     const to = ctx.flags.to ? Date.parse(`${ctx.flags.to}T23:59:59+09:00`) : undefined
@@ -240,6 +327,10 @@ export const specialArticle: ArticleType = {
         const w = e.work
         return match.test(w.title) || (w.localizedTitle ? match.test(w.localizedTitle) : false)
       })
+      // ★ ジャンルで判定できなかった作品は**落とす**（classify が undefined を返す）。
+      //   邦画記事に海外作品を混ぜるより落とすほうが害が小さい、という
+      //   genres.ts の方針をそのまま引き継ぐ。落ちるのはスポーツ・バラエティー等。
+      .filter((e) => !genre || classify(e.work) === genre)
 
     // ★ 同じ作品が複数回収集されている。最初に把握した回を残す。
     //   サービスをまたぐ主題では、同じ作品がサービスごとに1件ずつ出るのは正しいので、
@@ -252,10 +343,11 @@ export const specialArticle: ArticleType = {
     }
 
     const kept = [...firstSeen.values()]
+    const max = traits.maxItems ?? MAX_ITEMS
     const limited =
-      kept.length <= MAX_ITEMS
+      kept.length <= max
         ? kept
-        : [...kept].sort((a, b) => (b.work.rating ?? 0) - (a.work.rating ?? 0)).slice(0, MAX_ITEMS)
+        : [...kept].sort((a, b) => (b.work.rating ?? 0) - (a.work.rating ?? 0)).slice(0, max)
 
     return limited.sort((a, b) => a.at!.localeCompare(b.at!))
   },
@@ -274,12 +366,13 @@ export const specialArticle: ArticleType = {
       const w = e.work
       const links = buildSearchLinks(w, (ctx.theme.search_links ?? []).filter((l) => l.key !== e.service))
       const title = w.localizedTitle ?? w.title
-      const note =
-        w.meta.source === 'u-next'
+      // ★ 邦題と原題が同じ文字列のことがある（U-NEXT・公式発表は最初から邦題で、
+      //   原題を持たない）。そのまま出すと「◯◯（原題: ◯◯）」になるので出さない。
+      const note = !w.localizedTitle
+        ? '（★邦題が未確認。この原題のまま書くこと）'
+        : w.localizedTitle === w.title
           ? ''
-          : w.localizedTitle
-            ? `（原題: ${w.title}）`
-            : '（★邦題が未確認。この原題のまま書くこと）'
+          : `（原題: ${w.title}）`
 
       return [
         `- ${title}${note ? ` ${note}` : ''}`,
@@ -291,6 +384,9 @@ export const specialArticle: ArticleType = {
         hasLineup(e.service) && w.meta.lineup === 'both'
           ? '  ★見放題は終了するが、ポイント（レンタル・購入）での取り扱いは続く'
           : '',
+        // 告知に書かれていた区分（独占配信・見放題独占配信 など）。
+        // ★ 記事で「独占」と書けるのはこの行がある作品だけ。無い作品に付けない。
+        typeof w.meta.note === 'string' && w.meta.note ? `  告知の区分: ${w.meta.note}` : '',
         productionCompanies(w)?.length ? `  制作: ${productionCompanies(w)!.join(' / ')}` : '',
         peopleLine('監督', directorNames(w)),
         peopleLine('出演', castNames(w), true),
@@ -323,8 +419,14 @@ ${
     : `対象は ${labelOf.get(services[0] ?? '') ?? '対象サービス'} の1社です。他社の配信状況は分かりません。`
 }
 
-タイトルは **【${ctx.targetMonth.split('-')[0]}年${articleMonth(ctx)}月】で始め**、
-主題（${resolved.topic}）と「${traits.verbPhrase}」を必ず入れてください。
+タイトルは **【${periodLabelOf(ctx)}】で始め**、主題（${resolved.topic}）を必ず入れてください。
+${
+  traits.verbPhrase
+    ? `そのうえで「${traits.verbPhrase}」も必ず入れてください。`
+    : `先頭の【】が「配信開始」まで名乗るので、**動詞句を重ねて書かないでください**。
+かわりに **「見放題」の3文字を必ず入れてください**（購入・レンタルと区別するため）。
+  例: 【${periodLabelOf(ctx)}】${labelOf.get(services[0] ?? '') ?? 'サービス名'}の見放題${resolved.topic}${items.length}本｜（見どころ）`
+}
 ${
   isUpdate
     ? `**この記事には前の版があります。** 本数の直後に 【${resolved.asOf}更新】 を置いてください。`
@@ -371,7 +473,14 @@ ${OUTPUT_FORMAT}`
    終了は必ず過去形（「終了しました」）で書いてください。`
         : traits.kind === 'expiring'
           ? `終了日は確定情報です。**急かすのは終了日という事実の提示までとし、視聴を命令しないこと。**`
-          : `**急かさないこと。** 配信開始には締切がありません。
+          : traits.kind === 'upcoming'
+            ? `**まだ配信が始まっていない作品です。取り違えないこと。**
+   「配信中です」「配信が始まりました」「今すぐ観られます」は使用禁止。
+   配信開始は必ず未来形（「◯月◯日から配信開始予定です」）で書いてください。
+   **日付は各社の告知にもとづく予定**であって、変更されることがあります。
+   確定した事実のように「必ず」「決定」と書かないでください。
+   **急かさないこと。** 配信開始には締切がありません。編集部のおすすめも書かない。`
+            : `**急かさないこと。** 配信開始には締切がありません。
    「ぜひ観ましょう」「見逃せません」は書かない。編集部のおすすめも書かない。`,
       items.some((e) => hasLineup(e.service))
         ? `**「見放題が終了する」であって「観られなくなる」ではありません。**
@@ -406,7 +515,12 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     const labelOf = serviceLabels(ctx)
     const services = [...new Set(items.map((e) => labelOf.get(e.service) ?? e.service))]
     const [y, m] = ctx.targetMonth.split('-')
-    const kindTag = { new: '配信開始', expiring: '配信終了', removed: '配信終了済み' }[kindOf(ctx).kind]
+    const kindTag = {
+      new: '配信開始',
+      upcoming: '配信開始予定',
+      expiring: '配信終了',
+      removed: '配信終了済み',
+    }[kindOf(ctx).kind]
     return [...services, kindTag, '特報', `${y}年${Number(m)}月`].filter(Boolean)
   },
 
@@ -428,11 +542,23 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     const issues = titleIssues(title, ctx, {
       axis: 'topic',
       verbPhrase: traits.verbPhrase,
+      periodLabel: periodLabelOf(ctx),
       axisLabel: ctx.flags?.topic,
       isUpdate: previousAsOf(this.slug(ctx)) !== undefined,
       // 1作品だけの特報がありうるので本数は求めない
       requiresCount: false,
     })
+
+    // ★ 先頭の【】から動詞句の検査を外したぶん、**見放題であることは必ず名乗らせる。**
+    //   「配信」だけだと購入・レンタルと区別が付かない（naming.md の決まり）。
+    if (traits.kind === 'upcoming' && !title.includes('見放題')) {
+      issues.push({
+        level: 'error',
+        message:
+          'タイトルに「見放題」がありません。購入・レンタルと区別できないタイトルは作りません。' +
+          '例:【2026年9月配信開始】Amazon Prime Videoの見放題アニメ10本｜…',
+      })
+    }
 
     // ★ 「見放題配信終了予定」は「見放題配信終了」を**文字列として含む**ので、
     //   終了済みの特報に終了予定のタイトルを付けても動詞句の検査は通ってしまう。
@@ -443,6 +569,17 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
         message:
           'タイトルが「終了予定」になっていますが、--kind removed は**すでに終了した**作品の特報です。' +
           '「見放題配信終了」と書いてください。',
+      })
+    }
+
+    // ★ 裏返しの取り違え。「見放題配信開始予定」は「見放題配信開始」を含むので、
+    //   開始済みの特報に予定のタイトルを付けても動詞句の検査は通ってしまう。
+    if (traits.kind === 'new' && title.includes('配信開始予定')) {
+      issues.push({
+        level: 'error',
+        message:
+          'タイトルが「配信開始予定」になっていますが、--kind new は**すでに配信が始まった**作品の特報です。' +
+          '「見放題配信開始」と書いてください。',
       })
     }
     return issues
@@ -478,6 +615,17 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     }
     if (traits.kind === 'expiring' && /終了しました/.test(md)) {
       err('終了を過去形で書いています。--kind expiring はこれから終わる作品です。')
+    }
+    // --- 「まだ始まっていない」を「もう観られる」と読ませない ---
+    if (traits.kind === 'upcoming') {
+      for (const phrase of NOT_YET_AVAILABLE_CLAIM) {
+        if (md.includes(phrase)) {
+          err(
+            `「${phrase}」が含まれています。--kind upcoming の特報は**まだ配信が始まっていない**作品を扱います。` +
+              '読者はいま観に行っても観られません。「◯月◯日から配信開始予定です」の形に書き換えてください。',
+          )
+        }
+      }
     }
     // 見放題とポイントが同居するサービスを含むなら、「もう観られない」と断定できない
     if (items.some((e) => hasLineup(e.service))) {
@@ -564,19 +712,39 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
   const asOf = asOfLabel(ctx)
   const topic = ctx.flags?.topic ?? ''
 
+  // 公式発表の出典表記に出す告知元（About Amazon など）。
+  // 素材に告知が無ければ空文字で、その表記自体も使われない。
+  const publishers = [
+    ...new Set(
+      items
+        .filter((e) => e.work.meta.source === 'announcement')
+        .map((e) => String(e.work.meta.publisher ?? ''))
+        .filter(Boolean),
+    ),
+  ]
+
   const get = phraseReader(fixedPhrases(ctx, REQUIRED_PHRASES), {
     月: articleMonth(ctx),
     主題: topic,
     サービス: services.length === 2 ? services.join('と') : services.join('・'),
     基準日: asOf,
     本数: items.length,
+    告知元: publishers.join('・'),
   })
 
   // ★ データの出どころが違えば出典表記も違う。主題によっては1本の記事に
-  //   API 由来と U-NEXT 由来が混ざるので、混ざったぶんだけ全部要る。
+  //   API 由来・U-NEXT 由来・公式発表由来が混ざるので、混ざったぶんだけ全部要る。
+  //   **「u-next 以外はAPI」と書いてはいけない。** 公式発表の告知まで
+  //   API 由来に落ちてしまい、取得していないAPIを出典として偽ることになる。
+  const sourceOf = (e: ChangeEvent) => e.work.meta.source
   const attributions: string[] = []
-  if (items.some((e) => e.work.meta.source !== 'u-next')) attributions.push(get('attribution'))
-  if (items.some((e) => e.work.meta.source === 'u-next')) attributions.push(get('attribution-unext'))
+  if (items.some((e) => sourceOf(e) !== 'u-next' && sourceOf(e) !== 'announcement')) {
+    attributions.push(get('attribution'))
+  }
+  if (items.some((e) => sourceOf(e) === 'u-next')) attributions.push(get('attribution-unext'))
+  if (items.some((e) => sourceOf(e) === 'announcement')) {
+    attributions.push(get('attribution-announcement'))
+  }
   if (attributions.length === 0) attributions.push(get('attribution'))
 
   return {

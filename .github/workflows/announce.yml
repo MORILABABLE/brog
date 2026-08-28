@@ -1,0 +1,105 @@
+name: announce
+
+# 各社が前月末に出す「翌月の配信開始ラインナップ」の告知を取り込む。
+#
+# ■ collect.yml と分けている理由
+# 見に行く先も、変わる頻度も違う。collect は配信APIを週2回だが、
+# こちらは告知ページを1枚読むだけで、**月に一度しか中身が変わらない。**
+# 週2回の定期収集に混ぜても空振りが増えるだけになる。
+#
+# ■ 月末に毎日見に行く理由
+# 告知が出る日は各社まちまちで、事前には分からない
+# （2026年9月分は Prime Video が8月28日）。25日から末日まで毎日見て、
+# **出た日に取り込んで通知する。** 出ていない日は 404 で静かに終わる。
+#
+# ■ 判定 → 通知 → 記事
+#   ① --check   告知が出ているか・記事1本ぶんの本数があるかを見る（何も書かない）
+#   ② 取り込み  イベントログと台帳に記録し、画像も用意する（APIを消費する）
+#   ③ 通知      Issue → メール。本文に記事の書き出しコマンドが入る
+# ③のあと記事を書くのは人（`/article`）。生成まで自動化するのは P3。
+
+on:
+  schedule:
+    # JST の 25〜31日 05:00（= 前日 20:00 UTC）。
+    # 24-30 と書くと JST では 25〜31日になる。31日 20:00 UTC を含めると
+    # JST の翌月1日になってしまうので、ここには入れない。
+    - cron: '0 20 24-30 * *'
+  workflow_dispatch:
+    inputs:
+      month:
+        description: '対象月 YYYY-MM（既定は翌月）'
+      max_lookups:
+        description: '画像のために作品を引く上限（1件=1APIリクエスト）'
+        default: '60'
+
+permissions:
+  contents: write
+  issues: write
+
+# collect.yml / collect-unext.yml と同じグループ。data/ を全員が書くので直列に流す。
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # ① 出ているかを見るだけ。台帳にもイベントログにも触らない。
+      #   ready / month / total / summary を後続のステップへ渡す。
+      - name: 告知が出ているか見る
+        id: check
+        env:
+          MONTH: ${{ inputs.month }}
+        run: |
+          if [ -n "$MONTH" ]; then
+            npm run collect:announce -- --check --month "$MONTH"
+          else
+            npm run collect:announce -- --check
+          fi
+
+      # ② 記事1本ぶんの本数が出ているときだけ取り込む。
+      #   すでに取り込み済みの日は「新しい告知はありません」で終わり、APIも消費しない。
+      - name: 告知を取り込む
+        if: steps.check.outputs.ready == 'true'
+        env:
+          STREAMING_API_KEY: ${{ secrets.STREAMING_API_KEY }}
+          MONTH: ${{ steps.check.outputs.month }}
+          MAX_LOOKUPS: ${{ inputs.max_lookups || '60' }}
+        run: npm run collect:announce -- --month "$MONTH" --max-lookups "$MAX_LOOKUPS"
+
+      # ③ 通知。前回の通知以降に増えた変化が無ければ Issue は立たないので、
+      #   取り込み済みの日に鳴りっぱなしにはならない。
+      - name: 結果を通知
+        if: steps.check.outputs.ready == 'true'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTIFY_MENTION: ${{ github.repository_owner }}
+        run: npm run notify
+
+      # 通知が失敗しても取り込んだ結果は残す。
+      - name: 結果をコミット
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "変化なし"
+          else
+            git commit -m "chore(collect:announce): $(date -u +%Y-%m-%d)"
+            git pull --rebase
+            git push
+          fi

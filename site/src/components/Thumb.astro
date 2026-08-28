@@ -12,11 +12,16 @@ interface Props {
   category?: CategorySlug
   /** 一辺の px。正方形で切り抜く */
   size?: number
+  /**
+   * 角丸の px。既定 10。
+   * 左の枠だけ 8 にしてある（カード側の角丸 10px との入れ子で決めた値）。
+   */
+  radius?: number
   /** 画像が無いときにタイルへ置く1文字。省略可 */
   initial?: string
 }
 
-const { image, src, category, size = 72, initial } = Astro.props
+const { image, src, category, size = 72, radius = 10, initial } = Astro.props
 
 /**
  * カードの左に置く正方形サムネイル。
@@ -27,7 +32,11 @@ const { image, src, category, size = 72, initial } = Astro.props
  */
 ---
 
-<span class="thumb" style={`--thumb-size:${size}px`} data-category={category}>
+<span
+  class="thumb"
+  style={`--thumb-size:${size}px;--thumb-radius:${radius}px`}
+  data-category={category}
+>
   {
     image ? (
       <Image class="img" src={image} alt="" width={size * 2} height={size * 2} />
@@ -48,7 +57,7 @@ const { image, src, category, size = 72, initial } = Astro.props
     display: block;
     width: var(--thumb-size);
     height: var(--thumb-size);
-    border-radius: 10px;
+    border-radius: var(--thumb-radius);
     overflow: hidden;
   }
   .img {

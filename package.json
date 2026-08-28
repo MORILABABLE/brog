@@ -8,6 +8,8 @@
   },
   "scripts": {
     "collect": "tsx pipeline/cli/collect.ts",
+    "collect:unext": "tsx pipeline/cli/collect-unext.ts",
+    "collect:announce": "tsx pipeline/cli/collect-announce.ts",
     "notify": "tsx pipeline/cli/notify.ts",
     "enrich": "tsx pipeline/cli/enrich.ts",
     "write": "tsx pipeline/cli/write.ts",
@@ -17,7 +19,6 @@
     "probe": "tsx pipeline/cli/probe.ts",
     "typecheck": "tsc --noEmit",
     "unext:menu": "tsx pipeline/cli/unext-menu.ts",
-    "collect:unext": "tsx pipeline/cli/collect-unext.ts",
     "unext:refresh": "tsx pipeline/cli/unext-refresh.ts"
   },
   "dependencies": {
