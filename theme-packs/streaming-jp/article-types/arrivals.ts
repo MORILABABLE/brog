@@ -24,7 +24,7 @@ import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
 import type { ChangeEvent } from '../../../pipeline/sources/types.ts'
 import type { Ledger } from '../../../pipeline/core/events.ts'
 import { GENRES, classify } from '../genres.ts'
-import { castNames, directorNames, productionCompanies } from '../work-context.ts'
+import { castNames, directorNames, productionCompanies, researchLines } from '../work-context.ts'
 import {
   articleMonth,
   asOfLabel,
@@ -559,6 +559,7 @@ function row(
     // ★ 日本語で取れたものだけ渡す。取れなければ行ごと出ない（shared.ts の peopleLine）
     peopleLine('監督', directorNames(w)),
     peopleLine('出演', castNames(w), true),
+    researchLines(w),
     w.overview.length > 10
       ? `  あらすじ(英語原文): ${w.overview}`
       : '  あらすじ: ★未提供（内容を推測して書かないこと）',

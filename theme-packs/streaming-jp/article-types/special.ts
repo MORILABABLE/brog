@@ -39,7 +39,7 @@ import { themeFile } from '../../../pipeline/theme.ts'
 import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
 import type { ChangeEvent } from '../../../pipeline/sources/types.ts'
 import type { Ledger } from '../../../pipeline/core/events.ts'
-import { castNames, directorNames, productionCompanies } from '../work-context.ts'
+import { castNames, directorNames, productionCompanies, researchLines } from '../work-context.ts'
 import { classify, GENRES, type GenreKey } from '../genres.ts'
 import {
   articleMonth,
@@ -392,6 +392,7 @@ export const specialArticle: ArticleType = {
         productionCompanies(w)?.length ? `  制作: ${productionCompanies(w)!.join(' / ')}` : '',
         peopleLine('監督', directorNames(w)),
         peopleLine('出演', castNames(w), true),
+        researchLines(w),
         w.overview ? `  あらすじ(英語原文): ${w.overview}` : '  あらすじ: ★未提供（内容を推測して書かないこと）',
         links.length ? `  検索リンク: ${links.map((l) => `[${l.label}](${l.url})`).join(' / ')}` : '',
       ]

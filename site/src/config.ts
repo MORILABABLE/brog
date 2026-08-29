@@ -9,13 +9,18 @@ export const SITE = {
   /**
    * 検索結果やOGPで使う説明。meta description の推奨長（全角120字）に収める。
    *
+   * ★ 配信終了で名前を挙げるのは Amazon Prime Video / Netflix / U-NEXT の3社。
+   *   **終了日を日付つきで取れるのがこの3社だけ**で、更新の主軸もここにある。
+   *   Prime Video と Netflix は API が expiring（配信終了予定）を返す2社
+   *   （実測。theme-packs/streaming-jp/theme.yaml の catalogs 節）。
+   *   U-NEXT は API の外側にあり、U-NEXT 自身のページから自前で取っている（同 unext 節）。
+   *
    * ★ 配信終了について Disney+ / Apple TV+ を挙げないのは意図的。
-   *   API が expiring（配信終了予定）を返すのは実測で Netflix と Prime Video の
-   *   2社だけで、この2社は配信終了記事に構造的に載らない。
-   *   詳細は theme-packs/streaming-jp/theme.yaml の catalogs 節。
+   *   終了予定を取れないので、配信終了予定の記事に構造的に載らない。
+   *   Disney+ は終了後に「配信終了済み」としてまとめる形になる。
    */
   description:
-    'Netflix・Amazon Prime Video で配信が終了する作品と、Disney+ を含む新しく配信が始まった作品を追いかけるサイト。観たかった作品を見逃す前に。',
+    'Amazon Prime Video・Netflix・U-NEXT で見放題配信が終了する作品と、Disney+ を含む新しく配信が始まった作品を追いかけるサイト。観たかった作品を見逃す前に。',
   /** 本番URL。末尾スラッシュなし。 */
   url: 'https://mihoudairader.com',
   locale: 'ja-JP',

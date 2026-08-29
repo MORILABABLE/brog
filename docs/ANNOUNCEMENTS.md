@@ -97,10 +97,15 @@ URLが規則的で、日付と独占区分まで構造化されている Prime V
 記事タイプは **`upcoming`（サービス × ジャンル）**。1サービスにつき3本出す。
 
 ```bash
-npm run write -- --type upcoming --genre anime    --service prime-video --month 2026-09 --emit
-npm run write -- --type upcoming --genre western  --service prime-video --month 2026-09 --emit
-npm run write -- --type upcoming --genre japanese --service prime-video --month 2026-09 --emit
+npm run write -- --type upcoming --genre anime --service prime-video --month 2026-09 --emit
+npm run research          # ← 素材の作品を日本語版 Wikipedia で下調べ（1作品2.5秒）
+npm run write -- --type upcoming --genre anime --service prime-video --month 2026-09 --emit
 ```
+
+`--genre` を `western` / `japanese` に変えて、1サービスにつき3本出す。
+**`research` は `--emit` のあとに走らせる**（`data/draft/context.json` に確定した
+作品リストが入っているので、調べる対象を二重に持たずに済む）。下調べが入ると、
+作風・評判・広がり方を**事実で**書けるようになる（`templates/writing.md` 3節）。
 
 区分は月次記事（`arrivals --genre`）と同じ3つ。**サイト内でジャンルの呼び方を増やさない。**
 

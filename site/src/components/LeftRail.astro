@@ -5,8 +5,12 @@ import { EVERGREEN_PAGES, evergreenStamp, evergreenSummary } from '../lib/evergr
 import { serviceImage } from '../lib/images'
 
 /**
- * 本文の**左**の余白に置く枠。中身は「新着配信・終了一覧」だけ
- * （2026-08-27 に「最新の配信終了・配信開始一覧」から改称）。
+ * 本文の**左**の余白に置く枠。上から順に2つ。
+ *   1. 当サイトの運営方針および活用について（1枚だけ。行き先は pages/guide.astro）
+ *   2. 新着配信・終了一覧（常設ページの一覧。2026-08-27 に
+ *      「最新の配信終了・配信開始一覧」から改称）
+ * **この順を入れ替えないこと。** 1 は「画像が汎用画像のことがある理由」と
+ * 「2 に検索欄があること」を先に伝えるための枠で、読む順がそのまま並び順（2026-08-29）。
  *
  * ■ なぜ左に分けたか（2026-08-24）
  * 以前は右の追従枠（FollowRail.astro）の1ブロック目に入れていたが、
@@ -34,9 +38,68 @@ import { serviceImage } from '../lib/images'
 
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
 const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
+
+/**
+ * 一覧の**上**に置く固定ページ（2026-08-29 追加）。行き先は pages/guide.astro。
+ *
+ * 常設ページ（EVERGREEN_PAGES）と違って中身が入れ替わらないので、
+ * lib/evergreen.ts には入れていない。**カードの体裁だけをそろえてある。**
+ */
+const GUIDE = {
+  href: '/guide',
+  /** カードの小さい行。この1枚だけカテゴリを持たないので、バッジの代わりに置く */
+  lead: '【はじめての方へ】',
+  /** カードの太い行。枠の見出しと同じ文言を繰り返さない長さにする */
+  name: '運営方針と活用法',
+} as const
+
+const guideIsCurrent = GUIDE.href === current
+/*
+ * 現在地はリンクだけ外す（下の一覧と同じ扱い）。カードが1枚しかないので、
+ * **外側のタグだけを差し替えて中身は1つに保つ。**
+ * 分岐でカードごと書き分けると、片方だけ直したときに見た目がずれる。
+ */
+const GuideTag = guideIsCurrent ? 'span' : 'a'
 ---
 
 <aside class="left-rail">
+  {/*
+    ★ 「新着配信・終了一覧」より**上**に置く枠（2026-08-29 追加）。中身は1枚だけ。
+
+    ■ なぜ一覧より上なのか
+      1. 作品の画像が汎用画像になることがある理由（権利者が許可しない画像は載せない）
+      2. 下の一覧に**作品を探す入力欄がある**こと
+      この2つは、読者が一覧を触る前に知っているほうが役に立つ。読む順がそのまま並び順。
+
+    ■ 画像は後から差し替わる
+      いまは仮の汎用画像（public/guide-thumb.svg）。
+      **src/assets/services/guide.png などを置けば、そちらが自動で優先される**
+      （Thumb は image → src の順に見る）。コードは直さなくてよい。
+
+    ■ 狭い画面では枠ごと消える
+      1200px 未満ではこの枠も出ないので、**フッターにも同じリンクを置いてある**
+      （components/Footer.astro）。片方だけ消さないこと。
+  */}
+  <nav class="block" aria-label="当サイトの運営方針および活用について">
+    <p class="block-title">当サイトの運営方針および活用について</p>
+    <ul class="cards">
+      <li>
+        <GuideTag
+          class:list={['rail-card', guideIsCurrent && 'is-current']}
+          href={guideIsCurrent ? undefined : GUIDE.href}
+          aria-current={guideIsCurrent ? 'page' : undefined}
+        >
+          {/* サムネイルの扱いは下の一覧と同じ。48px・角丸8で並びをそろえる */}
+          <Thumb image={serviceImage('guide')} src="/guide-thumb.svg" size={48} radius={8} />
+          <span class="body">
+            <span class="stamp">{GUIDE.lead}</span>
+            <span class="name">{GUIDE.name}</span>
+          </span>
+        </GuideTag>
+      </li>
+    </ul>
+  </nav>
+
   <nav class="block" aria-label="新着配信・終了一覧">
     <p class="block-title">新着配信・終了一覧</p>
     {/*
@@ -112,6 +175,10 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
      */
     margin-left: auto;
   }
+  /* 枠が2つ縦に並ぶ。カード同士（0.4rem）よりはっきり離して、別の枠だと分かるようにする */
+  .block + .block {
+    margin-top: 1.4rem;
+  }
   /*
    * ★ この見出しはカードの外＝**背景の紺の上に直接載る**。
    *   --text-muted（本文用の暗いグレー）だと紺に沈んで読めない。
@@ -123,6 +190,11 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
     margin: 0 0 0.15rem;
     font-size: 0.78rem;
     font-weight: 700;
+    /*
+     * 枠の内側は約203pxしかなく、長い見出し（「当サイトの運営方針および活用について」）は
+     * 2行になる。既定の行間だと2行目が詰まって読みにくいので明示する。
+     */
+    line-height: 1.45;
     color: var(--footer-text);
   }
   /* 見出しの補足。見出しと同じく地の上に載るので色は同系のまま、太さと大きさで差をつける */

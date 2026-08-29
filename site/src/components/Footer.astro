@@ -16,6 +16,11 @@ const year = new Date().getFullYear()
           pages/sitemap.astro の noindex と astro.config.mjs の filter も一緒に外すこと。
           **3つのうち1つだけ変えても意図どおりにならない。**
       */}
+      {/*
+        ★ 左の枠（LeftRail.astro の1ブロック目）と同じ行き先。**両方に置く。**
+          左の枠は 1200px 未満で消えるので、狭い画面ではここが唯一の入口になる。
+      */}
+      <a href="/guide">運営方針・活用法</a>
       <a href="/about">運営者情報</a>
       <a href="/privacy">プライバシーポリシー</a>
       <a href="/contact">お問い合わせ</a>

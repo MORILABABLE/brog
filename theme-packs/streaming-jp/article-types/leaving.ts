@@ -18,7 +18,7 @@ import { themeFile } from '../../../pipeline/theme.ts'
 import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
 import type { ChangeEvent } from '../../../pipeline/sources/types.ts'
 import type { Ledger } from '../../../pipeline/core/events.ts'
-import { productionCompanies } from '../work-context.ts'
+import { productionCompanies, researchLines } from '../work-context.ts'
 import {
   articleMonth,
   asOfLabel,
@@ -271,6 +271,7 @@ export const leavingArticle: ArticleType = {
         productionCompanies(e.work)?.length
           ? `  制作: ${productionCompanies(e.work)!.join(' / ')}`
           : '',
+        researchLines(e.work),
         e.work.overview ? `  あらすじ(英語原文): ${e.work.overview}` : '',
         links.length ? `  検索リンク: ${links.map((l) => `[${l.label}](${l.url})`).join(' / ')}` : '',
       ]

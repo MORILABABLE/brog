@@ -161,6 +161,7 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | `npm run unext:menu` | U-NEXT のジャンル・カテゴリIDを調べる |
 | `npm run notify` | **前回以降の変化を運用者に通知する（Issue→メール）。API消費なし** |
 | `npm run notify -- --dry-run` | 送らずに通知本文だけ表示する |
+| `npm run research` | **これから書く記事の作品を日本語版 Wikipedia で下調べする（無料・キー不要）**。作風・評判・広がり方を事実で書くための素材 → [templates/writing.md](./theme-packs/streaming-jp/templates/writing.md) |
 | `npm run enrich` | 収集済みイベントに Wikidata の情報を後追いで足す（無料・APIキー不要）。原語・制作会社・**監督・出演者の日本語表記** |
 | `npm run write -- --list` | **作れる記事と素材件数の一覧** |
 | `/article` | **このセッションで記事を執筆（API課金なし）** |
@@ -178,7 +179,7 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 
 ## 記事の種類
 
-`npm run write -- --list` が唯一の一覧。現在は5タイプ。
+`npm run write -- --list` が唯一の一覧。現在は6タイプ。
 
 | 記事 | 軸 | 内容 |
 |---|---|---|
@@ -186,6 +187,7 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | `ended --service <社>` | サービス | 今月見放題が終了**した**作品（終了予定を取得できないサービス＝現在は Disney+） |
 | `arrivals-service --service <社>` | サービス | 今月見放題配信が始まった作品（Netflix / Prime Video / U-NEXT） |
 | `arrivals --genre <ジャンル>` | ジャンル | 同・アニメ / 洋画・海外ドラマ / 邦画・国内ドラマ |
+| `upcoming --genre <ジャンル> --service <社>` | 主題 | **配信開始予定**。各社が前月末に公表する翌月ラインナップを、配信が始まる前にジャンル別で出す → [docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md) |
 | `special --kind … --topic …` | 主題 | **特報**。書きたい主題と時期をそのつど指定して出す |
 
 **記事は必ず軸を1本だけ名乗る。** サービス軸の記事に他社を混ぜない。

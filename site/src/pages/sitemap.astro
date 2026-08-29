@@ -112,6 +112,7 @@ const workGroups = STATE_ORDER_KEYS.map((state) => ({
 const fixedPages = [
   { href: '/', label: 'トップページ' },
   { href: '/stats', label: '見放題の増減（定点観測）' },
+  { href: '/guide', label: '当サイトの運営方針および活用について' },
   { href: '/about', label: '運営者情報' },
   { href: '/privacy', label: 'プライバシーポリシー' },
   { href: '/contact', label: 'お問い合わせ' },
@@ -164,7 +165,8 @@ const description = `${SITE.name}の全ページ一覧です。作品ページ${
     <p class="lead">
       1作品につき1枚。その作品が<strong>いつまで見放題で観られるか</strong>と、
       配信状況の確認先をまとめています。
-      対象は Netflix・Amazon Prime Video・Disney+・Apple TV+ です。
+      対象は Netflix・Amazon Prime Video・Disney+・Apple TV+ の4サービス。
+      U-NEXT の作品ページは作っていない（lib/events-data.ts の API_SERVICES）。
     </p>
     {
       workGroups.map((g) => (

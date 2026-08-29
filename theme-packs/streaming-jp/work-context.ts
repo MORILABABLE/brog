@@ -21,6 +21,7 @@ import {
   type LabelCache,
 } from '../../pipeline/sources/wikidata.ts'
 import type { ChangeEvent, Work } from '../../pipeline/sources/types.ts'
+import { NOTES_PATH as WORK_NOTES_PATH } from '../../pipeline/sources/wikipedia.ts'
 
 const caches = new Map<string, LabelCache>()
 
@@ -48,6 +49,64 @@ function cacheKey(work: Work): string | undefined {
     imdbId: typeof work.meta.imdbId === 'string' ? work.meta.imdbId : undefined,
     tmdbId: typeof work.meta.tmdbId === 'string' ? work.meta.tmdbId : undefined,
   })
+}
+
+/**
+ * 記事を書くための下調べ（`npm run research` が貯めた日本語版 Wikipedia の要旨）。
+ *
+ * ■ 何のためにあるか
+ * 配信APIの素材だけで書くと「◯◯が××する話です」で終わり、
+ * **その作品がなぜ好かれているのかが記事に出ない。**
+ * 作風・評判・広がり方（累計発行部数・シリーズの展開・受賞）は事実であって
+ * 感想ではないので、調べたうえで書けば推測にならない。
+ *
+ * ■ 使い方の決まりは templates/writing.md 4節
+ * **文章を写さない。事実だけを読み取ってこちらの言葉で書く。**
+ * 取れていない作品は素材の範囲で書く（無理に埋めない）。
+ */
+let notesCache: Record<string, { text?: string; pageTitle?: string; url?: string; missing?: boolean }> | undefined
+
+export function researchNote(
+  work: Work,
+): { text: string; pageTitle: string; url: string } | undefined {
+  if (!notesCache) {
+    try {
+      const raw = JSON.parse(readFileSync(WORK_NOTES_PATH, 'utf8')) as {
+        works?: typeof notesCache
+      }
+      notesCache = raw.works ?? {}
+    } catch {
+      notesCache = {}
+    }
+  }
+  const key = work.localizedTitle ?? work.title
+  const hit = key ? notesCache[key] : undefined
+  if (!hit || hit.missing || !hit.text) return undefined
+  return { text: hit.text, pageTitle: hit.pageTitle ?? key, url: hit.url ?? '' }
+}
+
+/** テスト・再読込用 */
+export function resetResearchNotes(): void {
+  notesCache = undefined
+}
+
+/**
+ * 素材に添える下調べの行。取れていない作品は空文字（＝その行が出ない）。
+ *
+ * ★ 出典URLを必ず添える。**書き手が対象作品の項目かどうかを確かめられるように。**
+ *   題名が同じ別作品（小説版・ドラマ版）を掴んでいることがある。
+ */
+export function researchLines(work: Work): string {
+  const note = researchNote(work)
+  if (!note) return ''
+  const body = note.text
+    .split('\n')
+    .map((line) => `    ${line}`)
+    .join('\n')
+  return (
+    '  リサーチ（日本語版 Wikipedia の要旨。**文章は写さず、事実だけを使うこと**）:\n' +
+    `${body}\n    出典: ${note.url}`
+  )
 }
 
 /** 制作会社。解決できていなければ undefined。 */

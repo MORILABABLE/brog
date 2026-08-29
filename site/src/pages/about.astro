@@ -11,10 +11,15 @@ import { SITE } from '../config'
   <div class="prose">
     <h2>当サイトについて</h2>
     <p>
-      {SITE.name}は、Netflix・Amazon Prime Video における<strong>配信終了予定</strong>と、
-      Disney+ を加えた<strong>新着配信作品</strong>を追いかけるサイトです。
-      Disney+ については配信終了予定を取得できないため、
-      <strong>終了済みの作品</strong>を別途まとめ、他のサービスで探すための導線を掲載しています。
+      {SITE.name}は、<strong>Amazon Prime Video・Netflix・U-NEXT</strong> の3サービスを主軸に、
+      <strong>見放題配信が終了する作品</strong>と<strong>新しく配信が始まった作品</strong>を
+      追いかけるサイトです。この3社は<strong>配信終了日を日付つきで確認できる</strong>ため、
+      更新の中心になっています。
+    </p>
+    <p>
+      Disney+ については配信終了予定を取得できないため、<strong>終了済みの作品</strong>を別途まとめ、
+      他のサービスで探すための導線を掲載しています。Apple TV+ は配信状況の更新自体が少なく、
+      記事に登場しない月がほとんどです。
     </p>
     <p>
       「観ようと思っていた作品が、気づいたら配信終了していた」——
@@ -25,11 +30,24 @@ import { SITE } from '../config'
 
     <h2>情報の取得方法</h2>
     <p>
-      配信状況のデータは、配信情報を専門に扱う
+      Netflix・Amazon Prime Video・Disney+・Apple TV+ の配信状況は、配信情報を専門に扱う
       <a href="https://www.movieofthenight.com/about/api" rel="noopener noreferrer" target="_blank"
         >Streaming Availability API</a
-      >から日次で取得しています。各サービスの配信開始・終了の変化を自動で検知し、
+      >から<strong>週2回</strong>取得しています。各サービスの配信開始・終了の変化を自動で検知し、
       記事として整理しています。
+    </p>
+    <p>
+      <strong>U-NEXT はこのAPIの日本カタログに含まれていません。</strong>
+      そのため U-NEXT だけは、<a href="https://video.unext.jp/" rel="noopener noreferrer" target="_blank"
+        >U-NEXT 自身が公開している作品ページ</a
+      >に掲載された新規入荷・見放題終了日を、同じく週2回、自前で確認しています。
+      取得は robots.txt で許可された範囲に限り、アクセスの間隔を空けて行っています。
+    </p>
+    <p>
+      翌月に配信が始まる作品については、各サービスが公表した公式発表を根拠にしています。
+      Amazon Prime Video は
+      <a href="https://www.aboutamazon.jp/news" rel="noopener noreferrer" target="_blank">About Amazon</a
+      >で毎月末に翌月のラインナップが告知されるため、そこから作品名と配信開始日を取っています。
     </p>
     <p>
       作品の日本語タイトルは、正確性を期すため
@@ -45,19 +63,31 @@ import { SITE } from '../config'
       >。配信日・作品情報などの事実はすべて上記のデータソースに基づいており、
       AIによる推測で事実を補完することはありません。
     </p>
+    <p>
+      原作・制作会社・受賞歴といった作品の背景については、
+      <a href="https://ja.wikipedia.org/" rel="noopener noreferrer" target="_blank">日本語版Wikipedia</a>
+      を下調べに使っています。<strong>文章を書き写すことはせず</strong>、
+      確認できた事実だけを読み取って当サイトの言葉で書いています。
+    </p>
 
     <h2>掲載情報の限界</h2>
     <p>
-      当サイトが配信状況を把握しているのは、Netflix・Amazon Prime Video・Disney+・Apple TV+
-      の4サービスです。U-NEXT・Hulu・DMM TV
+      当サイトが配信状況を把握しているのは、Amazon Prime Video・Netflix・U-NEXT・Disney+・Apple TV+
+      の5サービスです。Hulu・DMM TV
       などについては配信状況のデータを保有していないため、
       記事内では「配信中」といった断定は行わず、各サービスでの検索リンクのみを掲載しています。
     </p>
     <p>
-      また、<strong>配信終了予定日を取得できるのは Netflix・Amazon Prime Video の2社に限られます。</strong>
+      また、<strong
+        >配信終了予定日を取得できるのは Amazon Prime Video・Netflix・U-NEXT の3社に限られます。</strong
+      >
       Disney+ については終了の予告をお伝えできず、終了後に「配信終了済み」として
-      まとめる形になります。Apple TV+ は配信状況の更新自体が月数件と少なく、
-      記事に登場しない月がほとんどです。
+      まとめる形になります。
+    </p>
+    <p>
+      U-NEXT の配信終了予定は、U-NEXT 側が公開している範囲（おおむね4週間先まで）にとどまります。
+      さらに終了日は月末に集中するため、月の前半にはまだ公開されていない作品が多くあります。
+      月をまたいで観る予定を立てる場合は、月末近くにあらためてご確認ください。
     </p>
     <p>
       また、配信情報の反映には数日程度の遅れが生じる場合があります。

@@ -40,7 +40,16 @@
       並び             → サイト名だけ左、メニューと検索窓は右
                          （Header.astro の .inner / .brand）
 
-    左の枠 ＝ 常設枠（「新着配信・終了一覧」）
+    左の枠（上段）＝「当サイトの運営方針および活用について」
+      枠とカード          → site/src/components/LeftRail.astro の GUIDE
+      中身（本文）        → site/src/pages/guide.astro
+      カードの画像        → site/public/guide-thumb.svg（仮の汎用画像）
+                            ★ src/assets/services/guide.png などを置けば
+                              そちらが自動で優先される。コードは直さなくてよい
+      ★ 狭い画面では枠ごと消えるので、フッターにも同じリンクがある
+        （Footer.astro）。**片方だけ消さないこと**
+
+    左の枠（下段）＝ 常設枠（「新着配信・終了一覧」）
       見た目・並び        → site/src/components/LeftRail.astro
       何を並べるか        → site/src/lib/evergreen.ts の EVERGREEN_PAGES
       カードの見出し・日付 → site/src/lib/evergreen.ts の evergreenTitle / evergreenStamp
@@ -94,6 +103,10 @@
                             （判定は site/src/lib/service-pages.ts）
                             ※ いまは全ページに中身がある
     トップページ          → site/src/pages/index.astro
+    運営方針・活用法      → site/src/pages/guide.astro
+                            画像の掲載方針と「新着配信・終了一覧」の使い方。
+                            ★ サービス名・日数は events-data.ts から出している。
+                              手で書き足さないこと（説明だけ古くなるため）
     運営者情報・規約など   → site/src/pages/about.astro / privacy.astro / contact.astro
     見放題の増減（統計）   → site/src/pages/stats.astro
 
