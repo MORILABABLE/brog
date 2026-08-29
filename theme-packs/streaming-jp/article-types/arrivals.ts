@@ -49,6 +49,8 @@ import {
   titleIssues,
   variantKey,
   type Freshness,
+  styleIssues,
+  writingRules,
 } from './shared.ts'
 
 /**
@@ -199,6 +201,10 @@ ${template}
 ---
 
 ${namingRules(ctx)}
+
+---
+
+${writingRules(ctx)}
 
 ---
 
@@ -361,7 +367,8 @@ ${OUTPUT_FORMAT}`
   verify(raw, items, ctx): VerifyIssue[] {
     const md = normalizeBody(raw)
 
-    const issues: VerifyIssue[] = []
+    // 全記事タイプ共通の決まり（templates/writing.md）
+    const issues: VerifyIssue[] = styleIssues(md)
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 

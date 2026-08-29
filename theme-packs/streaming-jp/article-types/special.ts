@@ -62,6 +62,8 @@ import {
   serviceLabels,
   titleIssues,
   UNAVAILABLE_CLAIM,
+  styleIssues,
+  writingRules,
 } from './shared.ts'
 
 /**
@@ -408,6 +410,10 @@ ${namingRules(ctx)}
 
 ---
 
+${writingRules(ctx)}
+
+---
+
 # この記事の主題
 
 **${resolved.topic}**
@@ -587,7 +593,8 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
 
   verify(raw, items, ctx): VerifyIssue[] {
     const md = normalizeBody(raw)
-    const issues: VerifyIssue[] = []
+    // 全記事タイプ共通の決まり（templates/writing.md）
+    const issues: VerifyIssue[] = styleIssues(md)
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 

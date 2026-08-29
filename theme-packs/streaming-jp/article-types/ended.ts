@@ -63,6 +63,8 @@ import {
   serviceLabels,
   titleIssues,
   variantKey,
+  styleIssues,
+  writingRules,
 } from './shared.ts'
 
 /**
@@ -194,6 +196,10 @@ ${namingRules(ctx)}
 
 ---
 
+${writingRules(ctx)}
+
+---
+
 # 今回の版
 
 **この記事は「${version.isUpdate ? '更新版' : '初回'}」です。**
@@ -293,7 +299,8 @@ ${rows.join('\n\n')}
   verify(raw, items, ctx): VerifyIssue[] {
     const md = normalizeBody(raw)
 
-    const issues: VerifyIssue[] = []
+    // 全記事タイプ共通の決まり（templates/writing.md）
+    const issues: VerifyIssue[] = styleIssues(md)
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 

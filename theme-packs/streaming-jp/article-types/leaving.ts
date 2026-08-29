@@ -41,6 +41,8 @@ import {
   titleIssues,
   UNAVAILABLE_CLAIM,
   variantKey,
+  styleIssues,
+  writingRules,
 } from './shared.ts'
 
 /**
@@ -290,6 +292,10 @@ ${namingRules(ctx)}
 
 ---
 
+${writingRules(ctx)}
+
+---
+
 # 今回の版
 
 **この記事は「${version.isUpdate ? '更新版' : '初回'}」です。**
@@ -451,7 +457,8 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
   verify(raw, items, ctx): VerifyIssue[] {
     const md = normalizeBody(raw)
 
-    const issues: VerifyIssue[] = []
+    // 全記事タイプ共通の決まり（templates/writing.md）
+    const issues: VerifyIssue[] = styleIssues(md)
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 

@@ -51,6 +51,18 @@ export function namingRules(ctx: ArticleContext): string {
   return readFileSync(themeFile(ctx.theme, 'templates', 'naming.md'), 'utf8')
 }
 
+/**
+ * 全記事タイプ共通の文章の決まり（`templates/writing.md`）をそのまま返す。
+ *
+ * ★ `namingRules` と同じ理由で1枚にまとめてある。
+ *   「記事の作りを読者に説明しない」「配信の裏側を推測しない」は
+ *   どの記事タイプでも同じなので、テンプレートごとに書くと必ずずれる。
+ *   品質ゲート（`styleIssues`）もこの1枚に対応している。
+ */
+export function writingRules(ctx: ArticleContext): string {
+  return readFileSync(themeFile(ctx.theme, 'templates', 'writing.md'), 'utf8')
+}
+
 /** 固定文言に値を差し込む小さなヘルパ */
 export function phraseReader(
   phrases: FixedPhrases,
@@ -629,6 +641,81 @@ export function halfWidthSymbols(md: string, titles: readonly string[] = []): st
     text = text.split(title).join('')
   }
   return [...new Set(text.match(/[!?()]/g) ?? [])]
+}
+
+/**
+ * 記事の作りを読者に説明している言い回し（`templates/writing.md` 1節）。
+ *
+ * 節のまとめ方（同じ日・同じシリーズ・同じ制作会社）は**書き手の都合**で、
+ * 読者に伝える情報ではない。事実を書いたあとに付ける
+ * 「〜という並びです」「〜する形です」は、作品の話を並び方の解説に変えてしまう。
+ *
+ * ★ 「9月1日に11作がまとめて配信開始予定です」のような**事実の記述は当たらない。**
+ *   ここに並べたのは決まり文句だけで、事実の言い方を狭めないようにしてある。
+ */
+const ARTICLE_STRUCTURE_TALK = [
+  '並びです',
+  '並びになっています',
+  '並びになりました',
+  'という形です',
+  '形になっています',
+  '形になりました',
+  '起点になります',
+  'という構成です',
+] as const
+
+/**
+ * 配信の裏側（ライセンス・権利・契約）への踏み込み（`templates/writing.md` 2節）。
+ *
+ * ★ 「独占配信」は各社の告知に書かれた**事実**なので当たらない。
+ *   止めたいのは、同じ日に並んだ理由をこちらで推し量って書くこと。
+ */
+const BEHIND_THE_SCENES = ['ライセンス', '権利関係', '配給権', '独占契約'] as const
+
+/**
+ * 全記事タイプ共通の文体検査。**書いてよいことの範囲そのものなので error。**
+ *
+ * 文体の指摘は普通 warn（判定が外れうるので公開は止めない）だが、この2つは違う。
+ *   - 記事の作りの説明 … 読者にとって情報量ゼロだと**決めた**もの
+ *   - 配信の裏側の推測 … 読者に確かめようがなく、外したときの損が記事全体に及ぶ
+ * どちらも決まり文句なので誤検出しにくく、直し方も1文の書き換えで済む。
+ */
+export function styleIssues(md: string): VerifyIssue[] {
+  const issues: VerifyIssue[] = []
+  const text = stripLinks(md)
+
+  for (const phrase of ARTICLE_STRUCTURE_TALK) {
+    if (!text.includes(phrase)) continue
+    issues.push({
+      level: 'error',
+      message:
+        `「${phrase}」は記事の作りの説明です（templates/writing.md 1節）。` +
+        '節のまとめ方は書き手の都合なので、読者に向けた言い方に直してください。' +
+        '例:「シーズン1〜2と合わせて視聴してみましょう！」',
+    })
+  }
+
+  for (const word of BEHIND_THE_SCENES) {
+    if (!text.includes(word)) continue
+    issues.push({
+      level: 'error',
+      message:
+        `「${word}」に触れています（templates/writing.md 2節）。` +
+        '配信の裏側は素材に無く、推測になります。その分は作品の説明に使ってください。',
+    })
+  }
+
+  // 「〜と考えられます」で推測を事実らしく見せない
+  for (const m of text.matchAll(/[^。\n]*(?:と考えられます|とみられます)[^。\n]*。/g)) {
+    issues.push({
+      level: 'error',
+      message:
+        `推測を事実のように書いています: 「${clip(m[0], 50)}」` +
+        '（templates/writing.md 3節）。推測が要る場面なら、そもそも書きません。',
+    })
+  }
+
+  return issues
 }
 
 /** その月の作品名（邦題と原題の両方）。検査の除外リストに使う。 */

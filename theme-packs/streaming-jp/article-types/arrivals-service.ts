@@ -53,6 +53,8 @@ import {
   titleIssues,
   variantKey,
   type Freshness,
+  styleIssues,
+  writingRules,
 } from './shared.ts'
 
 /**
@@ -289,6 +291,10 @@ ${namingRules(ctx)}
 
 ---
 
+${writingRules(ctx)}
+
+---
+
 # 今回の版
 
 **この記事は「${isUpdate ? '更新回' : '初回'}」です。**
@@ -436,8 +442,9 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
   },
 
   verify(md, items, ctx) {
-    const issues: VerifyIssue[] = []
     const body = normalizeBody(md)
+    // 全記事タイプ共通の決まり（templates/writing.md）
+    const issues: VerifyIssue[] = styleIssues(body)
     const since = previousAsOf(this.slug(ctx))
     const isUpdate = since !== undefined
     const added = items.filter((e) => freshnessOf(e, since) !== 'known')
