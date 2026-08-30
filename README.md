@@ -11,6 +11,7 @@
 | **作業を再開する / 引き継ぐ** | **[docs/HANDOVER.md](./docs/HANDOVER.md)** |
 | **他ジャンルでブログを増やす** | **[docs/NEW-THEME.md](./docs/NEW-THEME.md)** |
 | **検索流入を増やす（施策と根拠）** | **[docs/GROWTH.md](./docs/GROWTH.md)** |
+| **どの検索語を狙うか・新しい記事ジャンル（考察）** | **[docs/KEYWORDS.md](./docs/KEYWORDS.md)** |
 | **作品ページを実装する（設計）** | **[docs/WORK-PAGES.md](./docs/WORK-PAGES.md)** |
 | **U-NEXT の収集（APIの外側）** | **[docs/UNEXT.md](./docs/UNEXT.md)** |
 | **翌月のラインナップを先出しで書く** | **[docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md)** |

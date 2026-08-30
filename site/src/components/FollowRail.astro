@@ -1,22 +1,31 @@
 ---
 import { getCollection } from 'astro:content'
 import GenreRail from './GenreRail.astro'
+import SeriesRail from './SeriesRail.astro'
 import Thumb from './Thumb.astro'
 import { AFFILIATE, CATEGORIES } from '../config'
 import { withAmazonTag } from '../lib/affiliate'
 
 /**
- * 本文の右の余白に置く追従枠。上から3ブロック。
+ * 本文の右の余白に置く追従枠。上から4ブロック。
  *
  *   1. ジャンルから探す … アニメ／洋画／邦画。**いまは何も出ない**（下記）
- *   2. 最新記事        … カテゴリ横断の新しい記事。記事ごとの絵つき
- *   3. PR             … 広告カード。**ここだけ追従する**
+ *   2. シリーズから探す … 保存版のシリーズ記事。**記事が0本なら何も出ない**（下記）
+ *   3. 最新記事        … カテゴリ横断の新しい記事。記事ごとの絵つき
+ *   4. PR             … 広告カード。**ここだけ追従する**
  *
  * ★ 1 は 2026-08-27 に**枠だけ**入れたもの。中身は GenreRail.astro にあり、
  *   config.ts の `GENRE_NAV_ENABLED` が false のあいだ HTMLを1バイトも出さない。
  *   ジャンル軸の記事が各ジャンル1本ずつしか無いため。
  *   記事が溜まったらフラグを true にすれば、この枠と `/genre/<スラッグ>` の
  *   ページが一緒に出る。**並びは必ず最新記事の上**（探し方 → 中身の順）。
+ *
+ * ★ 2 は 2026-08-30 に追加（SeriesRail.astro）。1 と同じく
+ *   **中身が0件なら HTML を出さない**ので、シリーズ記事が公開されるまで枠は現れない。
+ *   フラグは持たせていない（ジャンルと違い、リンク先が記事そのもので、
+ *   一緒に出す一覧ページが無いため）。
+ *   **1 と 3 のあいだから動かさないこと。** ジャンル（粗い区分）→
+ *   シリーズ（特定の作品群）→ 最新記事（中身）の順に細かくなる並びにしてある。
  *
  * ★ 最新記事の絵は frontmatter の `heroImage`（`public/heroes/…`）。
  *   記事カード（PostCard.astro）と**同じ絵・同じ部品**（Thumb.astro）を使う。
@@ -57,8 +66,11 @@ import { withAmazonTag } from '../lib/affiliate'
  * ★ 増やすと枠が縦に伸び、そのぶんPR枠が画面の下から現れるのが遅くなる。
  *   上の「サービスから探す」を外して余裕はできたが、
  *   PR枠を画面の上のほうに置く方針は変えていない（2026-08-27）。
+ * 2026-08-30: 3→5。1件あたり60pxのサムネ＋2行で約76px、
+ *   2件増で枠は約150px伸びる。PR枠はそのぶん下がるが、
+ *   1200px以上でしか出ない枠なので初期表示には残る。
  */
-const RECENT_POSTS = 3
+const RECENT_POSTS = 5
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -80,6 +92,15 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
       .follow-rail を基準にしていて、途中にラッパーが入ると効く範囲が変わる。
   */}
   <GenreRail />
+
+  {/*
+    シリーズから探す。**最新記事の上**に置く（探し方が先、中身が後）。
+    シリーズ記事が0本のあいだは何も描画されない（SeriesRail.astro）。
+
+    ★ GenreRail と同じく div などで囲まないこと。下のPR枠の sticky は
+      .follow-rail を基準にしていて、途中にラッパーが入ると効く範囲が変わる。
+  */}
+  <SeriesRail />
 
   {
     posts.length > 0 && (

@@ -12,6 +12,7 @@
 |---|---|
 | U-NEXT データの法務整理 | [UNEXT.md 4節・7-C](./UNEXT.md) / [SOURCES-UNEXT-HULU.md](./SOURCES-UNEXT-HULU.md) |
 | 記事の軸とタイトルの決まり | [ARTICLE-RULES.md](./ARTICLE-RULES.md) |
+| **どの検索語を狙うか（サジェスト実測・新しい記事ジャンル）** | **[KEYWORDS.md](./KEYWORDS.md)** |
 | アフィリエイトの掲載ルール | [AFFILIATE.md](./AFFILIATE.md) |
 | **積み上がる形にする（フロー／ストック／複利）** | **[STOCK.md](./STOCK.md)** |
 | どのファイルを触るか | [WHERE-TO-EDIT.md](./WHERE-TO-EDIT.md) |
@@ -74,6 +75,13 @@
 JustWatch も Filmarks も映画.com も、配信中かどうかは出すが**終了日は出さない**。
 `expiring` は収集を続けていないと持てないデータで、
 「その作品がいつ見られなくなるか」に日本語で答えられるサイトはほぼ存在しない。
+
+> ★ **この最後の1文は 2026-08-30 に一部訂正した。** Netflix については誤り。
+> `net-frx.com`（Netflix特化・終了予定のカレンダーと作品個別ページを持つ）と
+> `mouhai.net`（「もうすぐ配信終了だ」）が同じことをやっている。
+> **残っている差は「横断」のほう** — Netflix / Prime Video / U-NEXT の終了日を
+> 同じ日付軸で並べられるサイトは見つかっていない。
+> 実測と、そこから出た記事ジャンルの案は [KEYWORDS.md](./KEYWORDS.md) 3-2。
 
 ---
 

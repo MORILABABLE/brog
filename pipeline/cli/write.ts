@@ -326,7 +326,7 @@ async function finalize(
   const md = buildMarkdown({
     parsed,
     // 特報のようにカテゴリが実行時に決まる記事タイプがある（ArticleType.categoryOf）
-    category: type.categoryOf?.(ctx) ?? type.category,
+    category: type.categoryOf?.(ctx, items) ?? type.category,
     genre: articleGenre(recipe),
     tags,
     sources: sourcesFor(items),

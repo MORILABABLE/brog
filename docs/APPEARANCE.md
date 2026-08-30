@@ -234,7 +234,7 @@ body {
 
 ```
 ┌──────────────────────┐
-│ 最新記事                │ ← カテゴリ横断の最新記事（既定3本）
+│ 最新記事                │ ← カテゴリ横断の最新記事（既定5本）
 │ [絵] [バッジ]            │   絵は記事の heroImage（48px・記事カードと同じ絵）
 │      記事タイトル…        │   画像の無い記事はカテゴリ色のタイル
 ├──────────────────────┤
@@ -308,7 +308,7 @@ body {
 | 対象サービスそのものの増減 | `src/lib/events-data.ts` の `LEAVING_SERVICES` / `ARRIVALS_SERVICES` |
 | 広告カードの文面 | `FollowRail.astro` の `.rail-ad` ブロック |
 | サムネイル | `src/assets/services/` にファイルを置く／消す |
-| 最新記事の本数 | `FollowRail.astro` の `RECENT_POSTS`（既定3） |
+| 最新記事の本数 | `FollowRail.astro` の `RECENT_POSTS`（既定5） |
 | 最新記事の絵 | 記事 frontmatter の `heroImage`（`public/heroes/…`）。枠側の指定は `FollowRail.astro` の `<Thumb size={60}>` |
 | 追従の対象 | `FollowRail.astro` の `.rail-ad { position: sticky }` |
 | ブロックの見出し文言 | 各コンポーネントの `.block-title` を持つ `<p>` |

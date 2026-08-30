@@ -142,8 +142,13 @@ export interface ArticleType {
    * 特報は同じ記事タイプで「配信開始の特報」も「終了予定の特報」も書くので、
    * `category` を1つに固定できない。実装しなければ `category` がそのまま使われる。
    * ★ 返す値は `Category` のいずれかで、サイト側の CATEGORIES と揃っていること。
+   *
+   * ★ **素材も渡す**（2026-08-30 に追加）。特報は `--kind` で決まるので `ctx` だけで足りるが、
+   *   シリーズ記事は**人が選んだフラグを持たない**。全作品が終了済みかどうかを
+   *   素材から決めるので、素材が要る（`series.ts` の `stanceOf()`）。
+   *   `ctx` だけを見る記事タイプは今までどおり第2引数を無視してよい。
    */
-  categoryOf?(ctx: ArticleContext): Category
+  categoryOf?(ctx: ArticleContext, items: ChangeEvent[]): Category
   /**
    * 記事として成立する最低の素材数。`--list` の状態表示にだけ使う。
    *

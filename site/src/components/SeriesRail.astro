@@ -1,0 +1,158 @@
+---
+import { getCollection } from 'astro:content'
+import { CATEGORIES } from '../config'
+import { seriesPosts } from '../lib/series-posts'
+
+/**
+ * 右の枠の「シリーズから探す」。**最新記事の上**に置く。
+ *
+ * ■ 何を出すか
+ * シリーズ記事（保存版）へのリンク。中身の拾い方は `lib/series-posts.ts`。
+ * **記事が1本も無いあいだは HTML を1バイトも出さない**（GenreRail と同じ作り）。
+ * フラグは持たせていない。記事が公開されればそのまま出る。
+ *
+ * ■ なぜ「最新記事」の上か
+ * シリーズは**探し方**で、最新記事は**中身**。探し方を先に見せる
+ * （GenreRail が最新記事の上にあるのと同じ理由）。
+ * 並びは ジャンル → シリーズ → 最新記事。ジャンルのほうが粗い区分なので上に置く。
+ *
+ * ■ なぜ月次記事より上に出す価値があるか
+ * 月次記事は翌月には読者が開く理由を失うが、シリーズ記事は
+ * **配信状況が変わるたびに書き直される永続URL**（docs/KEYWORDS.md 案1）。
+ * 枠の上のほうに置いても古くならない唯一の記事になる。
+ *
+ * ■ 項目を増やしすぎない
+ * ここが伸びると、下の最新記事とPR枠が画面の下へ押し出される
+ * （LeftRail.astro が左へ移された経緯と同じ）。**上限は5本**。
+ * それ以上になったら、この枠ではなく一覧ページを作ってそこへ送ること。
+ *
+ * ■ 追従しない
+ * 追従するのは右の枠のPR枠だけ（理由は FollowRail.astro の説明）。
+ *
+ * ■ 出す条件
+ * 画面幅 75rem(1200px) 以上（styles/global.css の `.layout`）。
+ * **狭い画面では枠ごと消える**ので、ここをシリーズ記事の唯一の入口にしないこと。
+ * 記事自体はカテゴリ一覧・サービス別ページ・サイトマップからも辿れる。
+ */
+
+/**
+ * 枠に出す本数の上限。
+ * ★ 1件あたり2行（約44px）。5本で約230pxになり、
+ *   その下の最新記事5本とPR枠が初期表示に残る限界がこのあたり。
+ */
+const MAX_ITEMS = 5
+
+const series = seriesPosts(await getCollection('posts')).slice(0, MAX_ITEMS)
+
+/** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
+const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
+---
+
+{
+  series.length > 0 && (
+    <nav class="block" aria-label="シリーズから探す">
+      <p class="block-title">シリーズから探す</p>
+      <ul class="series">
+        {series.map((s) => {
+          const isCurrent = s.href === current
+          const Inner = (
+            <>
+              <span class="badge" data-category={s.category}>
+                {CATEGORIES[s.category].label}
+              </span>
+              <span class="name">{s.label}</span>
+            </>
+          )
+          return (
+            <li>
+              {/* 現在地は消さずにリンクだけ外す。並びを崩さないため（GenreRail と同じ） */}
+              {isCurrent ? (
+                <span class="item is-current" aria-current="page" title={s.fullTitle}>
+                  {Inner}
+                </span>
+              ) : (
+                <a class="item" href={s.href} title={s.fullTitle}>
+                  {Inner}
+                </a>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  /* 表示・非表示と配置は styles/global.css の .layout 側。ここは中身の見た目だけ。 */
+  .block {
+    max-width: 17rem;
+    margin-bottom: 0.8rem;
+  }
+  /*
+   * ★ この見出しはカードの外＝**背景の紺の上に直接載る**。
+   *   --text-muted（本文用の暗いグレー）だと紺に沈んで読めない。
+   *   FollowRail / GenreRail / LeftRail の .block-title と同じ色・同じ大きさにすること。
+   */
+  .block-title {
+    margin: 0 0 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--footer-text);
+  }
+
+  .series {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .item {
+    display: block;
+    padding: 0.5rem 0.7rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+  }
+  a.item:hover {
+    border-color: var(--accent);
+  }
+  /* 現在地。押せないことが分かる見た目にする（項目自体は消さない） */
+  .item.is-current {
+    background: var(--bg-subtle);
+    border-color: var(--accent);
+  }
+  /*
+   * ★ バッジは記事のカテゴリ（配信終了予定／配信終了済み）。
+   *   シリーズ記事は**全作が終われば ended に変わる**ので、
+   *   ここを固定文字にしないこと（lib/series-posts.ts の説明）。
+   */
+  .badge {
+    font-size: 0.68rem;
+    padding: 0.05rem 0.45rem;
+  }
+  /*
+   * タイトルは長い。2行で切らないと枠が縦に伸びすぎる
+   * （FollowRail の .post-title と同じ扱い）。
+   */
+  .name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  a.item:hover .name {
+    color: var(--accent);
+  }
+  .item.is-current .name {
+    color: var(--text-muted);
+  }
+</style>
