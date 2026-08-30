@@ -1,5 +1,6 @@
 ---
 import { SITE, CATEGORY_HUBS, SERVICE_HUBS } from '../config'
+import { publishablePeople, topPeople } from '../lib/people'
 import PostSearch from './PostSearch.astro'
 
 /**
@@ -19,10 +20,25 @@ import PostSearch from './PostSearch.astro'
  *   下のスクリプトが足しているのは「他のメニューを閉じる」「外を押したら閉じる」
  *   「Escで閉じる」だけで、**無くてもメニューとして成立する。**
  *
+ * ■ 「監督・出演者」は**別枠**（2026-08-30）
+ * カテゴリ×サービスの2段メニューとは軸が違う（何が起きたか／誰の作品か）ので、
+ * ハブの並びに混ぜず、右端に独立した枠として置く。
+ * **狭い画面ではここが人物ページへの唯一の入口**になる
+ * （左の枠は 1200px 未満で消える。components/LeftRail.astro）。
+ *
  * ■ 並びは サイト名 ｜ メニュー＋検索窓
  * サイト名だけ左に置き、**メニューと検索窓は右にまとめる**（2026-08-27）。
  * 読者が操作するものが右に揃うので、視線の移動が1か所で済む。
  */
+
+/**
+ * メニューに出す人物の数。**左の枠（LeftRail の RAIL_PEOPLE）と同じ顔ぶれにする。**
+ * 画面の広さで中身が変わると、同じサイトなのに別の場所に見える。
+ */
+const MENU_PEOPLE = 6
+
+const menuPeople = topPeople(MENU_PEOPLE)
+const peopleTotal = publishablePeople().length
 ---
 
 <header>
@@ -53,6 +69,30 @@ import PostSearch from './PostSearch.astro'
               {h.label}
             </a>
           ),
+        )
+      }
+      {/*
+        ★ カテゴリのハブとは**別枠**。中身は人物なのでサービスでは割らない。
+          出す人数は左の枠と同じ考え方（lib/people.ts の topPeople）。
+          全員への経路は「すべて見る」が持つ。
+      */}
+      {
+        menuPeople.length > 0 && (
+          <details class="menu" data-menu>
+            <summary>監督・出演者</summary>
+            <div class="panel">
+              <a class="panel-all" href="/person">
+                監督・出演者をすべて見る（{peopleTotal}人）
+              </a>
+              <ul>
+                {menuPeople.map((person) => (
+                  <li>
+                    <a href={`/person/${person.id}`}>{person.name}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
         )
       }
     </nav>

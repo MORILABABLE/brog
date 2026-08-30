@@ -47,9 +47,36 @@ const title =
     ? `${p.name}の作品はいつまで見られる？`
     : `${p.name}の作品の見放題配信`
 
+/*
+ * 冒頭の1文に出す「何の作品か」。**役割を名前のすぐ後ろに置く。**
+ * 「トム・クルーズ出演作品」「小津安二郎監督作品」のように、
+ * 読者が探している言い方（〇〇 出演作品／〇〇 監督作品）に合わせる。
+ *
+ * ★ 兼ねている人だけ「の」を挟む（「〇〇の監督・出演作品」）。
+ *   挟まないと「〇〇監督・出演作品」となり、監督作品だけのように読める。
+ */
+const worksPhrase =
+  p.directedCount > 0 && p.castCount > 0
+    ? `${p.name}の監督・出演作品`
+    : p.directedCount > 0
+      ? `${p.name}監督作品`
+      : `${p.name}出演作品`
+
+/**
+ * 兼ねている人だけ内訳を出す。片方だけの人には同じ数字を2回書かない。
+ *
+ * ★ 頭に「うち」を付ける。**同じ作品で監督と出演を兼ねることがある**ので、
+ *   内訳の合計は総数を超えうる（例: 3本の全部で監督・うち2本に出演 →
+ *   「3本です（うち監督3本・出演2本）」）。「うち」が無いと数え違いに見える。
+ */
+const roleBreakdown =
+  p.directedCount > 0 && p.castCount > 0
+    ? `うち監督${p.directedCount}本・出演${p.castCount}本`
+    : ''
+
 const description = p.nextLeaving
-  ? `${p.name}が関わった作品${p.works.length}本の見放題配信をまとめています。${p.leavingCount}本に終了予定があり、最も近いのは${formatDate(p.nextLeaving.at)}の「${p.nextLeaving.title}」（${p.nextLeaving.serviceLabel}）です。`
-  : `${p.name}が関わった作品${p.works.length}本について、当サイトが観測した見放題配信の開始・終了をまとめています。`
+  ? `${worksPhrase}${p.works.length}本の見放題配信をまとめています。${p.leavingCount}本に終了予定があり、最も近いのは${formatDate(p.nextLeaving.at)}の「${p.nextLeaving.title}」（${p.nextLeaving.serviceLabel}）です。`
+  : `${worksPhrase}${p.works.length}本について、当サイトが観測した見放題配信の開始・終了をまとめています。`
 
 /** 関わり方の表示。両方あるときは「監督・出演」 */
 function roleLabel(roles: readonly ('director' | 'cast')[]): string {
@@ -91,27 +118,31 @@ const jsonLd = {
 
   <AffiliateNotice />
 
+  {/*
+    冒頭。**1文で本数を言い切り、細かい数字は箇条書きに落とす**（2026-08-30）。
+    1つの文に本数・内訳・終了予定・最も近い日付を全部入れると、
+    いちばん大事な「あと何本、いつまで」が文の中に埋もれる。
+  */}
   <p class="lead">
-    当サイトが配信状況を把握している{p.name}の作品は<strong>{p.works.length}本</strong>です
-    {p.directedCount > 0 && <>（監督{p.directedCount}本</>}
-    {p.directedCount > 0 && p.castCount > 0 && <>・</>}
-    {p.castCount > 0 && <>{p.directedCount > 0 ? '' : '（'}出演{p.castCount}本</>}
-    {(p.directedCount > 0 || p.castCount > 0) && <>）</>}。
+    当サイトが配信状況を把握している{worksPhrase}は<strong>{p.works.length}本</strong>です
+    {roleBreakdown && <>（{roleBreakdown}）</>}。
+  </p>
+
+  <ul class="summary">
+    <li>
+      見放題の終了予定：
+      {p.leavingCount > 0 ? <strong>{p.leavingCount}本</strong> : <>現在ありません</>}
+    </li>
     {
-      p.nextLeaving ? (
-        <>
-          このうち<strong>{p.leavingCount}本</strong>に見放題の終了予定があり、
-          最も近いのは
-          <strong>
-            <time datetime={isoDate(p.nextLeaving.at)}>{formatDate(p.nextLeaving.at)}</time>
-          </strong>
-          の「{p.nextLeaving.title}」（{p.nextLeaving.serviceLabel}）です。
-        </>
-      ) : (
-        <>いま終了予定が判明している作品はありません。</>
+      p.nextLeaving && (
+        <li>
+          最も近い終了作品：
+          <time datetime={isoDate(p.nextLeaving.at)}>{formatDate(p.nextLeaving.at)}</time>
+          「{p.nextLeaving.title}」（{p.nextLeaving.serviceLabel}）
+        </li>
       )
     }
-  </p>
+  </ul>
 
   <section class="works">
     <h2>作品の配信状況</h2>
@@ -185,7 +216,19 @@ const jsonLd = {
     color: var(--text-muted);
   }
   .lead {
+    margin-bottom: 0.6rem;
     font-size: 0.95rem;
+    line-height: 1.9;
+  }
+  /*
+   * 冒頭の数字。**本文より少し小さく、行間を詰める。**
+   * 読者がここで見るのは「あと何本・いつまで」の2点だけなので、
+   * 表に入る前に目で拾えるようにする。
+   */
+  .summary {
+    margin: 0 0 1.4rem;
+    padding-left: 1.2rem;
+    font-size: 0.92rem;
     line-height: 1.9;
   }
   .works h2,

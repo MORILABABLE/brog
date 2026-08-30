@@ -38,6 +38,10 @@
                            行き先は /category/<ハブ>/<サービス>
       記事検索窓       → site/src/components/PostSearch.astro
                          ★ 常設ページの「作品検索」(WorkSearch.astro) とは別物
+      「監督・出演者」  → Header.astro（カテゴリのハブとは**別枠**の <details>）
+                         出す人数は同ファイルの MENU_PEOPLE、顔ぶれは people.ts の topPeople
+                         ★ 狭い画面では**ここが人物ページへの唯一の入口**
+                           （左の枠は 1200px 未満で消えるため）
       並び             → サイト名だけ左、メニューと検索窓は右
                          （Header.astro の .inner / .brand）
 

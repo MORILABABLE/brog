@@ -318,16 +318,30 @@ const peopleTotal = publishablePeople().length
     color: var(--text-muted);
   }
   /*
-   * 「すべての監督・出演者」。**カードの外＝背景の紺の上に直接載る。**
-   * 見出しと同じ理由で、地の上に置く文字用の明るい色を使う。
+   * 「すべての監督・出演者」。**上の人物の行と同じ枠に入れる**（2026-08-30）。
+   * 地の紺の上に文字だけで置くと、枠の外にこぼれた注記のように見えて
+   * 押せることが伝わらない。**人物と同じ体裁にして、並びの続きに見せる。**
    */
   .block-more {
-    margin: 0.5rem 0 0;
-    font-size: 0.72rem;
-    line-height: 1.5;
+    margin: 0.3rem 0 0;
   }
   .block-more a {
-    color: var(--footer-link);
+    display: block;
+    padding: 0.35rem 0.6rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    /* 枠の中＝白いカードの上なので、地の上用の色（--footer-link）は使わない */
+    color: var(--text-muted);
+  }
+  .block-more a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   .cards {
