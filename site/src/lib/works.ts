@@ -34,6 +34,7 @@ import {
   type RawWork,
 } from './events-data'
 import { resolveUrl } from './work-links'
+import { formatDate, isoDate } from '../utils/date'
 
 /** ポスターの公開パスの根。scripts/make-thumbs.mjs の出力先と揃える。 */
 const POSTER_BASE = '/posters'
@@ -163,6 +164,39 @@ export interface WorkServiceState {
   url: string
 }
 
+/**
+ * 配信履歴の1行。**「観測したできごと」であって、配信の全史ではない。**
+ *
+ * ★ 当サイトの観測が始まる前のことは1行も持っていない（`observationStart()`）。
+ *   ページ側で必ずその旨を添えること。書かないと、
+ *   「この日に配信が始まった作品」という**観測していない主張**になる。
+ *
+ * ★ 同じできごとを何度収集しても1行にする（サービス・種別・日付が同じなら同一）。
+ *   `foundAt` は**最初に観測した日**。終了予定がいつ判明したかを示す値なので、
+ *   後の観測で上書きしない。
+ */
+export interface WorkHistoryEntry {
+  service: string
+  label: string
+  /** 収集データの種別。表示の言い回しは HISTORY_LABEL が持つ */
+  kind: 'new' | 'expiring' | 'removed'
+  /** そのできごとの日付（配信開始日・終了予定日・終了日） */
+  at: Date
+  /** 当サイトがそれを**最初に観測した日** */
+  foundAt: Date
+}
+
+/**
+ * 履歴1行の言い回し。**状態（WorkState）とは別物なので混ぜないこと。**
+ * こちらは「その日に何が起きたか」だけを言う。過去か未来かで言い換えない
+ * （未来の終了予定も、過去の終了予定も、観測した事実は同じ「終了予定」）。
+ */
+export const HISTORY_LABEL: Record<WorkHistoryEntry['kind'], string> = {
+  new: '見放題配信の開始を確認',
+  expiring: '見放題終了予定',
+  removed: '見放題配信が終了',
+}
+
 export interface WorkPage {
   id: string
   /** 邦題優先 */
@@ -190,6 +224,14 @@ export interface WorkPage {
   poster?: string
   /** サービスごとの状態。行動が要るものから並ぶ */
   services: WorkServiceState[]
+  /**
+   * 観測したできごとを**古い順**に並べたもの。
+   *
+   * ★ 上の `services` が「いまどうなっているか」の1行なのに対して、
+   *   こちらは「**いつ入って、いつ消えたか**」。同じ素材から作るが役割が違う。
+   *   収集を続けるほど行が増える（docs/STOCK.md の S-2）。
+   */
+  history: WorkHistoryEntry[]
   /** ページ全体の状態。services の中で最も行動が要るもの */
   state: WorkState
   /** 収集した最も新しい時刻。**必ずページに出す** */
@@ -330,9 +372,62 @@ function serviceStateOf(events: RawEvent[], now: number): WorkServiceState | und
   }
 }
 
+/**
+ * 1作品ぶんの配信履歴。**同じできごとを何度収集しても1行にする。**
+ *
+ * ★ 重複の鍵は「サービス・種別・日付」。収集は変化があったときだけ書き出すが、
+ *   棚卸しの都合で同じ終了予定が2回出ることがある（実測: 2026-08 で0件だが、
+ *   0件であることに依存しない）。**行が二重に出ると履歴の信用が落ちる。**
+ *
+ * ★ `foundAt` は**最初の観測**を残す。終了予定が何日前に判明したかを示す値なので、
+ *   後の観測で上書きすると「終了当日に判明した」ことになってしまう。
+ */
+function historyOf(svc: Map<string, RawEvent[]>): WorkHistoryEntry[] {
+  const rows = new Map<string, WorkHistoryEntry>()
+  for (const events of svc.values()) {
+    for (const e of events) {
+      if (!e.at || !Number.isFinite(Date.parse(e.at))) continue
+      if (e.kind !== 'new' && e.kind !== 'expiring' && e.kind !== 'removed') continue
+      const at = new Date(Date.parse(e.at))
+      const foundAt = new Date(Date.parse(e.collectedAt))
+      const key = `${e.service} ${e.kind} ${e.at.slice(0, 10)}`
+      const cur = rows.get(key)
+      if (!cur) {
+        rows.set(key, {
+          service: e.service,
+          label: LABEL_BY_SERVICE.get(e.service) ?? e.service,
+          kind: e.kind,
+          at,
+          foundAt,
+        })
+      } else if (foundAt < cur.foundAt) {
+        cur.foundAt = foundAt
+      }
+    }
+  }
+  // 古い順。上から下へ時間が進む向きにそろえる（常設ページの表と同じ）
+  return [...rows.values()].sort(
+    (a, b) => a.at.getTime() - b.at.getTime() || a.service.localeCompare(b.service),
+  )
+}
+
 // --- 組み立て -----------------------------------------------------------------
 
 let pages: Map<string, WorkPage> | null = null
+
+/**
+ * 当サイトが観測を始めた日（収集データの最も古い `collectedAt`）。
+ *
+ * ★ **配信履歴には必ずこれを添える。** これより前の出入りは1件も持っていない。
+ *   添えないと「この日に配信が始まった」と読まれ、観測していないことを主張する
+ *   ことになる（/stats の「観測できた数であって起きた数ではない」と同じ規律）。
+ */
+let observedSince: Date | null = null
+
+export function observationStart(): Date | null {
+  build()
+  return observedSince
+}
 
 function build(): Map<string, WorkPage> {
   if (pages) return pages
@@ -370,6 +465,10 @@ function build(): Map<string, WorkPage> {
 
     const cur = newest.get(id)
     if (!cur || e.collectedAt > cur.collectedAt) newest.set(id, e)
+
+    // 観測開始日。**API由来の全イベントのうち最も古い収集時刻。**
+    const collected = new Date(Date.parse(e.collectedAt))
+    if (!observedSince || collected < observedSince) observedSince = collected
   }
 
   const out = new Map<string, WorkPage>()
@@ -406,6 +505,7 @@ function build(): Map<string, WorkPage> {
       cast: ((key && cast.get(key)) || []).slice(0, CAST_LIMIT),
       poster,
       services,
+      history: historyOf(svc),
       state: services[0]!.state,
       dataAsOf: new Date(Date.parse(latest.collectedAt)),
     })
@@ -484,4 +584,177 @@ export function hasWorkPage(id: string): boolean {
 export function resetWorkPages(): void {
   pages = null
   posterFiles = null
+  observedSince = null
+  relatedIndex = null
+}
+
+// --- 関連リンク（内部リンクの受け皿）------------------------------------------
+//
+// docs/WORK-PAGES.md 6節。**作品ページ同士を繋ぐのはここだけ。**
+//
+// ■ なぜ要るか
+// 作品ページ516枚は、これが無いと**互いにリンクの無い孤立点**のまま。
+// 読者は1枚見て行き止まりになり、クローラは1枚から次へ辿れない
+// （docs/STOCK.md 2-3 の実測）。
+//
+// ■ 3つの枠と上限（6節の表そのもの）
+//   同じ日に同じサービスで動く作品  8件
+//   同じ監督の作品                  6件
+//   同じサービス・同じジャンルで終了予定  6件
+//
+// ★ **上限を必ず置く。** 8月31日のように80本以上が同じ日に終わる日がある。
+//   全部並べるとページがリンクの塊になる。
+// ★ **掲載判定を通った作品にだけリンクする。** 通らない作品を混ぜると 404 になる。
+// ★ **題名で引かない。IDで引く。** 同じ題名の別作品が別サービスに入ることがある
+//   （work-links.ts の Entry の注意書き）。
+
+const SAME_DAY_LIMIT = 8
+const SAME_DIRECTOR_LIMIT = 6
+const SAME_GENRE_LIMIT = 6
+
+export interface RelatedWork {
+  id: string
+  title: string
+  /** 題名の下に出す一言。作らない場合は空文字 */
+  note: string
+}
+
+export interface RelatedGroup {
+  heading: string
+  items: RelatedWork[]
+}
+
+interface RelatedIndex {
+  /** `<サービス> <状態> <YYYY-MM-DD>` → 作品 */
+  byDay: Map<string, WorkPage[]>
+  /** 監督名 → 作品 */
+  byDirector: Map<string, WorkPage[]>
+  /** `<サービス> <ジャンル>` → **終了予定の**作品 */
+  byGenre: Map<string, WorkPage[]>
+}
+
+let relatedIndex: RelatedIndex | null = null
+
+/** ★ 日付は必ず utils/date を通す。ビルドは UTC で走るので自前で組むと1日ずれる。 */
+function dayKey(service: string, state: WorkState, at: Date): string {
+  return `${service} ${state} ${isoDate(at)}`
+}
+
+function buildRelatedIndex(): RelatedIndex {
+  if (relatedIndex) return relatedIndex
+
+  const byDay = new Map<string, WorkPage[]>()
+  const byDirector = new Map<string, WorkPage[]>()
+  const byGenre = new Map<string, WorkPage[]>()
+
+  const push = <K>(map: Map<K, WorkPage[]>, key: K, w: WorkPage) => {
+    const list = map.get(key)
+    if (list) list.push(w)
+    else map.set(key, [w])
+  }
+
+  for (const w of publishableWorkPages()) {
+    for (const s of w.services) {
+      push(byDay, dayKey(s.service, s.state, s.at), w)
+      if (s.state === 'leaving') {
+        for (const g of w.genres) push(byGenre, `${s.service} ${g}`, w)
+      }
+    }
+    for (const d of w.directors) push(byDirector, d, w)
+  }
+
+  relatedIndex = { byDay, byDirector, byGenre }
+  return relatedIndex
+}
+
+/**
+ * 並びの既定。**評価の高い順 → 製作年の新しい順 → ID順。**
+ *
+ * ★ 最後に必ずIDを見る。ここが無いと、評価も年も無い作品どうしの順が
+ *   実行のたびに変わりうる（差分が出てビルドが毎回変わる）。
+ */
+function byNotability(a: WorkPage, b: WorkPage): number {
+  return (b.rating ?? 0) - (a.rating ?? 0) || (b.year ?? 0) - (a.year ?? 0) || a.id.localeCompare(b.id)
+}
+
+/** 状態に応じた「その日に何が起きるか」。ページの sentence() と役割を分けること。 */
+function dayVerb(state: WorkState): string {
+  switch (state) {
+    case 'leaving':
+      return '見放題が終わる作品'
+    case 'passed':
+      return '見放題の終了予定だった作品'
+    case 'ended':
+      return '見放題が終わった作品'
+    case 'started':
+      return '見放題に入った作品'
+  }
+}
+
+/**
+ * その作品ページに出す関連リンク。**3枠まで、重複なし。**
+ *
+ * ★ 一度出した作品は次の枠に出さない。同じ題名が2度並ぶと、
+ *   読者には「同じリンクが増えている」ようにしか見えない。
+ */
+export function relatedWorks(w: WorkPage): RelatedGroup[] {
+  const idx = buildRelatedIndex()
+  const groups: RelatedGroup[] = []
+  const used = new Set<string>([w.id])
+
+  const take = (candidates: WorkPage[] | undefined, limit: number, note: (x: WorkPage) => string) => {
+    const out: RelatedWork[] = []
+    for (const c of candidates ?? []) {
+      if (used.has(c.id)) continue
+      used.add(c.id)
+      out.push({ id: c.id, title: c.title, note: note(c) })
+      if (out.length >= limit) break
+    }
+    return out
+  }
+
+  // 1. 同じ日・同じサービス。**このページの主役の状態に合わせる**
+  const head = w.services[0]!
+  const sameDay = take(
+    (idx.byDay.get(dayKey(head.service, head.state, head.at)) ?? []).slice().sort(byNotability),
+    SAME_DAY_LIMIT,
+    (x) => (x.year ? `${x.year}年` : ''),
+  )
+  if (sameDay.length > 0) {
+    groups.push({
+      heading: `${formatDate(head.at)}に${head.label}で${dayVerb(head.state)}`,
+      items: sameDay,
+    })
+  }
+
+  // 2. 同じ監督。**配信状況が変わっても古くならない枠**（docs/STOCK.md S-3）
+  const director = w.directors[0]
+  if (director) {
+    const items = take(
+      (idx.byDirector.get(director) ?? []).slice().sort(byNotability),
+      SAME_DIRECTOR_LIMIT,
+      (x) => [x.year ? `${x.year}年` : '', STATE_LABEL[x.state]].filter(Boolean).join('・'),
+    )
+    if (items.length > 0) {
+      groups.push({ heading: `${director}が監督した作品`, items })
+    }
+  }
+
+  // 3. 同じサービス・同じジャンルで終了予定。**締め切りの近い順**
+  const genre = w.genres[0]
+  if (genre) {
+    const candidates = (idx.byGenre.get(`${head.service} ${genre}`) ?? []).slice().sort((a, b) => {
+      const at = (x: WorkPage) => x.services.find((s) => s.state === 'leaving')?.at.getTime() ?? 0
+      return at(a) - at(b) || a.id.localeCompare(b.id)
+    })
+    const items = take(candidates, SAME_GENRE_LIMIT, (x) => {
+      const s = x.services.find((y) => y.state === 'leaving')
+      return s ? formatDate(s.at) : ''
+    })
+    if (items.length > 0) {
+      groups.push({ heading: `${head.label}で終了予定の${genre}作品`, items })
+    }
+  }
+
+  return groups
 }

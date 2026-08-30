@@ -4,6 +4,7 @@ import { relFor, withAmazonTag } from '../lib/affiliate'
 import { normalizeForSearch } from '../lib/normalize'
 import { amazonVideoLink, otherServiceLinks } from '../lib/search-links'
 import { workLinkById } from '../lib/work-links'
+import { tableDestination } from '../lib/work-destination'
 import { formatDate, isoDate } from '../utils/date'
 import type { WorkRow } from '../lib/events-data'
 
@@ -41,17 +42,27 @@ function decorate(link: { label: string; url: string }) {
  * 作品名そのものの送り先とサムネイル。
  *
  * ★ 「他で探す」列とは役割が違う。
- *   こちらは**その作品が今あるサービスの作品ページ**（Netflixの作品ページなど）で、
- *   1クリックで再生画面まで届く。「他で探す」は別のサービスに在庫があるかの確認。
- *   決め方は src/lib/work-links.ts に集約してある。
+ *   こちらは**その作品について当サイトが持っている情報**への行き先で、
+ *   「他で探す」は別のサービスに在庫があるかの確認。
+ *
+ * ★ **作品ページがあるならそこへ送る**（2026-08-29・src/lib/work-destination.ts）。
+ *   無い作品だけ、今までどおり外部（そのサービスの作品ページ / Amazon検索）へ出る。
+ *
+ * ★ **内部リンクに tag= と rel を付けない。** 自サイトへの sponsored は誤り。
+ *   記事本文は rehype-affiliate が外部リンクだけを見るので自動で正しくなるが、
+ *   .astro は rehype を通らないので**ここで分岐する**。
  *
  * 台帳に無ければ undefined を返し、行は**文字だけ**に戻る（表は成立する）。
  */
 function primary(w: WorkRow) {
   const hit = workLinkById(w.workId, service)
   if (!hit) return undefined
-  const url = withAmazonTag(hit.url, AFFILIATE.amazonTag)
-  return { url, rel: relFor(url), thumb: hit.thumb }
+  const dest = tableDestination(hit.workId || w.workId, hit.url)
+  if (dest.internal) {
+    return { url: dest.url, rel: undefined, target: undefined, thumb: hit.thumb }
+  }
+  const url = withAmazonTag(dest.url, AFFILIATE.amazonTag)
+  return { url, rel: relFor(url), target: '_blank', thumb: hit.thumb }
 }
 
 /**
@@ -115,7 +126,7 @@ function searchText(title: string, originalTitle?: string): string {
                     /* 送り先が決まらなければリンクにしない。文字だけの行に戻る。 */
                     if (!p) return name
                     return (
-                      <a class="work-link" href={p.url} rel={p.rel} target="_blank">
+                      <a class="work-link" href={p.url} rel={p.rel} target={p.target}>
                         {p.thumb && (
                           <img
                             class="work-thumb"

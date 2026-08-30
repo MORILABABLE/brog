@@ -6,7 +6,13 @@ import { AFFILIATE, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
 import { otherServiceLinks } from '../../lib/search-links'
-import { STATE_CATEGORY, STATE_LABEL, publishableWorkPages, workPage } from '../../lib/works'
+import {
+  STATE_CATEGORY,
+  STATE_LABEL,
+  publishableWorkPages,
+  relatedWorks,
+  workPage,
+} from '../../lib/works'
 import type { WorkPage, WorkServiceState } from '../../lib/works'
 import { formatDate, isoDate } from '../../utils/date'
 
@@ -127,6 +133,14 @@ const related = w.services.flatMap((s) => {
   }
   return out
 })
+
+// --- 関連する作品（docs/WORK-PAGES.md 6節）------------------------------------
+
+/*
+ * 作品ページ同士を繋ぐ唯一の場所。**枠と上限は lib/works.ts が決める。**
+ * ここで件数を足したり、別の条件で拾い直したりしないこと。
+ */
+const relatedGroups = relatedWorks(w)
 
 // --- 構造化データ --------------------------------------------------------------
 
@@ -260,6 +274,28 @@ const jsonLd = {
   <AmazonCta category={STATE_CATEGORY[w.state]} query={w.title} />
 
   {
+    relatedGroups.length > 0 && (
+      <section class="related-works">
+        <h2>関連する作品</h2>
+        {relatedGroups.map((g) => (
+          <div class="group">
+            <h3>{g.heading}</h3>
+            <ul>
+              {g.items.map((i) => (
+                <li>
+                  {/* ★ 内部リンク。rel も target も付けない（自サイトへの sponsored は誤り） */}
+                  <a href={`/works/${i.id}`}>{i.title}</a>
+                  {i.note && <span class="note">{i.note}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+    )
+  }
+
+  {
     related.length > 0 && (
       <p class="related">
         関連する一覧:
@@ -374,6 +410,28 @@ const jsonLd = {
   .find-note {
     font-size: 0.8rem;
     line-height: 1.8;
+    color: var(--text-muted);
+  }
+
+  /* --- 関連する作品 --- */
+  .related-works h2 {
+    font-size: 1rem;
+  }
+  .related-works h3 {
+    margin: 1.2rem 0 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .related-works ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.92rem;
+    line-height: 1.9;
+  }
+  .related-works .note {
+    margin-left: 0.5rem;
+    font-size: 0.78rem;
     color: var(--text-muted);
   }
 

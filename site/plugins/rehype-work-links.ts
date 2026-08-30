@@ -15,6 +15,7 @@
  *   - 日付・評価・サービス名のセルは作品名と一致しないので当たらない
  *   - 「日常」のような短い題名が地の文に紛れても、セルではないので当たらない
  * 送り先とサムネイルの決定は src/lib/work-links.ts が持つ。
+ * **作品ページがある作品は、そこへ寄せる**（src/lib/work-destination.ts）。
  *
  * ■ 実行順（astro.config.mjs）
  *   rehypeWorkLinks → rehypeAffiliate の順に並べること。**逆にしない。**
@@ -35,6 +36,7 @@
  * 手元で確認するときだけ気をつける。
  */
 import { SERVICE_BY_LABEL, workLinkByTitle } from '../src/lib/work-links.ts'
+import { tableDestination } from '../src/lib/work-destination.ts'
 
 /** HAST のノード。必要な形だけを最小限で書く（rehype-affiliate と同じ方針）。 */
 interface Node {
@@ -100,11 +102,19 @@ function linkify(cell: Node, service: string | undefined): boolean {
     children: [{ type: 'text', value: title }],
   })
 
+  /*
+   * ★ 作品ページがあれば**内部リンクにする**（2026-08-29・docs/GROWTH.md 3-2）。
+   *   外部リンクは作品ページの側に集めてある。
+   *   内部リンクには後段の rehype-affiliate が触らない（isExternal で弾く）ので、
+   *   tag= も rel="sponsored" も付かない。**それが正しい状態。**
+   */
+  const dest = tableDestination(work.workId, work.url)
+
   cell.children = [
     {
       type: 'element',
       tagName: 'a',
-      properties: { href: work.url, className: ['work-link'] },
+      properties: { href: dest.url, className: ['work-link'] },
       children,
     },
   ]
