@@ -50,10 +50,15 @@
       ★ 狭い画面では枠ごと消えるので、フッターにも同じリンクがある
         （Footer.astro）。**片方だけ消さないこと**
 
-    左の枠（下段）＝ 常設枠（「新着配信・終了一覧」）
+    左の枠（中段）＝ 常設枠（「新着配信・終了一覧」）
       見た目・並び        → site/src/components/LeftRail.astro
       何を並べるか        → site/src/lib/evergreen.ts の EVERGREEN_PAGES
       カードの見出し・日付 → site/src/lib/evergreen.ts の evergreenTitle / evergreenStamp
+
+    左の枠（下段）＝「監督・出演者から探す」
+      枠と並び            → site/src/components/LeftRail.astro の RAIL_PEOPLE（出す人数）
+      誰を出すか          → site/src/lib/people.ts の topPeople()（作品の多い順・全ページ固定）
+      一覧ページ          → site/src/pages/person.astro（/person）
 
     本文カード（白い箱）
       幅・角丸・余白 → site/src/styles/global.css の .content-card と --max-width
@@ -81,6 +86,10 @@
 --------------------------------------------------------------------------
 ## ページの種類から引く
 
+    人物ページ           → site/src/pages/person/[id].astro
+                            誰にページを作るか → site/src/lib/people.ts の MIN_WORKS
+                            ★ いまは3作品以上。2にすると467人に増える（GROWTH 3-3）
+                            ★ URLは名前から作るハッシュ。名前を変えるとURLが変わる
     作品ページ           → site/src/pages/works/[id].astro
                             中身の組み立ては site/src/lib/works.ts
                             配信の記録（履歴）→ 同 historyOf() / WORK-PAGES.md 14節
