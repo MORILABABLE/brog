@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SITE } from '../config'
+import { publishablePeople } from '../lib/people'
+
+/**
+ * 監督・出演者の一覧（`/person`）。人物ページのハブ。
+ *
+ * ■ なぜ要るか
+ * 人物ページ（`/person/<id>`）は作品ページからも左の枠からも入れるが、
+ * **左の枠に出せるのは上位だけ**で、それ以外の人物への経路が
+ * 作品ページ頼みになる。1枚に全員を並べておけば、
+ * 読者もクローラも1手で全部に届く（docs/STOCK.md S-3）。
+ *
+ * ★ 作品ページのサイトマップ（`/sitemap`）とは別物。
+ *   あちらは運営者用で noindex。**ここは読者に出す。**
+ */
+const people = publishablePeople()
+
+const title = '監督・出演者から探す'
+const description = `${SITE.name}が配信状況を追いかけている作品を、監督・出演者${people.length}人ぶんにまとめた一覧です。名前から、その人の作品の見放題配信と終了予定を確認できます。`
+---
+
+<BaseLayout title={title} description={description}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  <p class="lead">
+    当サイトが配信状況を把握している作品を、<strong>監督・出演者{people.length}人</strong>
+    ぶんにまとめています。名前を押すと、その人の作品が
+    <strong>いつまで見放題で観られるか</strong>を一覧で確認できます。
+  </p>
+
+  <p class="note">
+    ここに出るのは、当サイトに作品ページのある作品を<strong>3本以上</strong>持つ人です。
+    作品名は Wikidata（CC0）から取得しており、同姓同名は区別していません。
+  </p>
+
+  <ul class="people">
+    {
+      people.map((p) => (
+        <li>
+          <a href={`/person/${p.id}`}>{p.name}</a>
+          <span class="count">{p.works.length}本</span>
+          {p.leavingCount > 0 && <span class="leaving">終了予定{p.leavingCount}本</span>}
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .lead {
+    font-size: 0.95rem;
+    line-height: 1.9;
+  }
+  .note {
+    font-size: 0.82rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+  /*
+   * 人数が多いので段組みにして縦の長さを抑える（/sitemap の作品一覧と同じ手）。
+   * 狭い画面では1段に落ちる。
+   */
+  .people {
+    columns: 18rem auto;
+    column-gap: 2rem;
+    margin: 1.4rem 0 0;
+    padding-left: 1.2rem;
+    font-size: 0.92rem;
+    line-height: 2;
+  }
+  .people li {
+    break-inside: avoid;
+  }
+  .count {
+    margin-left: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  /* 終了予定を持つ人は行動が要る。色を付けて見分けられるようにする */
+  .leaving {
+    margin-left: 0.4rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: var(--cat-leaving-bg);
+    color: var(--cat-leaving-fg);
+    font-size: 0.72rem;
+  }
+</style>

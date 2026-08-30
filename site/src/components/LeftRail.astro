@@ -3,12 +3,14 @@ import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
 import { EVERGREEN_PAGES, evergreenStamp, evergreenSummary } from '../lib/evergreen'
 import { serviceImage } from '../lib/images'
+import { publishablePeople, topPeople } from '../lib/people'
 
 /**
- * 本文の**左**の余白に置く枠。上から順に2つ。
+ * 本文の**左**の余白に置く枠。上から順に3つ。
  *   1. 当サイトの運営方針および活用について（1枚だけ。行き先は pages/guide.astro）
  *   2. 新着配信・終了一覧（常設ページの一覧。2026-08-27 に
  *      「最新の配信終了・配信開始一覧」から改称）
+ *   3. 監督・出演者から探す（人物ページへの導線。2026-08-30 追加）
  * **この順を入れ替えないこと。** 1 は「画像が汎用画像のことがある理由」と
  * 「2 に検索欄があること」を先に伝えるための枠で、読む順がそのまま並び順（2026-08-29）。
  *
@@ -60,6 +62,22 @@ const guideIsCurrent = GUIDE.href === current
  * 分岐でカードごと書き分けると、片方だけ直したときに見た目がずれる。
  */
 const GuideTag = guideIsCurrent ? 'span' : 'a'
+
+/**
+ * 3つ目の枠に出す人物の数（2026-08-30 追加）。
+ *
+ * ★ **枠を縦に伸ばしすぎないこと。** 上に常設ページのカードが5枚あり、
+ *   ここを長くすると左の列だけが本文より下まで伸びる。
+ *   全員への経路は `/person`（一覧）が持つので、ここは入口の見本でよい。
+ *
+ * ★ 顔ぶれと並びは**全ページで固定**（作品の多い順）。
+ *   見ているページに合わせて入れ替えると、移動のたびに枠の中身が変わる
+ *   （この枠の「並びは全ページで固定」と同じ理由）。
+ */
+const RAIL_PEOPLE = 6
+
+const railPeople = topPeople(RAIL_PEOPLE)
+const peopleTotal = publishablePeople().length
 ---
 
 <aside class="left-rail">
@@ -163,6 +181,53 @@ const GuideTag = guideIsCurrent ? 'span' : 'a'
       }
     </ul>
   </nav>
+
+  {/*
+    ★ 3つ目の枠（2026-08-30 追加）。人物ページ（pages/person/[id].astro）への導線。
+      docs/STOCK.md の S-3。
+
+    ■ なぜ一覧の**下**なのか
+      このサイトの用は「いつ観られなくなるか」で、それを担うのは上の2枠。
+      人物から探すのは**その次に来る探し方**なので、順番でそう示す。
+
+    ■ カードにしていない理由
+      人物には絵が無い（Wikidata から取っているのは名前だけ）。
+      48pxのタイルに頭文字だけを6つ並べても手掛かりにならず、
+      枠が縦に伸びるだけになる。**名前と本数の行にする。**
+  */}
+  {
+    railPeople.length > 0 && (
+      <nav class="block" aria-label="監督・出演者から探す">
+        <p class="block-title">監督・出演者から探す</p>
+        <p class="block-note">作品の多い順</p>
+        <ul class="people">
+          {railPeople.map((p) => {
+            const href = `/person/${p.id}`
+            const isCurrent = href === current
+            return (
+              <li>
+                {/* 現在地はリンクを外す。並びは崩さない（上の一覧と同じ扱い） */}
+                {isCurrent ? (
+                  <span class="person is-current" aria-current="page">
+                    <span class="person-name">{p.name}</span>
+                    <span class="person-count">{p.works.length}本</span>
+                  </span>
+                ) : (
+                  <a class="person" href={href}>
+                    <span class="person-name">{p.name}</span>
+                    <span class="person-count">{p.works.length}本</span>
+                  </a>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+        <p class="block-more">
+          <a href="/person">すべての監督・出演者（{peopleTotal}人）</a>
+        </p>
+      </nav>
+    )
+  }
 </aside>
 
 <style>
@@ -204,6 +269,65 @@ const GuideTag = guideIsCurrent ? 'span' : 'a'
     font-weight: 400;
     line-height: 1.5;
     color: var(--footer-text);
+  }
+
+  /*
+   * 人物の行。カード（.rail-card）より薄く作る。
+   * 絵が無いぶん高さを詰めて、6行でも枠が伸びすぎないようにする。
+   */
+  .people {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .person {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+  }
+  a.person:hover {
+    border-color: var(--accent);
+  }
+  .person.is-current {
+    background: var(--bg-subtle);
+    border-color: var(--accent);
+  }
+  .person-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+  }
+  a.person:hover .person-name {
+    color: var(--accent);
+  }
+  /* 本数は補足。折り返させない（「3」「本」で割れる） */
+  .person-count {
+    flex: none;
+    font-size: 0.68rem;
+    white-space: nowrap;
+    color: var(--text-muted);
+  }
+  /*
+   * 「すべての監督・出演者」。**カードの外＝背景の紺の上に直接載る。**
+   * 見出しと同じ理由で、地の上に置く文字用の明るい色を使う。
+   */
+  .block-more {
+    margin: 0.5rem 0 0;
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+  .block-more a {
+    color: var(--footer-link);
   }
 
   .cards {

@@ -1,0 +1,242 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AffiliateNotice from '../../components/AffiliateNotice.astro'
+import AmazonCta from '../../components/AmazonCta.astro'
+import { ATTRIBUTION } from '../../config'
+import { personPage, publishablePeople } from '../../lib/people'
+import type { Person } from '../../lib/people'
+import { STATE_CATEGORY, STATE_LABEL } from '../../lib/works'
+import { formatDate, isoDate } from '../../utils/date'
+
+/**
+ * 人物ページ `/person/<id>`。
+ *
+ * ■ 何のためにあるか（docs/GROWTH.md 3-3 ／ docs/STOCK.md S-3）
+ * **劣化しないストック。** 作品ページは終了日が過ぎるたびに「終了済み」へ倒れるが、
+ * 「誰が撮ったか・誰が出ているか」は変わらない。
+ * 作品ページを人物で束ね直すだけで、内部リンクの受け皿がもう1層できる。
+ *
+ * ■ LLMを使わない
+ * 作品ページと同じ。出すのは名前・作品・日付・状態だけで、
+ * **文言はすべてデータから組み立てる。** 人物の紹介文は書かない
+ * （書けるだけの材料を持っていないし、書けばビルドのたびに古くなる）。
+ *
+ * ■ 絶対に守ること
+ * **「配信中」と書かない。** 状態の言い回しは lib/works.ts の `WorkState` の表に従う。
+ * ここで新しい言い方を作らない。
+ */
+export function getStaticPaths() {
+  return publishablePeople().map((p) => ({ params: { id: p.id }, props: { person: p } }))
+}
+
+interface Props {
+  person: Person
+}
+
+const { person } = Astro.props as Props
+const p = person ?? personPage(Astro.params.id!)!
+
+/*
+ * h1。**名前だけにしない。**
+ * 名前だけの見出しは Wikipedia・各サービスの俳優ページと同じ的を撃つ。
+ * 当サイトが答えられるのは「その人の作品がいつまで観られるか」なので、
+ * 終了予定を持っているかどうかで見出しを変える（作品ページと同じ考え方）。
+ */
+const title =
+  p.leavingCount > 0
+    ? `${p.name}の作品はいつまで見られる？`
+    : `${p.name}の作品の見放題配信`
+
+const description = p.nextLeaving
+  ? `${p.name}が関わった作品${p.works.length}本の見放題配信をまとめています。${p.leavingCount}本に終了予定があり、最も近いのは${formatDate(p.nextLeaving.at)}の「${p.nextLeaving.title}」（${p.nextLeaving.serviceLabel}）です。`
+  : `${p.name}が関わった作品${p.works.length}本について、当サイトが観測した見放題配信の開始・終了をまとめています。`
+
+/** 関わり方の表示。両方あるときは「監督・出演」 */
+function roleLabel(roles: readonly ('director' | 'cast')[]): string {
+  return roles
+    .slice()
+    .sort()
+    .map((r) => (r === 'director' ? '監督' : '出演'))
+    .reverse()
+    .join('・')
+}
+
+/*
+ * ページ全体の状態。**いちばん行動が要る作品に合わせる。**
+ * Amazon への導線の文面がこれで変わる（終了済みの人に「見放題で探す」と出さない）。
+ */
+const headState = p.works[0]!.work.state
+
+// --- 構造化データ --------------------------------------------------------------
+
+/*
+ * ★ 名前しか出さない。生年・出身地・別名は**持っていない**。
+ *   画面に出していないものを構造化データにだけ入れないこと（作品ページと同じ規律）。
+ *   Wikidata の QID を収集するようになったら `sameAs` を足せる。
+ */
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: p.name,
+}
+---
+
+<BaseLayout title={title} description={description} jsonLd={jsonLd}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a> ›
+    <a href="/person">監督・出演者</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  <AffiliateNotice />
+
+  <p class="lead">
+    当サイトが配信状況を把握している{p.name}の作品は<strong>{p.works.length}本</strong>です
+    {p.directedCount > 0 && <>（監督{p.directedCount}本</>}
+    {p.directedCount > 0 && p.castCount > 0 && <>・</>}
+    {p.castCount > 0 && <>{p.directedCount > 0 ? '' : '（'}出演{p.castCount}本</>}
+    {(p.directedCount > 0 || p.castCount > 0) && <>）</>}。
+    {
+      p.nextLeaving ? (
+        <>
+          このうち<strong>{p.leavingCount}本</strong>に見放題の終了予定があり、
+          最も近いのは
+          <strong>
+            <time datetime={isoDate(p.nextLeaving.at)}>{formatDate(p.nextLeaving.at)}</time>
+          </strong>
+          の「{p.nextLeaving.title}」（{p.nextLeaving.serviceLabel}）です。
+        </>
+      ) : (
+        <>いま終了予定が判明している作品はありません。</>
+      )
+    }
+  </p>
+
+  <section class="works">
+    <h2>作品の配信状況</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">作品</th>
+            <th scope="col">公開年</th>
+            <th scope="col">関わり</th>
+            <th scope="col">配信状況</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            p.works.map((x) => {
+              const s = x.work.services[0]!
+              return (
+                <tr>
+                  <th scope="row">
+                    {/* 内部リンク。rel も target も付けない */}
+                    <a href={`/works/${x.work.id}`}>{x.work.title}</a>
+                  </th>
+                  <td>{x.work.year ? `${x.work.year}年` : '—'}</td>
+                  <td>{roleLabel(x.roles)}</td>
+                  <td class="state">
+                    <span class="badge" data-category={STATE_CATEGORY[x.work.state]}>
+                      {STATE_LABEL[x.work.state]}
+                    </span>
+                    <span class="when">
+                      {s.label}・<time datetime={isoDate(s.at)}>{formatDate(s.at)}</time>
+                    </span>
+                  </td>
+                </tr>
+              )
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      配信状況は変わります。各作品のページに、当サイトが観測した記録と各サービスの確認先があります。
+    </p>
+  </section>
+
+  <AmazonCta category={STATE_CATEGORY[headState]} query={p.name} />
+
+  <p class="related">
+    <a href="/person">監督・出演者の一覧</a>
+  </p>
+
+  <section class="sources">
+    <h2>出典</h2>
+    <ul>
+      <li>
+        <a href={ATTRIBUTION.url} rel="noopener noreferrer" target="_blank">{ATTRIBUTION.text}</a>
+      </li>
+      <li>
+        <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">
+          監督・出演・作品タイトル（Wikidata・CC0）
+        </a>
+      </li>
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .lead {
+    font-size: 0.95rem;
+    line-height: 1.9;
+  }
+  .works h2,
+  .sources h2 {
+    font-size: 1rem;
+  }
+  /* 表は横に伸びる。はみ出したら表ごと横スクロール（WorkTable.astro と同じ扱い） */
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  th,
+  td {
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+    white-space: nowrap;
+  }
+  thead th {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  tbody th {
+    font-weight: 600;
+    /* 余った幅は全部作品名に渡す。他の列は中身の幅しか要らない */
+    width: 100%;
+    white-space: normal;
+  }
+  /* バッジと日付は縦に積む。横に並べると狭い画面で表が伸びる */
+  .state {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+  .when {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .note {
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+  .sources ul {
+    padding-left: 1.2rem;
+    font-size: 0.86rem;
+  }
+</style>

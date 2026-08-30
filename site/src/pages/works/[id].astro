@@ -16,6 +16,7 @@ import {
   workPage,
 } from '../../lib/works'
 import type { WorkPage, WorkServiceState } from '../../lib/works'
+import { personHref } from '../../lib/people'
 import { formatDate, isoDate } from '../../utils/date'
 
 /**
@@ -135,6 +136,19 @@ const related = w.services.flatMap((s) => {
   }
   return out
 })
+
+// --- 人名（docs/STOCK.md S-3）---------------------------------------------------
+
+/*
+ * 監督・出演の名前を人物ページへのリンクにする。
+ *
+ * ★ **ページのある人だけ**（`personHref` が undefined を返したら文字のまま）。
+ *   3作品以上を持つ人にしかページが無い（lib/people.ts の MIN_WORKS）。
+ * ★ 区切りは「、」のまま。**「・」で繋がない**（カタカナの人名が中黒を含むため）。
+ */
+function nameLinks(names: string[]): { name: string; href?: string }[] {
+  return names.map((name) => ({ name, href: personHref(name) }))
+}
 
 // --- 配信の記録（docs/STOCK.md S-2）-------------------------------------------
 
@@ -258,9 +272,33 @@ const jsonLd = {
             中黒で連結すると区切りが消える
             （「ヒラリー・ダフ・イアン・マクシェーン」＝1人に見える）。
         */}
-        {w.directors.length > 0 && (<><dt>監督</dt><dd>{w.directors.join('、')}</dd></>)}
+        {w.directors.length > 0 && (
+          <>
+            <dt>監督</dt>
+            <dd>
+              {nameLinks(w.directors).map((n, i) => (
+                <>
+                  {i > 0 && '、'}
+                  {n.href ? <a href={n.href}>{n.name}</a> : n.name}
+                </>
+              ))}
+            </dd>
+          </>
+        )}
         {/* ★ 「主演」と書かない。Wikidata の並びは主演順ではない。 */}
-        {w.cast.length > 0 && (<><dt>出演</dt><dd>{w.cast.join('、')}</dd></>)}
+        {w.cast.length > 0 && (
+          <>
+            <dt>出演</dt>
+            <dd>
+              {nameLinks(w.cast).map((n, i) => (
+                <>
+                  {i > 0 && '、'}
+                  {n.href ? <a href={n.href}>{n.name}</a> : n.name}
+                </>
+              ))}
+            </dd>
+          </>
+        )}
         {w.rating && (<><dt>評価</dt><dd>{w.rating}/100</dd></>)}
       </dl>
     </div>

@@ -10,6 +10,7 @@ import {
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../lib/events-data'
 import { EVERGREEN_PAGES, evergreenSummary, evergreenTitle } from '../lib/evergreen'
 import { serviceHasContent, serviceSection } from '../lib/service-pages'
+import { publishablePeople } from '../lib/people'
 import { STATE_CATEGORY, STATE_LABEL, STATE_ORDER_KEYS, publishableWorkPages } from '../lib/works'
 import type { WorkState } from '../lib/works'
 import { formatDate } from '../utils/date'
@@ -107,12 +108,17 @@ const workGroups = STATE_ORDER_KEYS.map((state) => ({
     ),
 })).filter((g) => g.items.length > 0)
 
+// --- 人物ページ ---------------------------------------------------------------
+
+const people = publishablePeople()
+
 // --- 数える -------------------------------------------------------------------
 
 const fixedPages = [
   { href: '/', label: 'トップページ' },
   { href: '/stats', label: '見放題の増減（定点観測）' },
   { href: '/guide', label: '当サイトの運営方針および活用について' },
+  { href: '/person', label: '監督・出演者から探す' },
   { href: '/about', label: '運営者情報' },
   { href: '/privacy', label: 'プライバシーポリシー' },
   { href: '/contact', label: 'お問い合わせ' },
@@ -121,6 +127,7 @@ const fixedPages = [
 
 const total =
   fixedPages.length +
+  people.length +
   evergreen.length +
   posts.length +
   categoryPages.length +
@@ -207,6 +214,24 @@ const description = `${SITE.name}の全ページ一覧です。作品ページ${
       <li>
         <a href="/stats">見放題の増減（毎月更新）</a>
       </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>人物ページ<span class="count">{people.length}</span></h2>
+    <p class="lead">
+      1人につき1枚。作品ページのある作品を<strong>3本以上</strong>持つ人だけに作る
+      （lib/people.ts の MIN_WORKS）。配信状況が変わっても古くならないページ。
+    </p>
+    <ul class="works">
+      {
+        people.map((p) => (
+          <li>
+            <a href={`/person/${p.id}`}>{p.name}</a>
+            <span class="meta">{p.works.length}本</span>
+          </li>
+        ))
+      }
     </ul>
   </section>
 
