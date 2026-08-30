@@ -138,7 +138,13 @@ async function main(): Promise<void> {
     const fresh = events.filter((e) => !seen.has(eventKey(e)))
 
     const dated = events.filter((e) => e.at).length
-    console.log(`${cfg.label}: ${events.length}件（日付つき ${dated}件 / 新規 ${fresh.length}件）`)
+    // ★ ローリング窓の告知元は対象月で絞らない（announcement.ts の
+    //   parseNetflixNewToWatch）。窓は進んでいき、落としたぶんは二度と取れないため。
+    const scope = cfg.rolling ? '窓の全件・対象月では絞らない' : ''
+    console.log(
+      `${cfg.label}: ${events.length}件（日付つき ${dated}件 / 新規 ${fresh.length}件）` +
+        (scope ? `  ※${scope}` : ''),
+    )
     const byCategory = new Map<string, number>()
     for (const e of events) {
       const c = String(e.work.meta.category ?? 'その他')

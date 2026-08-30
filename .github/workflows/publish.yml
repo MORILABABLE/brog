@@ -1,0 +1,112 @@
+name: 記事の公開／非公開
+
+# 記事を1本、サイトから隠す／戻す。**ブラウザだけで完結する。**
+#
+# ■ 使い方（UI）
+#   GitHub のリポジトリ → Actions → 左の「記事の公開／非公開」→ 右上の「Run workflow」
+#     slug   … 記事のスラッグ（例: 2026-09-upcoming-netflix）
+#     action … hide＝非公開にする / show＝公開に戻す
+#   slug を空のまま実行すると、**いまの公開状態の一覧だけを出して終わる**
+#   （スラッグを調べるための使い方。何も書き換えない）。
+#
+# ■ 何が起きるか
+#   ① 記事の frontmatter の `draft` を書き換える
+#   ② コミットして push する
+#   ③ push を検知して Cloudflare Pages がサイトをビルドし直す（DEPLOY.md）
+#
+# 数分で反映される。記事ファイルは**消さない**ので、`show` でいつでも戻せる。
+#
+# ★ **URLは404になる。** ページ自体がビルドされないため。
+#   すでに検索エンジンに載っている記事を隠すと、しばらく検索結果に404が残る。
+#   直せる内容なら、隠すより直して出し直すほうが傷が浅い。
+#
+# ■ 手で書き換えてもよい
+# やっているのは1行の書き換えなので、GitHub で記事の `.md` を開いて
+# 鉛筆アイコンから `draft: true` を足しても同じ結果になる。
+# このワークフローは、YAMLを壊さずに・スラッグを一覧から確かめて行うためのもの。
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: '記事のスラッグ（空にすると一覧を出すだけ）'
+        required: false
+        default: ''
+      action:
+        description: 'hide＝非公開にする / show＝公開に戻す'
+        required: true
+        type: choice
+        options:
+          - hide
+          - show
+        default: hide
+
+permissions:
+  contents: write
+
+# data/ を書く収集系とは別グループ。こちらが触るのは site/ だけ。
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # slug が空なら一覧を出して終わり。**何も書き換えない。**
+      # スラッグを調べたいだけのときに、この使い方ができる。
+      - name: 公開状態の一覧
+        if: inputs.slug == ''
+        run: npm run unpublish -- --list
+
+      - name: 公開状態を切り替える
+        if: inputs.slug != ''
+        env:
+          SLUG: ${{ inputs.slug }}
+        run: |
+          if [ "${{ inputs.action }}" = "show" ]; then
+            npm run publish -- --slug "$SLUG"
+          else
+            npm run unpublish -- --slug "$SLUG"
+          fi
+
+      # ★ ビルドを通してから push する。
+      #   frontmatter を壊した状態を本番に送らないための関門
+      #   （site/src/content.config.ts の schema 検証がここで走る）。
+      - name: サイトがビルドできるか確かめる
+        if: inputs.slug != ''
+        working-directory: site
+        run: npm ci && npm run build
+
+      - name: コミットして反映する
+        if: inputs.slug != ''
+        env:
+          SLUG: ${{ inputs.slug }}
+          ACTION: ${{ inputs.action }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/src/content/posts/
+          if git diff --staged --quiet; then
+            echo "変化なし（すでにその状態です）"
+          else
+            if [ "$ACTION" = "show" ]; then
+              git commit -m "chore(posts): $SLUG を公開に戻す"
+            else
+              git commit -m "chore(posts): $SLUG を非公開にする"
+            fi
+            git pull --rebase
+            git push
+            echo "push しました。Cloudflare Pages が数分でビルドし直します。"
+          fi

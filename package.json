@@ -20,7 +20,11 @@
     "probe": "tsx pipeline/cli/probe.ts",
     "typecheck": "tsc --noEmit",
     "unext:menu": "tsx pipeline/cli/unext-menu.ts",
-    "unext:refresh": "tsx pipeline/cli/unext-refresh.ts"
+    "unext:refresh": "tsx pipeline/cli/unext-refresh.ts",
+    "backfill:images": "tsx pipeline/cli/backfill-images.ts",
+    "stock": "tsx pipeline/cli/upcoming-stock.ts",
+    "unpublish": "tsx pipeline/cli/publish.ts",
+    "publish": "tsx pipeline/cli/publish.ts --show"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

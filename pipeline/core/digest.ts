@@ -205,9 +205,18 @@ function upcomingSection(
 
   out.push(
     '',
-    '記事にするには（サービスと対象月は読み替えてください）。ジャンルごとに1本ずつ:',
+    // ★ この欄は「前回以降に増えたぶん」しか出せない。**いま何が貯まっているか**は
+    //   data/UPCOMING.md（`npm run stock` が毎日書き直す）を見てもらう。
+    //   通知を1通読み逃しても在庫が分からなくならないようにするため。
+    'いま何が貯まっているかの全体は **[data/UPCOMING.md](../../blob/main/data/UPCOMING.md)** にあります。',
+    '',
+    '記事にするには（サービスと対象月は読み替えてください）:',
     '',
     '```',
+    '# サービス別に1本（ジャンルが取れない Netflix / Disney+ はこちら）',
+    'npm run write -- --type upcoming-service --service <サービス> --month YYYY-MM --emit',
+    '',
+    '# ジャンル別に1本ずつ（告知に区分がある Prime Video 向け）',
     'npm run write -- --type upcoming --genre anime    --service <サービス> --month YYYY-MM --emit',
     'npm run write -- --type upcoming --genre western  --service <サービス> --month YYYY-MM --emit',
     'npm run write -- --type upcoming --genre japanese --service <サービス> --month YYYY-MM --emit',

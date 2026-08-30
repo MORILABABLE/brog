@@ -170,6 +170,22 @@ export interface ArticleType {
   tags(items: ChangeEvent[], ctx: ArticleContext): string[]
   slug(ctx: ArticleContext): string
   /**
+   * **別の軸ですでに書かれているか。** 書かれているならその呼び名を返す。
+   *
+   * ■ なぜ要るか（2026-08-30 追加）
+   * 同じ素材を別の軸で書ける記事タイプがある。
+   * Prime Video の9月ぶんは `upcoming`（ジャンル軸）で3本書いてあるので、
+   * `upcoming-service`（サービス軸）で書けば**同じ作品の記事が2本立つ**。
+   * ところが `--list` はスラッグの有無しか見ないので「未作成」と出てしまい、
+   * 件数だけを見て書き始めると重複に気づけない。
+   *
+   * ★ **CLI は軸の関係を知らない。** どの記事が自分を覆うのかは
+   *   記事タイプだけが知っているので、判定はこちらに置く
+   *   （`variants` や `flags` と同じ考え方）。
+   * ★ 実装しない記事タイプは、いままでどおりスラッグの有無だけで判定される。
+   */
+  coveredBy?(ctx: ArticleContext, existingSlugs: ReadonlySet<string>): string | undefined
+  /**
    * タイプ固有の検証。
    *
    * error は公開を止める（誤情報・規約違反など、出してはいけないもの）。

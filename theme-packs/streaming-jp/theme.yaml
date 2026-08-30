@@ -144,21 +144,65 @@ search_links:
 #   npm run collect:announce                  翌月ぶんを取り込む
 #   npm run collect:announce -- --check       出ているかだけ見る（書き込まない）
 #
-# url の {year} {month_en} {month} は対象月で置換される。
+# url の {year} {month_en} {month} {yymm} は対象月で置換される。
 # parser は pipeline/sources/announcement.ts の PARSERS のキー。
 #
-# ★ 各社の告知の出方（2026-08-28 調査）
-#   Prime Video : About Amazon に前月末。日付・独占区分つきで最も構造的
-#   Disney+     : 前月25日前後。公式の一覧ページはあるが月ごとのURLが安定しない
-#   Netflix     : **日本には月次の公式ページが無い**（報道と公式Xが実質の告知）
-#   U-NEXT      : プレスルームに月末2〜3日前（/ja/press-room/{年}-{月}-unext-lineups）
-#   → 解析器を書けるのは URL が規則的な Prime Video から。他社は増やすときに足す。
+# ★ 各社の告知の出方（2026-08-30 再調査）
+#   Prime Video : About Amazon に前月末。日付・独占区分つきで最も構造的     → 実装済み
+#   Disney+     : 公式サイトの月次ページ。前月25日前後                      → 実装済み
+#   Netflix     : **日本には月次の公式ページが無い**（報道と公式Xが実質の告知）→ 出典にできない
+#   U-NEXT      : **月次のプレスリリースは止まっている**（下記）            → 収集済みで代替
+#
+# ★ Netflix（2026-08-30 追加）
+#   月次ラインナップの「記事」は日本に無いが、**新作情報のページがある**。
+#   about.netflix.com/ja/new-to-watch が一次情報・構造化・robots許可の3つを満たす。
+#   報道各社（SCREEN ONLINE ほか）は実測でも30〜40件の抜粋で全件ではなく、
+#   出典の明記も無い。**公式のほうが確実なので報道は使わない。**
+#
+#   ★ これは「月ぶんの一覧」ではなく**先頭20件が進んでいくローリング窓**
+#     （約11日先まで）。**毎日読んで貯める**運用で月がつながる。
+#     月末だけ見に行く announce.yml のままでは月の前半しか取れない。
+#   ★ 取れるのは新作（オリジナル中心）だけ。旧作のライセンス作品は載らない
+#     （Netflix の new イベントの61%が2024年以前）。残りは配信APIが当日に拾う。
+#
+# ★ U-NEXT を足さない理由
+#   /ja/press-room/{年}-{月}-unext-lineups は 2026-02 までは残っているが、
+#   2026-08 も 2026-09 も 404（2026-08-30 実測）。月次のプレスリリース自体が
+#   止まったとみられる。**そもそも U-NEXT は自前で直接収集している**
+#   （npm run collect:unext。docs/UNEXT.md）ので、告知を読む必要が無い。
+#   直接収集は配信開始日を当日に拾う仕組みなので「先出し」だけができない、
+#   という違いだけが残る。
 announcements:
   - service: prime-video
     label: Amazon Prime Video
     publisher: About Amazon
     parser: about-amazon
     url: https://www.aboutamazon.jp/news/entertainment/amazon-prime-video-new-content-{month_en}-{year}
+
+  # ★ **必ず日付つきのURL（/recommend/2609）を指すこと。**
+  #   同じ内容の /recommend/latest は www.disneyplus.com へ 301 するが、
+  #   転送先の robots.txt は `User-agent: * / Disallow: /`（2026-08-30 実測）。
+  #   disneyplus.disney.co.jp 側は `/` を許可しているので、日付つきURLなら読める。
+  #   転送を追わない仕掛けは announcement.ts の fetchAnnouncement にある。
+  #
+  # ★ 日付つきページは月初にならないと立たないことがある。
+  #   2026-08-30 時点で /recommend/2609（9月分）は 404 だった
+  #   （8月分の /recommend/2608 は 7月25日公開）。404 は「まだ出ていません」と出る。
+  - service: disney-plus
+    label: Disney+
+    publisher: Disney+ 公式サイト
+    parser: disney-recommend
+    url: https://disneyplus.disney.co.jp/recommend/{yymm}
+
+  # ★ 月に依存しないURL（対象月での絞り込みは解析器がやる）。
+  #   www.netflix.com は `Disallow: /`。**about.netflix.com とは別ホスト**なので
+  #   取り違えないこと。about 側で禁止されているのは /api/ だけ。
+  - service: netflix
+    label: Netflix
+    publisher: About Netflix
+    parser: netflix-new-to-watch
+    url: https://about.netflix.com/ja/new-to-watch
+    rolling: true
 
 # =============================================================
 # U-NEXT（Streaming Availability API の外側にあるサービス）

@@ -107,7 +107,62 @@ Markdown の仕様（前後の文字種で開閉を判定する規則）によ�
 パイプラインで記事を生成する場合は品質ゲートが自動で検出して止めるが、
 ここで手編集したものは検査を通らないので、目視で気をつけること。
 
+## 記事を非公開にする（消さずに隠す）
+
+**記事を消す前に、まずこちらを検討する。** frontmatter の `draft` を `true` にすると、
+サイトのどこからも辿れなくなる（一覧・記事ページ・RSS・サイトマップ・検索のすべて）。
+**ファイルは残る**ので、直したあと `false` に戻せばそのまま元のURLで復活する。
+
+やり方は3つ。**どれでも結果は同じ**（frontmatter の1行が変わるだけ）。
+
+### ① GitHub の Actions から（いちばん簡単・ブラウザだけ）
+
+1. リポジトリの **Actions** タブ → 左の **「記事の公開／非公開」**
+2. 右上の **Run workflow**
+3. `slug` に記事のスラッグ（例 `2026-09-upcoming-netflix`）、`action` に `hide`
+4. **Run workflow** を押す
+
+コミットと push まで自動で走り、Cloudflare Pages が数分でサイトを更新する。
+**公開に戻すときは `action` を `show`** にして同じ操作をする。
+
+> スラッグが分からないときは **`slug` を空のまま実行する**。
+> いまの公開状態の一覧が出るだけで、何も書き換えない。
+
+### ② github.dev で直接書き換える
+
+記事の `.md` を開き、frontmatter（先頭の `---` で挟まれた部分）に1行足す。
+
+```yaml
+draft: true
+```
+
+すでに `draft: false` の行があれば `true` に書き換える。あとはコミット。
+
+### ③ 手元のコマンドから
+
+```bash
+npm run unpublish -- --list                            # 公開状態の一覧
+npm run unpublish -- --slug 2026-09-upcoming-netflix   # 非公開にする
+npm run publish   -- --slug 2026-09-upcoming-netflix   # 公開に戻す
+```
+
+**コマンドだけでは反映されない。** commit して push すると Cloudflare Pages が更新する。
+
+> **どこまで消えるか。** 記事ページ・一覧・RSS・サイトマップ・検索から消え、
+> OGカード画像（`/cards/<スラッグ>.jpg`）も作られなくなる。
+> 一方、記事に出てくる**作品のポスターは残る**（他の記事も使っている共有の画像なので）。
+> `data/image-manifest.json` にも残るため、`npm run refresh:images` の対象には入り続ける。
+
+> ⚠️ **すでに検索エンジンに載っている記事を隠すと、そのURLは404になる。**
+> 検索結果からしばらく消えず、開いた人は404を見ることになる。
+> 直せる内容なら、隠すより**直して出し直す**ほうが傷が浅い。
+> 隠すのが向くのは「公開直後に気づいた」「内容が薄すぎる」といった場合。
+
+---
+
 ## 記事を削除する
+
+**まず「非公開にする」で足りないか確かめること。** 消すと戻せない。
 
 左のエクスプローラーでファイルを右クリック → **Delete** → コミット。
 
@@ -449,5 +504,26 @@ git pull                     # ← ここ。GitHub側の変更を取り込む
 git push                     # GitHubに送る → Cloudflareが自動ビルド
 
 先にコミットしておけば、自分の変更は履歴に確保済みなので pull が安全に走ります。この順なら push が拒否されることもありません。
+
+① GitHub の Actions（ブラウザだけで完結・推奨）
+
+Actions → 「記事の公開／非公開」→ Run workflow で、slug と action（hide/show）を入れて実行。frontmatter の書き換え → ビルド確認 → commit → push まで自動で走り、Cloudflare Pages が数分で反映します。
+
+slug を空のまま実行すると公開状態の一覧だけが出ます（何も書き換えません）。スラッグを調べる用途に使えます。
+
+push 前にサイトビルドを通す関門を入れてあるので、frontmatter を壊した状態が本番に行くことはありません。
+
+② github.dev で1行足す
+
+記事の .md の frontmatter に draft: true を書いてコミット。やっていることは①と同じです。
+
+③ 手元のコマンド
+
+npm run unpublish -- --list                            # 一覧
+npm run unpublish -- --slug 2026-09-upcoming-netflix   # 非公開
+npm run publish   -- --slug 2026-09-upcoming-netflix   # 公開に戻す
+
+往復（false ↔ true）を実際に試して、行が重複せず正しく切り替わることを確認しています。
+
 
 ---

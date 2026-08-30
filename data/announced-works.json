@@ -1,7 +1,107 @@
 {
   "note": "告知の邦題から特定した作品。npm run collect:announce が書く。手で編集しない（手で決めたいものは data/announcement-pins.json）。",
-  "updatedAt": "2026-08-28T11:39:10.834Z",
+  "updatedAt": "2026-08-30T05:07:23.364Z",
   "works": {
+    "netflix|Jared Freid: The Family Plan|": {
+      "title": "Jared Freid: The Family Plan",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|NFLメルボルンゲーム|": {
+      "title": "NFLメルボルンゲーム",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|On Campus: Game of the Week|": {
+      "title": "On Campus: Game of the Week",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|Untold: ミスター・T 「バカを哀れむ」|": {
+      "title": "Untold: ミスター・T 「バカを哀れむ」",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|Untold: レイチェル・ガン 論争のブレイキン|": {
+      "title": "Untold: レイチェル・ガン 論争のブレイキン",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|アリックス・アールのリアルな日常|": {
+      "title": "アリックス・アールのリアルな日常",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|エージェント物語 ザ・ムービー|": {
+      "title": "エージェント物語 ザ・ムービー",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|ガーンダーリー: 暗闇の追跡者|": {
+      "title": "ガーンダーリー: 暗闇の追跡者",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|クルー・ガール|": {
+      "title": "クルー・ガール",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|ジェントルメン|": {
+      "title": "ジェントルメン",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|スタヴロス・ハルキアスのスタヴおじさん|": {
+      "title": "スタヴロス・ハルキアスのスタヴおじさん",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|ターニング・ポイント: 9・11が生んだ世代|": {
+      "title": "ターニング・ポイント: 9・11が生んだ世代",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|ダン!|": {
+      "title": "ダン!",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|チュンバック|": {
+      "title": "チュンバック",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|ディナー・クラブ|": {
+      "title": "ディナー・クラブ",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|ファウダ －報復の連鎖－|": {
+      "title": "ファウダ －報復の連鎖－",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|フィジカル100: ITALY|": {
+      "title": "フィジカル100: ITALY",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|フィト・パエス: ザ・ワールド・ウィズイン・ア・ソング|": {
+      "title": "フィト・パエス: ザ・ワールド・ウィズイン・ア・ソング",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|恋わずらい|": {
+      "title": "恋わずらい",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|私たちが結婚を決めた理由 それから|": {
+      "title": "私たちが結婚を決めた理由 それから",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
     "prime-video|#5 MLB NEXT PITCH|": {
       "title": "#5 MLB NEXT PITCH",
       "imdbId": null,

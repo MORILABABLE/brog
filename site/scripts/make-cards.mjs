@@ -177,6 +177,8 @@ function readFrontmatter(md) {
   return {
     title: one('title'),
     category: one('category'),
+    // 非公開（draft: true）の記事はカードを作らない。下の理由を参照
+    draft: one('draft') === 'true',
     tags: tags ? tags.split(',').map((t) => t.trim().replace(/^['"]|['"]$/g, '')) : [],
   }
 }
@@ -248,6 +250,16 @@ for (const file of posts) {
   const slug = file.replace(/\.md$/, '')
   const out = join(outDir, `${slug}.jpg`)
   const fm = readFrontmatter(readFileSync(join(postsDir, file), 'utf8'))
+
+  // ★ 非公開の記事は飛ばす。
+  //   記事ページ自体は Astro 側が出さない（getCollection が draft を外す）が、
+  //   カードは public/ に置く静的ファイルなので、作ると
+  //   **/cards/<スラッグ>.jpg が誰でも開けるURLとして残る。**
+  //   「非公開にした」のに成果物が公開されているのは筋が通らない。
+  if (fm?.draft) {
+    console.log(`カード画像: ${slug.padEnd(30)} 非公開のため作りません`)
+    continue
+  }
 
   if (!fm?.title || !fm.category) {
     // ビルドを止める。og:image が404のまま公開されるより、ここで気づくほうがよい。

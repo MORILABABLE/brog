@@ -604,17 +604,22 @@ async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promis
 
     const items = r.type.select(events, ledger, ctx)
     const min = r.type.minItems ?? 0
+    // ★ 別の軸ですでに書かれていれば「未作成」と出さない。
+    //   出すと、件数だけを見て書き始めて同じ作品の記事が2本立つ（article.ts の coveredBy）。
+    const covered = r.type.coveredBy?.(ctx, existing)
     const state = existing.has(slug)
       ? '作成済'
-      : items.length === 0
-        ? '素材なし'
-        : // 少ない月に無理に1本立てると表がスカスカの記事になる。
-          // 止めはしないが、運用者が気づけるように出す。
-          items.length < min
-          ? '素材不足'
-          : '未作成'
+      : covered
+        ? `作成済(${covered})`
+        : items.length === 0
+          ? '素材なし'
+          : // 少ない月に無理に1本立てると表がスカスカの記事になる。
+            // 止めはしないが、運用者が気づけるように出す。
+            items.length < min
+            ? '素材不足'
+            : '未作成'
     console.log(
-      `  ${recipeLabel(r).padEnd(32)}${String(items.length).padStart(4)}  ${state.padEnd(6)}${slug}`,
+      `  ${recipeLabel(r).padEnd(32)}${String(items.length).padStart(4)}  ${state.padEnd(18)}${slug}`,
     )
   }
 

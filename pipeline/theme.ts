@@ -132,10 +132,14 @@ export async function loadTheme(key = activeThemeKey()): Promise<Theme> {
     if (lack.length) {
       throw new Error(`${path}: announcements[${a.service ?? '?'}] の ${lack.join(', ')} が未設定です`)
     }
-    if (!a.url.includes('{')) {
+    // ★ rolling: true は「月を持たないページを毎日読んで貯める」告知元。
+    //   そう宣言していないのに月の差し込みが無いURLは、月が変わっても
+    //   同じページを読み続ける事故なので落とす。
+    if (!a.rolling && !a.url.includes('{')) {
       throw new Error(
         `${path}: announcements[${a.service}].url に月を埋める場所がありません` +
-          '（{year} / {month_en} / {month} のいずれかを含めます）',
+          '（{year} / {month_en} / {month} / {yymm} のいずれかを含めます）。' +
+          '月を持たないローリング窓の告知元なら rolling: true を書いてください',
       )
     }
   }
