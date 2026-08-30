@@ -91,6 +91,7 @@ cd site && npm run build        # サイトのビルド
 | ドメイン取得・GitHub・Cloudflare の操作手順 | [../DEPLOY.md](../DEPLOY.md) |
 | **記事の軸・タイトルの決まりと、その根拠** | **[ARTICLE-RULES.md](./ARTICLE-RULES.md)** |
 | **検索流入が0のまま — 何を増やすか・どのデータを出してよいか** | **[GROWTH.md](./GROWTH.md)** |
+| **記事がフローで消えていく — 何が積み上がるか・記事タイプをどう増やすか** | **[STOCK.md](./STOCK.md)** |
 | **作品ページ（`/works/<id>`）を実装する** | **[WORK-PAGES.md](./WORK-PAGES.md)** |
 | 記事の構成・文体を変えたい | `theme-packs/streaming-jp/templates/leaving.md` ほか |
 | 記事の軸とタイトルの決まりそのもの（プロンプトに入る） | `theme-packs/streaming-jp/templates/naming.md` |

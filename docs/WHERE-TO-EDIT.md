@@ -6,6 +6,7 @@
 - 見た目の作り込み（背景・ロゴ・OG画像・記事内の画像）… [APPEARANCE.md](./APPEARANCE.md)
 - ブラウザで記事を直す手順 … [EDITING.md](./EDITING.md)
 - なぜその作りにしたか … [../DESIGN.md](../DESIGN.md)
+- 何を増やすか（流入）／何が積み上がるか（ストック） … [GROWTH.md](./GROWTH.md) / [STOCK.md](./STOCK.md)
 
 パスはすべてリポジトリの直下（`C:\Users\grate\brog`）からの位置。
 
@@ -80,6 +81,10 @@
 --------------------------------------------------------------------------
 ## ページの種類から引く
 
+    作品ページ           → site/src/pages/works/[id].astro
+                            中身の組み立ては site/src/lib/works.ts
+                            配信の記録（履歴）→ 同 historyOf() / WORK-PAGES.md 14節
+                            関連する作品      → 同 relatedWorks() / WORK-PAGES.md 6節
     記事ページ           → site/src/pages/posts/[...slug].astro
     常設ページ（終了予定） → site/src/pages/leaving/[service].astro
     常設ページ（新着）     → site/src/pages/arrivals/[service].astro
@@ -120,8 +125,11 @@
 記事の表も常設ページの表も、作品名がリンクとサムネイルになっている。
 **同じ形のHTMLを2か所が別々に出しているので、片方だけ直すと段差が出る。**
 
-    どこへ飛ばすか      → site/src/lib/work-links.ts の resolveUrl()
-                          （作品ページの直リンクと検索の使い分け。**方針はここだけ**）
+    どこへ飛ばすか      → site/src/lib/work-destination.ts
+                          （**まず自サイトの作品ページへ寄せるか**を決める。2026-08-29〜）
+                        → site/src/lib/work-links.ts の resolveUrl()
+                          （作品ページが無いときに、外のどこへ送るか）
+                          ★ 内部リンクには tag= と rel="sponsored" を付けない
     記事の表に貼る処理  → site/plugins/rehype-work-links.ts
                           ビルド時にセルの中身が作品名と完全一致したら <a> で包む
                           ★ astro.config.mjs で rehype-affiliate より**前**に置くこと
