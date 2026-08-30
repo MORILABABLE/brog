@@ -631,6 +631,29 @@ interface RelatedIndex {
   byDirector: Map<string, WorkPage[]>
   /** `<サービス> <ジャンル>` → **終了予定の**作品 */
   byGenre: Map<string, WorkPage[]>
+  /**
+   * `<サービス> <ジャンル>` → **終了済みの**作品。**作品IDの昇順で固定**。
+   *
+   * ■ なぜ要るか（2026-08-30）
+   * `byGenre` は終了予定しか索引していないため、**終了済みの作品を指す枠が1つも無かった。**
+   * 実測で、作品ページ516枚のうち**164枚がトップページからリンクを辿って到達できない**
+   * 状態になっていた（160枚が終了済み）。入口が noindex の `sitemap.html` だけで、
+   * クローラから見ると事実上の孤立点になる。
+   *
+   * ★ **並びを固定するのが要点。** 下の `ringSlice()` が「自分の次から数件」を取るので、
+   *   束の中が輪でつながり、**1枚でも到達できれば束ごと到達できる**ようになる。
+   *   並びが実行ごとに変わると輪が切れる。
+   */
+  byGenreEnded: Map<string, WorkPage[]>
+  /**
+   * `<ジャンル>` → 作品（**サービスも状態も問わない**）。**作品IDの昇順で固定**。
+   *
+   * 枠が1つも作れなかったページの**最後の受け皿**にだけ使う。
+   * 収集が薄いサービス（Apple TV+ は作品ページ2枚）では、
+   * 「同じ日」も「同じ監督」も「同じサービス・同じジャンル」も空になることがあり、
+   * そのページは**読者にとっても行き止まり**になる。
+   */
+  byGenreAny: Map<string, WorkPage[]>
 }
 
 let relatedIndex: RelatedIndex | null = null
@@ -646,6 +669,8 @@ function buildRelatedIndex(): RelatedIndex {
   const byDay = new Map<string, WorkPage[]>()
   const byDirector = new Map<string, WorkPage[]>()
   const byGenre = new Map<string, WorkPage[]>()
+  const byGenreEnded = new Map<string, WorkPage[]>()
+  const byGenreAny = new Map<string, WorkPage[]>()
 
   const push = <K>(map: Map<K, WorkPage[]>, key: K, w: WorkPage) => {
     const list = map.get(key)
@@ -658,13 +683,49 @@ function buildRelatedIndex(): RelatedIndex {
       push(byDay, dayKey(s.service, s.state, s.at), w)
       if (s.state === 'leaving') {
         for (const g of w.genres) push(byGenre, `${s.service} ${g}`, w)
+      } else {
+        for (const g of w.genres) push(byGenreEnded, `${s.service} ${g}`, w)
       }
     }
     for (const d of w.directors) push(byDirector, d, w)
+    for (const g of w.genres) push(byGenreAny, g, w)
   }
 
-  relatedIndex = { byDay, byDirector, byGenre }
+  // ★ 輪をつくるので並びを固定する（byGenreEnded の説明）
+  for (const list of byGenreEnded.values()) list.sort((a, b) => a.id.localeCompare(b.id))
+  for (const list of byGenreAny.values()) list.sort((a, b) => a.id.localeCompare(b.id))
+
+  relatedIndex = { byDay, byDirector, byGenre, byGenreEnded, byGenreAny }
   return relatedIndex
+}
+
+/**
+ * 束の中を「自分の次から」順に返す。**輪（リング）にして切れ目をなくす。**
+ *
+ * ■ なぜ先頭から取らないのか
+ * どのページも先頭から取ると、**束の先頭の数件だけが延々とリンクされ**、
+ * 後ろの作品には誰からもリンクが向かない。到達できないページが残り続ける。
+ *
+ * 自分の次から取れば、A→B→C→…→A と輪になる。
+ * **束のどれか1枚に外から入れれば、束の全部に辿り着ける。**
+ *
+ * 自分が束に居ない場合（終了予定の作品が終了済みの束を見るとき）は、
+ * 作品IDから決めた位置から取る。ページごとに入口がばらけるだけで、輪の性質は変わらない。
+ */
+function ringSlice(list: WorkPage[], self: WorkPage, count: number): WorkPage[] {
+  if (list.length === 0) return []
+  const at = list.findIndex((x) => x.id === self.id)
+  const start =
+    at >= 0
+      ? at + 1
+      : // 自分が居ない束。IDの文字コードの和で入口を散らす（安定した値であればよい）
+        ([...self.id].reduce((a, c) => a + c.charCodeAt(0), 0) % list.length)
+  const out: WorkPage[] = []
+  for (let i = 0; i < list.length && out.length < count; i++) {
+    const x = list[(start + i) % list.length]!
+    if (x.id !== self.id) out.push(x)
+  }
+  return out
 }
 
 /**
@@ -715,10 +776,31 @@ export function relatedWorks(w: WorkPage): RelatedGroup[] {
 
   // 1. 同じ日・同じサービス。**このページの主役の状態に合わせる**
   const head = w.services[0]!
-  const sameDay = take(
-    (idx.byDay.get(dayKey(head.service, head.state, head.at)) ?? []).slice().sort(byNotability),
-    SAME_DAY_LIMIT,
-    (x) => (x.year ? `${x.year}年` : ''),
+  const dayBucket = idx.byDay.get(dayKey(head.service, head.state, head.at)) ?? []
+  /*
+   * ★ **輪の次の1件を必ず混ぜる**（2026-08-30）。
+   *   評価の高い順に上位8件を出すだけだと、束が大きいとき
+   *   （実測: 8月14日の Prime Video は116作品）**下位の作品は誰からもリンクされない。**
+   *   自分の次の1件を必ず入れておけば A→B→C→…→A と輪になり、
+   *   束のどれか1枚に外から入れれば全部に辿り着ける（`ringSlice` の説明）。
+   *
+   *   混ぜたうえで**表示は評価の高い順のまま**にしてある。読者に見えるのは
+   *   「同じ日に終わる作品が8件」で、並びの意図は変わらない。
+   */
+  const ordered = [...dayBucket].sort((a, b) => a.id.localeCompare(b.id))
+  const picked: WorkPage[] = []
+  const pickedIds = new Set<string>([w.id])
+  // ★ 輪の次の1件を先に確保してから、評価の高い順で残りを埋める。
+  //   先に並べ替えてしまうと、輪の1件が順位で押し出されて効かなくなる。
+  for (const x of [...ringSlice(ordered, w, 1), ...[...dayBucket].sort(byNotability)]) {
+    if (pickedIds.has(x.id)) continue
+    pickedIds.add(x.id)
+    picked.push(x)
+    if (picked.length >= SAME_DAY_LIMIT) break
+  }
+  // 見せる順は評価の高い順に戻す（読者から見た並びの意図は変えない）
+  const sameDay = take(picked.sort(byNotability), SAME_DAY_LIMIT, (x) =>
+    x.year ? `${x.year}年` : '',
   )
   if (sameDay.length > 0) {
     groups.push({
@@ -753,6 +835,49 @@ export function relatedWorks(w: WorkPage): RelatedGroup[] {
     })
     if (items.length > 0) {
       groups.push({ heading: `${head.label}で終了予定の${genre}作品`, items })
+    }
+
+    /*
+     * 4. 同じサービス・同じジャンルで**終了済み**。輪で取る（`ringSlice`）。
+     *
+     * ■ なぜ足したか（2026-08-30）
+     * ここまでの3枠は**終了予定の作品しか指さない**（`byGenre` が終了予定だけの索引）。
+     * そのため終了済みの作品ページは、記事・常設ページ・人物ページのどれにも
+     * 拾われなかった場合、**どこからもリンクされない**。実測164枚がその状態だった。
+     *
+     * ★ 読者にとっても筋が通る枠にしてある。終了済みの作品を見ている読者には
+     *   「同じころに終わった同じジャンルの作品」で、終了予定の作品を見ている読者には
+     *   「そのサービスで最近終わったもの」になる。
+     * ★ **「観られます」と書かない。** 状態は `STATE_LABEL` から出す（下の note）。
+     */
+    const ended = ringSlice(idx.byGenreEnded.get(`${head.service} ${genre}`) ?? [], w, SAME_GENRE_LIMIT)
+    const endedItems = take(ended, SAME_GENRE_LIMIT, (x) =>
+      [x.year ? `${x.year}年` : '', STATE_LABEL[x.state]].filter(Boolean).join('・'),
+    )
+    if (endedItems.length > 0) {
+      groups.push({ heading: `${head.label}で見放題配信が終了した${genre}作品`, items: endedItems })
+    }
+  }
+
+  /*
+   * 5. 最後の受け皿。**枠が1つも作れなかったページにだけ出す。**
+   *
+   * 収集が薄いサービスでは、ここまでの枠がすべて空になることがある
+   * （実測: Apple TV+ の「Björk: Cornucopia」。同じ日にも同じジャンルにも仲間が居ない）。
+   * 関連が0件のページは**読者にとっての行き止まり**であり、
+   * 同時に**どこからもリンクされない孤立点**にもなる。
+   *
+   * ★ サービスをまたぐ。ここまで来たページには他に出せるものが無いため。
+   * ★ 輪で取るので、この枠に落ちたページ同士も繋がる。
+   */
+  if (groups.length === 0 && w.genres[0]) {
+    const anyItems = take(
+      ringSlice(idx.byGenreAny.get(w.genres[0]) ?? [], w, SAME_GENRE_LIMIT),
+      SAME_GENRE_LIMIT,
+      (x) => [x.year ? `${x.year}年` : '', STATE_LABEL[x.state]].filter(Boolean).join('・'),
+    )
+    if (anyItems.length > 0) {
+      groups.push({ heading: `${w.genres[0]}の作品`, items: anyItems })
     }
   }
 

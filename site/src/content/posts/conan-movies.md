@@ -12,6 +12,7 @@ sources:
   - label: '配信状況・見放題終了日は U-NEXT の作品ページに掲載されている情報'
     url: 'https://video.unext.jp/'
 dataAsOf: 2026-08-30
+heroImage: '/heroes/conan-movies.webp'
 ---
 「名探偵コナン」劇場版シリーズがU-NEXTとNetflixで見放題配信を終了します。記事作成時点（8月30日時点）で61本の終了日が判明していますので、見逃さないようにチェックしましょう！
 

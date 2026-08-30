@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config'
 import sitemap from '@astrojs/sitemap'
 import { loadEnv } from 'vite'
 import { SITE } from './src/config.ts'
+import { lastmodFor } from './src/lib/lastmod.ts'
 import { rehypeAffiliate } from './plugins/rehype-affiliate.ts'
 import { rehypeWorkLinks } from './plugins/rehype-work-links.ts'
 
@@ -34,6 +35,20 @@ export default defineConfig({
        *   リンク、pages/sitemap.astro の noindex を**3つまとめて**外すこと。
        */
       filter: (page) => !/\/sitemap\/?$/.test(page),
+      /*
+       * `<lastmod>` を付ける（2026-08-30）。**分かるページにだけ。**
+       *
+       * それまで XMLサイトマップは `<loc>` だけで、701件すべてが
+       * 「いつ変わったか」を持っていなかった。毎日入れ替わる `/leaving/<サービス>` を
+       * 抱えているサイトとしては、ここが空なのは損になる。
+       *
+       * ★ **全部を「いま」にしない。** 毎回すべてが最新だと検索エンジンが
+       *   この値を当てにしなくなる。判断は src/lib/lastmod.ts の1か所。
+       */
+      serialize: (item) => {
+        const lastmod = lastmodFor(item.url)
+        return lastmod ? { ...item, lastmod } : item
+      },
     }),
   ],
 

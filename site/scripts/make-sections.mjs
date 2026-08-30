@@ -380,6 +380,44 @@ function cells(line) {
  *   staleImageLine … 旧位置に残っている画像（消す）
  * の3つを持って、再実行しても同じ結果になるようにしている。
  */
+/**
+ * 記事の**すべての表**から作品行を拾う。見出しの形を問わない。
+ *
+ * `parseBlocks` が「`## ◯月◯日…` の節」しか見ないのに対して、こちらは
+ * 「作品」列を持つ表を上から順に集めるだけ。**ヘッダー画像を選ぶためだけに使う。**
+ * 本文にセクション画像を挿す判断には使わない（挿す位置は節が決めるため）。
+ *
+ * 返す形は `parseBlocks` と同じ `{ rows }` の配列にしてある。
+ * `heroCandidates` / `articleGenreKeys` が両方をそのまま受け取れるようにするため。
+ */
+function workTables(md) {
+  const lines = md.split('\n')
+  const out = []
+  for (let i = 0; i < lines.length; i++) {
+    if (!lines[i].startsWith('|')) continue
+    const start = i
+    let j = i
+    while (j < lines.length && lines[j].startsWith('|')) j++
+    i = j - 1
+
+    const header = cells(lines[start])
+    const titleCol = header.findIndex((c) => c === '作品')
+    if (titleCol < 0) continue
+    const ratingCol = header.findIndex((c) => c.includes('評価'))
+
+    const rows = []
+    for (const l of lines.slice(start + 2, j)) {
+      const c = cells(l)
+      const title = c[titleCol]
+      if (title) rows.push({ title, rating: ratingCol >= 0 ? (c[ratingCol] ?? '') : '' })
+    }
+    // ★ `prose` を空で持たせる。`pickHighlights` が地の文を見るので、
+    //   無いと落ちる。空なら評価の高い順に落ちるだけで、候補として十分。
+    if (rows.length > 0) out.push({ rows, prose: '' })
+  }
+  return out
+}
+
 function parseBlocks(md) {
   const lines = md.split('\n')
   const out = []
@@ -872,7 +910,21 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   const path = join(postsDir, file)
   let md = readFileSync(path, 'utf8')
   const sections = parseBlocks(md)
-  if (sections.length === 0) continue
+  /*
+   * ヘッダー画像を選ぶための作品リスト。
+   *
+   * ★ **節（`parseBlocks`）と分けてある。** 節は `## ◯月◯日…` で始まる見出しだけを
+   *   拾う決まりで、そこに本文中のセクション画像を挿している。
+   *   シリーズ記事（`--type series`）は**日付で始まる見出しを持たない**
+   *   （保存版なので、見出しに日付を書かないと決めてある）。
+   *   節が0件だからといって記事ごと飛ばすと、**カードの絵だけが付かない記事**ができる。
+   *
+   * ★ セクション画像の対象は広げない。日付見出しを持つ記事では
+   *   「全終了作品リスト」のような節に**わざと画像を入れていない**ので、
+   *   節の判定を緩めると既存記事の見た目が変わる。
+   */
+  const heroBlocks = sections.length > 0 ? sections : workTables(md)
+  if (sections.length === 0 && heroBlocks.length === 0) continue
 
   /** 節ごとの挿し込む1行。生成の結果（ポスターが揃ったか）で形が変わる。 */
   const refs = new Map()
@@ -973,7 +1025,7 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   let heroRef = null
 
   if (posters && fm && (!fm.heroImage || fm.heroImage === heroPath)) {
-    for (const title of heroCandidates(sections, fm.title)) {
+    for (const title of heroCandidates(heroBlocks, fm.title)) {
       if (usedHeroWorks.has(title)) continue
       const src = imageFor(title)
       if (!src) continue
@@ -999,7 +1051,7 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
      *   ここを片方だけ変えると余白が入る。
      */
     if (!heroRef) {
-      const keys = articleGenreKeys(sections, genres)
+      const keys = articleGenreKeys(heroBlocks, genres)
       const key = keys.find((k) => !usedHeroGenres.has(k)) ?? keys[0] ?? FALLBACK_GENRE
       const svg = genreSvg(key, POSTER.w, POSTER.h)
       const buf = await sharp(Buffer.from(svg)).webp({ quality: 90 }).toBuffer()
