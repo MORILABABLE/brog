@@ -26,9 +26,22 @@ import PostSearch from './PostSearch.astro'
  * **狭い画面ではここが人物ページへの唯一の入口**になる
  * （左の枠は 1200px 未満で消える。components/LeftRail.astro）。
  *
- * ■ 並びは サイト名 ｜ メニュー＋検索窓
- * サイト名だけ左に置き、**メニューと検索窓は右にまとめる**（2026-08-27）。
- * 読者が操作するものが右に揃うので、視線の移動が1か所で済む。
+ * ■ 並びは**すべて左詰めの1行**（2026-08-30 に変更）
+ * サイト名 → メニュー → 検索窓 の順に左から詰める。
+ *
+ * ★ **1行に収まる幅で作ること。** 以前はサイト名を左、メニューと検索窓を右に
+ *   離していたが、「監督・出演者」を足した時点で合計幅が行を超え、
+ *   **検索窓だけが2行目に落ちた**（1行に収まる保証が無い作りだった）。
+ *
+ *   ヘッダーの中身に使える幅は 46rem − 左右padding = **約699px**。内訳の実測見積り:
+ *     サイト名（1.1rem・7文字）        約123px
+ *     メニュー4つ＋印＋間隔（0.7rem）  約400px
+ *     3つの間隔（1rem × 2）             32px
+ *     → 検索窓に残るのは約144px
+ *   検索窓の幅（PostSearch.astro の flex-basis）は **7.5rem = 120px**。
+ *   合計 683px で、**約16pxの余裕**がある（ブラウザで実測・2026-08-30）。
+ *   **メニューを1つ増やすときは、この計算をやり直すこと。**
+ *   確かめ方は 780px 以上でヘッダーを見て、検索窓が2行目に落ちていないこと。
  */
 
 /**
@@ -138,20 +151,22 @@ const peopleTotal = publishablePeople().length
     z-index: 5;
   }
   /*
-   * サイト名は左、メニューと検索窓は右。
-   * `justify-content: flex-end` ＋ サイト名の `margin-right: auto` で作る。
-   * （space-between に戻すとメニューが真ん中に離れて、右の検索窓と分かれる）
+   * サイト名 → メニュー → 検索窓 の順に**すべて左詰め**（2026-08-30）。
+   *
+   * ★ `flex-wrap: wrap` は**残してある**。溢れたときに横スクロールを出すより、
+   *   折り返すほうが害が小さいため（`nowrap` にすると body の
+   *   `overflow-x: hidden` で右端が切れて読めなくなる）。
+   *   **折り返さないのは幅の設計で担保する**（冒頭の内訳を参照）。
    */
   .inner {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 0.6rem 1rem;
     flex-wrap: wrap;
     padding-block: 0.7rem;
   }
   .brand {
-    margin-right: auto;
     font-weight: 700;
     font-size: 1.1rem;
     color: var(--text);
@@ -167,8 +182,12 @@ const peopleTotal = publishablePeople().length
     display: flex;
     /* カテゴリが増えても折り返して収まるようにする */
     flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 0.5rem 0.9rem;
+    justify-content: flex-start;
+    /*
+     * 項目の間隔。**0.9rem から詰めた**（2026-08-30）。
+     * メニューが4つになり、0.9rem のままだと検索窓のぶんが足りない。
+     */
+    gap: 0.5rem 0.7rem;
     font-size: 0.88rem;
   }
   nav a {
