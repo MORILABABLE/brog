@@ -7,8 +7,10 @@ import { relFor, withAmazonTag } from '../../lib/affiliate'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
 import { otherServiceLinks } from '../../lib/search-links'
 import {
+  HISTORY_LABEL,
   STATE_CATEGORY,
   STATE_LABEL,
+  observationStart,
   publishableWorkPages,
   relatedWorks,
   workPage,
@@ -134,6 +136,22 @@ const related = w.services.flatMap((s) => {
   return out
 })
 
+// --- 配信の記録（docs/STOCK.md S-2）-------------------------------------------
+
+/*
+ * 観測したできごとを古い順に並べた表。**1行しか無いときは出さない。**
+ *
+ * 1行だけの履歴は上の「配信状況」と同じことを繰り返すだけで、
+ * 節をもう1つ作る意味がない（実測 2026-08-29: 2行以上あるのは1,065作品中87件。
+ * **収集を続けるほど増える**ので、この節は月を追うごとに厚くなる）。
+ *
+ * ★ **観測を始めた日を必ず添える。** それ以前の出入りは1件も持っていない。
+ *   添えないと「この日に配信が始まった作品」という、観測していない主張になる
+ *   （/stats の「観測できた数であって起きた数ではない」と同じ規律）。
+ */
+const history = w.history.length >= 2 ? w.history : []
+const observedSince = history.length > 0 ? observationStart() : null
+
 // --- 関連する作品（docs/WORK-PAGES.md 6節）------------------------------------
 
 /*
@@ -252,6 +270,47 @@ const jsonLd = {
         なったら、ここに足す（lib/works.ts の掲載判定も一緒に見直すこと）。
     */}
   </section>
+
+  {
+    history.length > 0 && (
+      <section class="history">
+        <h2>配信の記録</h2>
+        <p class="history-note">
+          当サイトが観測している範囲で、この作品の見放題配信に起きた変化です。
+          {observedSince && (
+            <>
+              記録は<strong>{formatDate(observedSince)}</strong>から始まっており、
+              それ以前の配信開始・終了は含みません。
+            </>
+          )}
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">日付</th>
+                <th scope="col">サービス</th>
+                <th scope="col">できごと</th>
+                <th scope="col">判明した日</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((h) => (
+                <tr>
+                  <td>
+                    <time datetime={isoDate(h.at)}>{formatDate(h.at)}</time>
+                  </td>
+                  <td>{h.label}</td>
+                  <td>{HISTORY_LABEL[h.kind]}</td>
+                  <td class="found">{formatDate(h.foundAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )
+  }
 
   <section class="find">
     <h2>他のサービスで探す</h2>
@@ -411,6 +470,42 @@ const jsonLd = {
     font-size: 0.8rem;
     line-height: 1.8;
     color: var(--text-muted);
+  }
+
+  /* --- 配信の記録 --- */
+  .history h2 {
+    font-size: 1rem;
+  }
+  .history-note {
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+  /* 表は横に伸びる。はみ出したら表ごと横スクロール（WorkTable.astro と同じ扱い） */
+  .table-wrap {
+    overflow-x: auto;
+  }
+  .history table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .history th,
+  .history td {
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    /* 日付・サービス名を途中で折り返させない */
+    white-space: nowrap;
+  }
+  .history thead th {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  /* 「判明した日」は補足。日付そのものより弱く見せる */
+  .history .found {
+    color: var(--text-muted);
+    font-size: 0.82rem;
   }
 
   /* --- 関連する作品 --- */
