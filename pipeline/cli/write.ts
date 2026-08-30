@@ -306,6 +306,8 @@ async function finalize(
       items,
       existingTitles: await existingTitles(slug),
       stopReason,
+      // 同じ作品を別の題で書く記事タイプがある（ArticleType.mentions）
+      mentions: type.mentions ? (e, body) => type.mentions!(e, body, items) : undefined,
     }),
     ...type.verify(parsed.body, items, ctx),
     // ★ タイトルは verify() に渡っていない（`ArticleType.verifyTitle` のコメント）。

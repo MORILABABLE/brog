@@ -59,6 +59,11 @@ export interface VerifyInput {
   /** 既存記事のタイトル一覧（重複検知用） */
   existingTitles: string[]
   stopReason?: string
+  /**
+   * 作品が本文に出ているかの判定。**渡されなければ題名の完全一致で見る。**
+   * 差し替えられるようにしてあるのは `ArticleType.mentions` のため。
+   */
+  mentions?: (item: ChangeEvent, body: string) => boolean
 }
 
 /**
@@ -216,10 +221,10 @@ export function verifyArticle(input: VerifyInput): VerifyIssue[] {
 
   // --- 取りこぼしチェック ---
   // 選んだ作品が本文に出てこないなら、素材が落ちている
-  const missing = items.filter((e) => {
-    const title = e.work.localizedTitle ?? e.work.title
-    return !parsed.body.includes(title)
-  })
+  const mentions =
+    input.mentions ??
+    ((e: ChangeEvent, body: string) => body.includes(e.work.localizedTitle ?? e.work.title))
+  const missing = items.filter((e) => !mentions(e, parsed.body))
   if (missing.length > 0) {
     warn(
       `${missing.length}件の作品が本文に含まれていません: ` +

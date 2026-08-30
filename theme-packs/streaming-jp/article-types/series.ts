@@ -111,12 +111,45 @@ const REQUIRED_PHRASES = [
   'series-lead-first-sentence',
   'series-update-lead-first-sentence',
   'series-ended-lead-first-sentence',
-  'leaving-lead-closer',
-  'ended-lead-closer',
+  'series-unext-note',
   'other-services-intro',
   'attribution',
   'attribution-unext',
 ] as const
+
+/**
+ * 同じ作品を、サービスごとの表記ゆれを越えて突き合わせるためのキー。
+ *
+ * ■ なぜ要るのか
+ * 同じ映画がサービスごとに違う題で入っている。
+ *
+ *     Netflix  名探偵コナン ベイカー街の亡霊
+ *     U-NEXT   劇場版 名探偵コナン ベイカー街（ストリート）の亡霊
+ *
+ * 素材はサービスごとに1件ずつ持つ（終了日が別々に決まるので、それが正しい）。
+ * だが**表に2行出すと、読者には別の作品に見える。**
+ * 記事側で1行にまとめられるように、検査の側で同じ作品だと分かるようにする。
+ *
+ * ★ **突き合わせに使うだけで、記事に出す題は変えない。** 表記を正規化して
+ *   表示すると、どちらのサービスの呼び方でもない題が生まれる。
+ * ★ 一致に使うのは**この記事の素材どうし**だけ（`verify` の使い方を参照）。
+ *   外の作品と当てないので、正規化が多少ゆるくても別作品を巻き込まない。
+ */
+const TITLE_PREFIX = /^(劇場版|総集編|TVシリーズ特別編集版|テレビシリーズ特別編集版)/
+
+function workKey(title: string): string {
+  let s = title
+    // ルビ・別題（（サブマリン）(ラブレター) など）
+    .replace(/[（(][^）)]*[）)]/g, '')
+    .replace(/[「」『』]/g, '')
+    .replace(/[～〜―—\-－]/g, '')
+    .replace(/[\s　]/g, '')
+  for (let prev = ''; prev !== s; ) {
+    prev = s
+    s = s.replace(TITLE_PREFIX, '')
+  }
+  return s
+}
 
 /**
  * この記事がいまどちら向きの記事なのか。**素材から決まる。**
@@ -134,21 +167,24 @@ interface StanceTraits {
   /** templates/naming.md の表と1文字も違えないこと */
   verbPhrase: string
   leadKey: string
-  closerKey: string
 }
 
+/**
+ * ★ **リードの締め（`*-lead-closer`）を持たない。**
+ *   月次記事は「1文目＝要点」「締め＝行動の促し」の2本立てだが、
+ *   シリーズ記事は1文目の末尾に行動の促しを畳み込んである（fixed-phrases.md）。
+ *   両方置くと「チェックしましょう」を2回言うことになる（2026-08-30 の添削）。
+ */
 const STANCES: Record<Stance, StanceTraits> = {
   leaving: {
     category: 'leaving',
     verbPhrase: '見放題配信が終了予定の',
     leadKey: 'series-lead-first-sentence',
-    closerKey: 'leaving-lead-closer',
   },
   ended: {
     category: 'ended',
     verbPhrase: '見放題配信が終了した',
     leadKey: 'series-ended-lead-first-sentence',
-    closerKey: 'ended-lead-closer',
   },
 }
 
@@ -289,8 +325,21 @@ export const seriesArticle: ArticleType = {
     const stillOn = items.filter((e) => stateOf(e, ctx.now) === '終了予定').length
     const alreadyOff = items.length - stillOn
 
+    /*
+     * 同じ作品が複数サービスに出ているか。**表を1行にまとめてよい印**を素材に付ける。
+     * 判定は `workKey`（サービスごとの表記ゆれを吸収する）。
+     */
+    const spread = new Map<string, string[]>()
+    for (const e of items) {
+      const k = workKey(e.work.localizedTitle ?? e.work.title)
+      spread.set(k, [...new Set([...(spread.get(k) ?? []), e.service])])
+    }
+
     const rows = items.map((e) => {
       const w = e.work
+      const alsoOn = (spread.get(workKey(w.localizedTitle ?? w.title)) ?? []).filter(
+        (sv) => sv !== e.service,
+      )
       const links = buildSearchLinks(
         w,
         (ctx.theme.search_links ?? []).filter((l) => l.key !== e.service),
@@ -307,6 +356,9 @@ export const seriesArticle: ArticleType = {
       return [
         `- ${title}${note ? ` ${note}` : ''}`,
         `  サービス: ${labelOf.get(e.service) ?? e.service}`,
+        alsoOn.length
+          ? `  ★同じ作品が ${alsoOn.map((sv) => labelOf.get(sv) ?? sv).join(' / ')} にもあります（表では1行にまとめ、サービス列に両方を書いてよい）`
+          : '',
         `  状態: ${stateOf(e, ctx.now)}`,
         `  終了日: ${formatMonthDay(e.at!, offset)}`,
         w.year ? `  公開年: ${w.year}年` : '',
@@ -397,11 +449,15 @@ ${
 
 ${resolved.leadFirstSentence}
 
-## リードの締め（リード段落の最後の1文）
+${
+  resolved.unextNote
+    ? `## U-NEXTの但し書き（U-NEXTの表のすぐ後ろに置く）
 
-${resolved.leadCloser}
+${resolved.unextNote}
 
-## 「他のサービスで探す」の冒頭
+`
+    : ''
+}## 「他のサービスで探す」の冒頭
 
 ${resolved.otherServicesIntro}
 
@@ -488,6 +544,21 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
      *   `${ctx.targetMonth}-` を足した瞬間に、ただの特報になる。
      */
     return given
+  },
+
+  /**
+   * ★ **同じ作品を指す別の題が本文にあれば「載っている」と見なす。**
+   *   同じ映画がサービスごとに違う題で入っているので（`workKey` の説明）、
+   *   記事側は表に1回だけ出す。既定の判定のままだと、
+   *   正しく書いた記事に毎回「取りこぼし」の警告が出る。
+   *
+   *   突き合わせるのは**この記事の素材どうし**だけなので、別作品を巻き込まない。
+   */
+  mentions(item, body, items) {
+    const key = workKey(item.work.localizedTitle ?? item.work.title)
+    return items
+      .filter((e) => workKey(e.work.localizedTitle ?? e.work.title) === key)
+      .some((e) => body.includes(e.work.localizedTitle ?? e.work.title))
   },
 
   verifyTitle(title, ctx) {
@@ -612,9 +683,23 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
           '1行ずつ区別できないと読者を誤らせます。列は「終了日 / 作品 / 状態 / 評価 / サービス」です。',
       )
     }
-    const missing = items
-      .map((e) => e.work.localizedTitle ?? e.work.title)
-      .filter((t) => t && !md.includes(t))
+    /*
+     * ★ **同じ作品を2回書かせない。**
+     *   同じ映画がサービスごとに別の題で入っている（`workKey` の説明）。
+     *   両方を表に出すと読者には別作品に見えるので、記事側は1行にまとめてよい。
+     *   ここでは「**その作品を指すどれかの題が本文にあるか**」だけを見る。
+     *   突き合わせるのは**この記事の素材どうし**に限るので、別作品を巻き込まない。
+     */
+    const spellings = new Map<string, string[]>()
+    for (const e of items) {
+      const t = e.work.localizedTitle ?? e.work.title
+      if (!t) continue
+      const k = workKey(t)
+      spellings.set(k, [...(spellings.get(k) ?? []), t])
+    }
+    const missing = [...spellings.entries()]
+      .filter(([, alts]) => !alts.some((t) => md.includes(t)))
+      .map(([, alts]) => alts[0]!)
     if (missing.length > 0) {
       err(
         `対象作品リストに載っていない作品が${missing.length}件あります: ` +
@@ -635,7 +720,7 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     // --- 固定文言 ---
     for (const [name, text] of [
       ['リードの1文目', resolved.leadFirstSentence],
-      ['リードの締め', resolved.leadCloser],
+      ['U-NEXTの但し書き', resolved.unextNote],
       ['他のサービスで探すの冒頭', resolved.otherServicesIntro],
     ] as const) {
       if (text && !md.includes(text)) {
@@ -668,7 +753,8 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
 interface ResolvedPhrases {
   topic: string
   leadFirstSentence: string
-  leadCloser: string
+  /** U-NEXT の作品が入るときだけ。入らなければ空文字で、使われない */
+  unextNote: string
   otherServicesIntro: string
   /** 素材の出どころが混ざるので配列。**片方だけ書くと出典を偽ることになる。** */
   attributions: string[]
@@ -712,7 +798,7 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
   return {
     topic,
     leadFirstSentence: get(leadKey),
-    leadCloser: get(traits.closerKey),
+    unextNote: items.some((e) => hasLineup(e.service)) ? get('series-unext-note') : '',
     otherServicesIntro: get('other-services-intro'),
     attributions,
     asOf,
