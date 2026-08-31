@@ -1,6 +1,6 @@
 {
   "note": "告知の邦題から特定した作品。npm run collect:announce が書く。手で編集しない（手で決めたいものは data/announcement-pins.json）。",
-  "updatedAt": "2026-08-30T05:07:23.364Z",
+  "updatedAt": "2026-08-30T22:14:06.154Z",
   "works": {
     "netflix|Jared Freid: The Family Plan|": {
       "title": "Jared Freid: The Family Plan",
@@ -16,6 +16,11 @@
       "title": "On Campus: Game of the Week",
       "imdbId": null,
       "checkedAt": "2026-08-30T05:07:23.363Z"
+    },
+    "netflix|Teenage Wasteland|": {
+      "title": "Teenage Wasteland",
+      "imdbId": null,
+      "checkedAt": "2026-08-30T22:14:06.153Z"
     },
     "netflix|Untold: ミスター・T 「バカを哀れむ」|": {
       "title": "Untold: ミスター・T 「バカを哀れむ」",
