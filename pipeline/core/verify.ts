@@ -6,6 +6,7 @@
  */
 import type { ChangeEvent } from '../sources/types.ts'
 import type { ParsedArticle } from './article.ts'
+import { mentionsByTitle } from './coverage.ts'
 
 export interface VerifyIssue {
   /** error は公開を止める。warn は記録するが止めない。 */
@@ -221,9 +222,9 @@ export function verifyArticle(input: VerifyInput): VerifyIssue[] {
 
   // --- 取りこぼしチェック ---
   // 選んだ作品が本文に出てこないなら、素材が落ちている
-  const mentions =
-    input.mentions ??
-    ((e: ChangeEvent, body: string) => body.includes(e.work.localizedTitle ?? e.work.title))
+  // ★ 既定は `coverage.ts` と共有する。公開を止める検査（ここ）と
+  //   公開後の取りこぼし検査（`coverageGap`）が別々の答えを出さないようにする。
+  const mentions = input.mentions ?? mentionsByTitle
   const missing = items.filter((e) => !mentions(e, parsed.body))
   if (missing.length > 0) {
     warn(

@@ -28,6 +28,31 @@ export interface SeriesPost {
   /** 元のタイトル。`title` 属性に出して、省略された部分を補えるようにする */
   fullTitle: string
   category: CategorySlug
+  /**
+   * 枠に出す絵。**記事の frontmatter の `heroImage` をそのまま渡すだけ。**
+   *
+   * ★ **この枠専用の画像は作らない。** 記事カード（PostCard）と追従枠の
+   *   最新記事（FollowRail）が使っているのと**同じ1枚**で、部品も同じ
+   *   （Thumb.astro）。増やすと「同じ記事なのに場所によって絵が違う」状態になり、
+   *   取り直し（`npm run refresh:images`）の対象も増える。
+   *
+   * ★ **権利の扱いはヘッダー画像の決まりがそのまま効く**（docs/APPEARANCE.md 11-12節）。
+   *   出どころは配信API（Movie of the Night）のポスターで、
+   *   再ホストの許諾を取ってあるのはこの経路だけ。ここへ別の絵を
+   *   引っぱってこないこと。
+   *
+   * ★ **署名付きURLが失効したら勝手に汎用画像になる。** ヘッダー画像は
+   *   毎ビルド `npm run sections` が `/heroes/<スラッグ>.webp` を作り直していて、
+   *   ポスターが取れなければ**ジャンル別の汎用画像**（自前の幾何学図形）を
+   *   同じパスに書く。パスは変わらないので、**この枠は何もしなくてよい。**
+   *
+   * ★ 絵を差し替えたいときは記事の frontmatter を書き換える。
+   *   自動処理は空か `/heroes/<スラッグ>.webp` のときしか触らないので、
+   *   別のパスを書けばその記事だけ固定できる（docs/APPEARANCE.md 12節）。
+   *
+   * 未設定の記事はカテゴリ色のタイルになる（Thumb.astro）。枠は崩れない。
+   */
+  heroImage?: string
 }
 
 /**
@@ -68,5 +93,6 @@ export function seriesPosts(posts: CollectionEntry<'posts'>[]): SeriesPost[] {
       label: railLabel(p.data.title),
       fullTitle: p.data.title,
       category: p.data.category,
+      heroImage: p.data.heroImage,
     }))
 }

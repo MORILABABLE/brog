@@ -50,8 +50,9 @@ const hub = hubFor(post.data.category)
       **記事の本題（表）に届くまでのスクロールを削るほうが効く。**
 
       frontmatter の `heroImage` は残してある。**一覧カードの左サムネイル**
-      （PostCard.astro → Thumb.astro）がこれを読んでいるので、
-      トップページ・カテゴリ一覧・新着記事枠には今までどおりポスターが出る。
+      （PostCard.astro → Thumb.astro）と、右の枠の「最新記事」「シリーズから探す」
+      （FollowRail.astro / SeriesRail.astro）がこれを読んでいるので、
+      トップページ・カテゴリ一覧・右の枠には今までどおりポスターが出る。
       生成（scripts/make-sections.mjs）も変えていない。
 
       また出したくなったら、LeadImage を import して

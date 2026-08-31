@@ -39,7 +39,8 @@ import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { loadArticleTypes, loadTheme, type Theme } from '../theme.ts'
 import { loadLedger, readAllEvents, saveLedger } from '../core/events.ts'
-import { currentYearMonth } from '../core/datetime.ts'
+import { currentYearMonth, daysUntil, formatMonthDay } from '../core/datetime.ts'
+import { coverageGap, mentionsByTitle, readPublishedPosts } from '../core/coverage.ts'
 import {
   buildMarkdown,
   parseArticle,
@@ -586,6 +587,9 @@ async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promis
       .filter((f) => f.endsWith('.md'))
       .map((f) => f.replace(/\.md$/, '')),
   )
+  // 公開済み記事の本文。取りこぼしの突き合わせに使う（core/coverage.ts）
+  const posts = await readPublishedPosts(POSTS_DIR)
+  const gaps: CoverageRow[] = []
 
   console.log(`テーマ: ${theme.label}  対象月: ${targetMonth}  収集済み ${events.length}件\n`)
   console.log('  記事                              素材  状態  スラッグ')
@@ -623,10 +627,92 @@ async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promis
     console.log(
       `  ${recipeLabel(r).padEnd(32)}${String(items.length).padStart(4)}  ${state.padEnd(18)}${slug}`,
     )
+
+    /*
+     * ★ 素材が公開済みの記事に載っているかは、状態（作成済／未作成）とは別に数える。
+     *   記事を書いたあとに収集した素材は「作成済」の下に溜まり続けるし、
+     *   記事タイプを分割してスラッグが変わった月は「未作成」と出たまま放置される。
+     *   どちらも件数だけでは締切が見えないので、下にまとめて出す（core/coverage.ts）。
+     */
+    if (items.length > 0) {
+      const category = r.type.categoryOf?.(ctx, items) ?? r.type.category
+      const { missing, nearest } = coverageGap(
+        items,
+        posts,
+        category,
+        r.type.mentions ?? mentionsByTitle,
+      )
+      if (missing.length > 0) gaps.push({ label: recipeLabel(r), category, missing, nearest })
+    }
   }
+
+  if (gaps.length > 0) printCoverageGaps(gaps, theme.utc_offset_minutes, now)
 
   console.log('\n書き出す:  npm run write -- --type <記事> [--<区分> <値>] --emit')
   console.log('           区分は上の一覧に出ている形（--genre / --service）をそのまま使う')
+}
+
+/**
+ * 「どの記事にも載っていない素材」を締切つきで並べる。
+ *
+ * ■ なぜ一覧表と分けるのか（2026-08-31 追加）
+ * 上の表は「記事が有るか無いか」しか見ていない。2026年8月に、
+ * `2026-08-leaving`（サービス別に分ける前の記事）を公開した**25分後**の収集で
+ * Netflix の8月31日終了61本（うち29本が「名探偵コナン」劇場版）が入り、
+ * その61本はどの月次記事にも載らないまま月末を迎えた。
+ * 表には「未作成 61件」と出ていたが、同じ月・同じカテゴリの記事が別スラッグで
+ * 既にあったため、運用者からは「書き終えた月」に見えていた。
+ * **件数ではなく締切で気づけるようにする。**
+ *
+ * ■ 出たときにやること
+ *   1. その記事タイプで**更新版**を書く（同じスラッグを書き直す＝記事が育つ）
+ *   2. サービスをまたいで同じ作品が並んでいるなら、**主題軸**で1本立てる
+ *      （`series` / `special`）。**サービス軸の記事に他社を混ぜてはいけない**ので、
+ *      横断してよいのは主題軸だけ（README「記事の種類」）。
+ */
+interface CoverageRow {
+  label: string
+  /** 記事のカテゴリ。締切のある素材かどうかがこれで決まる */
+  category: string
+  missing: ChangeEvent[]
+  /** 未掲載のうち最も近い日付（ISO）。日付を持たない素材しか無ければ undefined */
+  nearest?: string
+}
+
+/**
+ * 締切のあるカテゴリ。`at` が**これから来る期限**を指すのはここだけ。
+ *
+ * ★ `arrivals` の `at` は配信**開始**日なので、過ぎているのが普通。
+ *   同じ言い回しで「期限切れ」と出すと、正常なものを事故に見せることになる。
+ */
+const DEADLINE_CATEGORIES = new Set(['leaving'])
+
+function printCoverageGaps(gaps: CoverageRow[], offsetMinutes: number, now: Date): void {
+  console.log('\n  記事に載っていない素材（公開済み記事の本文と突き合わせた結果）')
+  console.log('  ' + '-'.repeat(72))
+  // 締切のあるものが先、そのなかは締切の近い順。
+  // 日付だけで並べると、過ぎた配信開始日が本当の締切より上に来る。
+  const sorted = [...gaps].sort((a, b) => {
+    const da = DEADLINE_CATEGORIES.has(a.category) ? 0 : 1
+    const db = DEADLINE_CATEGORIES.has(b.category) ? 0 : 1
+    if (da !== db) return da - db
+    return (a.nearest ?? '9999').localeCompare(b.nearest ?? '9999')
+  })
+  for (const g of sorted) {
+    let when = '日付なし'
+    if (g.nearest && DEADLINE_CATEGORIES.has(g.category)) {
+      const d = daysUntil(g.nearest, offsetMinutes, now)
+      const rest = d < 0 ? '期限切れ' : d === 0 ? '本日まで' : `あと${d}日`
+      when = `最短 ${formatMonthDay(g.nearest, offsetMinutes)}（${rest}）`
+    } else if (g.nearest) {
+      when = `最古 ${formatMonthDay(g.nearest, offsetMinutes)}`
+    }
+    console.log(`  ${g.label.padEnd(32)}${String(g.missing.length).padStart(4)}件  ${when}`)
+    const names = g.missing.slice(0, 3).map((e) => e.work.localizedTitle ?? e.work.title)
+    const more = g.missing.length > names.length ? ` ほか${g.missing.length - names.length}件` : ''
+    console.log(`      ${names.join(' / ')}${more}`)
+  }
+  console.log('  ※ 更新版を書くか、サービスをまたぐなら主題軸（series / special）で1本立てる。')
 }
 
 /**

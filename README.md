@@ -164,7 +164,7 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | `npm run notify -- --dry-run` | 送らずに通知本文だけ表示する |
 | `npm run research` | **これから書く記事の作品を日本語版 Wikipedia で下調べする（無料・キー不要）**。作風・評判・広がり方を事実で書くための素材 → [templates/writing.md](./theme-packs/streaming-jp/templates/writing.md) |
 | `npm run enrich` | 収集済みイベントに Wikidata の情報を後追いで足す（無料・APIキー不要）。原語・制作会社・**監督・出演者の日本語表記** |
-| `npm run write -- --list` | **作れる記事と素材件数の一覧** |
+| `npm run write -- --list` | **作れる記事と素材件数の一覧**。あわせて**どの記事にも載っていない素材**を締切の近い順に出す（→ [docs/HANDOVER.md 4節](./docs/HANDOVER.md)） |
 | `/article` | **このセッションで記事を執筆（API課金なし）** |
 | `npm run write -- --type <記事> [--genre <ジャンル>] --emit` | プロンプトを `data/draft/prompt.md` に書き出す |
 | `npm run write -- --apply` | `data/draft/response.md` を検証して記事にする |
@@ -194,6 +194,8 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 **記事は必ず軸を1本だけ名乗る。** サービス軸の記事に他社を混ぜない。
 サービスを横断してよいのは**ジャンル軸と主題軸だけ**で、
 **配信終了はサービス軸だけ**にする（ジャンル別の終了記事は作らない）。
+同じ作品が他社でも同じ日に終わるときだけ、**表を足さない一文の相互参照**は許す
+（書き方は [docs/EDITING.md](./docs/EDITING.md)）。恒久的に横断させたいなら主題軸で1本立てる。
 タイトルは初回も更新版も `【2026年9月】…` で始め、更新日は本数の直後に置く。
 
     初回　 【2026年9月】Netflixで見放題配信が終了予定の作品36本｜007シリーズ5作

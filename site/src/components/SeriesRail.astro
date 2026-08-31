@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content'
+import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
 import { seriesPosts } from '../lib/series-posts'
 
@@ -21,6 +22,17 @@ import { seriesPosts } from '../lib/series-posts'
  * **配信状況が変わるたびに書き直される永続URL**（docs/KEYWORDS.md 案1）。
  * 枠の上のほうに置いても古くならない唯一の記事になる。
  *
+ * ■ 絵は記事のヘッダー画像（2026-08-31 に追加）
+ * frontmatter の `heroImage`（`public/heroes/…`）を、記事カード・追従枠の
+ * 最新記事と**同じ部品**（Thumb.astro）で出しているだけ。**この枠専用の絵は無い。**
+ * 出どころと権利の扱い、失効したら汎用画像に落ちる仕組みは
+ * `lib/series-posts.ts` の `heroImage` の説明にまとめてある。
+ *
+ * ★ **絵を足しても枠は縦に伸びない**（むしろ少し縮む）。
+ *   行の高さを決めているのは右の文字（バッジ＋タイトル2行）で、
+ *   絵はその高さに合わせた60pxを左に置いているだけ。
+ *   追従枠の最新記事と同じ寸法・同じ理屈（FollowRail.astro の .body の説明）。
+ *
  * ■ 項目を増やしすぎない
  * ここが伸びると、下の最新記事とPR枠が画面の下へ押し出される
  * （LeftRail.astro が左へ移された経緯と同じ）。**上限は5本**。
@@ -37,8 +49,9 @@ import { seriesPosts } from '../lib/series-posts'
 
 /**
  * 枠に出す本数の上限。
- * ★ 1件あたり2行（約44px）。5本で約230pxになり、
- *   その下の最新記事5本とPR枠が初期表示に残る限界がこのあたり。
+ * ★ 1件あたり「絵60px ＝ バッジ＋タイトル2行」＋上下の余白で、追従枠の
+ *   最新記事1件とほぼ同じ高さ。5本ぶんで、その下の最新記事5本とPR枠が
+ *   初期表示に残る限界がこのあたり。
  */
 const MAX_ITEMS = 5
 
@@ -57,10 +70,19 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
           const isCurrent = s.href === current
           const Inner = (
             <>
-              <span class="badge" data-category={s.category}>
-                {CATEGORIES[s.category].label}
+              {/*
+                60px。**右の文字ブロック（バッジ＋2行）の高さに合わせた値**。
+                追従枠の最新記事と同じ寸法で、3つセット（絵の size ／ .body の
+                行の高さ ／ .name の2行）で決まっている。下の CSS 参照。
+                絵が無い記事でも枠は必ず出るので、行の左端と高さはそろう。
+              */}
+              <Thumb src={s.heroImage} category={s.category} size={60} />
+              <span class="body">
+                <span class="badge" data-category={s.category}>
+                  {CATEGORIES[s.category].label}
+                </span>
+                <span class="name">{s.label}</span>
               </span>
-              <span class="name">{s.label}</span>
             </>
           )
           return (
@@ -109,13 +131,38 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
     flex-direction: column;
     gap: 0.35rem;
   }
+  /*
+   * 絵 ＋ 文字の2列。上端をそろえる（下端は下の .body で合う）。
+   * 絵の枠は画像が無くても Thumb.astro が必ず作るので、
+   * 画像の無い記事が混ざっても行の左端はそろう（追従枠と同じ作り）。
+   */
   .item {
-    display: block;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
     padding: 0.5rem 0.7rem;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 10px;
     text-decoration: none;
+  }
+  /*
+   * ★ 絵（60px四方）と、右の文字ブロックの**下端をそろえる**。
+   *   文字ブロックの高さは「バッジの行 ＋ タイトル2行」で決まる。
+   *     バッジの行 … この .body の font-size と line-height が決める
+   *     タイトル   … 0.8rem × line-height 1.5 × 2行 ＋ 上の余白 0.3rem
+   *   合わせて約60pxになるよう、バッジの行を詰めてある。
+   *   **絵の size と3つセットで直すこと**（追従枠の最新記事と同じ値）。
+   *
+   *   min-width:0 が要る。これが無いと、長いタイトルの最小幅で
+   *   文字ブロックが広がり、17remの枠から溢れる。
+   *
+   *   ※ .name は自分で font-size を持っているので、この指定の影響を受けない。
+   */
+  .body {
+    min-width: 0;
+    font-size: 0.68rem;
+    line-height: 1.4;
   }
   a.item:hover {
     border-color: var(--accent);

@@ -34,7 +34,11 @@ const { service } = Astro.params
 const { label } = Astro.props
 
 const { works, dataAsOf } = loadLeaving(service!)
+// ★ `loadLeaving` は**終了日の遅い順**（lib/events-data.ts）。
+//   `groupByDate` は渡された順を保つので、束も遅い順に並ぶ。
+//   いちばん近い終了日は先頭ではなく**末尾**にある。
 const groups = groupByDate(works)
+const nearest = groups.at(-1)
 const lead = serviceImage(service!)
 
 /*
@@ -46,7 +50,7 @@ const lead = serviceImage(service!)
 const title = evergreenTitle(`${label}で配信終了予定の作品一覧`, dataAsOf)
 const description =
   works.length > 0
-    ? `${label}で見放題配信が終了する予定の作品${works.length}本を終了日順にまとめています。最も近い終了日は${formatDate(groups[0]!.date)}です。`
+    ? `${label}で見放題配信が終了する予定の作品${works.length}本を終了日順にまとめています。最も近い終了日は${formatDate(nearest!.date)}です。`
     : `${label}で見放題配信が終了する予定の作品を終了日順にまとめています。現在、終了予定として取得できている作品はありません。`
 ---
 
@@ -94,7 +98,8 @@ const description =
         */}
         <div class="list-head">
           <p class="summary">
-            <strong>{works.length}本</strong>が終了予定です。終了日の早い順に並べています。
+            <strong>{works.length}本</strong>が終了予定です。終了日の遅い順（先の日付が上）に並べています。
+            最も近い終了日は{formatDate(nearest!.date)}です。
           </p>
           <WorkSearch label="終了予定の作品を探す" />
         </div>

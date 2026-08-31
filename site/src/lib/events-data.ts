@@ -211,7 +211,21 @@ export const LEAVING_SERVICES = [
   { key: 'prime-video', label: 'Amazon Prime Video' },
 ] as const
 
-/** 指定サービスで「これから終了する」作品を、終了日の早い順に返す。 */
+/**
+ * 指定サービスで「これから終了する」作品を、**終了日の遅い順**に返す。
+ *
+ * ★ 2026-08-31 に早い順（＝古い順）から入れ替えた。
+ *   このサイトの終了予定は月末に集中する（U-NEXT は告知が4週間先までで、
+ *   Prime Video は終了の約11日前にしか出ない）。早い順にすると、
+ *   いちばん本数の多い月末の束が毎回いちばん下に落ちて、
+ *   一覧を開いた読者が最初に見るのは**数本しかない直近の日**になっていた。
+ *
+ * ★ **新着配信（`loadArrivals`）とは向きが揃わなくなった。** 揃えるために
+ *   どちらかを戻さないこと。並びの根拠が「上から時間が進む」ではなく
+ *   「先に見せたい束を上に置く」に変わっており、
+ *   何が先に来てほしいかは2つのページで違う。
+ *   ページ側の説明文（pages/leaving/[service].astro）も**必ず一緒に直すこと。**
+ */
 export function loadLeaving(service: string): WorkListData {
   const now = Date.now()
   // ★ 「これから」の判定は絶対時刻の比較なのでタイムゾーンに依存しない。
@@ -223,7 +237,8 @@ export function loadLeaving(service: string): WorkListData {
   return {
     works: latest
       .map(toRow)
-      .sort((a, b) => a.at.getTime() - b.at.getTime() || a.title.localeCompare(b.title, 'ja')),
+      // 日付は遅い順、同じ日のなかは題名順（題名だけは昇順のまま）
+      .sort((a, b) => b.at.getTime() - a.at.getTime() || a.title.localeCompare(b.title, 'ja')),
     dataAsOf: asOf(latest),
   }
 }
@@ -253,8 +268,10 @@ const ARRIVALS_WINDOW_DAYS = 60
  *   ページは「直近◯日間に入った作品」を頭から順に読ませる作りで、
  *   新しい順だと表が「今日 → さかのぼる」向きになり、
  *   説明文（配信開始日順にまとめています）と読み口が食い違っていた。
- *   終了予定ページ（loadLeaving）が終了日の早い順＝古い順なので、
- *   **常設ページはどちらも上から時間の進む向き**でそろう。
+ *   ★ 2026-08-31 に終了予定ページ（`loadLeaving`）を遅い順へ変えたので、
+ *   **2つのページで向きは揃っていない。** ここを揃えるために引きずられないこと。
+ *   このページは「直近◯日間に入った作品」を頭から読ませる作りなので、
+ *   古い順のままでよい（説明文とも合っている）。
  */
 export function loadArrivals(service: string): WorkListData {
   const since = Date.now() - ARRIVALS_WINDOW_DAYS * 86400000
