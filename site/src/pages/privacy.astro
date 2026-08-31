@@ -1,6 +1,35 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { SITE, ATTRIBUTION } from '../config'
+import { SITE, ATTRIBUTION, AFFILIATE } from '../config'
+
+/**
+ * 実際に参加しているプログラムだけを名指しする。
+ *
+ * ★ **未参加のプログラム名を書かない**（2026-08-31 に修正）。
+ *   それまで「Amazonアソシエイトおよびバリューコマース…に参加しています」と
+ *   固定で書いてあったが、バリューコマースは未提携だった。
+ *   広告の有無で表示を変える方針（components/AffiliateNotice.astro）と
+ *   同じ判断で、**参加していないものを参加していると書かない**。
+ *
+ * ★ 提携が通って site/.env に値を入れれば、この段落は自動で増える。
+ *   このファイルを書き換える必要は無い。提携が切れれば同じく自動で消える。
+ */
+const PROGRAMS = [
+  {
+    active: Boolean(AFFILIATE.amazonTag),
+    name: 'Amazonアソシエイト・プログラム',
+    label: 'Amazon.co.jp プライバシー規約',
+    url: 'https://www.amazon.co.jp/gp/help/customer/display.html?nodeId=201909010',
+  },
+  {
+    active: Boolean(AFFILIATE.linkSwitchPid),
+    name: 'バリューコマース株式会社が提供するアフィリエイトプログラム',
+    label: 'バリューコマース プライバシーポリシー',
+    url: 'https://www.valuecommerce.ne.jp/privacy/',
+  },
+].filter((p) => p.active)
+
+const programNames = PROGRAMS.map((p) => p.name).join('および')
 ---
 
 <BaseLayout
@@ -34,9 +63,10 @@ import { SITE, ATTRIBUTION } from '../config'
 
     <h2>アフィリエイトプログラムについて</h2>
     <p>
-      当サイトは、Amazonアソシエイト・プログラムおよびバリューコマース株式会社が提供する
-      アフィリエイトプログラムに参加しています。これらのプログラムでは、当サイトのリンクを経由して
+      当サイトは、{programNames}に参加しています。
+      これらのプログラムでは、当サイトのリンクを経由して
       商品・サービスが購入または申し込まれた場合に、当サイトが紹介料を受け取ることがあります。
+      新たなアフィリエイトサービスの利用を始めた場合は、本ページに追記します。
     </p>
     <p>
       アフィリエイトリンクを含むページには、その旨を「PR」と明示しています。
@@ -48,13 +78,16 @@ import { SITE, ATTRIBUTION } from '../config'
       これらのプログラムでは、成果を計測するために Cookie
       を使用します。取得されるのは参照元・クリック日時等の情報であり、
       個人を特定できる情報（氏名・住所・メールアドレス・電話番号など）は当サイトでは取得しません。
-      詳細は
-      <a href="https://www.amazon.co.jp/gp/help/customer/display.html?nodeId=201909010" rel="noopener noreferrer" target="_blank"
-        >Amazon.co.jp プライバシー規約</a
-      >および
-      <a href="https://www.valuecommerce.ne.jp/privacy/" rel="noopener noreferrer" target="_blank"
-        >バリューコマース プライバシーポリシー</a
-      >をご確認ください。
+      詳細は各社のプライバシーポリシー（{
+        PROGRAMS.map((p, i) => (
+          <>
+            {i > 0 && '、'}
+            <a href={p.url} rel="noopener noreferrer" target="_blank">
+              {p.label}
+            </a>
+          </>
+        ))
+      }）をご確認ください。
     </p>
 
     <h2>アクセス解析ツールについて</h2>
@@ -119,6 +152,6 @@ import { SITE, ATTRIBUTION } from '../config'
       本ポリシーに関するお問い合わせは<a href="/contact">お問い合わせページ</a>よりお願いいたします。
     </p>
 
-    <p class="muted">制定日: 2026年8月1日</p>
+    <p class="muted">制定日: 2026年8月1日／最終改定日: 2026年8月31日</p>
   </div>
 </BaseLayout>

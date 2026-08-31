@@ -338,7 +338,10 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
     記事タイトルの形・軸の決まり      → theme-packs/streaming-jp/templates/naming.md
     特報の構成・文体                  → theme-packs/streaming-jp/templates/special.md
     シリーズ記事（保存版）の構成・文体 → theme-packs/streaming-jp/templates/series.md
+    シリーズ記事の状態（予定/済/復帰） → theme-packs/streaming-jp/article-types/series.ts の STANCES
     右の枠の「シリーズから探す」        → site/src/components/SeriesRail.astro
+    シリーズ記事の一覧ページ（/series） → site/src/pages/series.astro
+    横断シリーズの候補出し（--list）   → pipeline/core/series-candidates.ts
     ショート台本の構成・尺・禁止事項  → theme-packs/streaming-jp/templates/short-script.md
     ショートの締め・概要欄の型        → 同 fixed-phrases.md の short- で始まるキー
     出来上がった台本（手で直す）      → shorts/*.md（→ shorts/README.md）

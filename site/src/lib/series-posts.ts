@@ -1,5 +1,6 @@
 /**
- * シリーズ記事（保存版）の拾い方。**右の枠と、将来の一覧ページが両方ここを読む。**
+ * シリーズ記事（保存版）の拾い方。**右の枠（SeriesRail.astro）と
+ * 一覧ページ（pages/series.astro）が両方ここを読む。**
  *
  * ■ シリーズ記事とは
  * `theme-packs/streaming-jp/article-types/series.ts` が書く、
@@ -9,7 +10,12 @@
  * ■ なぜタグで拾うのか
  * 記事の frontmatter には「記事タイプ」が入らない。入っているのは
  * カテゴリ（leaving / ended / arrivals / ranking）とタグだけで、
- * **シリーズ記事のカテゴリは leaving にも ended にもなる**（全作終われば ended）。
+ * **シリーズ記事のカテゴリは3つを行き来する**（`series.ts` の `stanceOf()`）。
+ *
+ *   leaving  終了予定が1本でもある
+ *   ended    全部終わっている
+ *   arrivals 終了予定は無いが、**見放題に復帰した作品**がある
+ *
  * カテゴリでは拾えないので、記事タイプ側が必ず付けるタグ1つで拾う。
  *
  * ★ `SERIES_TAG` は `series.ts` の `tags()` が入れる文字列と**完全に一致させること。**
@@ -22,6 +28,15 @@ import type { CategorySlug } from '../config'
 export const SERIES_TAG = 'シリーズ'
 
 export interface SeriesPost {
+  /**
+   * 元の記事そのもの。**一覧ページ（/series）が記事カードに渡す。**
+   *
+   * ★ 枠（SeriesRail）は使わない。あちらは幅17remに収める専用の見た目で、
+   *   下の `label` / `heroImage` だけを使う。一覧ページのほうは
+   *   他の一覧と**同じ記事カード**（PostCard.astro）で出したいので、
+   *   加工前の記事が要る。片方のために作った形をもう片方へ持ち込まないこと。
+   */
+  entry: CollectionEntry<'posts'>
   href: string
   /** 枠に出す短い名前。タイトルから機械的に作る（下の `railLabel`） */
   label: string
@@ -89,6 +104,7 @@ export function seriesPosts(posts: CollectionEntry<'posts'>[]): SeriesPost[] {
     .filter((p) => !p.data.draft && p.data.tags.includes(SERIES_TAG))
     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
     .map((p) => ({
+      entry: p,
       href: `/posts/${p.id}`,
       label: railLabel(p.data.title),
       fullTitle: p.data.title,

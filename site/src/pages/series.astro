@@ -1,0 +1,79 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PostCard from '../components/PostCard.astro'
+import { SITE } from '../config'
+import { seriesPosts } from '../lib/series-posts'
+
+/**
+ * シリーズ記事（保存版）の一覧。**右の枠の「もっと見る」の行き先。**
+ *
+ * ■ なぜ必要になったか
+ * 右の枠（SeriesRail.astro）は**5本までしか出さない**。それ以上に伸びると
+ * その下の最新記事とPR枠が初期表示から押し出される（枠の説明にある上限）。
+ * 6本目からは行き先が要るので、ここへ送る。
+ *
+ * ■ カテゴリ・ジャンル・サービスのページと軸が違う
+ *   カテゴリ … 何が起きたか（終了まわり／新着）で束ねる
+ *   サービス … 契約しているサービスで束ねる
+ *   ジャンル … 何を観る話か（アニメ／洋画／邦画）で束ねる
+ *   ここ     … **どの作品群の話か**（シリーズ）で束ねる
+ * 同じ記事が複数から辿れるが、読者の探し方が違うので競合しない。
+ *
+ * ★ **カテゴリで拾わない。** シリーズ記事のカテゴリは素材で入れ替わる
+ *   （終了予定 → 終了済み → 新着配信）。タグ1つで拾うのが唯一安定した経路で、
+ *   拾い方は lib/series-posts.ts に置いてある（右の枠と同じ関数）。
+ *
+ * ★ **記事が0本でもページは作る。** ジャンルのページ（/genre/…）は
+ *   0本ならページごと作らないが、あちらの入口は右の枠だけで、
+ *   枠が消えればリンクも消える。こちらはサイトマップから常に指されるので、
+ *   0本のときにページが無いと404になる。**代わりに noindex にする。**
+ */
+const posts = seriesPosts(await getCollection('posts'))
+
+const title = 'シリーズ別の見放題配信まとめ'
+const description =
+  'シリーズごとに「いつまで見放題で観られるか」をまとめた保存版の記事一覧です。' +
+  `${SITE.name}は配信状況が変わるたびに同じ記事を書き直しています。`
+---
+
+<BaseLayout title={title} description={description} noindex={posts.length === 0}>
+  <h1>シリーズから探す</h1>
+
+  {
+    /*
+     * ★ この2文はシリーズ記事だけの性質の説明で、他の一覧ページには無い。
+     *   読者が「なぜ月が書いていないのか」を判断できるようにするために置く
+     *   （記事側のタイトルが【保存版】で始まり、年月を名乗らないため）。
+     */
+    <p class="lead">
+      シリーズ単位で、どのサービスで、いつまで見放題配信されるのかをまとめています。
+      いずれの記事も特定の月のものではなく、配信状況が変わるたびに同じ記事を書き直しています。
+    </p>
+  }
+
+  {
+    posts.length === 0 ? (
+      <p class="muted">シリーズの記事はまだありません。</p>
+    ) : (
+      /*
+       * カードは他の一覧ページと同じ部品（PostCard）。
+       * 並びは lib/series-posts.ts が決めている（＝最近手を入れた順）。
+       * ここで並べ替え直さないこと。**右の枠と順番がずれる。**
+       */
+      posts.map((s) => <PostCard post={s.entry} />)
+    )
+  }
+</BaseLayout>
+
+<style>
+  .lead {
+    margin: 0 0 1.4rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.9;
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+</style>

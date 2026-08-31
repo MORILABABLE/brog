@@ -32,9 +32,26 @@ export async function getStaticPaths() {
 }
 
 const { hub, posts } = Astro.props
+
+/**
+ * 記事が0本のハブは**索引から外す**（2026-08-31）。
+ *
+ * 器だけ先に作ったハブ（いまはランキング）は「記事はまだありません」しか出せない。
+ * ページ自体は残す（メニューから外しても、どこかに古いリンクが残りうる）が、
+ * 中身の無いページを検索結果に出すのは読者にもサイトの評価にも損になる。
+ * lib/service-pages.ts の `serviceHasContent()` と同じ考え方。
+ *
+ * ★ 記事が1本入れば自動で索引対象に戻る。ヘッダーのメニューも同時に戻る
+ *   （components/Header.astro の `hubs`）。
+ */
+const empty = posts.length === 0
 ---
 
-<BaseLayout title={`${hub.heading}の記事一覧`} description={`${SITE.name}の${hub.description}`}>
+<BaseLayout
+  title={`${hub.heading}の記事一覧`}
+  description={`${SITE.name}の${hub.description}`}
+  noindex={empty}
+>
   <h1>{hub.heading}</h1>
 
   {

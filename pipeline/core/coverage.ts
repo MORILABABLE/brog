@@ -43,6 +43,8 @@ export interface PublishedPost {
   slug: string
   /** frontmatter の `category`。取れなければ空文字 */
   category: string
+  /** frontmatter の `tags`。記事タイプを見分ける唯一の手がかり（`series-candidates.ts`） */
+  tags: string[]
   /** frontmatter を除いた本文 */
   body: string
   /** 下書き（`draft: true`）はまだ読者に届いていないので、載っていると数えない */
@@ -83,6 +85,17 @@ export async function readPublishedPosts(dir: string): Promise<PublishedPost[]> 
     out.push({
       slug: f.replace(/\.md$/, ''),
       category: front.match(/^category:\s*'([^']*)'/m)?.[1] ?? '',
+      /*
+       * `tags: ['U-NEXT', 'Netflix', '配信終了', 'シリーズ']` の1行から中身だけ取る。
+       * ★ frontmatter を YAML として読まないのは、この層が
+       *   「本文と突き合わせる」だけのために存在しているため（依存を増やさない）。
+       *   1行で書かれていない frontmatter は空配列になる。**その場合に困るのは
+       *   「もう書いた」の判定だけ**で、候補が1つ余計に出るほうへ倒れる。
+       */
+      tags: (front.match(/^tags:\s*\[([^\]]*)\]/m)?.[1] ?? '')
+        .split(',')
+        .map((t) => t.trim().replace(/^['"]|['"]$/g, ''))
+        .filter(Boolean),
       body: m?.[2] ?? raw,
       draft: /^draft:\s*true\s*$/m.test(front),
     })

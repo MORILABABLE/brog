@@ -38,9 +38,15 @@
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { loadArticleTypes, loadTheme, type Theme } from '../theme.ts'
-import { loadLedger, readAllEvents, saveLedger } from '../core/events.ts'
+import { loadLedger, readAllEvents, saveLedger, type Ledger } from '../core/events.ts'
 import { currentYearMonth, daysUntil, formatMonthDay } from '../core/datetime.ts'
-import { coverageGap, mentionsByTitle, readPublishedPosts } from '../core/coverage.ts'
+import {
+  coverageGap,
+  mentionsByTitle,
+  readPublishedPosts,
+  type PublishedPost,
+} from '../core/coverage.ts'
+import { seriesCandidates } from '../core/series-candidates.ts'
 import {
   buildMarkdown,
   parseArticle,
@@ -648,8 +654,87 @@ async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promis
 
   if (gaps.length > 0) printCoverageGaps(gaps, theme.utc_offset_minutes, now)
 
+  await reportSeriesCandidates(await loadArticleTypes(theme), events, ledger, posts, {
+    theme,
+    now,
+    targetMonth,
+  })
+
   console.log('\n書き出す:  npm run write -- --type <記事> [--<区分> <値>] --emit')
   console.log('           区分は上の一覧に出ている形（--genre / --service）をそのまま使う')
+}
+
+/**
+ * 「サービスを横断して終わるシリーズ」を候補として並べる。
+ *
+ * ■ なぜ一覧表とも取りこぼしとも別に出すのか
+ * 上の一覧表は**記事タイプごと**、取りこぼしは**素材ごと**に数えている。
+ * どちらも「1つのシリーズが2社で同時に終わっている」ことを見せられない。
+ * 表には `leaving --service netflix 61件` としか出ないので、
+ * そのうち29本が同じシリーズの劇場版だったことは数字から読めなかった（2026-08）。
+ *
+ * **サービス軸の記事に他社を混ぜられない**以上（`templates/naming.md`）、
+ * 横断は主題軸（`series`）でしか記事にできない。**気づけないと記事にならない。**
+ *
+ * ■ どこで出すか（2か所）
+ *   1. `--list`（`/article` の手順1）… 何を書くか決める前に見る
+ *   2. 見放題終了の記事を `--emit` した直後 … その素材の中に横断があったとき
+ * 2 があるのは、月次記事を書いている最中に気づけるようにするため。
+ * 書き終えてから一覧に戻ると、その月はもう書いた気になっている。
+ *
+ * ■ 出すのは候補まで
+ * 主題・URL・絞り込みは**人が決める**（`core/series-candidates.ts`）。
+ * 束の名前をそのまま `--topic` にしないこと。
+ */
+async function reportSeriesCandidates(
+  types: ArticleType[],
+  events: ChangeEvent[],
+  ledger: Ledger,
+  posts: PublishedPost[],
+  ctx: { theme: Theme; now: Date; targetMonth: string },
+): Promise<void> {
+  /*
+   * ★ 記事タイプが無ければ何も出さない。**CLI は記事タイプの中身を知らない**
+   *   という決まりのまま、シリーズ記事を持たないテーマでも動くようにしておく。
+   */
+  const series = types.find((t) => t.id === 'series')
+  if (!series) return
+
+  const candidates = seriesCandidates(
+    events,
+    posts,
+    // 件数の判断はすべて記事タイプに任せる（series-candidates.ts の `select` の説明）
+    (match) => series.select(events, ledger, { ...ctx, flags: { match } }),
+    series.mentions ?? mentionsByTitle,
+  )
+  if (candidates.length === 0) return
+
+  console.log('\n  シリーズ候補（サービスを横断して終わる作品群）')
+  console.log('  ' + '-'.repeat(72))
+  for (const c of candidates) {
+    const labels = c.services.map((s) => serviceLabel(ctx.theme, s)).join(' / ')
+    const when = c.nearest
+      ? `最短 ${formatMonthDay(c.nearest, ctx.theme.utc_offset_minutes)}`
+      : '日付なし'
+    console.log(`  ${(c.key + '…').padEnd(20)}${String(c.works).padStart(3)}作  ${labels}  ${when}`)
+    console.log(`      ${c.titles.join(' / ')}`)
+    console.log(
+      `      npm run write -- --type series --topic "「?」シリーズ" --slug ? --match "${c.match}" --dry-run`,
+    )
+  }
+  console.log('  ※ --topic と --slug は人が決める。束の名前をそのまま主題にしないこと。')
+  console.log('  ※ 件数は --dry-run が正確に出す。上の作数は先頭6文字で束ねた粗い数。')
+}
+
+/**
+ * サービスキーを読み手向けの表記に直す。テーマの一覧に無ければキーのまま出す。
+ *
+ * ★ U-NEXT は `catalogs`（配信API）ではなく別枠にある（`theme.ts` の `unext`）。
+ *   catalogs だけを見ると、U-NEXT が絡む束で `u-next` と生のキーが出る。
+ */
+function serviceLabel(theme: Theme, key: string): string {
+  if (theme.unext && theme.unext.service_key === key) return theme.unext.label
+  return theme.catalogs.find((c) => c.key === key)?.label ?? key
 }
 
 /**
@@ -833,7 +918,27 @@ async function main(): Promise<void> {
     return
   }
 
-  if (flag('emit')) return await emitDraft(system, prompt, recipe, items, ctx)
+  if (flag('emit')) {
+    await emitDraft(system, prompt, recipe, items, ctx)
+    /*
+     * ★ **見放題終了の記事を書き出した直後に、横断シリーズを知らせる。**
+     *   ここで出すのは、月次記事を書いている最中に気づけるようにするため。
+     *   一覧（--list）にも同じものが出るが、運用者が一覧に戻るのは
+     *   「その月をまだ書いていない」と思っているときだけで、
+     *   書き終えた直後にはもう戻らない（2026-08 の見落としがこの形だった）。
+     *
+     *   シリーズ記事そのものを書き出したときは出さない（もう書いている）。
+     */
+    const category = type.categoryOf?.(ctx, items) ?? type.category
+    if (type.id !== 'series' && (category === 'leaving' || category === 'ended')) {
+      await reportSeriesCandidates(types, events, ledger, await readPublishedPosts(POSTS_DIR), {
+        theme,
+        now,
+        targetMonth,
+      })
+    }
+    return
+  }
 
   // --- API で生成 ---
   const llm = createProvider({ provider: arg('provider'), model: arg('model') })

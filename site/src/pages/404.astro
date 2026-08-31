@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SITE, CATEGORY_HUBS } from '../config'
+import { getCollection } from 'astro:content'
+import PostCard from '../components/PostCard.astro'
+
+/**
+ * 見つからなかったときのページ。
+ *
+ * ■ なぜ要るか（2026-08-31 に追加）
+ * それまで存在せず、Cloudflare Pages の素の 404 が出ていた。
+ * あれは**このサイトのヘッダーもフッターも持たない真っ白なページ**で、
+ * 行き先が1つも無い。当サイトはURLの入れ替わりが多く
+ * （月次記事の退役・`public/_redirects` の転送漏れ・外部の古いリンク）、
+ * 404 は普通に踏まれる。踏んだ人をサイトの外に落とさないための1枚。
+ *
+ * ★ Cloudflare Pages は dist 直下の `404.html` を自動で使う。
+ *   配線はどこにも要らない（`_redirects` にも書かない）。
+ *
+ * ★ **noindex にする。** 静的サイトなのでこのHTML自体は 200 で配信されうる
+ *   （Pages が 404 を返す経路では 404 になる）。索引に入れる中身ではない。
+ *
+ * ★ 中身は「行き先」だけにする。謝罪文を長く書いても読者は先に進めない。
+ *   最新記事を数本出すのは、検索から来て記事が退役していた読者が
+ *   いちばん高い確率で探しているものがそこにあるため。
+ */
+const RECENT = 3
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, RECENT)
+
+/**
+ * 出す入口は `serviceMenu: true` のハブだけ（配信終了まわり／新着配信）。
+ * この2つは常設ページを抱えているので**必ず中身がある**。
+ * 器だけのハブ（ランキング）をここから貼ると、404 から空ページへ送ることになる。
+ */
+const hubs = CATEGORY_HUBS.filter((h) => h.serviceMenu)
+---
+
+<BaseLayout
+  title="ページが見つかりません"
+  description={`お探しのページは見つかりませんでした。${SITE.name}のトップページや一覧からお探しください。`}
+  noindex={true}
+>
+  <h1>ページが見つかりません</h1>
+  <div class="prose">
+    <p>
+      お探しのページは、移動したか、公開を終えた可能性があります。
+      配信情報は毎月入れ替わるため、古いURLが残っていることがあります。
+    </p>
+    <p>
+      URLの誤りにお気づきの場合や、リンク元をお知らせいただける場合は
+      <a href="/contact">お問い合わせ</a>からご連絡ください。
+    </p>
+  </div>
+
+  <h2>ここから探せます</h2>
+  <nav class="links" aria-label="主な入口">
+    <a href="/">トップページ</a>
+    {hubs.map((h) => <a href={`/category/${h.slug}`}>{h.heading}</a>)}
+    <a href="/person">監督・出演者</a>
+    <a href="/guide">運営方針・活用法</a>
+  </nav>
+
+  {
+    posts.length > 0 && (
+      <>
+        <h2>最近の記事</h2>
+        {posts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </>
+    )
+  }
+</BaseLayout>
+
+<style>
+  /* カテゴリページのサービス絞り込みと同じ見た目にそろえてある */
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.6rem;
+  }
+  .links a {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .links a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+</style>

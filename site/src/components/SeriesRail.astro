@@ -36,7 +36,14 @@ import { seriesPosts } from '../lib/series-posts'
  * ■ 項目を増やしすぎない
  * ここが伸びると、下の最新記事とPR枠が画面の下へ押し出される
  * （LeftRail.astro が左へ移された経緯と同じ）。**上限は5本**。
- * それ以上になったら、この枠ではなく一覧ページを作ってそこへ送ること。
+ * 6本目からは一覧ページ（`/series`）へ送る。
+ *
+ * ★ **「もっと見る」は6本目が出てから現れる**（2026-08-31 追加）。
+ *   5本以下なら枠に全部載っているので、押しても同じものが並ぶだけになる。
+ *   残りの本数を出すのは、押す前に何本あるか分かるようにするため
+ *   （GenreRail が行ごとに件数を出しているのと同じ考え方）。
+ *   リンク先の `/series` は**記事が0本でも必ず作られる**ので、
+ *   ここが指してリンク切れになることはない（pages/series.astro）。
  *
  * ■ 追従しない
  * 追従するのは右の枠のPR枠だけ（理由は FollowRail.astro の説明）。
@@ -55,7 +62,10 @@ import { seriesPosts } from '../lib/series-posts'
  */
 const MAX_ITEMS = 5
 
-const series = seriesPosts(await getCollection('posts')).slice(0, MAX_ITEMS)
+const all = seriesPosts(await getCollection('posts'))
+const series = all.slice(0, MAX_ITEMS)
+/** 枠に載らなかった本数。0 なら「もっと見る」を出さない */
+const rest = all.length - series.length
 
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
 const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
@@ -101,6 +111,16 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
           )
         })}
       </ul>
+      {/*
+        枠に載らなかったぶんの行き先。**5本以下では出ない。**
+        リンクの文言に本数を入れているのは、押す前に
+        「あと何本あるか」が分かるようにするため。
+      */}
+      {rest > 0 && (
+        <a class="more" href="/series">
+          シリーズをすべて見る（ほか{rest}本）
+        </a>
+      )}
     </nav>
   )
 }
@@ -173,8 +193,9 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
     border-color: var(--accent);
   }
   /*
-   * ★ バッジは記事のカテゴリ（配信終了予定／配信終了済み）。
-   *   シリーズ記事は**全作が終われば ended に変わる**ので、
+   * ★ バッジは記事のカテゴリ（配信終了予定／配信終了済み／新着配信）。
+   *   シリーズ記事のカテゴリは**素材に合わせて3つを行き来する**
+   *   （全作終われば ended、終わった作品が見放題に戻れば arrivals）。
    *   ここを固定文字にしないこと（lib/series-posts.ts の説明）。
    */
   .badge {
@@ -195,6 +216,24 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
     font-weight: 700;
     line-height: 1.5;
     color: var(--text);
+  }
+  /*
+   * 「もっと見る」。**項目（.item）と同じ枠にしない。**
+   *   同じ見た目にすると6行目の項目に見え、シリーズ記事が1本増えたと読まれる。
+   *   枠のいちばん下に、文字だけの1行として置く。
+   */
+  .more {
+    display: block;
+    margin-top: 0.45rem;
+    padding: 0.1rem 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--footer-text);
+    text-decoration: none;
+  }
+  .more:hover {
+    color: var(--accent);
+    text-decoration: underline;
   }
   a.item:hover .name {
     color: var(--accent);

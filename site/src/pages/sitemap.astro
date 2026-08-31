@@ -119,6 +119,12 @@ const fixedPages = [
   { href: '/stats', label: '見放題の増減（定点観測）' },
   { href: '/guide', label: '当サイトの運営方針および活用について' },
   { href: '/person', label: '監督・出演者から探す' },
+  /*
+   * シリーズ記事の一覧。**右の枠の「もっと見る」の行き先**（SeriesRail.astro）。
+   * 枠は画面幅1200px未満で消えるので、狭い画面ではここが唯一の入口になる。
+   * 記事が0本でもページは作られる（そのときは noindex。pages/series.astro）。
+   */
+  { href: '/series', label: 'シリーズから探す' },
   { href: '/about', label: '運営者情報' },
   { href: '/privacy', label: 'プライバシーポリシー' },
   { href: '/contact', label: 'お問い合わせ' },

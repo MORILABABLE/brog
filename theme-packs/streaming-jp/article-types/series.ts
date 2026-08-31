@@ -110,6 +110,7 @@ const MONTH_IN_TITLE = /\d{4}年\d{1,2}月|\d{1,2}月\d{1,2}日(?!更新)/
 const REQUIRED_PHRASES = [
   'series-lead-first-sentence',
   'series-update-lead-first-sentence',
+  'series-returned-lead-first-sentence',
   'series-ended-lead-first-sentence',
   'series-unext-note',
   'other-services-intro',
@@ -154,13 +155,28 @@ function workKey(title: string): string {
 /**
  * この記事がいまどちら向きの記事なのか。**素材から決まる。**
  *
- * `leaving` … まだ終わっていない作品が1本でもある。「いつまで観られるか」の記事
- * `ended`   … 全部終わっている。「いつまで観られたか」の記事
+ * `leaving`  … まだ終わっていない作品が1本でもある。「いつまで観られるか」の記事
+ * `returned` … 終了予定は無いが、**外れたあとに見放題へ戻った作品**がある
+ * `ended`    … 全部終わっている。「いつまで観られたか」の記事
  *
  * ★ 途中で入れ替わる。コナンの27本が全部終われば、次に書き直したとき
  *   同じURLのまま `ended` の記事になる。**それが正しい挙動。**
+ *
+ * ★ **入れ替わりは一方通行ではない**（2026-08-31 に `returned` を追加）。
+ *   終了した作品が別のサービスで見放題に戻ることが実際にある。
+ *   1か月ぶんの観測でも4件あった（docs/KEYWORDS.md 3-1）。
+ *
+ *     トランスフォーマー/最後の騎士王  Disney+ で終了(8/10) → Amazon Prime Video に復帰(8/17)
+ *     ブラックベリー                  Netflix で終了(8/13) → Amazon Prime Video に復帰(8/17)
+ *     ピンクパンサー / ピンクパンサー2  Amazon Prime Video で終了(8/17) → Netflix に復帰(8/20・8/24)
+ *
+ *   `ended` にしたまま戻せないと、**また観られる作品を「もう観られません」と
+ *   書き続ける**ことになる。ここが唯一その嘘を止められる場所。
+ *
+ * ★ 復帰したあとに新しい終了日が付けば、そのサービスの観測が最新になるので
+ *   `leaving` に戻る（`select()` の `latest`）。**3つの状態を行き来する。**
  */
-type Stance = 'leaving' | 'ended'
+type Stance = 'leaving' | 'returned' | 'ended'
 
 interface StanceTraits {
   category: Category
@@ -181,6 +197,21 @@ const STANCES: Record<Stance, StanceTraits> = {
     verbPhrase: '見放題配信が終了予定の',
     leadKey: 'series-lead-first-sentence',
   },
+  /*
+   * ★ カテゴリだけ `arrivals`（新着配信）になる。**それでよい。**
+   *   このとき記事が読者に渡すのは「終わったこと」ではなく
+   *   「また観られるようになったこと」で、用事が新着配信の記事と同じになる。
+   *   バッジも一覧（ハブ）も、そちらへ移るのが正しい
+   *   （site/src/config.ts の CATEGORY_HUBS）。
+   *
+   * ★ 動詞句を「見放題配信が復帰した」にしないこと。作品が主語なら復帰でよいが、
+   *   タイトルの主語は配信なので「再開」になる（naming.md の表と揃えること）。
+   */
+  returned: {
+    category: 'arrivals',
+    verbPhrase: '見放題配信が再開した',
+    leadKey: 'series-returned-lead-first-sentence',
+  },
   ended: {
     category: 'ended',
     verbPhrase: '見放題配信が終了した',
@@ -188,15 +219,138 @@ const STANCES: Record<Stance, StanceTraits> = {
   },
 }
 
-/** 1件の作品が、いま読者にとってどういう状態か。表の「状態」列にそのまま出る。 */
-function stateOf(e: ChangeEvent, now: Date): '終了予定' | '終了済み' {
+/**
+ * **読者から見た作品数。** タイトルとリードの「◯本」はこの数を使う。
+ *
+ * ■ なぜ素材の件数（`items.length`）ではないのか
+ * 素材はサービスごとに1件ずつ持っている（終了日が別々に決まるので、それが正しい）。
+ * だが**記事の表では同じ作品を1行にまとめる決まり**（`templates/series.md`）なので、
+ * 素材の件数をそのまま名乗ると、**読者が表で数えられる行数と合わない。**
+ *
+ *   素材 6件（トランスフォーマー実写5作＋『最後の騎士王』が2社ぶん）
+ *   表   5行
+ *   → 「作品6本」と名乗ると、読者は表を数え直して1本足りないと感じる
+ *
+ * 2026-08-31 の添削で決めた。ズレを本文で説明する手もあるが、
+ * **説明そのものが読者には冗長で、記事の流れを切る。**
+ * 「なぜ数字がずれるのか」は運営の都合であって、読者の用ではない。
+ * **統合した数を名乗り、ズレを作らない。**
+ *
+ * ★ 突き合わせは `workKey`（題の正規化）で、`work.id` ではない。
+ *   **表を1行にまとめる判定と同じものを使う**のがここでの正しさ。
+ *   サービスごとに違う題で入っている同じ映画（`名探偵コナン ベイカー街の亡霊` /
+ *   `劇場版 名探偵コナン ベイカー街（ストリート）の亡霊`）は `work.id` が別々なので、
+ *   IDで数えると表の行数とまた合わなくなる。
+ */
+function workCount(items: ChangeEvent[]): number {
+  return new Set(items.map((e) => workKey(e.work.localizedTitle ?? e.work.title))).size
+}
+
+/**
+ * **見放題に復帰した観測**を選び出す。返すのは「復帰」と見なす `new` の集合。
+ *
+ * ■ なぜ要るのか
+ * この記事タイプは同じURLを何か月も書き直す。作品が全部終われば `ended` になるが、
+ * **終わった作品が別のサービスで見放題に戻ることが実際にある。**
+ * `removed` の観測は消えないので、戻せる仕組みが無いと
+ * 記事は永久に「もう観られません」と言い続ける（`Stance` の説明の4件）。
+ *
+ * ■ 何をもって「復帰」とするか
+ * **同じ作品（`work.id`）について、見放題から外れたと分かったあとに、
+ * 見放題に入った観測がある**こと。サービスは問わない。
+ *
+ *   外れた … `removed` の観測／`expiring` のうち終了日が過ぎているもの
+ *   入った … `new` の観測
+ *
+ * ★ **サービスをまたいでよい。** 実測4件のうち3件は別のサービスへの移動で、
+ *   同じサービスへ戻った例は無かった。読者にとっては
+ *   「どこかでまた観られる」ことが要点で、戻り先が同じ社かどうかは用ではない。
+ *
+ * ★ 突き合わせは `work.id`（配信APIの作品ID）で、`workKey`（題の正規化）ではない。
+ *   復帰は「同じ作品が戻った」と言い切れるときだけ立てたい。
+ *   題の正規化は表を1行にまとめるための緩い判定なので、ここに使うと
+ *   別作品を復帰に見せる事故が起きる。**U-NEXT は自前IDなので混ざらない。**
+ *
+ * ■ 前後は「観測した順」で見る（`collectedAt`）
+ * 配信開始日（`at`）ではなく、**当サイトがそれを把握した順**で並べる。
+ * `at` は各社の申告で、遡って埋まることがある。観測順なら
+ * 「終了を伝えたあとに、また観られると伝えた」という**読者に見えていた順**になる。
+ *
+ * ★ 復帰したあとに新しい終了日が付いたら、`select()` の `latest` が
+ *   そちらを最新として残すので、この `new` は表に出ない。
+ *   **記事は自動で `leaving` に戻る。** それが正しい（`Stance` の説明）。
+ */
+function revivals(matched: ChangeEvent[]): Set<ChangeEvent> {
+  const byWork = new Map<string, ChangeEvent[]>()
+  for (const e of matched) {
+    const k = String(e.work.id)
+    byWork.set(k, [...(byWork.get(k) ?? []), e])
+  }
+
+  const out = new Set<ChangeEvent>()
+  for (const events of byWork.values()) {
+    for (const n of events) {
+      if (n.kind !== 'new') continue
+      /*
+       * その `new` を観測した時点で、**すでに見放題から外れていた**か。
+       *   `removed`  … 外れたことを直接観測している
+       *   `expiring` … 予告した終了日が、この `new` を観測する前に過ぎている
+       * `expiring` を collectedAt だけで見てはいけない（予告は終了日より前に来る）。
+       */
+      const wasOff = events.some(
+        (e) =>
+          e.collectedAt < n.collectedAt &&
+          (e.kind === 'removed' ||
+            (e.kind === 'expiring' && Date.parse(e.at!) < Date.parse(n.collectedAt))),
+      )
+      if (wasOff) out.add(n)
+    }
+  }
+  return out
+}
+
+/** 表の「状態」列にそのまま出る3つの値。**ここ以外に状態の呼び方を作らないこと。** */
+type State = '終了予定' | '終了済み' | '見放題に復帰'
+
+/**
+ * 1件の観測が、いま読者にとってどういう状態か。
+ *
+ * ★ `new` がここに来るのは**復帰と判定されたものだけ**（`select()` の `revivals`）。
+ *   ふつうの `new`（ただの配信開始）は素材に入らないので、
+ *   この関数が「見放題に復帰」を返すのは復帰の観測に限られる。
+ */
+function stateOf(e: ChangeEvent, now: Date): State {
+  if (e.kind === 'new') return '見放題に復帰'
   if (e.kind === 'removed') return '終了済み'
   return Date.parse(e.at!) >= now.getTime() ? '終了予定' : '終了済み'
 }
 
-/** 素材のうち1本でもまだ観られるなら `leaving`。全部終わっていれば `ended`。 */
+/**
+ * 記事の向きを素材から決める。**上から順に見る（優先順位がある）。**
+ *
+ *   1. 終了予定が1本でもある      → `leaving`  「いつまで観られるか」
+ *   2. 無いが、復帰が1本でもある  → `returned` 「また観られるようになった」
+ *   3. どちらも無い               → `ended`    「いつまで観られたか」
+ *
+ * ★ 1 が 2 より先。終了予定と復帰が混ざる記事（復帰したあと別の作品が
+ *   終わりかけている、など）で読者にとって急ぐ理由があるのは締切のほう。
+ */
 function stanceOf(items: ChangeEvent[], ctx: ArticleContext): Stance {
-  return items.some((e) => stateOf(e, ctx.now) === '終了予定') ? 'leaving' : 'ended'
+  const states = items.map((e) => stateOf(e, ctx.now))
+  if (states.includes('終了予定')) return 'leaving'
+  if (states.includes('見放題に復帰')) return 'returned'
+  return 'ended'
+}
+
+/** 状態ごとの本数。プロンプトと品質ゲートが同じ数え方を使うための1か所。 */
+function tally(items: ChangeEvent[], ctx: ArticleContext): Record<State, number> {
+  const out: Record<State, number> = {
+    終了予定: 0,
+    終了済み: 0,
+    見放題に復帰: 0,
+  }
+  for (const e of items) out[stateOf(e, ctx.now)] += 1
+  return out
 }
 
 function traitsOf(items: ChangeEvent[], ctx: ArticleContext): StanceTraits {
@@ -262,11 +416,9 @@ export const seriesArticle: ArticleType = {
     // ★ 出さないと決めた作品を最初に外す（data/excluded-works.json）
     const events = publishable(rawEvents)
 
-    const target = events
-      // 「いつまで」に答えられる観測だけ。`new` と `upcoming` は載せない（冒頭の理由）
-      .filter((e) => e.kind === 'expiring' || e.kind === 'removed')
+    /** 主題に当たる観測。**`new` も残す**（下の復帰の判定に要る） */
+    const matched = events
       .filter((e) => e.at)
-      .filter((e) => !service || e.service === service)
       // 見放題とポイントが同居するサービスでは、ポイント専用作品を外す。
       // 載せると**そもそも見放題ではなかった作品**を扱うことになる。
       .filter((e) => {
@@ -278,6 +430,14 @@ export const seriesArticle: ArticleType = {
         const w = e.work
         return match.test(w.title) || (w.localizedTitle ? match.test(w.localizedTitle) : false)
       })
+
+    const revived = revivals(matched)
+
+    const target = matched
+      // 「いつまで」に答えられる観測と、**復帰の観測**だけ。
+      // ただの `new`（終了日が分からない配信開始）と `upcoming` は載せない（冒頭の理由）
+      .filter((e) => e.kind === 'expiring' || e.kind === 'removed' || revived.has(e))
+      .filter((e) => !service || e.service === service)
 
     /*
      * ★ **いちばん新しい観測を残す。** 特報は「最初に把握した回」を残すが、
@@ -302,13 +462,20 @@ export const seriesArticle: ArticleType = {
         : [...kept].sort((a, b) => (b.work.rating ?? 0) - (a.work.rating ?? 0)).slice(0, MAX_ITEMS)
 
     /*
-     * 並びは「まだ観られるものが先、終了日の早い順」。
+     * 並びは「まだ観られるものが先、日付の早い順」。
      * 読者が最初に知りたいのは締切の近い作品で、終了済みは後ろでよい。
+     *
+     * ★ 復帰は終了予定と終了済みのあいだ。締切がある作品ほどは急がないが、
+     *   **もう観られない作品より先に見せる**（また観られる、が要点なので）。
      */
+    const ORDER: Record<State, number> = {
+      終了予定: 0,
+      見放題に復帰: 1,
+      終了済み: 2,
+    }
     return limited.sort((a, b) => {
-      const sa = stateOf(a, ctx.now) === '終了予定' ? 0 : 1
-      const sb = stateOf(b, ctx.now) === '終了予定' ? 0 : 1
-      if (sa !== sb) return sa - sb
+      const d = ORDER[stateOf(a, ctx.now)] - ORDER[stateOf(b, ctx.now)]
+      if (d !== 0) return d
       return a.at!.localeCompare(b.at!)
     })
   },
@@ -322,8 +489,10 @@ export const seriesArticle: ArticleType = {
     const unext = localizedTitles(items)
     const isUpdate = previousAsOf(this.slug(ctx)) !== undefined
     const services = [...new Set(items.map((e) => e.service))]
-    const stillOn = items.filter((e) => stateOf(e, ctx.now) === '終了予定').length
-    const alreadyOff = items.length - stillOn
+    const count = tally(items, ctx)
+    const stillOn = count['終了予定']
+    const alreadyOff = count['終了済み']
+    const backOn = count['見放題に復帰']
 
     /*
      * 同じ作品が複数サービスに出ているか。**表を1行にまとめてよい印**を素材に付ける。
@@ -335,11 +504,49 @@ export const seriesArticle: ArticleType = {
       spread.set(k, [...new Set([...(spread.get(k) ?? []), e.service])])
     }
 
+    /*
+     * 復帰した観測ごとに、**その前に見放題から外れていたサービス**。
+     * 素材に「どこで終わってどこへ戻ったか」を1行で渡すために使う。
+     * 突き合わせは `work.id`（`revivals()` と同じ理由で、題の正規化を使わない）。
+     */
+    const leftBefore = new Map<ChangeEvent, string[]>()
+    for (const e of items) {
+      if (stateOf(e, ctx.now) !== '見放題に復帰') continue
+      const from = items
+        .filter((o) => o.work.id === e.work.id && stateOf(o, ctx.now) === '終了済み')
+        .map((o) => o.service)
+      leftBefore.set(e, [...new Set(from)])
+    }
+
+    /*
+     * 復帰した作品の**戻り先**。終了済みの行のほうに出す。
+     *
+     * ★ この作品には「まとめてよい」の印（下の alsoOn）を出してはいけない。
+     *   終了済みの行と復帰の行は**別の事実**で、1行にまとめると
+     *   「終わった」と「戻った」のどちらなのか読者に分からなくなる。
+     */
+    const revivedTo = new Map<string, string[]>()
+    for (const [e, _from] of leftBefore) {
+      revivedTo.set(String(e.work.id), [
+        ...new Set([...(revivedTo.get(String(e.work.id)) ?? []), e.service]),
+      ])
+    }
+
     const rows = items.map((e) => {
       const w = e.work
+      const state = stateOf(e, ctx.now)
       const alsoOn = (spread.get(workKey(w.localizedTitle ?? w.title)) ?? []).filter(
         (sv) => sv !== e.service,
       )
+      /*
+       * ★ **復帰した作品が、どこで終わっていたか。**
+       *   同じ作品の「終了済み」の行と、この「見放題に復帰」の行は
+       *   **まとめてはいけない**（別々の事実で、日付の意味も違う）。
+       *   まとめてよい印（下の alsoOn）を出さず、代わりにこれを出す。
+       */
+      const leftFrom = leftBefore.get(e) ?? []
+      /** この作品が復帰した先。終了済みの行に出す（復帰の行では空） */
+      const backTo = state === '見放題に復帰' ? [] : (revivedTo.get(String(w.id)) ?? [])
       const links = buildSearchLinks(
         w,
         (ctx.theme.search_links ?? []).filter((l) => l.key !== e.service),
@@ -356,11 +563,22 @@ export const seriesArticle: ArticleType = {
       return [
         `- ${title}${note ? ` ${note}` : ''}`,
         `  サービス: ${labelOf.get(e.service) ?? e.service}`,
-        alsoOn.length
-          ? `  ★同じ作品が ${alsoOn.map((sv) => labelOf.get(sv) ?? sv).join(' / ')} にもあります（表では1行にまとめ、サービス列に両方を書いてよい）`
-          : '',
-        `  状態: ${stateOf(e, ctx.now)}`,
-        `  終了日: ${formatMonthDay(e.at!, offset)}`,
+        state === '見放題に復帰'
+          ? `  ★この作品は${leftFrom.length ? leftFrom.map((sv) => labelOf.get(sv) ?? sv).join(' / ') + 'で' : ''}見放題が終わったあと、ここで見放題に戻っています（**終了済みの行とまとめず、別の行にすること**）`
+          : backTo.length
+            ? `  ★この作品はそのあと ${backTo.map((sv) => labelOf.get(sv) ?? sv).join(' / ')} で見放題に復帰しています（**復帰の行と1行にまとめないこと**。終わったことと戻ったことは別の事実です）`
+            : alsoOn.length
+              ? `  ★同じ作品が ${alsoOn.map((sv) => labelOf.get(sv) ?? sv).join(' / ')} にもあります（表では1行にまとめ、サービス列に両方を書いてよい）`
+              : '',
+        `  状態: ${state}`,
+        /*
+         * ★ **復帰の行に終了日は無い。** `at` は配信**開始**日なので、
+         *   終了日として出すと真逆の日付を表に書かせることになる。
+         *   次の終了日が付いたら、その観測が最新になって行ごと入れ替わる。
+         */
+        state === '見放題に復帰'
+          ? `  復帰日: ${formatMonthDay(e.at!, offset)}（★終了日は未定。表の終了日の欄には「—」と書くこと）`
+          : `  終了日: ${formatMonthDay(e.at!, offset)}`,
         w.year ? `  公開年: ${w.year}年` : '',
         w.rating ? `  評価: ${w.rating}/100（★表にだけ書き、地の文には書かないこと）` : '',
         w.genres.length ? `  ジャンル: ${w.genres.join(' / ')}` : '',
@@ -413,8 +631,20 @@ ${
 この記事は特定の月のものではなく、配信状況が変わるたびに同じURLを書き直します。
 主題（${resolved.topic}）と「${traits.verbPhrase}」を必ず入れてください。
 
-  例: 【保存版】${resolved.topic}の${traits.verbPhrase}作品${items.length}本｜（見どころ）
+  例: 【保存版】${resolved.topic}の${traits.verbPhrase}作品${workCount(items)}本｜（見どころ）
+${
+  workCount(items) !== items.length
+    ? `
+**本数は「${workCount(items)}本」です。素材の件数（${items.length}件）ではありません。**
+同じ作品が複数のサービスにあるため、素材は${items.length}件・作品は${workCount(items)}本になります。
+表では同じ作品を1行にまとめるので、**読者が数えられるのは${workCount(items)}のほう**です。
+リードの固定文言も${workCount(items)}本になっています。
 
+**このズレを本文で説明しないでください。**「件数が${items.length}本になっているのは〜」のような
+断り書きは読者には冗長で、記事の流れを切ります。統合した数だけを名乗ってください。
+`
+    : ''
+}
 ${
   isUpdate
     ? `**この記事には前の版があります。** 本数の直後に 【${resolved.asOf}更新】 を置いてください。`
@@ -429,15 +659,30 @@ ${
 | --- | --- |
 | まだ観られる（終了予定） | ${stillOn}本 |
 | もう観られない（終了済み） | ${alreadyOff}本 |
+| 一度終わったあと見放題に戻った（見放題に復帰） | ${backOn}本 |
 
 ${
-  stillOn > 0 && alreadyOff > 0
-    ? `**この記事には両方が混ざっています。** 表の「状態」列で1行ずつ区別し、
+  [stillOn, alreadyOff, backOn].filter((n) => n > 0).length > 1
+    ? `**この記事には複数の状態が混ざっています。** 表の「状態」列で1行ずつ区別し、
 地の文でも取り違えないでください。終了済みの作品に「お見逃しなく」と書いてはいけません。`
     : stillOn > 0
       ? '**全作品がまだ観られます。** 「終了しました」と過去形で書かないでください。'
-      : '**全作品がすでに終了しています。** 「お見逃しなく」「今のうちに」は書けません。'
-}
+      : backOn > 0
+        ? '**全作品が見放題に戻っています。** 「もう観られません」と書かないでください。'
+        : '**全作品がすでに終了しています。** 「お見逃しなく」「今のうちに」は書けません。'
+}${
+      backOn > 0
+        ? `
+
+**「見放題に復帰」の${backOn}本は、いま観られます。** 一度見放題から外れたあと、
+素材に書かれたサービスで見放題での取り扱いが再び始まった作品です。
+
+- 表の**終了日の欄は「—」**にしてください。次の終了日はまだ分かりません
+- 「終了しました」と書かないでください。**戻ってきたことがこの行の要点**です
+- **いつまで観られるかは書けません。** 「◯月まで」「当面は観られます」と書かないこと
+- 復帰の理由（契約・権利）を推測しないでください`
+        : ''
+    }
 
 ---
 
@@ -475,7 +720,13 @@ ${OUTPUT_FORMAT}`
       `**各セクションは「見出し → 表 → 解説」の順に書くこと。**
    表の列は「終了日 / 作品 / 状態 / 評価 / サービス」の5列で固定してください。
    **サービス列と状態列を省かないでください**（サイトが行のサービス名を読んでリンクを付けます）。`,
-      `**対象作品リストの節に、下の${items.length}件を1件残らず表に載せること。**`,
+      `**対象作品リストの節に、下の${items.length}件を1件残らず表に載せること。**${
+        workCount(items) !== items.length
+          ? `
+   同じ作品が複数サービスにあるので、**作品の数は${workCount(items)}本**です。
+   タイトルとリードで名乗るのはこちらの数で、**ズレの理由は本文に書きません。**`
+          : ''
+      }`,
       `**評価スコアは表にだけ書き、地の文には一切書かないこと。**`,
       alreadyOff > 0
         ? `**終了済みの${alreadyOff}本を「これから終わる」と書かないこと。**
@@ -484,6 +735,12 @@ ${OUTPUT_FORMAT}`
         : '',
       stillOn > 0
         ? `終了日は確定情報です。**急かすのは終了日という事実の提示までとし、視聴を命令しないこと。**`
+        : '',
+      backOn > 0
+        ? `**見放題に復帰した${backOn}本を、終了済みの行とまとめないこと。**
+   一度見放題から外れたあと、素材のサービスで見放題に戻った作品です。
+   終了日は分からないので、表の終了日の欄は「—」にし、
+   **「いつまで観られるか」を書かないでください**（推測になります）。`
         : '',
       items.some((e) => hasLineup(e.service))
         ? `**「見放題が終了する」であって「観られなくなる」ではありません。**
@@ -573,7 +830,9 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       isUpdate: previousAsOf(this.slug(ctx)) !== undefined,
     })
 
-    const verbs = [STANCES.leaving.verbPhrase, STANCES.ended.verbPhrase]
+    // ★ STANCES から作る。状態を増やしたときにここを直し忘れると、
+    //   正しく書いた記事がタイトル検査で落ちる。
+    const verbs = Object.values(STANCES).map((t) => t.verbPhrase)
     if (!verbs.some((v) => title.includes(v))) {
       issues.push({
         level: 'error',
@@ -610,8 +869,10 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     const warn = (message: string) => issues.push({ level: 'warn', message })
 
     const resolved = resolvePhrases(items, ctx)
-    const stillOn = items.filter((e) => stateOf(e, ctx.now) === '終了予定').length
-    const alreadyOff = items.length - stillOn
+    const count = tally(items, ctx)
+    const stillOn = count['終了予定']
+    const alreadyOff = count['終了済み']
+    const backOn = count['見放題に復帰']
 
     /*
      * --- 主題から離れていないか ---
@@ -637,7 +898,12 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
      *   そこで**片側しか無いときだけ**、反対側の言い回しを禁じる。
      *   混在しているときは表の「状態」列とプロンプトの指示に任せ、ここでは止めない。
      */
-    if (stillOn === 0) {
+    /*
+     * ★ **復帰が1本でもあれば、この検査は掛けない。**
+     *   「配信中です」「今のうちに」は、戻ってきた作品については事実。
+     *   全作が終了済みのときだけ禁じる（それが元々の趣旨）。
+     */
+    if (stillOn === 0 && backOn === 0) {
       for (const phrase of MISLEADING_AFTER_END) {
         if (md.includes(phrase)) {
           err(
@@ -650,8 +916,35 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
         err('終了を未来形で書いています。全作品が終了済みなので「終了しました」と書きます。')
       }
     }
-    if (alreadyOff === 0 && /終了しました/.test(md)) {
+    if (alreadyOff === 0 && backOn === 0 && /終了しました/.test(md)) {
       err('終了を過去形で書いています。この記事の作品はまだ観られます（全件が終了予定）。')
+    }
+
+    /*
+     * --- 復帰の書き方 ---
+     *
+     * ★ 復帰した作品には**終了日が無い**。「いつまで観られるか」を書けば必ず推測になる。
+     *   素材にその日付が無いので、書かれていたらそれは作った日付。
+     */
+    if (backOn > 0) {
+      for (const phrase of [
+        '当面は観られます',
+        '当面は視聴できます',
+        'いつまで観られるかは未定ですが',
+      ]) {
+        if (md.includes(phrase)) {
+          err(
+            `「${phrase}」が含まれています。見放題に復帰した作品の終了日は分かりません。` +
+              '観られる期間について書かず、復帰したという事実だけを書いてください。',
+          )
+        }
+      }
+      if (!md.includes('復帰')) {
+        warn(
+          `見放題に復帰した作品が${backOn}本ありますが、本文に「復帰」がありません。` +
+            'この記事でいちばん新しい事実なので、表の状態列だけでなく地の文でも触れてください。',
+        )
+      }
     }
 
     // 見放題とポイントが同居するサービスを含むなら、「もう観られない」と断定できない
@@ -677,10 +970,11 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
      * ★ 状態列があること。**この記事だけの必須列。**
      *   混在する記事で状態列が落ちると、読者は1行ずつの可否を判断できない。
      */
-    if (stillOn > 0 && alreadyOff > 0 && !md.includes('状態')) {
+    if ([stillOn, alreadyOff, backOn].filter((n) => n > 0).length > 1 && !md.includes('状態')) {
       err(
-        '表に「状態」列がありません。この記事は終了予定と終了済みが混ざっているので、' +
-          '1行ずつ区別できないと読者を誤らせます。列は「終了日 / 作品 / 状態 / 評価 / サービス」です。',
+        '表に「状態」列がありません。この記事は終了予定・終了済み・見放題に復帰のうち' +
+          '2つ以上が混ざっているので、1行ずつ区別できないと読者を誤らせます。' +
+          '列は「終了日 / 作品 / 状態 / 評価 / サービス」です。',
       )
     }
     /*
@@ -774,7 +1068,9 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
     主題: topic,
     サービス: services.length === 2 ? services.join('と') : services.join('・'),
     基準日: asOf,
-    本数: items.length,
+    // ★ 素材の件数ではなく**作品数**（`workCount` の説明）。
+    //   タイトルの「◯本」とリードの「◯本」は必ず同じ数にする。
+    本数: workCount(items),
   })
 
   /*

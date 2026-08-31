@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content'
 import { SITE, CATEGORY_HUBS, SERVICE_HUBS } from '../config'
 import { publishablePeople, topPeople } from '../lib/people'
 import PostSearch from './PostSearch.astro'
@@ -52,6 +53,29 @@ const MENU_PEOPLE = 6
 
 const menuPeople = topPeople(MENU_PEOPLE)
 const peopleTotal = publishablePeople().length
+
+/**
+ * **記事が1本も無いハブはメニューに出さない**（2026-08-31）。
+ *
+ * ランキングは器だけ先に作ってあり、記事は0本のままだった。
+ * その状態で全706ページのヘッダーからリンクしていたので、
+ * 押した読者は必ず「この分類の記事はまだありません。」に着いていた。
+ * サイト内で唯一の空ページで、しかも**全ページから貼られている**という
+ * いちばん目立つ形になっていた（ASP・AdSense の審査でも真っ先に踏まれる）。
+ *
+ * ★ 記事を1本入れれば自動でメニューに戻る。config.ts の CATEGORY_HUBS は
+ *   触らない。「記事が出ないものは並べない」は SERVICE_HUBS と同じ方針
+ *   （config.ts の Hulu を外した件）。
+ *
+ * ★ ページ自体は生成し続ける（`/category/<ハブ>` を 404 にしない）。
+ *   空のあいだは pages/category/[category].astro が noindex にする。
+ */
+const hubs = await (async () => {
+  const posts = await getCollection('posts', ({ data }) => !data.draft)
+  return CATEGORY_HUBS.filter((h) =>
+    posts.some((p) => (h.includes as readonly string[]).includes(p.data.category)),
+  )
+})()
 ---
 
 <header>
@@ -59,7 +83,7 @@ const peopleTotal = publishablePeople().length
     <a class="brand" href="/">{SITE.name}</a>
     <nav aria-label="カテゴリ">
       {
-        CATEGORY_HUBS.map((h) =>
+        hubs.map((h) =>
           h.serviceMenu ? (
             <details class="menu" data-menu>
               <summary>{h.label}</summary>
