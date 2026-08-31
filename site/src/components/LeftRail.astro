@@ -98,8 +98,13 @@ const peopleTotal = publishablePeople().length
       1200px 未満ではこの枠も出ないので、**フッターにも同じリンクを置いてある**
       （components/Footer.astro）。片方だけ消さないこと。
   */}
+  {/*
+    ★ 見出し（.block-title）は**わざと出していない**（2026-08-31）。
+      カードの太い行「運営方針と活用法」と同じことを二度言うだけで、
+      枠の内側203pxでは2行に折り返して下の一覧を押し下げていた。
+      **aria-label は残す。** 見出しが無いので、この枠の名前はこれだけになる。
+  */}
   <nav class="block" aria-label="当サイトの運営方針および活用について">
-    <p class="block-title">当サイトの運営方針および活用について</p>
     <ul class="cards">
       <li>
         <GuideTag
