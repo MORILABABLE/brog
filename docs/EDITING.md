@@ -525,5 +525,6 @@ npm run publish   -- --slug 2026-09-upcoming-netflix   # 公開に戻す
 
 往復（false ↔ true）を実際に試して、行が重複せず正しく切り替わることを確認しています。
 
-
+npm run write -- --type series --topic "「名探偵コナン」劇場版シリーズ" \
+  --slug conan-movies --match "名探偵コナン" --emit
 ---
