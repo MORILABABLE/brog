@@ -442,7 +442,12 @@ function parseBlocks(md) {
       subHeadingLine = i
       continue
     }
-    if (!lines[i].startsWith('|') || !dateHeading) continue
+    // ★ 日付は `##` からでも `###` からでも取る。
+    //   更新版の記事は `## 今回新たに判明した終了予定27本` のような日付を持たない `##` の下に
+    //   `### 9月30日：…` を並べる。`##` だけを見ていると、この形の節が
+    //   **まるごと画像の対象から外れる**（2026-09-01 の添削）。
+    const dateSource = subHeading && DATE_PREFIX.test(subHeading) ? subHeading : dateHeading
+    if (!lines[i].startsWith('|') || !dateSource) continue
 
     // 表の範囲
     const tableStart = i
@@ -486,7 +491,7 @@ function parseBlocks(md) {
     }
 
     out.push({
-      dateLabel: DATE_PREFIX.exec(dateHeading)[0],
+      dateLabel: DATE_PREFIX.exec(dateSource)[0],
       heading: subHeading ?? dateHeading,
       headingLine,
       imageLine,
@@ -514,11 +519,27 @@ function pickHighlights(section) {
     .filter((r) => r.at >= 0)
     .sort((a, b) => a.at - b.at)
 
-  if (mentioned.length > 0) return mentioned.slice(0, MAX_HIGHLIGHT)
+  const picked = mentioned.slice(0, MAX_HIGHLIGHT)
 
-  return [...section.rows]
-    .sort((a, b) => (parseInt(b.rating) || 0) - (parseInt(a.rating) || 0))
-    .slice(0, MAX_HIGHLIGHT)
+  // ★ 足りないぶんは評価の高い順で埋める。**触れられた数で打ち切らない。**
+  //   地の文はシリーズ物だと2作目以降を略称で書く（「ハリー・ポッターと秘密の部屋」→
+  //   「秘密の部屋」）。`indexOf` は表の題名の完全一致しか見ないので、
+  //   略称で書かれた作品は候補から丸ごと落ちる。そのまま打ち切ると
+  //   **10行の表に絵が1枚しか付かない**（2026-09-01 の添削）。
+  //   地の文が触れた作品を先に出す狙いは保ったまま、枠だけを埋める。
+  if (picked.length < MAX_HIGHLIGHT) {
+    const taken = new Set(picked.map((r) => r.title))
+    for (const r of [...section.rows].sort(
+      (a, b) => (parseInt(b.rating) || 0) - (parseInt(a.rating) || 0),
+    )) {
+      if (picked.length >= MAX_HIGHLIGHT) break
+      if (taken.has(r.title)) continue
+      picked.push(r)
+      taken.add(r.title)
+    }
+  }
+
+  return picked
 }
 
 // --- 画像 -----------------------------------------------------------------

@@ -334,8 +334,24 @@ function buildIndex(): Index {
  * 題名から引く。表のセルの文字列をそのまま渡す想定（完全一致）。
  * @param service 分かっていればサービスキー。送り先をそのサービスに合わせる。
  */
+/**
+ * Markdown の整形で置き換わった約物を、素材の表記に戻す。
+ *
+ * ★ 台帳の見出しは配信APIの文字列そのままだが、**表のセルは Markdown を通ってくる。**
+ *   smartypants が `"` を `“ ”` に、`--` を `–` に変える。完全一致で引いているので、
+ *   引用符を含む題名は台帳にあってもサムネイルもリンクも付かない
+ *   （例: `Ordinary Men: The "Forgotten Holocaust"`。2026-09-01 の添削）。
+ */
+function plainPunctuation(s: string): string {
+  return s
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[–—]/g, '--')
+}
+
 export function workLinkByTitle(title: string, service?: string): WorkLink | undefined {
-  const entry = buildIndex().byTitle.get(title)
+  const { byTitle } = buildIndex()
+  const entry = byTitle.get(title) ?? byTitle.get(plainPunctuation(title))
   return entry ? toLink(entry, service) : undefined
 }
 
