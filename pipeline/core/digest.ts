@@ -42,20 +42,46 @@ const MAX_EXPIRING_ROWS = 50
 /** これを割り込んだ終了予定に印を付ける（日） */
 const URGENT_DAYS = 7
 
+/**
+ * 「まもなく見放題配信開始」に載せる先の日数。
+ *
+ * ■ ここだけ差分ではなく在庫を出す理由
+ * 配信開始予定は各社が**前月末に一度だけ**まとめて公表する。差分だけを送ると、
+ * その1通を読み逃した時点で「9月10日に何が始まるか」は通知から永久に消える。
+ * 毎回あたらしいものが出てくる終了予定とは出方が違うので、扱いも変える。
+ *
+ * 7日にしたのは終了予定の「⚠」と同じ幅にして、読み手の基準を1つにするため。
+ * 在庫の全体は data/UPCOMING.md（`npm run stock` が毎日書き直す）にある。
+ */
+const SOON_DAYS = 7
+
+/** 「まもなく見放題配信開始」の表に載せる上限。月初は数十件が同じ日に集まる。 */
+const MAX_SOON_ROWS = 40
+
 /** 無料枠のこの割合を超えたら警告する */
 const QUOTA_WARN_RATIO = 0.8
 
 export interface Digest {
   subject: string
   body: string
-  /** 通知すべき変化が1件も無い。呼び出し側はこのとき送らない。 */
+  /** 知らせることが1件も無い。呼び出し側はこのとき送らない。 */
   isEmpty: boolean
+  /**
+   * 本日から配信が始まる作品の数。
+   * **収集の差分が0でも送る**かどうかを、呼び出し側がこれで決める。
+   */
+  startsToday: number
 }
 
 export interface DigestOptions {
   theme: Theme
   /** 今回の通知が対象とする収集の時刻（複数回ぶんをまとめることがある） */
   collectedAt: string[]
+  /**
+   * 収集済みの**全**イベント。差分ではなく在庫を見る欄（まもなく配信開始）に使う。
+   * 渡さなければその欄は出ない。
+   */
+  stock?: ChangeEvent[]
   usage?: UsageSnapshot
   now?: Date
 }
@@ -81,15 +107,29 @@ export function buildDigest(events: ChangeEvent[], opts: DigestOptions): Digest 
     .filter((e) => e.kind === 'upcoming')
     .sort((a, b) => (a.at ?? '9999').localeCompare(b.at ?? '9999'))
 
-  const subject =
-    `[収集] ${when} 新規${events.length}件` +
-    (expiring.length ? ` / 終了予定${expiring.length}件` : '') +
-    (upcoming.length ? ` / 開始予定${upcoming.length}件` : '')
+  // まもなく配信が始まるもの。**差分ではなく在庫**から選ぶ（SOON_DAYS の説明）。
+  const soon = pickSoon(opts.stock ?? [], tz, now)
+  const startsToday = soon.filter((e) => daysUntil(e.at!, tz, now) === 0).length
+
+  const counts = [
+    events.length ? `新規${events.length}件` : '',
+    expiring.length ? `終了予定${expiring.length}件` : '',
+    upcoming.length ? `開始予定${upcoming.length}件` : '',
+    // 件名で分かるようにする。「今日から見られる」は通知を開く動機が他と違う。
+    startsToday ? `本日開始${startsToday}件` : '',
+  ].filter(Boolean)
+  const subject = `[収集] ${when}${counts.length ? ` ${counts.join(' / ')}` : ''}`
 
   const lines: string[] = []
-  lines.push(`収集 **${when}** ／ 前回の通知以降に増えた変化 **${events.length}件**`, '')
+  lines.push(
+    events.length
+      ? `収集 **${when}** ／ 前回の通知以降に増えた変化 **${events.length}件**`
+      : `**${when}** ／ 前回の通知以降に増えた変化はありません（本日から始まる作品のお知らせです）`,
+    '',
+  )
 
-  lines.push(...breakdownSection(events, label))
+  if (events.length) lines.push(...breakdownSection(events, label))
+  if (soon.length) lines.push(...soonSection(soon, label, tz, now))
   if (expiring.length) lines.push(...expiringSection(expiring, label, tz, now))
   if (upcoming.length) lines.push(...upcomingSection(upcoming, label, tz))
   if (usage) lines.push(...quotaSection(usage))
@@ -101,7 +141,39 @@ export function buildDigest(events: ChangeEvent[], opts: DigestOptions): Digest 
     '対応が済んだらこの Issue を閉じてください。',
   )
 
-  return { subject, body: lines.join('\n'), isEmpty: events.length === 0 }
+  return {
+    subject,
+    body: lines.join('\n'),
+    // 差分が無くても「本日から配信開始」があるなら知らせることがある。
+    isEmpty: events.length === 0 && startsToday === 0,
+    startsToday,
+  }
+}
+
+/**
+ * まもなく配信が始まる作品を在庫から選ぶ。
+ *
+ * 同じ作品が複数回 upcoming として記録されることは無い（収集時に台帳が弾く）が、
+ * 告知元が増えたときに二重に載らないよう、ここでも念のため潰しておく。
+ */
+function pickSoon(stock: ChangeEvent[], tz: number, now: Date): ChangeEvent[] {
+  const seen = new Set<string>()
+  return stock
+    .filter((e) => {
+      if (e.kind !== 'upcoming' || !e.at) return false
+      const days = daysUntil(e.at, tz, now)
+      // 過ぎたものは落とす。配信が始まったあとの「予定」は読み手を混乱させる。
+      if (days < 0 || days > SOON_DAYS) return false
+      const key = `${e.service}:${e.work.id}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    .sort(
+      (a, b) =>
+        a.at!.localeCompare(b.at!) ||
+        (a.work.localizedTitle ?? a.work.title).localeCompare(b.work.localizedTitle ?? b.work.title),
+    )
 }
 
 /**
@@ -221,6 +293,50 @@ function upcomingSection(
     'npm run write -- --type upcoming --genre western  --service <サービス> --month YYYY-MM --emit',
     'npm run write -- --type upcoming --genre japanese --service <サービス> --month YYYY-MM --emit',
     '```',
+    '',
+  )
+  return out
+}
+
+/**
+ * まもなく見放題配信が始まる作品（＝すでに公表されている「◯月◯日 見放題配信開始」）。
+ *
+ * ■ ほかの欄と決定的に違うところ
+ * 終了予定も開始予定も「前回の通知以降に増えたぶん」＝**差分**だが、
+ * この欄だけは**在庫**（収集済みの全イベント）から毎回そのまま出す。
+ * 告知は月に一度しか出ないので、差分で出すと公表された日の1通にしか載らない。
+ * 実際に配信が始まる日には何も通知されず、**察知が遅れる**（というより届かない）。
+ *
+ * ■ ここでは件数ではなく作品名を並べる
+ * 「新たに公表された配信開始予定」は数十〜百件になるので件数だけにしているが、
+ * こちらは7日以内に絞ってあるぶん短い。日付と作品名が並んでいて初めて
+ * 「今日から見られるのはこれ」が分かり、記事を出す合図として使える。
+ */
+function soonSection(
+  soon: ChangeEvent[],
+  label: Map<string, string>,
+  tz: number,
+  now: Date,
+): string[] {
+  const out = ['## まもなく見放題配信開始', '']
+  out.push(`各社が公表した見放題ラインナップのうち、**${SOON_DAYS}日以内**に始まるもの。`, '')
+  out.push('| 開始日 | あと | サービス | 作品 |')
+  out.push('|---|--:|---|---|')
+
+  for (const e of soon.slice(0, MAX_SOON_ROWS)) {
+    const days = daysUntil(e.at!, tz, now)
+    const left = days === 0 ? '**本日** ★' : days === 1 ? '**明日**' : `${days}日`
+    const title = e.work.localizedTitle ?? e.work.title
+    out.push(`| ${formatMonthDay(e.at!, tz)} | ${left} | ${label.get(e.service) ?? e.service} | ${title} |`)
+  }
+
+  if (soon.length > MAX_SOON_ROWS) {
+    out.push('', `※ 開始日の近い ${MAX_SOON_ROWS}件のみ表示（残り ${soon.length - MAX_SOON_ROWS}件）。`)
+  }
+  out.push(
+    '',
+    // 在庫の全体はここにある。7日より先のぶんを見たいときの行き先を必ず示す。
+    `${SOON_DAYS}日より先のぶんを含む在庫の全体は **[data/UPCOMING.md](../../blob/main/data/UPCOMING.md)**。`,
     '',
   )
   return out
