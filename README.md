@@ -171,7 +171,7 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | `npm run notify -- --dry-run` | 送らずに通知本文だけ表示する |
 | `npm run research` | **これから書く記事の作品を日本語版 Wikipedia で下調べする（無料・キー不要）**。作風・評判・広がり方を事実で書くための素材 → [templates/writing.md](./theme-packs/streaming-jp/templates/writing.md) |
 | `npm run enrich` | 収集済みイベントに Wikidata の情報を後追いで足す（無料・APIキー不要）。原語・制作会社・**監督・出演者の日本語表記** |
-| `npm run write -- --list` | **作れる記事と素材件数の一覧**。あわせて**どの記事にも載っていない素材**を締切の近い順に出す（→ [docs/HANDOVER.md 4節](./docs/HANDOVER.md)） |
+| `npm run write -- --list` | **作れる記事と素材件数の一覧**。あわせて**どの記事にも載っていない素材**を締切の近い順に出す（→ [docs/HANDOVER.md 4節](./docs/HANDOVER.md)）。**前月ぶんで宙に浮いた素材も別枠で出る**（月末に始まり翌月に収集された作品） |
 | `/article` | **このセッションで記事を執筆（API課金なし）** |
 | `npm run write -- --type <記事> [--genre <ジャンル>] --emit` | プロンプトを `data/draft/prompt.md` に書き出す |
 | `npm run write -- --apply` | `data/draft/response.md` を検証して記事にする |
@@ -252,8 +252,21 @@ Ghost         → ゴースト/ニューヨークの幻
 邦題は翻訳ではなく配給時に決まる固有名詞なので、**LLMに推測させてはいけない。**
 
 実測の解決率（81件）: 映画 85% / シリーズ 41% / 合計 **73%**。
-解決できないのは Wikidata に項目が無い新作。**残りは原題のまま扱う**（捏造しない）。
-結果は `data/titles.json` にキャッシュされ、二度は問い合わせない。
+解決できないのは Wikidata に項目が無い新作。結果は `data/titles.json` にキャッシュされ、
+二度は問い合わせない。
+
+**Wikidata で解決できなくても、日本の作品なら原語表記が使える**（2026-09-01 追加）。
+API の `originalTitle` は日本の作品にかぎり**日本語表記のまま返る**ので、
+邦題が取れていない作品にはこれを充てる（`pipeline/core/events.ts` の `withJapaneseTitle`）。
+
+```
+MOBILE SUIT GUNDAM HATHAWAY The Sorcery of Nymph Circe
+  → 機動戦士ガンダム 閃光のハサウェイ キルケーの魔女   （原語表記から）
+```
+
+充てるのは**ひらがな・カタカナを含むものだけ**。原語表記は「原語」であって日本語とは
+限らず、漢字だけの題は中国語と見分けがつかないため（実測: 早春晴朗）。
+どちらも取れなければ**原題のまま扱う**（捏造しない）。
 
 ## 対象サービスの制約と、U-NEXT等への導線
 

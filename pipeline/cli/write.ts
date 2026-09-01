@@ -39,7 +39,12 @@ import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { loadArticleTypes, loadTheme, type Theme } from '../theme.ts'
 import { loadLedger, readAllEvents, saveLedger, type Ledger } from '../core/events.ts'
-import { currentYearMonth, daysUntil, formatMonthDay } from '../core/datetime.ts'
+import {
+  currentYearMonth,
+  daysUntil,
+  formatMonthDay,
+  previousYearMonth,
+} from '../core/datetime.ts'
 import {
   coverageGap,
   mentionsByTitle,
@@ -585,7 +590,13 @@ ${shortSection ? `\n---\n\n${shortSection}\n` : ''}`
  * 記事タイプが増えても、使う側はこれを見れば選べる。
  * スラッシュコマンドに記事の一覧を書き写さずに済ませるための入口。
  */
-async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promise<void> {
+async function listRecipes(
+  theme: Theme,
+  targetMonth: string,
+  now: Date,
+  /** 対象月を運用者が明示したか。していないときだけ前月の取りこぼしも見に行く */
+  monthGiven = false,
+): Promise<void> {
   const events = await readAllEvents()
   const ledger = await loadLedger()
   const existing = new Set(
@@ -654,6 +665,39 @@ async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promis
 
   if (gaps.length > 0) printCoverageGaps(gaps, theme.utc_offset_minutes, now)
 
+  /*
+   * ★ 前月ぶんの取りこぼし（2026-09-01 追加）
+   *
+   * 上の突き合わせは**対象月（既定は今月）の素材**しか見ない。
+   * 月末に配信が始まった作品が翌月の収集で入ると、
+   *   - 先月の記事はもう書き終えている（dataAsOf がその前）
+   *   - 今月の記事は `isTargetMonth` が先月開始を外す
+   * の両方に当たり、**どの記事にも載らないまま一覧からも消える。**
+   * 実際に「機動戦士ガンダム 閃光のハサウェイ キルケーの魔女」（8月31日開始・
+   * 9月1日収集）がそうなった。月が変わった瞬間に窓が閉じるので、
+   * 前月ぶんだけは黙って毎回見に行く。
+   *
+   * ★ 締切のあるカテゴリ（leaving）は出さない。**期限そのものが過ぎている**ので、
+   *   いま更新版を書いても読者には届かない。拾えるのは起きたことを記録する記事だけ。
+   */
+  if (!monthGiven) {
+    const prev = previousYearMonth(targetMonth)
+    const prevGaps = coverageGapsFor(await loadArticleTypes(theme), events, ledger, posts, {
+      theme,
+      now,
+      targetMonth: prev,
+    }).filter((g) => !DEADLINE_CATEGORIES.has(g.category))
+
+    if (prevGaps.length > 0) {
+      printCoverageGaps(prevGaps, theme.utc_offset_minutes, now, {
+        heading: `${prev} ぶんで、まだどの記事にも載っていない素材`,
+        hint:
+          '  ※ 月末に始まった作品は翌月の収集で入るので、今月の一覧には出てこない。\n' +
+          `  ※ 拾うには更新版を書く:  npm run write -- --type <記事> [--<区分> <値>] --month ${prev} --emit`,
+      })
+    }
+  }
+
   await reportSeriesCandidates(await loadArticleTypes(theme), events, ledger, posts, {
     theme,
     now,
@@ -662,6 +706,40 @@ async function listRecipes(theme: Theme, targetMonth: string, now: Date): Promis
 
   console.log('\n書き出す:  npm run write -- --type <記事> [--<区分> <値>] --emit')
   console.log('           区分は上の一覧に出ている形（--genre / --service）をそのまま使う')
+}
+
+/**
+ * 指定した月について「どの記事にも載っていない素材」だけを数える。**表は出さない。**
+ *
+ * `--list` の一覧表は対象月ぶんしか作らないので、別の月を同じ網に掛けたいときに
+ * この計算だけを取り出せるようにしてある。指示が要る記事タイプ（`--kind` などが
+ * 必須のもの）は、指示が無いと素材が決まらないので飛ばす。
+ */
+function coverageGapsFor(
+  types: ArticleType[],
+  events: ChangeEvent[],
+  ledger: Ledger,
+  posts: PublishedPost[],
+  base: { theme: Theme; now: Date; targetMonth: string },
+): CoverageRow[] {
+  const rows: CoverageRow[] = []
+  for (const r of recipes(types)) {
+    if (r.type.flags?.some((f) => f.required)) continue
+
+    const ctx = { ...base, variant: r.variant }
+    const items = r.type.select(events, ledger, ctx)
+    if (items.length === 0) continue
+
+    const category = r.type.categoryOf?.(ctx, items) ?? r.type.category
+    const { missing, nearest } = coverageGap(
+      items,
+      posts,
+      category,
+      r.type.mentions ?? mentionsByTitle,
+    )
+    if (missing.length > 0) rows.push({ label: recipeLabel(r), category, missing, nearest })
+  }
+  return rows
 }
 
 /**
@@ -772,8 +850,17 @@ interface CoverageRow {
  */
 const DEADLINE_CATEGORIES = new Set(['leaving'])
 
-function printCoverageGaps(gaps: CoverageRow[], offsetMinutes: number, now: Date): void {
-  console.log('\n  記事に載っていない素材（公開済み記事の本文と突き合わせた結果）')
+function printCoverageGaps(
+  gaps: CoverageRow[],
+  offsetMinutes: number,
+  now: Date,
+  /** 見出しと締めの一行。前月ぶんを出すときだけ差し替える */
+  section = {
+    heading: '記事に載っていない素材（公開済み記事の本文と突き合わせた結果）',
+    hint: '  ※ 更新版を書くか、サービスをまたぐなら主題軸（series / special）で1本立てる。',
+  },
+): void {
+  console.log(`\n  ${section.heading}`)
   console.log('  ' + '-'.repeat(72))
   // 締切のあるものが先、そのなかは締切の近い順。
   // 日付だけで並べると、過ぎた配信開始日が本当の締切より上に来る。
@@ -797,7 +884,7 @@ function printCoverageGaps(gaps: CoverageRow[], offsetMinutes: number, now: Date
     const more = g.missing.length > names.length ? ` ほか${g.missing.length - names.length}件` : ''
     console.log(`      ${names.join(' / ')}${more}`)
   }
-  console.log('  ※ 更新版を書くか、サービスをまたぐなら主題軸（series / special）で1本立てる。')
+  console.log(section.hint)
 }
 
 /**
@@ -883,7 +970,8 @@ async function main(): Promise<void> {
   const types = await loadArticleTypes(theme)
   assertUniqueSlugs(recipes(types), theme, now, targetMonth)
 
-  if (flag('list')) return await listRecipes(theme, targetMonth, now)
+  // 月を明示したときは前月の取りこぼしを出さない（見たい月を運用者が選んでいる）
+  if (flag('list')) return await listRecipes(theme, targetMonth, now, arg('month') !== undefined)
 
   const recipe = pickRecipe(types)
   const { type } = recipe

@@ -88,6 +88,48 @@ export async function appendEvents(
   await appendFile(path, events.map((e) => JSON.stringify(e)).join('\n') + '\n', 'utf8')
 }
 
+/**
+ * ひらがな・カタカナ。**日本語にしか無い文字**なので、原語表記が日本語かの判定に使う。
+ */
+const KANA = /[ぁ-んァ-ヶ]/
+
+/**
+ * 邦題が取れていない作品に、配信APIの原語表記を充てる。
+ *
+ * ■ なぜ要るか（2026-09-01 追加）
+ * 邦題は Wikidata から引いているが、**新しい作品ほど項目がまだ無い。**
+ * 実際に「機動戦士ガンダム　閃光のハサウェイ キルケーの魔女」が
+ * `MOBILE SUIT GUNDAM HATHAWAY The Sorcery of Nymph Circe` のまま素材に並んだ。
+ * 日本語のサイトに英題が出るのは、読者から見れば取りこぼしと変わらない。
+ *
+ * 配信APIの `originalTitle` は**日本の作品なら日本語表記のまま返る**
+ * （`sources/types.ts` の Work.originalTitle）。推測なしで直せる。
+ *
+ * ■ かなを含むものだけに限る
+ * 原語表記は「原語」であって日本語とは限らない。ハングルやアラビア文字は
+ * 弾けるが、**漢字だけの題は中国語と区別がつかない**（実測: 早春晴朗）。
+ * ひらがな・カタカナは日本語にしか無いので、そこだけを条件にする。
+ * 漢字だけの邦題は取りこぼすが、**別の言語を邦題として出すよりよい。**
+ *
+ * ■ 収集ログは書き換えない
+ * やるのは読み込み時の補完だけ。`data/events/*.jsonl` は追記のみで、
+ * 過去の行は書き換えない（このファイル冒頭の決まり）。
+ * **同じ規則がサイト側にもある**（`site/src/lib/events-data.ts` の readAll）。
+ * 片方だけ変えると、記事とサイトで題名が食い違う。
+ */
+function withJapaneseTitle(e: ChangeEvent): ChangeEvent {
+  if (!e.work.localizedTitle && e.work.originalTitle && KANA.test(e.work.originalTitle)) {
+    // ★ 連続した半角スペースは1つに詰める。
+    //   実測で「機動戦士ガンダム␣␣閃光のハサウェイ」のように2つ入って返る。
+    //   取りこぼしの判定（`core/coverage.ts` の mentionsByTitle と `verify.ts`）は
+    //   本文に題名がそのまま出ているかを見るので、書き手が普通に1つで書いた時点で
+    //   **載っているのに「載っていない」と判定される。**
+    //   全角スペースは題名の一部として使われることがあるので触らない。
+    e.work.localizedTitle = e.work.originalTitle.replace(/ {2,}/g, ' ').trim()
+  }
+  return e
+}
+
 /** 指定月のイベントを読み込む（記事生成用） */
 export async function readEvents(yearMonth: string): Promise<ChangeEvent[]> {
   const path = join(EVENT_DIR, `${yearMonth}.jsonl`)
@@ -96,7 +138,7 @@ export async function readEvents(yearMonth: string): Promise<ChangeEvent[]> {
     return raw
       .split('\n')
       .filter((l) => l.trim())
-      .map((l) => JSON.parse(l) as ChangeEvent)
+      .map((l) => withJapaneseTitle(JSON.parse(l) as ChangeEvent))
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') return []
     throw err

@@ -42,6 +42,18 @@ export function currentYearMonth(offsetMinutes = JST_OFFSET_MINUTES): string {
 }
 
 /**
+ * `YYYY-MM` の前月。
+ *
+ * 月をまたいで宙に浮いた素材（月末に始まり、翌月に収集されたもの）を
+ * 探すのに使う。Date に通さず文字列で数えるのは、ここでも実行環境の
+ * タイムゾーンに触れないため。
+ */
+export function previousYearMonth(yearMonth: string): string {
+  const [y, m] = yearMonth.split('-').map(Number) as [number, number]
+  return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`
+}
+
+/**
  * 「あと何日か」を返す。過去なら負。
  *
  * 時刻の差ではなく**基準タイムゾーンの日付の差**で数える。

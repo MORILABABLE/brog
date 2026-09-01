@@ -55,6 +55,8 @@ export interface RawWork {
   id: number | string
   title: string
   localizedTitle?: string
+  /** 原語表記。**日本の作品は日本語のまま返る**（readAll の邦題の補完で使う） */
+  originalTitle?: string
   type?: string
   year?: number
   rating?: number
@@ -94,6 +96,9 @@ export const LABEL_BY_SERVICE = new Map<string, string>(
   API_SERVICES.map((s) => [s.key, s.label] as [string, string]),
 )
 
+/** ひらがな・カタカナ。日本語にしか無い文字なので、原語表記が日本語かの判定に使う。 */
+const KANA = /[ぁ-んァ-ヶ]/
+
 let cached: RawEvent[] | null = null
 
 function readAll(): RawEvent[] {
@@ -112,6 +117,13 @@ function readAll(): RawEvent[] {
       const s = line.trim()
       if (!s) continue
       const e = JSON.parse(s) as RawEvent
+      // ★ 邦題が取れていない作品に原語表記を充てる。
+      //   規則は pipeline/core/events.ts の withJapaneseTitle と同じで、
+      //   **かなを含むもの（＝日本語だと確かなもの）だけ**。
+      //   片方だけ変えると、記事とサイトで題名が食い違う。
+      if (!e.work.localizedTitle && e.work.originalTitle && KANA.test(e.work.originalTitle)) {
+        e.work.localizedTitle = e.work.originalTitle.replace(/ {2,}/g, ' ').trim()
+      }
       // ★ 出さないと決めた作品はここで落とす（data/excluded-works.json）。
       //   読み込みの1か所で外すので、常設ページも定点観測も自動的に揃う。
       if (isPublishable(e.work.id)) out.push(e)
