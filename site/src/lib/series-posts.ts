@@ -68,7 +68,50 @@ export interface SeriesPost {
    * 未設定の記事はカテゴリ色のタイルになる（Thumb.astro）。枠は崩れない。
    */
   heroImage?: string
+  /**
+   * その記事が扱っている作品数。**並び順にだけ使う**（画面には出さない）。
+   *
+   * ■ なぜタイトルから取るのか
+   * frontmatter に本数は入っていない。入れる手もあるが、
+   * **読者が数えられる本数はタイトルに出ている数**（`series.ts` の `workCount()`）で、
+   * 表の行数と一致させてある。別の場所に第2の本数を作ると、
+   * 表示と並び順が別々の数字を見ることになる。
+   *
+   * ★ タイトルの形は `naming.md` が決めている（`…{動詞句}作品{本数}本…`）。
+   *   本数の無いタイトルは品質ゲートが警告を出すので、ここでは 0 に落として
+   *   同じ段のいちばん下に置くだけにする（枠から消さない）。
+   */
+  works: number
 }
+
+/**
+ * タイトルから作品数を取る。`作品32本` → 32。
+ *
+ * ★ `作品(\d+)本` を先に見る。見どころ（`｜` の後ろ）に
+ *   「劇場版5本も終了」のような数字が入ることがあり、
+ *   最初に見つかった `◯本` を拾うと**そちらを本数として並べてしまう**。
+ */
+function workCount(title: string): number {
+  const m = /作品(\d+)本/.exec(title) ?? /(\d+)本/.exec(title)
+  return m ? Number(m[1]) : 0
+}
+
+/**
+ * 並びの「段」。**小さいほど上。**
+ *
+ * ■ なぜカテゴリで段に分けるのか
+ * シリーズ記事のカテゴリは**読者にとっての急ぎ具合**そのもの
+ * （`series.ts` の `stanceOf()`）。
+ *
+ *   leaving  まだ観られる／締切がある     → いちばん上
+ *   arrivals 見放題に復帰した（締切は無い） → 次
+ *   ended    もう観られない               → いちばん下
+ *
+ * ★ `arrivals`（復帰）を `leaving` に混ぜない。締切のある記事のほうが先で、
+ *   混ぜると「急ぐ必要のある記事」が本数の少なさで下がることがある。
+ * ★ `ranking` はシリーズ記事には付かないが、`CategorySlug` の値なので置いておく。
+ */
+const TIER: Record<CategorySlug, number> = { leaving: 0, arrivals: 1, ended: 2, ranking: 3 }
 
 /**
  * 枠に出す名前を、記事タイトルから作る。
@@ -93,16 +136,30 @@ function railLabel(title: string): string {
 }
 
 /**
- * 公開中のシリーズ記事を、新しい順に返す。
+ * 公開中のシリーズ記事を、**まだ観られるものから**返す。
  *
- * ★ 並びは `pubDate` の降順。シリーズ記事は書き直すたびに `pubDate` が
- *   その日に振り直されるので（`buildMarkdown` が `pubDate: now`）、
- *   **結果として「最近手を入れた順」**になる。保存版の並びとしてはそれでよい。
+ * ■ 並び（2026-09-02 変更。それまでは `pubDate` の降順だった）
+ *
+ *   1段目 `leaving`  まだ観られる … **本数の多い順**
+ *   2段目 `arrivals` 見放題に復帰 … 同上
+ *   3段目 `ended`    もう観られない … **本数の少ない順**
+ *
+ * ★ **なぜ「最近手を入れた順」をやめたか。**
+ *   シリーズ記事は書き直すたびに `pubDate` が振り直される（`buildMarkdown` が
+ *   `pubDate: now`）。つまり前の並びは「最後に書き直した順」で、
+ *   **全作終了した記事を書き直した日に、その記事が枠のいちばん上に来ていた。**
+ *   枠に載るのは5本だけなので、もう観られない記事が
+ *   まだ観られる記事を押し出す形になっていた。
+ *
+ * ★ **終了済みだけ昇順**。もう観られない記事は下へ行くほど目に入らなくてよく、
+ *   大きいシリーズほど下に置く。上2段とは逆向きなのが意図。
+ *
+ * ★ 同数のときだけ `pubDate` の降順に落とす。並びが実行のたびに揺れないように、
+ *   最後は必ず決着する比較にしておくこと。
  */
 export function seriesPosts(posts: CollectionEntry<'posts'>[]): SeriesPost[] {
   return posts
     .filter((p) => !p.data.draft && p.data.tags.includes(SERIES_TAG))
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
     .map((p) => ({
       entry: p,
       href: `/posts/${p.id}`,
@@ -110,5 +167,13 @@ export function seriesPosts(posts: CollectionEntry<'posts'>[]): SeriesPost[] {
       fullTitle: p.data.title,
       category: p.data.category,
       heroImage: p.data.heroImage,
+      works: workCount(p.data.title),
     }))
+    .sort((a, b) => {
+      const tier = TIER[a.category] - TIER[b.category]
+      if (tier !== 0) return tier
+      const byWorks = a.category === 'ended' ? a.works - b.works : b.works - a.works
+      if (byWorks !== 0) return byWorks
+      return b.entry.data.pubDate.valueOf() - a.entry.data.pubDate.valueOf()
+    })
 }

@@ -7,6 +7,7 @@
  * 一度記事にした (サービス, 変化種別, 作品ID) は二度と拾わない。
  */
 import { mkdir, readdir, readFile, writeFile, appendFile } from 'node:fs/promises'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { ChangeEvent } from '../sources/types.ts'
 import { currentYearMonth } from './datetime.ts'
@@ -159,6 +160,42 @@ export async function readEvents(yearMonth: string): Promise<ChangeEvent[]> {
  *
  * 同じ変化が複数ファイルに入ることはない（収集時に台帳で重複を落としている）。
  */
+/**
+ * `readAllEvents()` の同期版。**品質ゲートのためだけにある。**
+ *
+ * ■ なぜ2つあるのか
+ * 記事タイプの検査（`ArticleType.verify`）は**同期の関数**で、
+ * 4つの記事タイプがその形で実装されている。
+ * 「終了済みと書く前に、他社に生きている観測が無いか見る」検査
+ * （`core/cross-service.ts`）はイベントログの全体を要るので、
+ * 非同期にするか同期で読むかの二択になる。
+ *
+ * **`verify` を非同期にすると全記事タイプの実装が変わる。** 検査は
+ * CLI の1回の実行の中で1度しか走らず、読むのは手元のファイルだけなので、
+ * ここだけ同期で読むほうが影響が小さい。
+ *
+ * ★ 中身の解釈（邦題の補完）は非同期版と**同じ関数**を通すこと。
+ *   片方だけ変えると、記事の素材と検査が別の題名を見ることになる。
+ */
+export function readAllEventsSync(): ChangeEvent[] {
+  let files: string[]
+  try {
+    files = readdirSync(EVENT_DIR).filter((f) => f.endsWith('.jsonl')).sort()
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return []
+    throw err
+  }
+
+  const out: ChangeEvent[] = []
+  for (const f of files) {
+    const raw = readFileSync(join(EVENT_DIR, f), 'utf8')
+    for (const line of raw.split('\n')) {
+      if (line.trim()) out.push(withJapaneseTitle(JSON.parse(line) as ChangeEvent))
+    }
+  }
+  return out
+}
+
 export async function readAllEvents(): Promise<ChangeEvent[]> {
   let files: string[]
   try {

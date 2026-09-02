@@ -270,8 +270,7 @@ beaconlink.jp・media-panorama.com）。中身を確認したところ、答え�
 >
 > **素材の実測（`--dry-run` で確認）**
 >
->     npm run write -- --type series --topic "「名探偵コナン」劇場版シリーズ" \
->       --slug conan-movies --match "名探偵コナン" --dry-run
+>     npm run write -- --type series --topic "「名探偵コナン」劇場版シリーズ" --slug conan-movies --match "名探偵コナン" --dry-run
 >     → 2,227件中 61件を選択（U-NEXT 34 / Netflix 27・全件が終了予定）
 >
 > **設計を2か所変えた。** どちらも「同じURLを書き直し続ける」ことから来ている。

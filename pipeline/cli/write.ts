@@ -17,6 +17,16 @@
  * ── C. プロンプトの確認だけ（無料）
  *   npm run write -- --type arrivals --genre anime --dry-run
  *
+ * ── D. 書き直しどきの記事（見放題終了予定 → 見放題終了 など）
+ *   npm run write -- --refresh            どれが書き直しどきかを並べる
+ *   npm run write -- --refresh --emit     いちばん急ぐ1本のプロンプトを書き出す
+ *   npm run write -- --register --type series --slug conan-movies …
+ *                                         公開済みの記事を控えに登録する
+ *   スラッシュコマンド /refresh が上をまとめて回す。
+ *
+ * ★ **コマンドは1行で書くこと。** 行末の `\` は PowerShell では次の行に続かず、
+ *   2行目以降のフラグが落ちたまま実行される（下の `assertNoLineContinuation`）。
+ *
  * ■ なぜ分割するか
  * 検証・frontmatter組み立て・書き出しは、どの方式でも共通の処理。
  * 「プロンプトを作る」と「応答を適用する」に分ければ、
@@ -42,12 +52,22 @@ import { loadLedger, readAllEvents, saveLedger, type Ledger } from '../core/even
 import {
   currentYearMonth,
   daysUntil,
+  formatIsoDate,
   formatMonthDay,
   previousYearMonth,
 } from '../core/datetime.ts'
 import {
+  ARTICLE_LOG_PATH,
+  loadArticleLog,
+  recordArticle,
+  rewriteCommand,
+  shellValue,
+  type ArticleRecord,
+} from '../core/article-log.ts'
+import {
   coverageGap,
   mentionsByTitle,
+  POSTS_DIR,
   readPublishedPosts,
   type PublishedPost,
 } from '../core/coverage.ts'
@@ -55,10 +75,19 @@ import { seriesCandidates } from '../core/series-candidates.ts'
 import {
   buildMarkdown,
   parseArticle,
+  variantFlag,
   type ArticleContext,
   type ArticleType,
   type ArticleVariant,
 } from '../core/article.ts'
+import {
+  categoryLabel,
+  liveElsewhereRows,
+  staleArticles,
+  staleSummary,
+  type LiveElsewhereRow,
+  type StaleArticle,
+} from '../core/stale.ts'
 import { hasError, verifyArticle } from '../core/verify.ts'
 import {
   articleUrl,
@@ -81,7 +110,6 @@ try {
   // CI では .env を置かない
 }
 
-const POSTS_DIR = join('site', 'src', 'content', 'posts')
 const DRAFT_DIR = join('data', 'draft')
 const PROMPT_PATH = join(DRAFT_DIR, 'prompt.md')
 const CONTEXT_PATH = join(DRAFT_DIR, 'context.json')
@@ -95,6 +123,35 @@ const SHORT_DRAFT_PATH = join(DRAFT_DIR, 'short.md')
  */
 const SHORTS_DIR = 'shorts'
 const MAX_TOKENS = 16_000
+
+/**
+ * **PowerShell に貼られた「行末の \」を見つけて、そこで止める。**
+ *
+ * ■ なぜ要るか（2026-09-02 追加）
+ * コマンド例は長い。bash なら行末の `\` で折り返せるが、
+ * **PowerShell では `\` は行を継続しない。** 貼り付けると1行目だけが実行され、
+ * 2行目以降のフラグが**丸ごと落ちた状態で**ここに届く。
+ *
+ *   npm run write -- --type series --topic "…" \     ← ここまでが実行される
+ *     --slug conan-movies --match "…" --emit         ← PowerShell は別の式と解釈して構文エラー
+ *
+ * 実際にこれが起きたとき、CLI は「--slug / --match が必要です」とだけ答えた。
+ * **その答えは正しいが、原因を指していない。** 運用者の画面には
+ * 「渡したはずのフラグが要ると言われた」としか映らないので、
+ * 原因（`\` が引数として届いていること）を名指しで出す。
+ *
+ * ★ 見るのは**単独の `\`** だけ。値の末尾の `\`（正規表現のエスケープ）には触らない。
+ *   bash なら `\` ＋改行はシェルが食べるので、**単独の `\` が引数として届いたこと自体が、
+ *   継続として扱われなかった証拠**になる。
+ */
+function assertNoLineContinuation(): void {
+  if (!process.argv.slice(2).includes('\\')) return
+  throw new Error(
+    '引数に「\\」がそのまま入っています。PowerShell では行末の \\ は次の行に続きません。\n' +
+      '  2行目以降のフラグは、このコマンドには届いていません。**1行で書いてください。**\n' +
+      '  （どうしても折り返すなら、PowerShell の継続はバッククォート ` です）',
+  )
+}
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`)
@@ -161,11 +218,6 @@ function assertUniqueSlugs(all: Recipe[], theme: Theme, now: Date, targetMonth: 
     }
     seen.set(slug, recipeLabel(r))
   }
-}
-
-/** バリアントのCLIフラグ名。既定は genre（ジャンル別記事が元の形だったため）。 */
-function variantFlag(type: ArticleType): string {
-  return type.variantFlag ?? 'genre'
 }
 
 /** バリアントの人間向けの呼び方。エラー文と一覧の見出しに使う。 */
@@ -337,10 +389,11 @@ async function finalize(
   if (issues.length === 0) console.log('  品質ゲート: 問題なし')
 
   const tags = type.tags(items, ctx)
+  // 特報のようにカテゴリが実行時に決まる記事タイプがある（ArticleType.categoryOf）
+  const category = type.categoryOf?.(ctx, items) ?? type.category
   const md = buildMarkdown({
     parsed,
-    // 特報のようにカテゴリが実行時に決まる記事タイプがある（ArticleType.categoryOf）
-    category: type.categoryOf?.(ctx, items) ?? type.category,
+    category,
     genre: articleGenre(recipe),
     tags,
     sources: sourcesFor(items),
@@ -356,6 +409,23 @@ async function finalize(
   const ledger = await loadLedger()
   ledger.usedRankingThemes.push(`article:${slug}`)
   await saveLedger(ledger)
+
+  /*
+   * ★ **どの指示で作ったかを控えに残す**（core/article-log.ts）。
+   *   `--topic` と `--match` は人が決めた値で、記事のどこにも残らない。
+   *   ここで記録しておかないと、同じURLを書き直すことになったときに
+   *   **束ね方を思い出すところから**やり直しになる。
+   *   すべての記事タイプで記録する（シリーズ記事だけの都合にしない）。
+   */
+  await recordArticle({
+    slug,
+    typeId: type.id,
+    variantKey: recipe.variant?.key,
+    targetMonth,
+    flags: recipe.flags ? { ...recipe.flags } : undefined,
+    category,
+    writtenAt: formatIsoDate(now.toISOString(), theme.utc_offset_minutes),
+  })
 
   console.log(`\n書き出し: ${path}`)
   console.log(`タイトル: ${parsed.title}`)
@@ -507,6 +577,67 @@ async function applyDraft(theme: Theme): Promise<void> {
   console.log('\n確認: cd site && npm run build')
 }
 
+/**
+ * 前の版がある記事を書き直すときに、プロンプトの先頭へ差し込む節。
+ *
+ * ■ なぜ「全部書き直す」ではいけないのか（2026-09-02 追加）
+ * 状態が変わったシリーズ記事（終了予定 → 終了済み）で**変わる事実はごく一部**。
+ * タイトルの動詞句・リードの固定文言・節の見出し・表の「状態」の列、それだけ。
+ *
+ * それ以外は変える理由が無い。
+ *   - 2段落目や各節の解説は `npm run research` で調べた事実で書いてある。
+ *     ゼロから書き直すと、**同じ材料から別の文章が出て、内容が静かに痩せる。**
+ *   - 手で足した一文（他社との相互参照など）は、書き直すたびに消える
+ *     （docs/EDITING.md「他社の話を1文だけ足すとき」）。
+ *   - 読者から見ても、事実が1つ変わっただけの記事が丸ごと別物になるのは不自然。
+ *
+ * 月次記事の更新版が「**前回までの分を落とさない**」（`templates/naming.md`）のと
+ * 同じ考え方を、状態の書き換えにも通す。**書き直しは差し替えであって、書き下ろしではない。**
+ *
+ * ★ 何を差し替えるべきかは記事タイプの決まり（`templates/series.md` の
+ *   「書き直し（状態が変わったとき）」）にある。ここが持つのは
+ *   「前の版を土台にする」という**どの記事タイプにも共通する部分**だけ。
+ */
+function rewriteSection(previous: { slug: string; body: string; reason?: string }): string {
+  return `# ★ この記事には前の版があります（新しく書き下ろすのではありません）
+
+すでに公開している記事 **\`${previous.slug}\`** の**更新版**です。
+${previous.reason ? `\n    食い違い: ${previous.reason}\n` : ''}
+> **あらすじも、一度調べた作品の特徴も、書き直す必要はありません。**
+> **いまの状態で読んでも違和感が出ないところだけを直して、記事を遷移させてください。**
+
+**下の「前の版の本文」を土台にします。** 段落ごとに「この文は、いまの素材で読んでも
+おかしくないか」だけを見て、おかしくない段落には**手を触れないでください。**
+
+- **作品ごとの解説はそのまま引き継ぐ。** 前の版に書いてある作品の説明は
+  調べた事実で書いてあります。同じ材料からもう一度書くと別の文章になり、
+  **内容が静かに痩せます。**「言い回しを整える」だけの書き換えもしないでください。
+- 手を入れるのは次の2つだけです。
+  1. **事実が変わったせいで嘘になっている箇所**（動詞句・固定文言・状態の列・日付）
+  2. **今回はじめて素材に入った作品**（素材の ★ 印）。ここだけ新しく書き足す
+- **表の行は落とさない。** 前の版に載っていた作品は、状態が変わっても表に残します。
+- 前の版に手で足した一文（他社との相互参照など）があれば**残す**。
+  ただし事実として誤りになっていれば直す。
+- タイトルも同じ。**見どころ（\`｜\` の後ろ）は変える理由が無ければそのまま。**
+
+★ **構成までは前の版に固定しません。** 記事タイプによっては更新版で節が増えます
+  （月次記事の「今回新たに判明した終了予定」の節など）。
+  **どういう形にするかは下の記事の仕様に従い、文章だけを引き継いでください。**
+
+---
+
+## 前の版の本文
+
+**ここから下は、いま公開されている記事の本文です。** 出力に含める前に、上の指示に従って直してください。
+
+<<<前の版ここから>>>
+${previous.body.trim()}
+<<<前の版ここまで>>>
+
+---
+`
+}
+
 /** --emit: プロンプトと素材をファイルに書き出す */
 async function emitDraft(
   system: string,
@@ -514,6 +645,11 @@ async function emitDraft(
   recipe: Recipe,
   items: ChangeEvent[],
   ctx: ArticleContext,
+  /**
+   * 前の版がある回だけ渡す。その本文を土台にさせる（`rewriteSection`）。
+   * `reason` は書き直し（`--refresh`）のときだけ付く食い違いの説明。
+   */
+  previous?: { slug: string; body: string; reason?: string },
 ): Promise<void> {
   await mkdir(DRAFT_DIR, { recursive: true })
 
@@ -543,7 +679,7 @@ async function emitDraft(
 ${shortSection ? `- 記事を書いたら、続けて**ショート動画の台本**を \`${SHORT_DRAFT_PATH}\` に書くこと（末尾の節）\n` : ''}
 ---
 
-## 役割・記事の仕様
+${previous ? `${rewriteSection(previous)}\n` : ''}## 役割・記事の仕様
 
 ${system}
 
@@ -581,7 +717,12 @@ ${shortSection ? `\n---\n\n${shortSection}\n` : ''}`
   console.log(`  2. その内容を ${RESPONSE_PATH} に保存する`)
   if (shortSection) console.log(`  2b. ショート動画の台本を ${SHORT_DRAFT_PATH} に保存する`)
   console.log('  3. npm run write -- --apply')
-  console.log('\n（このセッションなら /article で1〜3を自動化できます）')
+  // 書き直しの回は入口が違う（前の版を土台にする決まりが /refresh 側にある）
+  console.log(
+    previous
+      ? '\n（このセッションなら /refresh で1〜3を自動化できます）'
+      : '\n（このセッションなら /article で1〜3を自動化できます）',
+  )
 }
 
 /**
@@ -703,6 +844,34 @@ async function listRecipes(
     now,
     targetMonth,
   })
+
+  /*
+   * ★ **すでに公開した記事のうち、事実と食い違っているもの**（`core/stale.ts`）。
+   *   上の表は「記事が有るか無いか」しか見ないので、公開済みのシリーズ記事は
+   *   書いた翌日から一生「作成済」のまま並ぶ。ここに出さないと、
+   *   運用者がこの画面から気づける機会が無い。
+   *   一覧と書き出しは `--refresh` が受け持つので、ここでは件数と理由だけ出す。
+   */
+  const stale = await staleArticles(await loadArticleTypes(theme), events, ledger, posts, {
+    theme,
+    now,
+  })
+  if (stale.length > 0) {
+    console.log(`\n  書き直しどきの記事 ${stale.length}本（すでに公開したもの）`)
+    console.log('  ' + '-'.repeat(72))
+    for (const s of stale) {
+      console.log(
+        `  ${s.record.slug.padEnd(20)}${String(s.items.length).padStart(4)}  ${staleSummary(s)}`,
+      )
+    }
+    console.log('  ※ 書き出しは npm run write -- --refresh --emit（このセッションなら /refresh）')
+    console.log('  ※ 書き直しは差し替え。前の版の本文がプロンプトに付く（解説の段落は変えない）')
+  }
+
+  printLiveElsewhere(await liveElsewhereRows(await loadArticleTypes(theme), events, ledger, posts, {
+    theme,
+    now,
+  }))
 
   console.log('\n書き出す:  npm run write -- --type <記事> [--<区分> <値>] --emit')
   console.log('           区分は上の一覧に出ている形（--genre / --service）をそのまま使う')
@@ -887,6 +1056,216 @@ function printCoverageGaps(
   console.log(section.hint)
 }
 
+// --- 書き直し（--refresh / --register） ----------------------------------
+
+/**
+ * 「終了しました」と書いた作品に、他社の生きている観測が残っている、の一覧。
+ *
+ * ★ **書き直しの一覧とは別に出す。** 書き直しても直らないので、
+ *   同じ表に並べると「片づけたのに消えない行」になる（`core/stale.ts`）。
+ * ★ 断定の言い方をしないこと。当サイトが持っているのは変化の観測で、在庫ではない。
+ */
+function printLiveElsewhere(rows: LiveElsewhereRow[]): void {
+  if (rows.length === 0) return
+  console.log(`\n  他社に生きている観測が残っている作品 ${rows.length}件`)
+  console.log('  ' + '-'.repeat(72))
+  for (const r of rows) {
+    console.log(
+      `  ${r.slug.padEnd(20)}${r.title}\n` +
+        `      ${r.offLabel}で終了 / ${r.liveLabel}で` +
+        (r.kind === 'leaving' ? '終了予定日がまだ先' : '配信開始を観測したまま'),
+    )
+  }
+  console.log('  ※ 「他社で配信中」とは言えません（当サイトが持つのは変化の観測で、在庫ではない）。')
+  console.log('  ※ 記事で「終了しました」と言い切る前に、実際の配信状況を確かめてください。')
+}
+
+/**
+ * `--refresh`: **書き直しどきの記事を並べる。** `--emit` を足すと1本ぶん書き出す。
+ *
+ * ■ なぜ `--list` と別なのか
+ * `--list` が答えるのは「**いま何を新しく書けるか**」で、見ているのは
+ * 今月の素材と、記事ファイルが有るか無いか。**公開済みの記事は「作成済」で終わり**、
+ * そこから先は見ていない。シリーズ記事は月を名乗らないURLを書き直し続ける記事なので、
+ * 書いた翌日から一生「作成済」のまま並び、終了日が過ぎても誰も気づけなかった。
+ *
+ * ここが答えるのは「**すでに書いた記事のうち、どれが事実と食い違っているか**」。
+ * 判定は `core/stale.ts`、素材は控え（`core/article-log.ts`）から復元する。
+ *
+ * ■ 1本ずつしか書き出さない
+ * 下書きの置き場（`data/draft/`）は1本ぶんしかない。**まとめて書き出すと
+ * 最後の1本しか残らない。** かわりに「残り何本か」を必ず出して、
+ * 書き終えたらもう一度呼べばよい形にしてある（`/refresh` がこれを回す）。
+ */
+async function refreshArticles(theme: Theme, types: ArticleType[], now: Date): Promise<void> {
+  const log = await loadArticleLog()
+  if (log.length === 0) {
+    console.log(`控え（${ARTICLE_LOG_PATH}）が空です。`)
+    console.log('  記事を書けば自動で記録されます。公開済みの記事は --register で登録できます:')
+    console.log(
+      '    npm run write -- --register --type series --slug conan-movies ' +
+        '--topic "「名探偵コナン」劇場版シリーズ" --match "名探偵コナン"',
+    )
+    return
+  }
+
+  const events = await readAllEvents()
+  const ledger = await loadLedger()
+  const posts = await readPublishedPosts(POSTS_DIR)
+  const stale = await staleArticles(types, events, ledger, posts, { theme, now })
+  const live = await liveElsewhereRows(types, events, ledger, posts, { theme, now })
+
+  // 控えのうち、書き直しどきの判定にかかる記事タイプ（evergreen）の本数
+  const watched = log.filter((r) => types.find((t) => t.id === r.typeId)?.evergreen).length
+
+  if (stale.length === 0) {
+    console.log(`書き直しどきの記事はありません（控え ${log.length}本／うち見張り ${watched}本）。`)
+    printLiveElsewhere(live)
+    return
+  }
+
+  if (!flag('emit')) {
+    console.log(`書き直しどきの記事 ${stale.length}本（控え ${log.length}本／うち見張り ${watched}本）\n`)
+    console.log('  記事                  素材  理由')
+    console.log('  ' + '-'.repeat(72))
+    for (const s of stale) {
+      console.log(
+        `  ${s.record.slug.padEnd(20)}${String(s.items.length).padStart(4)}  ${staleSummary(s)}`,
+      )
+      console.log(`      ${rewriteCommand(s.record, s.type)}`)
+    }
+    console.log('\n  ※ カテゴリの食い違い（例: 見放題終了予定 → 見放題終了）がいちばん急ぎます。')
+    console.log('  ※ タイトルの動詞句・リードの固定文言・バッジがまとめて食い違っている状態です。')
+    printLiveElsewhere(live)
+    console.log('\n  上から1本ずつ書き出す:  npm run write -- --refresh --emit')
+    console.log('  （このセッションなら /refresh がまとめて回します）')
+    return
+  }
+
+  // --- --refresh --emit: 1本だけ書き出す ---
+  const picked = arg('slug')
+  const target: StaleArticle | undefined = picked
+    ? stale.find((s) => s.record.slug === picked)
+    : stale[0]
+  if (!target) {
+    throw new Error(
+      `${picked} は書き直しどきの一覧にありません。\n  一覧: npm run write -- --refresh`,
+    )
+  }
+
+  const { record, type, items } = target
+  const variant = record.variantKey
+    ? type.variants?.find((v) => v.key === record.variantKey)
+    : undefined
+  const ctx = {
+    theme,
+    now,
+    targetMonth: record.targetMonth,
+    variant,
+    flags: record.flags,
+  }
+
+  console.log(`テーマ: ${theme.label}  書き直し: ${record.slug}（${type.id}）`)
+  console.log(`理由: ${staleSummary(target)}`)
+  console.log(`素材: ${events.length}件中 ${items.length}件を選択\n`)
+
+  const { system, prompt } = type.buildPrompt(items, ctx)
+  /*
+   * ★ **前の版の本文を渡す。** 書き直しは差し替えであって書き下ろしではない
+   *   （`rewriteSection` の説明）。渡さないと、状態が1つ変わっただけの記事が
+   *   毎回ゼロから書き直され、調べて書いた解説が別の文章に入れ替わる。
+   */
+  const previous = {
+    slug: record.slug,
+    body: posts.find((p) => p.slug === record.slug)!.body,
+    reason: staleSummary(target),
+  }
+  await emitDraft(system, prompt, { type, variant, flags: record.flags }, items, ctx, previous)
+
+  const rest = stale.filter((s) => s !== target)
+  if (rest.length > 0) {
+    console.log(`\nこのあと書き直しどきの記事があと ${rest.length}本あります:`)
+    for (const s of rest) console.log(`  ${s.record.slug.padEnd(20)}${staleSummary(s)}`)
+    console.log('  1本書き終えて --apply したら、もう一度 npm run write -- --refresh --emit')
+  }
+}
+
+/**
+ * `--register`: **公開済みの記事を、あとから控えに登録する。**
+ *
+ * ■ 何のためにあるか
+ * 控え（`core/article-log.ts`）は 2026-09-02 に作ったので、
+ * それ以前に書いた記事は1本も入っていない。`--topic` と `--match` は
+ * 記事のどこにも残らない人の判断なので、**登録は人にしかできない。**
+ *
+ * ★ 記事タイプの必須フラグはここでも必ず求める。半端な控えを作ると、
+ *   書き直しのときに「素材0件」で止まる記事が並ぶだけになる。
+ * ★ カテゴリと基準日は**公開されている記事から読む**（引数で受け取らない）。
+ *   人が値を打ち込む形にすると、控えと記事が食い違ったまま登録できてしまう。
+ */
+async function registerArticle(
+  theme: Theme,
+  types: ArticleType[],
+  targetMonth: string,
+  now: Date,
+): Promise<void> {
+  /*
+   * ★ `--type` の省略を許さない。`pickRecipe` は省略時に**先頭の記事タイプ**を選ぶが、
+   *   書き出しと違って登録は画面に記事が出てこないので、取り違えたことに気づけない。
+   *   間違った記事タイプで控えに入ると、以後ずっと素材0件の記事として扱われる。
+   */
+  if (!arg('type')) {
+    throw new Error(
+      '--register には --type が要ります（省略できません）。\n' +
+        `  有効: ${types.map((t) => t.id).join(', ')}\n` +
+        '  例: npm run write -- --register --type series --slug conan-movies ' +
+        '--topic "「名探偵コナン」劇場版シリーズ" --match "名探偵コナン"',
+    )
+  }
+  const recipe = pickRecipe(types)
+  const { type } = recipe
+  const ctx = { theme, now, targetMonth, variant: recipe.variant, flags: recipe.flags }
+  const slug = type.slug(ctx)
+
+  const post = (await readPublishedPosts(POSTS_DIR)).find((p) => p.slug === slug)
+  if (!post) {
+    throw new Error(
+      `公開済みの記事が見つかりません: ${join(POSTS_DIR, `${slug}.md`)}\n` +
+        '  --register は**すでにある記事**を控えに入れるためのものです。\n' +
+        '  これから書くなら --emit を使ってください（書き出したときに自動で記録されます）。',
+    )
+  }
+
+  /*
+   * ★ 登録する前に素材を数えて見せる。`--match` の書き間違いはここでしか気づけない
+   *   （控えに入ってしまえば、以後は黙って素材0件の記事として扱われる）。
+   */
+  const events = await readAllEvents()
+  const ledger = await loadLedger()
+  const items = type.select(events, ledger, ctx)
+
+  await recordArticle({
+    slug,
+    typeId: type.id,
+    variantKey: recipe.variant?.key,
+    targetMonth,
+    flags: recipe.flags ? { ...recipe.flags } : undefined,
+    category: post.category,
+    writtenAt: post.dataAsOf || formatIsoDate(now.toISOString(), theme.utc_offset_minutes),
+  })
+
+  console.log(`控えに登録しました: ${slug}（${type.id}）`)
+  console.log(`  カテゴリ  ${post.category}（${categoryLabel(post.category)}）`)
+  console.log(`  基準日    ${post.dataAsOf || '（記事から読めず、本日で記録）'}`)
+  console.log(`  素材      ${items.length}件`)
+  if (items.length === 0) {
+    console.log('\n  [警告] 素材が0件です。--match が記事の作品に当たっていない可能性があります。')
+    console.log('         正しい値でもう一度 --register すると上書きできます。')
+  }
+  console.log(`\n  控え: ${ARTICLE_LOG_PATH}`)
+  console.log('  書き直しどきかを見る:  npm run write -- --refresh')
+}
+
 /**
  * 記事タイプが宣言したフラグ（`ArticleType.flags`）を CLI から集める。
  *
@@ -902,6 +1281,27 @@ function collectFlags(type: ArticleType): Record<string, string> {
   return out
 }
 
+/**
+ * その記事タイプを1行で走らせるコマンド。**すでに渡された値はそのまま埋める。**
+ *
+ * ★ 埋めるのが要点。「フラグの一覧」だけを出すと、運用者は自分が打った長い主題を
+ *   もう一度書き写すことになる。原因が「1行に収まっていなかった」ことである以上、
+ *   **貼り直せる1行を返すのがいちばん短い直し方**になる（`assertNoLineContinuation`）。
+ */
+function exampleCommand(
+  type: ArticleType,
+  flags: Readonly<Record<string, string>>,
+  tail = '--emit',
+): string {
+  const parts = ['npm run write --', `--type ${type.id}`]
+  for (const f of type.flags ?? []) {
+    const v = flags[f.name]
+    if (v === undefined && !f.required) continue
+    parts.push(`--${f.name} ${v === undefined ? `<${f.name}>` : shellValue(v)}`)
+  }
+  return [...parts, tail].join(' ')
+}
+
 /** 必須フラグが揃っているか。揃っていなければ、何を渡せばよいかを見せて落とす。 */
 function assertRequiredFlags(type: ArticleType, flags: Readonly<Record<string, string>>): void {
   const missing = (type.flags ?? []).filter((f) => f.required && !flags[f.name])
@@ -911,7 +1311,13 @@ function assertRequiredFlags(type: ArticleType, flags: Readonly<Record<string, s
     .join('\n')
   throw new Error(
     `記事タイプ ${type.id} には ${missing.map((f) => `--${f.name}`).join(' / ')} が必要です。\n` +
-      `  この記事タイプが受け取るフラグ:\n${all}`,
+      `  この記事タイプが受け取るフラグ:\n${all}\n` +
+      /*
+       * ★ 受け取った値を埋めた1行を必ず出す。渡し忘れの大半は
+       *   「複数行に折り返して PowerShell に貼った」ことが原因で、
+       *   フラグの一覧だけでは同じ貼り方をもう一度されてしまう。
+       */
+      `\n  そのまま貼れる形（**1行**。<…> だけ埋める）:\n    ${exampleCommand(type, flags)}`,
   )
 }
 
@@ -956,6 +1362,9 @@ function pickRecipe(types: ArticleType[]): Recipe {
 }
 
 async function main(): Promise<void> {
+  // ★ 何よりも先に見る。ここで落ちないと、原因ではなく症状（フラグ不足）が表に出る。
+  assertNoLineContinuation()
+
   const theme = await loadTheme()
 
   // --apply は素材を context.json から復元するので、選択処理を行わない
@@ -972,6 +1381,14 @@ async function main(): Promise<void> {
 
   // 月を明示したときは前月の取りこぼしを出さない（見たい月を運用者が選んでいる）
   if (flag('list')) return await listRecipes(theme, targetMonth, now, arg('month') !== undefined)
+
+  /*
+   * ★ `--refresh` は `--emit` より先に見る。どちらも書き出す動きだが、
+   *   `--refresh --emit` が書き出すのは**控えから復元した記事**で、
+   *   下の `pickRecipe` の経路（新しく書く記事）とは素材の出どころが違う。
+   */
+  if (flag('refresh')) return await refreshArticles(theme, types, now)
+  if (flag('register')) return await registerArticle(theme, types, targetMonth, now)
 
   const recipe = pickRecipe(types)
   const { type } = recipe
@@ -1007,7 +1424,32 @@ async function main(): Promise<void> {
   }
 
   if (flag('emit')) {
-    await emitDraft(system, prompt, recipe, items, ctx)
+    /*
+     * ★ **同じスラッグの記事がすでにあれば、その本文を土台として渡す**（2026-09-02 追加）。
+     *
+     *   月次記事は同じ月・同じ軸なら書き直す決まり（`templates/naming.md`）だが、
+     *   前の版の本文は**一度も渡していなかった**。渡していたのは
+     *   `previousAsOf()` の日付だけで、素材に ★ 印を付けるためのもの。
+     *   その結果、更新版は毎回ゼロから書き起こされ、
+     *   **前の版で調べて書いた作品ごとの解説が、更新のたびに別の文章に入れ替わっていた。**
+     *
+     *   下書きに載っている作品の説明は `npm run research` の結果で書かれている。
+     *   同じ材料からもう一度書いても良くはならないので、引き継いで
+     *   **増えた作品ぶんだけ書き足す**形にする（`rewriteSection`）。
+     *
+     * ★ 下書き（`draft: true`）は土台にしない。読者に届いていない本文なので、
+     *   それを引き継ぐと「前の版」の意味が変わる。
+     */
+    const posts = await readPublishedPosts(POSTS_DIR)
+    const published = posts.find((p) => p.slug === type.slug(ctx) && !p.draft)
+    await emitDraft(
+      system,
+      prompt,
+      recipe,
+      items,
+      ctx,
+      published ? { slug: published.slug, body: published.body } : undefined,
+    )
     /*
      * ★ **見放題終了の記事を書き出した直後に、横断シリーズを知らせる。**
      *   ここで出すのは、月次記事を書いている最中に気づけるようにするため。
@@ -1019,11 +1461,7 @@ async function main(): Promise<void> {
      */
     const category = type.categoryOf?.(ctx, items) ?? type.category
     if (type.id !== 'series' && (category === 'leaving' || category === 'ended')) {
-      await reportSeriesCandidates(types, events, ledger, await readPublishedPosts(POSTS_DIR), {
-        theme,
-        now,
-        targetMonth,
-      })
+      await reportSeriesCandidates(types, events, ledger, posts, { theme, now, targetMonth })
     }
     return
   }

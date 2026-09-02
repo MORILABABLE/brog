@@ -5,8 +5,7 @@
  * **決まった軸で毎月出す**ものなのに対して、この記事タイプは
  * **書きたい主題と時期をそのつど人が決めて出す**。
  *
- *   npm run write -- --type special --kind expiring \
- *     --topic "「007」シリーズ" --slug 007-netflix --match "007|ジェームズ・ボンド" --emit
+ *   npm run write -- --type special --kind expiring --topic "「007」シリーズ" --slug 007-netflix --match "007|ジェームズ・ボンド" --emit
  *
  * ■ それでもテンプレ通りに作る
  * 「特報だから自由に書く」にすると、月次記事と文体も禁止事項も揃わなくなる。
@@ -206,8 +205,7 @@ function kindOf(ctx: ArticleContext): KindTraits {
  * 1社ぶんが80件を超える。1本にまとめると読者は自分の観たいものに辿り着けない。
  * ジャンル別記事（`arrivals`）と**同じ3区分**で切って、サービス×ジャンルで出す。
  *
- *   npm run write -- --type special --kind upcoming --service prime-video --genre anime \
- *     --topic "アニメ" --slug prime-video-anime --month 2026-09 --emit
+ *   npm run write -- --type special --kind upcoming --service prime-video --genre anime --topic "アニメ" --slug prime-video-anime --month 2026-09 --emit
  *
  * ★ 区分を独自に増やさないこと。ジャンルの呼び方がサイト内で2種類になる。
  */

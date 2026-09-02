@@ -22,6 +22,8 @@ import type { Theme } from '../theme.ts'
 import type { ChangeEvent, ChangeKind } from '../sources/types.ts'
 import { daysUntil, formatIsoDate, formatMonthDay } from './datetime.ts'
 import type { UsageSnapshot } from './api-usage.ts'
+import { rewriteCommand } from './article-log.ts'
+import { staleSummary, type LiveElsewhereRow, type StaleArticle } from './stale.ts'
 
 /** 表に出す変化の種類と、その見出し。並び順もこの通りにする。 */
 const KIND_LABELS: Record<ChangeKind, string> = {
@@ -71,6 +73,16 @@ export interface Digest {
    * **収集の差分が0でも送る**かどうかを、呼び出し側がこれで決める。
    */
   startsToday: number
+  /**
+   * 書き直しどきの記事の本数。**これも収集の差分が0でも送る理由になる**
+   * （終了日が過ぎるのは収集の差分に出ない出来事なので、差分で待つと永久に届かない）。
+   */
+  staleCount: number
+  /**
+   * 他社に生きている観測が残っている作品の件数。
+   * **これも収集の差分が0でも送る理由になる**（食い違いは差分に出てこない）。
+   */
+  liveCount: number
 }
 
 export interface DigestOptions {
@@ -82,6 +94,19 @@ export interface DigestOptions {
    * 渡さなければその欄は出ない。
    */
   stock?: ChangeEvent[]
+  /**
+   * 書き直しどきの記事（`core/stale.ts`）。渡さなければその欄は出ない。
+   *
+   * ★ 判定そのものはここでは行わない。記事タイプと控えを読む処理は
+   *   このファイルの担当（「収集結果を1通に組み立てる」）の外にある。
+   *   呼び出し側（`cli/notify.ts`）が計算して渡す。
+   */
+  stale?: StaleArticle[]
+  /**
+   * 「終了しました」と書いた作品に、他社の生きている観測が残っているもの
+   * （`core/stale.ts` の `liveElsewhereRows()`）。渡さなければその欄は出ない。
+   */
+  live?: LiveElsewhereRow[]
   usage?: UsageSnapshot
   now?: Date
 }
@@ -111,12 +136,19 @@ export function buildDigest(events: ChangeEvent[], opts: DigestOptions): Digest 
   const soon = pickSoon(opts.stock ?? [], tz, now)
   const startsToday = soon.filter((e) => daysUntil(e.at!, tz, now) === 0).length
 
+  const stale = opts.stale ?? []
+  const live = opts.live ?? []
+
   const counts = [
     events.length ? `新規${events.length}件` : '',
     expiring.length ? `終了予定${expiring.length}件` : '',
     upcoming.length ? `開始予定${upcoming.length}件` : '',
     // 件名で分かるようにする。「今日から見られる」は通知を開く動機が他と違う。
     startsToday ? `本日開始${startsToday}件` : '',
+    // 書き直しは**公開済みの記事の話**で、他の欄（これから書く記事の素材）と用が違う
+    stale.length ? `書き直し${stale.length}本` : '',
+    // 件名に出す。**記事の誤りになりうる**ので、他の欄より開く動機が強い
+    live.length ? `要確認${live.length}件` : '',
   ].filter(Boolean)
   const subject = `[収集] ${when}${counts.length ? ` ${counts.join(' / ')}` : ''}`
 
@@ -128,6 +160,17 @@ export function buildDigest(events: ChangeEvent[], opts: DigestOptions): Digest 
     '',
   )
 
+  /*
+   * ★ **いちばん上に出す。** 他の欄は「これから書く記事の素材」だが、
+   *   ここだけは**すでに公開している記事が、いま読者に誤った事実を見せている**話。
+   *   下に置くと、件数の多い終了予定の表に押し流されて読まれない。
+   */
+  /*
+   * ★ **書き直しより上。** 書き直しは手順が決まっているが、こちらは
+   *   「公開中の記事が誤っているかもしれない」という話で、判断が要る。
+   */
+  if (live.length) lines.push(...liveSection(live))
+  if (stale.length) lines.push(...staleSection(stale))
   if (events.length) lines.push(...breakdownSection(events, label))
   if (soon.length) lines.push(...soonSection(soon, label, tz, now))
   if (expiring.length) lines.push(...expiringSection(expiring, label, tz, now))
@@ -144,10 +187,92 @@ export function buildDigest(events: ChangeEvent[], opts: DigestOptions): Digest 
   return {
     subject,
     body: lines.join('\n'),
-    // 差分が無くても「本日から配信開始」があるなら知らせることがある。
-    isEmpty: events.length === 0 && startsToday === 0,
+    // 差分が無くても「本日から配信開始」「書き直しどき」「要確認」があるなら知らせる。
+    isEmpty: events.length === 0 && startsToday === 0 && stale.length === 0 && live.length === 0,
     startsToday,
+    staleCount: stale.length,
+    liveCount: live.length,
   }
+}
+
+/**
+ * **「終了しました」と書いた作品が、他社では生きている観測のまま。**
+ *
+ * ■ なぜ通知に載せるのか（2026-09-02 追加）
+ * シリーズ記事が `ended` に切り替わる判定は、**その記事が選んだ素材だけ**を見ている。
+ * 他社での配信開始は素材に入らないので、
+ * 「Netflixで終了、しかしAmazon Prime Videoでは配信開始を観測したまま」の作品があっても
+ * 記事は素材の範囲で「終了しました」と書く。**公開後に誤りになりうる唯一の形。**
+ *
+ * ■ 断定しない
+ * 当サイトが持っているのは変化の観測であって在庫ではない
+ * （`site/src/lib/works.ts` 冒頭の「絶対に守ること」）。
+ * `new` を観測して `removed` を観測していないことは、いま観られることを意味しない。
+ * **ここが渡すのは「確かめる材料」まで。** 文面でも言い切らないこと。
+ *
+ * ■ 書き直しの欄と分ける
+ * 書き直しても直らない（記事の素材が変わるわけではない）。
+ * 同じ表に混ぜると、片づけたのに消えない行になる（`core/stale.ts`）。
+ */
+function liveSection(live: LiveElsewhereRow[]): string[] {
+  const out = ['## 要確認: 「終了しました」と書いた作品が、他社では生きています', '']
+  out.push(
+    `公開中の記事に **${live.length}件**、当サイトのデータと食い違う作品があります。`,
+    '',
+    '| 記事 | 作品 | 終了と書いた先 | 生きている観測 |',
+    '|---|---|---|---|',
+  )
+  for (const r of live) {
+    const how = r.kind === 'leaving' ? '終了予定日がまだ先' : '配信開始を観測したまま'
+    out.push(`| \`${r.slug}\` | ${r.title} | ${r.offLabel} | ${r.liveLabel}（${how}） |`)
+  }
+  out.push(
+    '',
+    '**「他社で配信中」とは言えません。** 当サイトが持っているのは変化の観測であって、',
+    'いまの在庫ではありません（Disney+ と Apple TV+ は終了予定を返さず、終了の観測も遅れて出ます）。',
+    '',
+    '実際の配信状況を確かめて、記事が「終了しました」と言い切ってよいかを判断してください。',
+    '',
+  )
+  return out
+}
+
+/**
+ * **公開済みの記事が、いまのデータと食い違っている。**
+ *
+ * ■ なぜ通知に載せるのか（2026-09-02 追加）
+ * 終了日が過ぎるのは**収集の差分に一度も出てこない出来事**。
+ * 予告した日に何かが届くわけではなく、ただ過ぎるだけなので、
+ * 差分を待っていると「終了予定の記事が終了済みになった」瞬間は永久に届かない。
+ *
+ * シリーズ記事は月を名乗らないURLを書き直し続ける記事なので、
+ * 書き直すまで**タイトルもバッジも表の全行も「終了予定」と言い続ける。**
+ * 気づける場所を毎日走る通知に置いておく（判定は `core/stale.ts`）。
+ *
+ * ■ コマンドまで載せる
+ * 配信開始予定の欄（`upcomingSection`）と同じ考え方。
+ * **その場で打てる1行**が無いと、通知を見てから調べ直すことになる。
+ * `--topic` と `--match` は人が決めた値で記事のどこにも残らないので、
+ * 控え（`core/article-log.ts`）から組み立てて出す。
+ */
+function staleSection(stale: StaleArticle[]): string[] {
+  const out = ['## 書き直しどきの記事', '']
+  out.push(
+    `公開済みの記事 **${stale.length}本**が、いまのデータと食い違っています。`,
+    '月を名乗らない記事（保存版）は、書き直すまで古い事実を言い続けます。',
+    '',
+    '| 記事 | 食い違い | 素材 |',
+    '|---|---|--:|',
+  )
+  for (const s of stale) {
+    out.push(`| \`${s.record.slug}\` | ${staleSummary(s)} | ${s.items.length}件 |`)
+  }
+  out.push('', '**書き直すコマンド**（1行ずつ。`--emit` のあとは記事を書いて `--apply`）', '')
+  out.push('```')
+  for (const s of stale) out.push(rewriteCommand(s.record, s.type))
+  out.push('```')
+  out.push('', 'まとめて回すなら `npm run write -- --refresh`（対話セッションなら `/refresh`）。', '')
+  return out
 }
 
 /**

@@ -1,9 +1,7 @@
 /**
  * 記事タイプ: シリーズ（主題別・**月を名乗らない唯一の記事**）
  *
- *   npm run write -- --type series \
- *     --topic "「名探偵コナン」劇場版シリーズ" --slug conan-movies \
- *     --match "名探偵コナン" --emit
+ *   npm run write -- --type series --topic "「名探偵コナン」劇場版シリーズ" --slug conan-movies --match "名探偵コナン" --emit
  *
  * ■ 何のための記事か
  * 実測したサジェストで、読者は「見放題」を単独では打たない。
@@ -55,6 +53,8 @@ import {
   type Category,
 } from '../../../pipeline/core/article.ts'
 import { buildSearchLinks } from '../../../pipeline/core/search-links.ts'
+import { liveElsewhere } from '../../../pipeline/core/cross-service.ts'
+import { readAllEventsSync } from '../../../pipeline/core/events.ts'
 import { formatMonthDay } from '../../../pipeline/core/datetime.ts'
 import { themeFile } from '../../../pipeline/theme.ts'
 import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
@@ -374,6 +374,15 @@ export const seriesArticle: ArticleType = {
   // 既定値。実際には素材から決まる（categoryOf）
   category: 'leaving',
   description: 'シリーズ（月を名乗らない保存版。--topic / --slug / --match が必要）',
+
+  /*
+   * ★ **この記事タイプだけが書き直しどきを持つ。**
+   *   月を名乗らないURLを何か月も書き直すので、終了予定だった作品が
+   *   終了済みになった時点で、書き直すまで記事だけが古い事実を言い続ける。
+   *   宣言しておくと `npm run write -- --refresh` と毎日の通知が拾う
+   *   （`pipeline/core/stale.ts`）。
+   */
+  evergreen: true,
 
   minItems: MIN_ITEMS,
 
@@ -818,6 +827,21 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       .some((e) => body.includes(e.work.localizedTitle ?? e.work.title))
   },
 
+  /**
+   * ★ **題の正規化で突き合わせる**（`ArticleType.sameWork` の説明）。
+   *   同じ映画がサービスごとに違うIDで入っているので、既定の `work.id` 一致では
+   *   「Netflixで終わったが U-NEXT にはまだある」を1件も拾えない。
+   *
+   * ★ 使い道は**警告を出すためだけ**（`core/cross-service.ts`）。
+   *   表の行をまとめる `mentions` と同じ緩さの判定なので、
+   *   **これを根拠に「配信中」と書かせてはいけない。**
+   *   復帰（`revivals()`）が `work.id` のままなのは、あちらが
+   *   記事の状態そのものを動かすため。**判定の重さで使い分けている。**
+   */
+  sameWork(a, b) {
+    return workKey(a.work.localizedTitle ?? a.work.title) === workKey(b.work.localizedTitle ?? b.work.title)
+  },
+
   verifyTitle(title, ctx) {
     // ★ タイトルの検査は素材を受け取らない。素材から決まる動詞句を出せないので、
     //   **どちらの動詞句でも通す**形にして、取り違えは本文の verify で見る。
@@ -873,6 +897,8 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     const stillOn = count['終了予定']
     const alreadyOff = count['終了済み']
     const backOn = count['見放題に復帰']
+    // 他社に生きている観測を知らせるときのサービス名（下の liveElsewhere）
+    const labelOf = serviceLabels(ctx)
 
     /*
      * --- 主題から離れていないか ---
@@ -914,6 +940,32 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       }
       if (/終了します|終了予定です/.test(md)) {
         err('終了を未来形で書いています。全作品が終了済みなので「終了しました」と書きます。')
+      }
+
+      /*
+       * ★ **「終了しました」と書く直前に、他社に生きている観測が無いかを見る。**
+       *
+       *   この記事の素材は主題に当たる観測だけで、**他社での配信開始は入らない**
+       *   （`select()` は expiring / removed / 復帰しか残さない）。
+       *   そのため「Netflixで終了、しかしAmazon Prime Videoでは配信開始を観測したまま」
+       *   という作品があっても、記事は素材の範囲で「終了しました」と書いてしまう。
+       *
+       * ★ **warn。公開は止めない。** 観測しているのは変化であって在庫ではないので、
+       *   「他社で配信中」とは言い切れない（`core/cross-service.ts` の説明）。
+       *   止めると、正しく終了した記事まで出せなくなる。
+       *   運用者に「確かめる材料」を渡すところまでが役目。
+       */
+      for (const hit of liveElsewhere(items, readAllEventsSync(), ctx.now, this.sameWork)) {
+        const title = hit.ended.work.localizedTitle ?? hit.ended.work.title
+        const where = labelOf.get(hit.live.service) ?? hit.live.service
+        const when = hit.live.at ? formatMonthDay(hit.live.at, ctx.theme.utc_offset_minutes) : '日付なし'
+        warn(
+          `「${clip(title, 24)}」は ${where} で` +
+            `${hit.kind === 'leaving' ? `${when}まで見放題の予定` : `${when}に配信開始を観測`}` +
+            'したまま、終了の観測がありません。**この記事は全作終了として書かれています。**\n' +
+            '      「配信中」とは断定できません（当サイトが持っているのは変化の観測で、在庫ではない）が、' +
+            '本文で言い切る前に確かめてください。',
+        )
       }
     }
     if (alreadyOff === 0 && backOn === 0 && /終了しました/.test(md)) {

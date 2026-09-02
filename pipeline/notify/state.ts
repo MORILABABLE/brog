@@ -30,10 +30,27 @@ export interface NotifyState {
    * これが無いと、collect と announce の両方から呼ばれる日に同じ Issue が2本立つ。
    */
   startsTodayDate: string
+  /**
+   * 最後に知らせた「書き直しどきの記事」の顔ぶれ（スラッグと理由をつないだ印）。
+   *
+   * ■ なぜ日付ではなく顔ぶれで持つか（2026-09-02 追加）
+   * 「本日から配信開始」は**その日だけ**の知らせなので日付でよい。
+   * 書き直しどきは違って、**書き直すまで毎日そのまま残る。**
+   * 日付で持つと、運用者が書き直すまで毎日 Issue が立ち続ける。
+   *
+   * 顔ぶれが変わったとき（新しく1本古くなった／1本書き直した）にだけ送れば、
+   * **知らせるべき変化があった日にだけ届く。** 鳴りっぱなしにはならない。
+   */
+  staleSignature: string
   updatedAt: string
 }
 
-const EMPTY: NotifyState = { lastCollectedAt: '', startsTodayDate: '', updatedAt: '' }
+const EMPTY: NotifyState = {
+  lastCollectedAt: '',
+  startsTodayDate: '',
+  staleSignature: '',
+  updatedAt: '',
+}
 
 export async function loadNotifyState(): Promise<NotifyState> {
   try {
@@ -49,10 +66,13 @@ export async function saveNotifyState(
   lastCollectedAt: string,
   /** 「本日から配信開始」を知らせた日。持ち越すときは呼び出し側が前回の値を渡す。 */
   startsTodayDate = '',
+  /** 知らせた「書き直しどきの記事」の顔ぶれ。同上。 */
+  staleSignature = '',
 ): Promise<void> {
   const body: NotifyState = {
     lastCollectedAt,
     startsTodayDate,
+    staleSignature,
     updatedAt: new Date().toISOString(),
   }
   await mkdir(dirname(NOTIFY_STATE_PATH), { recursive: true })

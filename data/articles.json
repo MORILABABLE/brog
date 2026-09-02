@@ -1,0 +1,53 @@
+{
+  "articles": [
+    {
+      "slug": "conan-movies",
+      "typeId": "series",
+      "targetMonth": "2026-09",
+      "flags": {
+        "topic": "「名探偵コナン」劇場版シリーズ",
+        "slug": "conan-movies",
+        "match": "名探偵コナン"
+      },
+      "category": "ended",
+      "writtenAt": "2026-09-02"
+    },
+    {
+      "slug": "harry-potter",
+      "typeId": "series",
+      "targetMonth": "2026-09",
+      "flags": {
+        "topic": "「ハリー・ポッター」シリーズ",
+        "slug": "harry-potter",
+        "match": "ハリー・ポッター|ファンタスティック・ビースト"
+      },
+      "category": "leaving",
+      "writtenAt": "2026-09-01"
+    },
+    {
+      "slug": "transformers",
+      "typeId": "series",
+      "targetMonth": "2026-09",
+      "flags": {
+        "topic": "「トランスフォーマー」実写映画シリーズ",
+        "slug": "transformers",
+        "match": "トランスフォーマー"
+      },
+      "category": "ended",
+      "writtenAt": "2026-09-02"
+    },
+    {
+      "slug": "ultraman",
+      "typeId": "series",
+      "targetMonth": "2026-09",
+      "flags": {
+        "topic": "「ウルトラマン」シリーズ",
+        "slug": "ultraman",
+        "match": "ウルトラマン"
+      },
+      "category": "ended",
+      "writtenAt": "2026-09-02"
+    }
+  ],
+  "updatedAt": "2026-09-02T12:53:50.516Z"
+}

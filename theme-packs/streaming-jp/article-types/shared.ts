@@ -621,9 +621,23 @@ export function dateSections(md: string): DateSection[] {
   return sections
 }
 
-/** Markdown のリンク記法を取り除く。URL の半角括弧を誤検出しないため。 */
+/**
+ * Markdown のリンク記法を取り除く。URL の半角括弧を誤検出しないため。
+ *
+ * ★ **画像をリンクで包んだ形を先に落とす**（2026-09-02 追加）。
+ *   セクション画像は `[![説明](/sections/…webp)](リンク先)` の形で入る
+ *   （`site/scripts/make-sections.mjs`）。先に落とさないと、内側だけが消えて
+ *   `](https://www.amazon.co.jp/s?k=…)` が本文に残り、URLの `? ( ) !` が
+ *   「地の文の半角記号」として毎回警告になる。
+ *
+ *   書き直し（`npm run write -- --refresh`）は**画像が入ったあとの本文**を
+ *   もう一度検査に通すので、ここを直さないと毎回この警告が出続ける。
+ */
 export function stripLinks(md: string): string {
-  return md.replace(/\[[^\]]*\]\([^)]*\)/g, '')
+  return md
+    .replace(/\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)/g, '')
+    // 画像単体（`![説明](URL)`）とふつうのリンク
+    .replace(/!?\[[^\]]*\]\([^)]*\)/g, '')
 }
 
 /**

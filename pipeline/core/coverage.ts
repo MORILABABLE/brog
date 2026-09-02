@@ -53,6 +53,15 @@ import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { ChangeEvent } from '../sources/types.ts'
 
+/**
+ * 公開済み記事の置き場。
+ *
+ * ★ `readPublishedPosts()` は引数でディレクトリを受け取る（この層は場所を決めない）。
+ *   ここに定数を置いてあるのは、**呼び出し側が同じ文字列を書き写さないため**だけ。
+ *   書き写すと、片方だけ直したときに「記事が1本も無い」と静かに判定される。
+ */
+export const POSTS_DIR = join('site', 'src', 'content', 'posts')
+
 /** 公開済み記事1本ぶん。突き合わせに使うのは本文とカテゴリだけ。 */
 export interface PublishedPost {
   slug: string
@@ -62,6 +71,14 @@ export interface PublishedPost {
   tags: string[]
   /** frontmatter を除いた本文 */
   body: string
+  /**
+   * frontmatter の `dataAsOf`（`YYYY-MM-DD`）。取れなければ空文字。
+   *
+   * ★ **記事がいつのデータで書かれたか。** 書き直しどきの判定（`core/stale.ts`）が
+   *   「この記事を書いたあとに期日が過ぎた作品」を数えるのに要る。
+   *   `pubDate` ではないのは、記事の日付ではなく**素材の基準日**が知りたいため。
+   */
+  dataAsOf: string
   /** 下書き（`draft: true`）はまだ読者に届いていないので、載っていると数えない */
   draft: boolean
 }
@@ -112,6 +129,8 @@ export async function readPublishedPosts(dir: string): Promise<PublishedPost[]> 
         .map((t) => t.trim().replace(/^['"]|['"]$/g, ''))
         .filter(Boolean),
       body: m?.[2] ?? raw,
+      // 引用符の有無はどちらもありうる（`buildMarkdown` は裸で書く）
+      dataAsOf: front.match(/^dataAsOf:\s*['"]?(\d{4}-\d{2}-\d{2})/m)?.[1] ?? '',
       draft: /^draft:\s*true\s*$/m.test(front),
     })
   }
