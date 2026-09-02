@@ -1,7 +1,18 @@
 {
   "note": "告知の邦題から特定した作品。npm run collect:announce が書く。手で編集しない（手で決めたいものは data/announcement-pins.json）。",
-  "updatedAt": "2026-08-30T22:14:06.154Z",
+  "updatedAt": "2026-09-02T22:09:17.597Z",
   "works": {
+    "netflix|Blippi|": {
+      "title": "Blippi",
+      "imdbId": "tt6594882",
+      "checkedAt": "2026-09-02T22:09:17.356Z",
+      "apiShowId": "24056"
+    },
+    "netflix|Instadocs: エアフォースワンを\"おとり\"に|": {
+      "title": "Instadocs: エアフォースワンを\"おとり\"に",
+      "imdbId": null,
+      "checkedAt": "2026-09-02T22:09:17.357Z"
+    },
     "netflix|Jared Freid: The Family Plan|": {
       "title": "Jared Freid: The Family Plan",
       "imdbId": null,
