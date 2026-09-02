@@ -302,9 +302,14 @@ export const AFFILIATE = {
   amazonTag: import.meta.env.PUBLIC_AMAZON_TAG ?? '',
   /**
    * バリューコマース LinkSwitch の vc_pid。
-   * これを入れると、本文の U-NEXT / Hulu などの**通常リンクが
-   * ブラウザ側で自動的にアフィリエイトリンクに変換される**。
+   * これを入れると、本文の**通常リンクがブラウザ側で自動的に
+   * アフィリエイトリンクに変換される**。
    * 記事のURLを書き換える必要がないので、自動生成した記事にそのまま効く。
+   *
+   * ★ 変換されるのは**提携済みの広告主のリンクだけ**。
+   *   2026-09-02 時点で U-NEXT・Hulu はVCの広告主一覧に無く、
+   *   タグは動いていても成果は出ない（docs/AFFILIATE.md 3-3）。
+   *   提携が通れば、その時点からコード変更なしで成果対象になる。
    */
   linkSwitchPid: import.meta.env.PUBLIC_VC_LINKSWITCH_PID ?? '',
 } as const

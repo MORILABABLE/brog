@@ -11,6 +11,13 @@ import { AFFILIATE } from '../config'
  * LinkSwitch はブラウザ側でそれを自動的にアフィリエイトリンクへ変換する。
  * **記事本文を1文字も書き換えずに成果計測できる**のが採用理由。
  *
+ * ■ 変換されるのは「提携済みの広告主」のリンクだけ
+ * タグを入れれば全リンクが成果になるわけではない。
+ * **2026-09-02 時点で U-NEXT・Hulu はバリューコマースの広告主一覧に無い**ので、
+ * このタグは動いていても、その2社のリンクは1円も生まない。
+ * 提携が通れば、**このファイルもデプロイも触らずに**その時点から成果対象になる。
+ * 経緯は docs/AFFILIATE.md の 3-3。
+ *
  * ■ 設定していなければ何も出さない
  * PUBLIC_VC_LINKSWITCH_PID が空ならこのタグは描画されない。
  * サイトはJSゼロのまま動く。
@@ -35,9 +42,25 @@ const pid = AFFILIATE.linkSwitchPid
           グローバルを読む vcdal.js から見えなくなる。
           タグの読み込みだけは成功するので、
           「入れたのに成果が出ない」という気づきにくい壊れ方をする。
+
+        ★ 開発機とプレビュー配信では vc_pid を立てない（＝変換させない）。
+          バリューコマースに登録してあるのは mihoudairader.com だけで、
+          **登録していないドメインにタグを貼るのは規約違反**にあたる。
+          自分で開いた localhost のリンクを踏むと自己クリックにもなる。
+          vcdal.js は vc_pid が無ければ何もしないので、読み込みは残してよい。
+
+          除外の形は同じ BaseLayout の GA と揃えてある（**除外リスト方式**）。
+          「本番だけ有効」と書く方式にしないのは、ドメインを増やしたときに
+          収益側が黙って止まるため。増えて困るのは計測ではなく収益のほう。
+            localhost / 127.0.0.1 / [::1] … npm run dev, astro preview
+            *.pages.dev                    … Cloudflare Pages のプレビュー配信
       */}
       <script is:inline define:vars={{ pid }}>
-        window.vc_pid = pid
+        if (
+          !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) &&
+          !location.hostname.endsWith('.pages.dev')
+        )
+          window.vc_pid = pid
       </script>
       <script is:inline async src="//aml.valuecommerce.com/vcdal.js"></script>
     </>

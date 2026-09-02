@@ -317,8 +317,27 @@ git push -u origin main
 - [ ] AdSense に申請
 - [ ] 通過後、`site/.env` に `PUBLIC_ADSENSE_CLIENT=ca-pub-xxxx` を設定
       （Cloudflare Pages の環境変数にも同じものを登録する）
-- [ ] A8.net / もしもアフィリエイト に登録し、`theme.yaml` の
-      `search_links` をASPのディープリンクに差し替え
+- [ ] afb で提携できたら、`theme.yaml` の `search_links` を
+      ASPのディープリンクに差し替え（afb は LinkSwitch のような自動変換を持たない）
+
+### アフィリエイトの環境変数（2026-09-02 時点で1つ未反映）
+
+`site/.env` はリポジトリに入らない。**Pages 側にも同じものを入れないと本番だけ出ない。**
+`Workers & Pages → brog-ez1 → Settings → Environment variables` の
+**Production / Preview の両方**に入れる。
+LinkSwitch は `*.pages.dev` では自分で無効化するので、Preview に入れても成果は動かない
+（docs/AFFILIATE.md 5-6）。
+
+| 変数 | 値 | Pages 側 |
+|---|---|---|
+| `PUBLIC_AMAZON_TAG` | `jetbike-22` | ✅ 反映済み（本番HTMLに `tag=jetbike-22` を確認） |
+| `PUBLIC_VC_LINKSWITCH_PID` | `892690936` | ⬜ **未登録**。入れる前に VC のブロック設定（docs/AFFILIATE.md 2節） |
+
+反映されたかは本番のHTMLで確かめる。
+
+```bash
+curl -s https://mihoudairader.com/ | grep -c vcdal.js   # 1 なら出ている
+```
 
 ---
 

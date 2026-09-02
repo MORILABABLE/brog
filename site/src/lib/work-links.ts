@@ -91,6 +91,7 @@ const DIRECT_HOSTS = [
   'www.disneyplus.com',
   'tv.apple.com',
   // バリューコマース LinkSwitch がブラウザ側でアフィリエイト化する
+  // （提携が前提。2026-09-02 時点では未提携＝0円。docs/AFFILIATE.md 3-3）
   'video.unext.jp',
   'www.hulu.jp',
 ]
