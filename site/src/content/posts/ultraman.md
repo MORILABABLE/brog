@@ -20,6 +20,8 @@ heroImage: '/heroes/ultraman.webp'
 
 ## U-NEXTで見放題配信が終了する9本
 
+[![ザ☆ウルトラマン（1979年）](/sections/tiles/ultraman-6b30458d-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%B6%E2%98%86%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3&i=instant-video) [![ウルトラマン８０（1980年）](/sections/tiles/ultraman-6b30458d-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%EF%BC%98%EF%BC%90&i=instant-video)
+
 | 終了日 | 作品 | 状態 | 評価 | サービス |
 | --- | --- | --- | --- | --- |
 | 8月31日 | ウルトラマン（HDリマスター版） | 終了予定 | 100/100 | U-NEXT |
@@ -43,6 +45,8 @@ heroImage: '/heroes/ultraman.webp'
 1996年の『ウルトラマン超闘士激伝』は、バンダイのガシャポンを中心とした玩具企画から生まれた作品です。漫画版が1993年から1997年まで『コミックボンボン』に連載され、1996年にOVAが作られました。デフォルメされたウルトラ戦士や怪獣が「装鉄鋼」と呼ばれる鎧を身に着け、「闘士」の姿になって戦うという、シリーズの中でもかなり毛色の違う1本です。
 
 ## Amazon Prime Videoで見放題配信が終了した3本
+
+[![ウルトラマンギンガ（2013年）](/sections/posters/ultraman-cd0d9aa1-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AE%E3%83%B3%E3%82%AC&i=instant-video) [![ウルトラマンオーブ（2016年）](/sections/posters/ultraman-cd0d9aa1-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AA%E3%83%BC%E3%83%96&i=instant-video)
 
 | 終了日 | 作品 | 状態 | 評価 | サービス |
 | --- | --- | --- | --- | --- |

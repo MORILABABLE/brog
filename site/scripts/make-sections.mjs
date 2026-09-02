@@ -372,6 +372,17 @@ function cells(line) {
  *
  * 対象は日付の `##` 見出しの配下だけ。全作品リストやまとめには入れない。
  *
+ * ■ 日付見出しを1つも持たない記事（`anyHeading`）
+ * シリーズ記事（`--type series`）は**見出しに日付を書かない**決まりなので、
+ * 上の規則だけだと節が0件になり、**本文に画像が1枚も入らない**
+ * （2026-09-01 の添削。「ハリー・ポッター」の記事で発覚）。
+ * そこで**節が0件だった記事に限り**、見出しの形を問わずに拾い直す。
+ *
+ * ★ 日付見出しを持つ記事の見え方は変わらない。あちらは節が1つ以上取れるので
+ *   この道に入らない。「全終了作品リスト」のような節に**わざと画像を入れていない**
+ *   規律もそのまま残る（あの節は日付見出しの配下にないため）。
+ * ★ 拾い直しの入口は実行部に1か所だけ置いてある。ここを既定で緩めてはいけない。
+ *
  * ■ 行番号を3つ返している理由
  * 画像の挿し込み位置を「表の直後」から「**見出しの直後**」に移した（2026-08-25）。
  * 過去に書いた記事には旧位置の画像が残っているので、
@@ -418,7 +429,7 @@ function workTables(md) {
   return out
 }
 
-function parseBlocks(md) {
+function parseBlocks(md, { anyHeading = false } = {}) {
   const lines = md.split('\n')
   const out = []
   let dateHeading = null // 直近の `## ○月○日…`
@@ -430,7 +441,8 @@ function parseBlocks(md) {
     const h2 = lines[i].match(/^## +(.*)$/)
     if (h2) {
       const t = h2[1].trim()
-      dateHeading = /^\d{1,2}月\d{1,2}日/.test(t) ? t : null
+      // `anyHeading` のときは日付で始まらない `##` も節の主題として採る（上の説明）
+      dateHeading = anyHeading || /^\d{1,2}月\d{1,2}日/.test(t) ? t : null
       dateHeadingLine = i
       subHeading = null
       subHeadingLine = -1
@@ -491,7 +503,8 @@ function parseBlocks(md) {
     }
 
     out.push({
-      dateLabel: DATE_PREFIX.exec(dateSource)[0],
+      // 日付見出しを持たない記事では null。文字だけの版はこの行を描かない（buildSvg）
+      dateLabel: DATE_PREFIX.exec(dateSource)?.[0] ?? null,
       heading: subHeading ?? dateHeading,
       headingLine,
       imageLine,
@@ -930,21 +943,32 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   const slug = file.replace(/\.md$/, '')
   const path = join(postsDir, file)
   let md = readFileSync(path, 'utf8')
-  const sections = parseBlocks(md)
+  const dateSections = parseBlocks(md)
+  /*
+   * 本文にセクション画像を挿す節。
+   *
+   * ★ **日付見出しが1つも無い記事だけ**、見出しの形を問わずに拾い直す。
+   *   シリーズ記事（`--type series`）がこれに当たる（保存版なので、見出しに日付を
+   *   書かないと決めてある）。ここが無いと**本文に画像が1枚も入らない**
+   *   ——「ハリー・ポッター」の記事が、表だけで絵が1枚も無い状態だった
+   *   （2026-09-01 の添削）。
+   *
+   * ★ 日付見出しを持つ記事は上で1つ以上取れるので、この行を素通りする。
+   *   「全終了作品リスト」のような節に**わざと画像を入れていない**規律は保たれる。
+   *   **判定を `parseBlocks` の既定で緩めてはいけない**（既存記事の見た目が変わる）。
+   */
+  const sections = dateSections.length > 0 ? dateSections : parseBlocks(md, { anyHeading: true })
   /*
    * ヘッダー画像を選ぶための作品リスト。
    *
-   * ★ **節（`parseBlocks`）と分けてある。** 節は `## ◯月◯日…` で始まる見出しだけを
-   *   拾う決まりで、そこに本文中のセクション画像を挿している。
-   *   シリーズ記事（`--type series`）は**日付で始まる見出しを持たない**
-   *   （保存版なので、見出しに日付を書かないと決めてある）。
-   *   節が0件だからといって記事ごと飛ばすと、**カードの絵だけが付かない記事**ができる。
+   * ★ **節と分けてある。** 記事の見出しの形に関わらず「作品」列を持つ表を上から
+   *   集める（`workTables`）。節が0件でも**カードの絵だけが付かない記事**を作らない。
    *
-   * ★ セクション画像の対象は広げない。日付見出しを持つ記事では
-   *   「全終了作品リスト」のような節に**わざと画像を入れていない**ので、
-   *   節の判定を緩めると既存記事の見た目が変わる。
+   * ★ 参照するのは `sections` ではなく `dateSections`。上の拾い直しで
+   *   シリーズ記事の節が0件でなくなったが、**ヘッダー画像の選び方は据え置く**
+   *   （記事をまたいで絵の取り合いをするので、ここを動かすと無関係な記事の絵まで変わる）。
    */
-  const heroBlocks = sections.length > 0 ? sections : workTables(md)
+  const heroBlocks = dateSections.length > 0 ? dateSections : workTables(md)
   if (sections.length === 0 && heroBlocks.length === 0) continue
 
   /** 節ごとの挿し込む1行。生成の結果（ポスターが揃ったか）で形が変わる。 */

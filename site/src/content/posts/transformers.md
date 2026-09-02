@@ -18,6 +18,8 @@ heroImage: '/heroes/transformers.webp'
 
 ## Amazon Prime Videoで見放題配信が終了する5本
 
+[![トランスフォーマー（2007年）](/sections/posters/transformers-ba663968-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B9%E3%83%95%E3%82%A9%E3%83%BC%E3%83%9E%E3%83%BC&i=instant-video) [![トランスフォーマー/リベンジ（2009年）](/sections/posters/transformers-ba663968-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B9%E3%83%95%E3%82%A9%E3%83%BC%E3%83%9E%E3%83%BC%20%E3%83%AA%E3%83%99%E3%83%B3%E3%82%B8&i=instant-video)
+
 | 終了日 | 作品 | 状態 | 評価 | サービス |
 | --- | --- | --- | --- | --- |
 | 9月1日 | トランスフォーマー | 終了予定 | 70/100 | Amazon Prime Video |
@@ -39,6 +41,8 @@ heroImage: '/heroes/transformers.webp'
 第5作『トランスフォーマー/最後の騎士王』は、オプティマスプライムが人類に敵対し、バンブルビーがオートボットを率いて地球を守るために立ち上がるという筋書きです。マイケル・ベイが監督した実写シリーズは、ここでいったん5作という区切りを迎えました。
 
 ## Disney+で見放題配信が終了した1本
+
+[![トランスフォーマー/最後の騎士王（2017年）](/sections/posters/transformers-332bda0c-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B9%E3%83%95%E3%82%A9%E3%83%BC%E3%83%9E%E3%83%BC%20%E6%9C%80%E5%BE%8C%E3%81%AE%E9%A8%8E%E5%A3%AB%E7%8E%8B&i=instant-video)
 
 | 終了日 | 作品 | 状態 | 評価 | サービス |
 | --- | --- | --- | --- | --- |

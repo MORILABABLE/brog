@@ -20,6 +20,8 @@ heroImage: '/heroes/conan-movies.webp'
 
 ## Netflixで見放題配信が終了する29本
 
+[![名探偵コナン 灰原哀物語 ～黒鉄のミステリートレイン～（2023年）](/sections/posters/conan-movies-0602ecd6-1.webp)](https://www.amazon.co.jp/s?k=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E7%81%B0%E5%8E%9F%E5%93%80%E7%89%A9%E8%AA%9E%20%EF%BD%9E%E9%BB%92%E9%89%84%E3%81%AE%E3%83%9F%E3%82%B9%E3%83%86%E3%83%AA%E3%83%BC%E3%83%88%E3%83%AC%E3%82%A4%E3%83%B3%EF%BD%9E&i=instant-video) [![名探偵コナン 緋色の不在証明（2021年）](/sections/posters/conan-movies-0602ecd6-2.webp)](https://www.amazon.co.jp/s?k=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E7%B7%8B%E8%89%B2%E3%81%AE%E4%B8%8D%E5%9C%A8%E8%A8%BC%E6%98%8E&i=instant-video)
+
 | 終了日 | 作品 | 状態 | 評価 | サービス |
 | --- | --- | --- | --- | --- |
 | 8月31日 | 名探偵コナン 100万ドルの五稜星 | 終了予定 | 61/100 | Netflix |
@@ -59,6 +61,8 @@ heroImage: '/heroes/conan-movies.webp'
 古い作品も評判で選ばれ続けています。2016年に行われた歴代19作の人気投票では第6作『名探偵コナン ベイカー街の亡霊』が2位、第4作『名探偵コナン 瞳の中の暗殺者』が3位に入り、『瞳の中の暗殺者』は2020年1月の『金曜ロードSHOW!』の人気投票でも1位を取って、翌月に同枠で初めて放送されました。
 
 ## U-NEXTで見放題配信が終了する32本
+
+[![TVシリーズ特別編集版『名探偵コナン vs 怪盗キッド』（2024年）](/sections/tiles/conan-movies-e58de2d2-1.webp)](https://www.amazon.co.jp/s?k=TV%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%E7%89%B9%E5%88%A5%E7%B7%A8%E9%9B%86%E7%89%88%E3%80%8E%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20vs%20%E6%80%AA%E7%9B%97%E3%82%AD%E3%83%83%E3%83%89%E3%80%8F&i=instant-video) [![名探偵コナン「警察学校編　Wild Police Story」（2021年）](/sections/tiles/conan-movies-e58de2d2-2.webp)](https://www.amazon.co.jp/s?k=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%E3%80%8C%E8%AD%A6%E5%AF%9F%E5%AD%A6%E6%A0%A1%E7%B7%A8%20Wild%20Police%20Story%E3%80%8D&i=instant-video)
 
 | 終了日 | 作品 | 状態 | 評価 | サービス |
 | --- | --- | --- | --- | --- |
