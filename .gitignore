@@ -2,6 +2,9 @@ node_modules/
 .env
 .env.local
 
+# Search Console のサービスアカウントJSON（pipeline/cli/queries.ts）
+secrets/
+
 # 記事生成の作業ファイル（プロンプト・応答の一時置き場）
 data/draft/
 

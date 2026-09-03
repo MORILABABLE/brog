@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
-import { AFFILIATE, ATTRIBUTION, SITE, hubFor } from '../../config'
+import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
 import { otherServiceLinks } from '../../lib/search-links'
@@ -110,14 +110,19 @@ const hub = hubFor(w.state === 'started' ? 'arrivals' : 'leaving')
  *
  * ★ tag= と rel はここで付ける。常設ページは .astro なので rehype を通らない
  *   （components/WorkTable.astro と同じ理由・同じ関数を使う）。
+ *
+ * ★ 枠は `work`。作品ページのリンクは**読者の意図が最もはっきりしている**
+ *   （その作品を名指しで見に来ている）ので、他の枠と混ぜて数えない。
  */
+const WORK_TAG = amazonTagFor('work')
+
 const findLinks = otherServiceLinks(w.title).map((l) => {
-  const url = withAmazonTag(l.url, AFFILIATE.amazonTag)
+  const url = withAmazonTag(l.url, WORK_TAG)
   return { label: l.label, url, rel: relFor(url) }
 })
 
 function decorate(url: string) {
-  const tagged = withAmazonTag(url, AFFILIATE.amazonTag)
+  const tagged = withAmazonTag(url, WORK_TAG)
   return { url: tagged, rel: relFor(tagged) }
 }
 

@@ -1,5 +1,5 @@
 ---
-import { AFFILIATE } from '../config'
+import { amazonTagFor } from '../config'
 import { relFor, withAmazonTag } from '../lib/affiliate'
 import { normalizeForSearch } from '../lib/normalize'
 import { amazonVideoLink, otherServiceLinks } from '../lib/search-links'
@@ -32,9 +32,15 @@ const { groups, dateNoun, service } = Astro.props
  * 記事本文（Markdown）のリンクは build 時に rehype-affiliate が処理するが、
  * 常設ページは .astro なので rehype を通らない。
  * 同じ方針（src/lib/affiliate.ts）を明示的に呼んで揃えている。
+ *
+ * ★ 枠は `table`。記事本文の表（rehype-work-links → rehype-affiliate 経由）と
+ *   **同じ枠として数える。** 読者から見て同じ「表の中の作品リンク」であり、
+ *   出どころがMarkdownか .astro かはこちらの都合でしかない。
  */
+const TABLE_TAG = amazonTagFor('table')
+
 function decorate(link: { label: string; url: string }) {
-  const url = withAmazonTag(link.url, AFFILIATE.amazonTag)
+  const url = withAmazonTag(link.url, TABLE_TAG)
   return { label: link.label, url, rel: relFor(url) }
 }
 
@@ -61,7 +67,7 @@ function primary(w: WorkRow) {
   if (dest.internal) {
     return { url: dest.url, rel: undefined, target: undefined, thumb: hit.thumb }
   }
-  const url = withAmazonTag(dest.url, AFFILIATE.amazonTag)
+  const url = withAmazonTag(dest.url, TABLE_TAG)
   return { url, rel: relFor(url), target: '_blank', thumb: hit.thumb }
 }
 

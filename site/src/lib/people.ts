@@ -53,6 +53,35 @@ import type { WorkPage, WorkState } from './works'
  */
 const MIN_WORKS = 3
 
+/**
+ * **検索結果に出す**人物ページの最低作品数（2026-09-03 追加）。
+ *
+ * ■ なぜページを作る条件（MIN_WORKS）と分けるのか
+ * この2つは別の問いに答えている。
+ *
+ *   MIN_WORKS       … ページとして成立するか（内部リンクの受け皿になるか）
+ *   INDEX_MIN_WORKS … **検索結果に出して読者の役に立つか**
+ *
+ * 人物ページは作品ページから辿る受け皿として意味があるので、
+ * 3本でもページ自体は作ってよい。だが3本の表と定型文だけのページを
+ * 索引に出しても、読者が検索から来て得るものが無い。
+ *
+ * ■ 実測（2026-09-03・全145枚）
+ * 3本=78枚 / 4本=36枚 / 5本=15枚 / 6本=9枚 / 7本以上=7枚。
+ * `<main>` の文字数は3本で540〜650字、**2枚を比べると語彙の70%が定型文**。
+ * 5本未満（114枚・79%）を索引から外し、31枚を残す。
+ *
+ * ★ **ページは消さない。** 作品ページからのリンク先として残り、
+ *   `noindex,follow` なのでクロールも内部リンクの評価も通る。
+ *   作品が増えれば自動的に索引対象へ戻る（service-pages.ts と同じ考え方）。
+ *
+ * ★ 索引から外したページは**XMLサイトマップからも外すこと。**
+ *   載せたままだと Search Console に「noindex のURLを送信しました」が
+ *   114件出続ける。除外は astro.config.mjs の sitemap filter
+ *   （`noindexPersonPaths()` を読んでいる）。**片方だけ直さないこと。**
+ */
+const INDEX_MIN_WORKS = 5
+
 /** 1ページに並べる作品の上限。多作の人でもページがリンクの塊にならないように。 */
 const WORKS_LIMIT = 60
 
@@ -167,6 +196,24 @@ export function publishablePeople(): Person[] {
   return [...build().values()].sort(
     (a, b) => b.works.length - a.works.length || a.name.localeCompare(b.name, 'ja'),
   )
+}
+
+/**
+ * その人物ページを検索結果に出すか。**false なら `noindex,follow`。**
+ * 判断の理由は上の `INDEX_MIN_WORKS`。
+ */
+export function personIsIndexable(person: Person): boolean {
+  return person.works.length >= INDEX_MIN_WORKS
+}
+
+/**
+ * 索引から外す人物ページのパス（`/person/<id>`）。
+ * **XMLサイトマップの除外に使う**（astro.config.mjs）。
+ */
+export function noindexPersonPaths(): string[] {
+  return publishablePeople()
+    .filter((p) => !personIsIndexable(p))
+    .map((p) => `/person/${p.id}`)
 }
 
 /** IDから引く。ページが無ければ undefined。 */

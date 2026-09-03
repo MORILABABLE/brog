@@ -10,6 +10,7 @@
     "collect": "tsx pipeline/cli/collect.ts",
     "collect:unext": "tsx pipeline/cli/collect-unext.ts",
     "collect:announce": "tsx pipeline/cli/collect-announce.ts",
+    "queries": "tsx pipeline/cli/queries.ts",
     "notify": "tsx pipeline/cli/notify.ts",
     "enrich": "tsx pipeline/cli/enrich.ts",
     "write": "tsx pipeline/cli/write.ts",

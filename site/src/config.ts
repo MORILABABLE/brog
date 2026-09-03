@@ -1,3 +1,5 @@
+import { tagFor, type AmazonSlot, type AmazonTags } from './lib/affiliate'
+
 /**
  * サイト全体の設定。ここ以外に文字列を散らさない。
  * ドメイン取得後に url を差し替えれば全体に反映される。
@@ -298,6 +300,10 @@ export const AFFILIATE = {
   /**
    * Amazonアソシエイトのトラッキングid（`xxxxx-22` の形）。
    * これを入れると本文中の Amazon リンクに build 時 tag= が付く。
+   *
+   * ★ **枠ごとに分けたいときは下の AMAZON_TAGS を使う。**
+   *   この値は「既定のID」であって、枠別IDが無いときの落とし先。
+   *   広告表記の出し分け（AFFILIATE_ENABLED）もこの1本で判定する。
    */
   amazonTag: import.meta.env.PUBLIC_AMAZON_TAG ?? '',
   /**
@@ -316,3 +322,46 @@ export const AFFILIATE = {
 
 /** アフィリエイトが1つでも有効か。広告表記の出し分けに使う。 */
 export const AFFILIATE_ENABLED = Boolean(AFFILIATE.amazonTag || AFFILIATE.linkSwitchPid)
+
+/**
+ * 枠別のトラッキングid（2026-09-03 追加）。
+ *
+ * ■ 何のためにあるか
+ * サイト内の Amazon 導線は5種類ある（節ポスター / 表 / CTA / 追従枠 / 作品ページ）。
+ * IDが1本だとアソシエイトのレポートは合計しか返さず、
+ * **どの導線が効いているのかが永久に分からない。**
+ * 導線を足すか減らすかを決める前に、まず分けて測るためのもの。
+ *
+ * ■ 使い方（1つずつでよい）
+ * アソシエイト・セントラル → アカウント名 → 「トラッキングIDの管理」で
+ * IDを作り、その枠の環境変数に入れる。**入れた枠から順に分離される。**
+ * 入れていない枠は既定ID（PUBLIC_AMAZON_TAG）のまま何も変わらない。
+ *
+ * ★ **作っていないIDを書かないこと。** 未登録のトラッキングIDで発生した分は
+ *   紹介料として計上されない。ここは「作ったものを書き写す場所」であって、
+ *   命名を先に決める場所ではない。
+ *
+ * ★ 同じ表を astro.config.mjs 側でも組み立てている（rehype プラグイン用）。
+ *   **環境変数の名前を変えるときは両方直すこと。** 片方だけ直すと、
+ *   記事本文のリンクだけ古い枠のIDのまま公開される。
+ */
+export const AMAZON_TAGS: AmazonTags = {
+  default: AFFILIATE.amazonTag,
+  /** 節ごとの作品ポスター。記事本文で最も本数が多い導線 */
+  poster: import.meta.env.PUBLIC_AMAZON_TAG_POSTER ?? '',
+  /** 表の作品名リンク（記事本文・常設ページ共通） */
+  table: import.meta.env.PUBLIC_AMAZON_TAG_TABLE ?? '',
+  /** 記事末尾・常設ページの Amazon 導線（AmazonCta.astro） */
+  cta: import.meta.env.PUBLIC_AMAZON_TAG_CTA ?? '',
+  /** 右の追従枠のPR（FollowRail.astro）。1200px以上でしか出ない */
+  rail: import.meta.env.PUBLIC_AMAZON_TAG_RAIL ?? '',
+  /** 作品ページ（/works/<ID>）の各リンク */
+  work: import.meta.env.PUBLIC_AMAZON_TAG_WORK ?? '',
+  /** 記事本文のその他のリンク。上のどれにも当たらないもの */
+  body: import.meta.env.PUBLIC_AMAZON_TAG_BODY ?? '',
+}
+
+/** その枠のトラッキングid。未設定の枠は既定に落ちる。 */
+export function amazonTagFor(slot?: AmazonSlot): string {
+  return tagFor(AMAZON_TAGS, slot)
+}

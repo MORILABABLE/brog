@@ -1,6 +1,7 @@
 ---
-import { AFFILIATE } from '../config'
+import { amazonTagFor } from '../config'
 import { amazonVideoSearchUrl, withAmazonTag } from '../lib/affiliate'
+import { ctaQueryFor } from '../lib/page-intent'
 import type { CategorySlug } from '../config'
 
 interface Props {
@@ -9,12 +10,29 @@ interface Props {
    * 未指定ならトップページ等の汎用文面になる。
    */
   category?: CategorySlug
-  /** 検索語。省略すると Prime Video の売り場トップへ送る。 */
+  /**
+   * 検索語。
+   *
+   * ★ **省略してよい。** 省略した場合は、そのページに来ている検索語か
+   *   シリーズ記事の主題から自動で決まる（src/lib/page-intent.ts）。
+   *   どちらも決まらなければ、従来どおり Prime Video の売り場トップへ送る。
+   *   作品ページと人物ページのように**呼び出し側が主題を知っている**ときだけ
+   *   明示的に渡すこと。渡された値が最優先される。
+   */
   query?: string
 }
 
 const { category, query } = Astro.props
-const tag = AFFILIATE.amazonTag
+const tag = amazonTagFor('cta')
+
+/**
+ * この枠が送る先の検索語。
+ *
+ * ★ 検索エンジンは検索語をリファラに渡さないので、**訪問者ごとには決められない。**
+ *   決まるのはページ単位で、しかもビルド時。全員に同じHTMLが出る
+ *   （リファラでサーバ側の出し分けをするとクローキングになる）。
+ */
+const subject = query ?? (await ctaQueryFor(Astro.url.pathname))
 
 /**
  * Amazon への導線。
@@ -38,6 +56,11 @@ const tag = AFFILIATE.amazonTag
  * ★ トラッキングIDが未設定なら描画しない。
  *   タグの無い Amazon リンクを置いても1円にもならず、
  *   広告表記（PR）だけが出てしまうため。
+ *
+ * ■ 検索語が決まっているときは、それを文言にも出す（2026-09-03）
+ * 「Prime Videoで作品を探す」とだけ書いてある枠は、押した先が何なのか分からない。
+ * 主題が決まっているなら**押す前に分かる形**にする。
+ * 決まっていないページでは今までどおりの汎用文面に落ちる。
  */
 const COPY: Record<string, { lead: string; action: string }> = {
   leaving: {
@@ -63,12 +86,22 @@ const fallback = {
   action: 'Prime Videoで作品を探す',
 }
 
-const copy = (category && COPY[category]) || fallback
+const base = (category && COPY[category]) || fallback
+
+/**
+ * 主題が決まっているときの行動文。
+ *
+ * ★ 「観られる」と断定しないこと。当サイトは Amazon の在庫を持っていない。
+ *   言ってよいのは「探せる」まで（下の .note と同じ線引き）。
+ */
+const copy = subject
+  ? { lead: base.lead, action: `「${subject}」をPrime Videoで探す` }
+  : base
 
 // 検索語があれば動画カテゴリ内検索、無ければ売り場トップ。
 // どちらも tag= が付くのでクッキーは同じように効く。
-const href = query
-  ? amazonVideoSearchUrl(query, tag)
+const href = subject
+  ? amazonVideoSearchUrl(subject, tag)
   : withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag)
 ---
 

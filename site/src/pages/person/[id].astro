@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import { ATTRIBUTION } from '../../config'
-import { personPage, publishablePeople } from '../../lib/people'
+import { personIsIndexable, personPage, publishablePeople } from '../../lib/people'
 import type { Person } from '../../lib/people'
 import { STATE_CATEGORY, STATE_LABEL } from '../../lib/works'
 import { formatDate, isoDate } from '../../utils/date'
@@ -108,7 +108,18 @@ const jsonLd = {
 }
 ---
 
-<BaseLayout title={title} description={description} jsonLd={jsonLd}>
+{/*
+  作品の少ない人物ページは**検索結果に出さない**（2026-09-03）。
+  3本の表と定型文だけのページを索引に出しても、検索から来た読者が得るものが無い。
+  実測で 145枚中114枚（79%）が該当する。閾値と理由は lib/people.ts の
+  `INDEX_MIN_WORKS`。**ページ自体は残る**ので、作品ページからの導線は変わらない。
+*/}
+<BaseLayout
+  title={title}
+  description={description}
+  jsonLd={jsonLd}
+  noindex={!personIsIndexable(p)}
+>
   <nav class="breadcrumb" aria-label="パンくず">
     <a href="/">ホーム</a> ›
     <a href="/person">監督・出演者</a>

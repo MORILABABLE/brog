@@ -8,12 +8,20 @@ interface Props {
 const { slot } = Astro.props
 
 /**
- * 広告枠。
+ * 広告枠（＝**広告ユニット**）。
  *
- * ★ PUBLIC_ADSENSE_CLIENT が未設定なら**何も描画しない**。
- *   AdSense は審査中のサイトに広告コードが入っていること自体は問題ないが、
- *   記事数が揃う前に貼ると審査で不利になりうるため、既定はオフにしている。
- *   審査通過後に site/.env で有効化する。
+ * ★ PUBLIC_ADSENSE_CLIENT と `slot` の**両方**が要る。片方でも欠ければ何も描画しない。
+ *   `slot` は広告ユニットIDで、**審査に通ってからでないと作れない。**
+ *
+ * ★ **審査に必要なコードはここではない。** それは全ページの <head> にある
+ *   （layouts/BaseLayout.astro）。この2つは役割が違う。
+ *     <head> のコード … サイトの認識と審査、自動広告。**全ページ必須**
+ *     この枠         … 位置を指定して出す広告ユニット。**審査後に足す**
+ *   以前はローダーの <script> をここでも読んでいたが、<head> に移したので消した。
+ *   1ページに2回読み込むとコンソールに警告が出る。
+ *
+ * ★ いまの唯一の呼び出しは pages/posts/[...slug].astro で、**slot を渡していない。**
+ *   審査に通ってユニットを作ったら、そこにIDを渡すこと。
  */
 const enabled = Boolean(ADSENSE_CLIENT && slot)
 ---
@@ -30,12 +38,7 @@ const enabled = Boolean(ADSENSE_CLIENT && slot)
         data-ad-format="auto"
         data-full-width-responsive="true"
       />
-      <script
-        async
-        is:inline
-        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-        crossorigin="anonymous"
-      />
+      {/* ローダーは <head>（BaseLayout）が読む。ここでは枠を1つ登録するだけ。 */}
       <script is:inline>
         (adsbygoogle = window.adsbygoogle || []).push({})
       </script>

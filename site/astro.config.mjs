@@ -4,6 +4,7 @@ import sitemap from '@astrojs/sitemap'
 import { loadEnv } from 'vite'
 import { SITE } from './src/config.ts'
 import { lastmodFor } from './src/lib/lastmod.ts'
+import { noindexPersonPaths } from './src/lib/people.ts'
 import { rehypeAffiliate } from './plugins/rehype-affiliate.ts'
 import { rehypeWorkLinks } from './plugins/rehype-work-links.ts'
 
@@ -12,6 +13,33 @@ import { rehypeWorkLinks } from './plugins/rehype-work-links.ts'
 // （コンポーネント側は従来どおり import.meta.env.PUBLIC_* でよい）
 const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '')
 
+/**
+ * 索引から外したページのパス。**XMLサイトマップから落とす**（下の filter）。
+ * 中身は src/lib/people.ts が決める（`INDEX_MIN_WORKS`）。
+ */
+const NOINDEX_PATHS = new Set(noindexPersonPaths())
+
+/**
+ * 枠別のAmazonトラッキングid（rehype プラグイン用）。
+ *
+ * ★ **src/config.ts の AMAZON_TAGS と同じ環境変数を読んでいる。**
+ *   astro.config は Astro が .env を読む前に評価されるため import.meta.env が使えず、
+ *   loadEnv でもう一度組み立てるしかない（GA・LinkSwitch と同じ事情）。
+ *   **変数名を変えるときは両方直すこと。** 片方だけだと、
+ *   記事本文のリンクだけ古い枠のIDのまま公開される。
+ *
+ * 記事本文から出るのは3種類だけなので、ここで要るのもその3つと既定。
+ *   poster … 節ごとの作品ポスター（`<a>` の中身が /sections/ の画像）
+ *   table  … 表の作品名（rehypeWorkLinks が付ける .work-link）
+ *   body   … それ以外の本文中のリンク
+ */
+const amazonTags = {
+  default: env.PUBLIC_AMAZON_TAG ?? '',
+  poster: env.PUBLIC_AMAZON_TAG_POSTER ?? '',
+  table: env.PUBLIC_AMAZON_TAG_TABLE ?? '',
+  body: env.PUBLIC_AMAZON_TAG_BODY ?? '',
+}
+
 export default defineConfig({
   // 独自ドメイン取得後にここを差し替える。
   // sitemap / RSS / canonical URL がこの値を基準に生成される。
@@ -19,7 +47,16 @@ export default defineConfig({
   integrations: [
     sitemap({
       /*
-       * `/sitemap`（人が見るサイトマップ）を**XMLサイトマップから外す。**
+       * `/sitemap`（人が見るサイトマップ）と、**索引から外した人物ページ**を
+       * XMLサイトマップから外す。
+       *
+       * ★ **noindex のページをサイトマップに載せないこと**（2026-09-03）。
+       *   載せると Search Console に「noindex のURLを送信しました」が
+       *   114件ぶん出続ける。閾値と理由は src/lib/people.ts の `INDEX_MIN_WORKS`。
+       *   **人物ページ側の noindex とここは必ず一緒に直すこと。**
+       *   （サービス別ページの noindex は少数なので従来どおり載せたままにしてある。
+       *     lib/service-pages.ts の `serviceHasContent()` の注意書き）
+       *
        *
        * あれは運営者が全ページを目視するためのページで、読者向けではない。
        * 載せると2つ困る。
@@ -34,7 +71,10 @@ export default defineConfig({
        * ★ 読者にも出すことにしたら、ここと components/Footer.astro の
        *   リンク、pages/sitemap.astro の noindex を**3つまとめて**外すこと。
        */
-      filter: (page) => !/\/sitemap\/?$/.test(page),
+      filter: (page) => {
+        if (/\/sitemap\/?$/.test(page)) return false
+        return !NOINDEX_PATHS.has(new URL(page).pathname.replace(/\/$/, ''))
+      },
       /*
        * `<lastmod>` を付ける（2026-08-30）。**分かるページにだけ。**
        *
@@ -68,7 +108,7 @@ export default defineConfig({
     //   トラッキングIDも rel="sponsored" も付かないまま公開される。
     rehypePlugins: [
       rehypeWorkLinks,
-      [rehypeAffiliate, { amazonTag: env.PUBLIC_AMAZON_TAG ?? '' }],
+      [rehypeAffiliate, { tags: amazonTags }],
     ],
   },
 

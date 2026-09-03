@@ -1,5 +1,5 @@
 ---
-import { SITE, OG_IMAGE, CARD_IMAGE, GA_MEASUREMENT_ID } from '../config'
+import { SITE, OG_IMAGE, CARD_IMAGE, GA_MEASUREMENT_ID, ADSENSE_CLIENT } from '../config'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
 import LinkSwitch from '../components/LinkSwitch.astro'
@@ -149,6 +149,41 @@ const jsonLd = jsonLdOverride ?? (publishedAt
 
       gtag('config', '${GA_MEASUREMENT_ID}');`}
     />
+
+    {/*
+      AdSense のコード（2026-09-03 追加）。**全ページの <head> に1本だけ。**
+
+      ■ なぜここに要るのか
+      **審査はサイトにこのコードが貼られてから始まる。** それまでサイト内の
+      AdSense コードは components/AdSlot.astro の中だけにあり、
+      その AdSlot は `PUBLIC_ADSENSE_CLIENT` と `slot` の**両方**を要求していた。
+      唯一の呼び出し（pages/posts/[...slug].astro）は slot を渡していないので、
+      パブリッシャーIDを入れても永久に1バイトも出力されない状態だった。
+      広告ユニットIDは審査に通ってからでないと作れないので、
+      **枠とは切り離して、ここでコードだけを出す。**
+
+      ★ 未設定なら何も出さない。既定はオフのまま（config.ts の ADSENSE_CLIENT）。
+
+      ★ GA や LinkSwitch と違い、**ホスト名で止めていない。**
+        あちらは「登録していないドメインで動くと規約違反・自己クリックになる」ので
+        除外リスト方式にしてあるが、こちらは逆で、
+        **審査のクローラーがHTMLの中にこのタグを見つけられないと審査が始まらない。**
+        JSで後から差し込む形にすると見つけてもらえない可能性がある。
+        広告の配信自体は Google 側がアカウントに登録済みのドメインに限るので、
+        プレビュー配信（*.pages.dev）にタグが出ても広告は出ない。
+
+      ★ **審査に通ったら `public/ads.txt` を置くこと。**
+        `google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0`
+        （パブリッシャーIDは自分のものに置き換える）。審査前には不要。
+    */}
+    {ADSENSE_CLIENT && (
+      <script
+        is:inline
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+        crossorigin="anonymous"
+      />
+    )}
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

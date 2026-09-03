@@ -46,6 +46,47 @@ export const AFFILIATE_HOSTS = [
  */
 export const EXCLUDED_HOSTS = ['tv.dmm.com', 'dmm.com', 'www.dmm.com']
 
+/**
+ * Amazon の導線の種類。**トラッキングIDを分ける単位**（2026-09-03 追加）。
+ *
+ * ■ なぜ分けるのか
+ * サイト内の Amazon リンクは 3,140本あるが、出ている場所は5種類しかない。
+ * IDが1本だと、アソシエイトのレポートは**その5種類の合計**しか返さない。
+ * 「節ポスターが効いているのか、表なのか、追従枠なのか」が分からないまま
+ * 導線を増減させることになる。**出し分けの前に、まず分けて測る。**
+ *
+ * ★ ここに足しただけでは1円も動かない。**アソシエイト・セントラルで
+ *   実際に作成したIDだけ**を .env に入れること。
+ *   未登録のトラッキングIDでの発生分は紹介料として計上されない。
+ *   未設定の枠は既定ID（PUBLIC_AMAZON_TAG）に落ちるので、
+ *   1つずつ作って1つずつ足していける。
+ */
+export const AMAZON_SLOTS = ['poster', 'table', 'cta', 'rail', 'work', 'body'] as const
+
+export type AmazonSlot = (typeof AMAZON_SLOTS)[number]
+
+/**
+ * 枠 → トラッキングid。`default` だけが必須で、**残りは無くてよい**。
+ *
+ * 組み立てているのは2か所。**どちらも同じ環境変数を読む。**
+ *   src/config.ts       … .astro コンポーネント用（import.meta.env）
+ *   astro.config.mjs    … rehype プラグイン用（loadEnv）
+ * astro.config は Astro が .env を読む前に評価されるので、import.meta.env が使えない。
+ * この二重化は GA・LinkSwitch と同じ事情によるもので、避けられない。
+ */
+export type AmazonTags = { default: string } & Partial<Record<AmazonSlot, string>>
+
+/**
+ * その枠に使うトラッキングid。**未設定なら既定に落ちる。**
+ *
+ * ★ 空文字は「未設定」として扱う（`??` ではなく `||`）。
+ *   .env に `PUBLIC_AMAZON_TAG_RAIL=` と書いただけの行を
+ *   「空のIDを指定した」と解釈すると、その枠だけ tag= が消えて無報酬になる。
+ */
+export function tagFor(tags: AmazonTags, slot?: AmazonSlot): string {
+  return (slot && tags[slot]) || tags.default
+}
+
 function hostOf(url: string): string | null {
   try {
     const u = new URL(url)

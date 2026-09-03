@@ -3,8 +3,9 @@ import { getCollection } from 'astro:content'
 import GenreRail from './GenreRail.astro'
 import SeriesRail from './SeriesRail.astro'
 import Thumb from './Thumb.astro'
-import { AFFILIATE, CATEGORIES } from '../config'
-import { withAmazonTag } from '../lib/affiliate'
+import { amazonTagFor, CATEGORIES } from '../config'
+import { amazonVideoSearchUrl, withAmazonTag } from '../lib/affiliate'
+import { ctaQueryFor } from '../lib/page-intent'
 
 /**
  * 本文の右の余白に置く追従枠。上から4ブロック。
@@ -79,8 +80,31 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft))
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
 const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
 
-const tag = AFFILIATE.amazonTag
-const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag)
+const tag = amazonTagFor('rail')
+
+/**
+ * PR枠の送り先を**そのページの主題に合わせる**（2026-09-03）。
+ *
+ * ■ それまで何が起きていたか
+ * この枠だけが、ページに関係なく Prime Video の売り場トップへ送っていた。
+ * 節ポスターも表もCTAも作品名を渡しているのに、**画面上いちばん長く見えている枠**が
+ * 「とりあえずAmazonへ」で、読者から見れば中身の無い入口だった。
+ *
+ * ■ 何を根拠に決めるか（src/lib/page-intent.ts）
+ *   1. そのURLに実際に来ている検索語（Search Console）
+ *   2. シリーズ記事の主題
+ * どちらも無ければ undefined になり、**今までどおり売り場トップ**に落ちる。
+ *
+ * ★ **訪問者ごとには変えられない。** 検索エンジンは検索語をリファラに渡さず、
+ *   ブラウザが渡すのは `https://www.google.com/` というオリジンだけ。
+ *   「いま来たこの人が何を探しているか」は原理的に取れない。
+ *   決められるのはページ単位で、しかもビルド時。**全員に同じHTMLを出す**
+ *   （リファラでサーバ側の出し分けをするとクローキングになる）。
+ */
+const subject = await ctaQueryFor(Astro.url.pathname)
+const adHref = subject
+  ? amazonVideoSearchUrl(subject, tag)
+  : withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag)
 ---
 
 <aside class="follow-rail">
@@ -141,9 +165,19 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
       <div class="rail-ad" aria-label="広告">
         <p class="pr">PR</p>
         <p class="ad-label">Amazon Prime Video</p>
-        <p class="ad-heading">観たかった作品を探すなら</p>
+        {/*
+          主題が決まっていれば、それを見出しに出す。
+          ★ 題名は長い（実測で50字を超えるものがある）。枠は17remしかないので
+            CSS で2行に切る（.ad-heading の -webkit-line-clamp）。
+            切れても title 属性で全体が読める。
+          ★ 「観られる」と断定しないこと。当サイトは Amazon の在庫を持っていない。
+            言ってよいのは「探せる」まで（AmazonCta.astro の .note と同じ線引き）。
+        */}
+        <p class:list={['ad-heading', subject && 'is-subject']} title={subject}>
+          {subject ? `「${subject}」` : '観たかった作品を探すなら'}
+        </p>
         <p class="ad-body">
-          見放題が終わった作品は、レンタル・購入で
+          {subject ? '見放題が終わっても、レンタル・購入なら' : '見放題が終わった作品は、レンタル・購入で'}
         </p>
         <a
           class="ad-action"
@@ -295,6 +329,19 @@ const adHref = withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag
     font-size: 0.92rem;
     font-weight: 700;
     line-height: 1.5;
+  }
+  /*
+   * 作品名・シリーズ名を出すとき。**2行で切る。**
+   * 題名の長さはこちらで決められない（実測で50字超がある）。
+   * 伸ばすと枠が縦に育ち、sticky で追従している意味が消える
+   * （枠が画面より高くなると上端で貼り付いて手が届かなくなる）。
+   */
+  .ad-heading.is-subject {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
   }
   .ad-body {
     margin: 0 0 0.9rem;

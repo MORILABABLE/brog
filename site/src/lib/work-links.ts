@@ -365,6 +365,17 @@ export function workLinkById(workId: string, service?: string): WorkLink | undef
   return entry ? toLink(entry, service) : undefined
 }
 
+/**
+ * 台帳にある題名をすべて返す（邦題・原題の両方）。
+ *
+ * 使い道は src/lib/page-intent.ts。Search Console が返した検索語の中に
+ * **実在する作品名が含まれているか**を確かめるために要る。
+ * 「u-next 配信終了 9月」のような語をそのまま Amazon 検索へ渡さないための関門。
+ */
+export function allWorkTitles(): string[] {
+  return [...buildIndex().byTitle.keys()]
+}
+
 /** テスト・再読込用 */
 export function resetWorkLinks(): void {
   index = null
