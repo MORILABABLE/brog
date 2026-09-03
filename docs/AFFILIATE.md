@@ -239,8 +239,8 @@ PUBLIC_VC_LINKSWITCH_PID=000000000
 反映されたかは本番のHTMLで確かめる。
 
 ```bash
-curl -s https://mihoudairader.com/ | grep -c vcdal.js   # 1 なら出ている
-curl -s https://mihoudairader.com/ | grep -o 'vc_pid = "[0-9]*"'
+curl -s https://mihoudairader.com/ | grep -c vcdal.js       # 1 なら出ている
+curl -s https://mihoudairader.com/ | grep -o 'pid = "[0-9]*"'  # 892690936
 ```
 
 ### Amazon のトラッキングIDの調べ方
@@ -822,10 +822,69 @@ LinkSwitch の提携状況が変わったら 9-2 をやり直す
 （**Amazonリンクが `data-nodal` のままか**が見るところ）。
 
 ```bash
-# タグが本番に出ているか
-curl -s https://mihoudairader.com/ | grep -c 'tag=jetbike-22'
+# タグが本番に出ているか（Git Bash / macOS / Linux）
+curl -s https://mihoudairader.com/posts/harry-potter | grep -o 'tag=[A-Za-z0-9_-]*' | sort | uniq -c
 curl -s https://mihoudairader.com/ | grep -c vcdal.js
+curl -s https://mihoudairader.com/ | grep -c adsbygoogle
 ```
+
+> ★ **`vc_pid = "…"` で探さないこと**（2026-09-03 に判明）。
+> `LinkSwitch.astro` は `define:vars` で `const pid = "…"` を出してから
+> `window.vc_pid = pid` を実行する形なので、**HTMLに出るのは `pid = "…"` のほう**。
+> `vc_pid = "…"` で grep すると0件になり、動いているのに壊れて見える。
+
+**PowerShell（Windows）では上のコマンドはどれも動かない。**
+`grep` が無く、`curl` は `Invoke-WebRequest` の別名で、`&&` も使えない
+（PowerShell 5.1）。同じことをするならこう書く。
+
+```powershell
+# 枠ごとのタグの内訳（ローカルのビルド成果物）
+Get-ChildItem site\dist -Recurse -Filter *.html |
+  Select-String -Pattern 'tag=[A-Za-z0-9_-]+' -AllMatches |
+  ForEach-Object { $_.Matches.Value } |
+  Group-Object | Sort-Object Count -Descending | Select-Object Count, Name
+
+# 本番に出ているタグ（curl.exe と書く。`.exe` を落とすと別名の方が動く）
+(curl.exe -s https://mihoudairader.com/posts/harry-potter |
+  Select-String -Pattern 'tag=[A-Za-z0-9_-]+' -AllMatches).Matches.Value | Sort-Object -Unique
+
+# 出ているかどうかだけ見る
+(curl.exe -s https://mihoudairader.com/ | Select-String 'vcdal.js').Count
+(curl.exe -s https://mihoudairader.com/ | Select-String 'adsbygoogle').Count
+```
+
+| Unix | PowerShell 5.1 |
+|---|---|
+| `grep 'x'` | `Select-String 'x'` |
+| `grep -o 'x'` | `(Select-String 'x' -AllMatches).Matches.Value` |
+| `grep -c 'x'` | `(Select-String 'x').Count` |
+| `curl -s URL` | `curl.exe -s URL` |
+| `A && B` | `A; if ($?) { B }` |
+| `rm -rf dir` | `Remove-Item -Recurse -Force dir` |
+| `sort \| uniq -c` | `Group-Object` |
+
+### 9-5. 本番デプロイでの実測（2026-09-03）
+
+枠別トラッキングIDと人物ページの noindex を本番に出して確認した結果。
+
+| ページ | 出たタグ |
+|---|---|
+| `/posts/harry-potter`（シリーズ記事） | poster 2 / cta 1 / rail 1 |
+| `/posts/2026-08-arrivals-anime`（一覧記事） | table 32 / poster 10 / cta 1 / rail 1 |
+| `/works/35212`（作品ページ） | work 1 / cta 1 / rail 1 |
+| `/leaving/netflix`（常設ページ） | table 60 / cta 1 / rail 1 |
+
+- **既定ID `jetbike-22` は本番に1本も残っていない**（全リンクがいずれかの枠に分類済み）
+- Netflix / Disney+ / Apple TV+ / U-NEXT / Hulu / DMM に `tag=` が付いていないこと**も確認済み**（付いてはいけない）
+- 人物ページ: 薄い方は `<meta name="robots" content="noindex,follow">`、
+  作品の多い方は robots メタ無し
+- XMLサイトマップ 595件（`/person/` は 31件）
+- AdSense は0件（`PUBLIC_ADSENSE_CLIENT` 未設定なので正常）
+
+> **Cloudflare の環境変数はビルド時に読まれる。**
+> 値を入れただけでは反映されない。push があれば自動でビルドが走るが、
+> **環境変数だけを変えたときは Deployments → 最新 → Retry deployment** が要る。
+> Production と Preview は別枠なので、**両方に入れること。**
 
 ---
 
