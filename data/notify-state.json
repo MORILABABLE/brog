@@ -1,6 +1,6 @@
 {
-  "lastCollectedAt": "2026-09-03T21:35:53.010Z",
+  "lastCollectedAt": "2026-09-03T23:03:48.517Z",
   "startsTodayDate": "2026-09-04",
-  "staleSignature": "conan-movies:passed+missing:23/2",
-  "updatedAt": "2026-09-03T21:36:03.236Z"
+  "staleSignature": "conan-movies:passed+missing:23/2,harry-potter:missing:0/1",
+  "updatedAt": "2026-09-03T23:30:36.251Z"
 }
