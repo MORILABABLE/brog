@@ -4,6 +4,7 @@
  *   npm run queries                  直近28日ぶんを取り込む
  *   npm run queries -- --days 90     期間を変える
  *   npm run queries -- --dry-run     取得して表示するだけ（何も書かない）
+ *   npm run queries -- --sites       **権限のあるプロパティを一覧する（設定の切り分け用）**
  *
  * ■ 何のためにあるか
  * サイトのAmazon導線は「そのページが扱っている作品」を検索語に使っている。
@@ -132,6 +133,31 @@ async function accessToken(sa: ServiceAccount): Promise<string> {
   return json.access_token
 }
 
+/**
+ * このサービスアカウントが読めるプロパティを一覧する。**設定の切り分け用。**
+ *
+ * ■ なぜ要るか
+ * `searchAnalytics/query` は、プロパティ名が違うときも、権限が無いときも
+ * **同じ 403 を返す**（存在しないプロパティと権限の無いプロパティを
+ * 区別できないようにするため）。エラーだけでは次の一手が決まらない。
+ *
+ *   一覧が空       … サービスアカウントが Search Console に追加されていない
+ *   一覧に出るのに403 … GSC_SITE_URL の表記が違う（**出てきた文字列をそのまま使う**）
+ *
+ * ★ `sc-domain:example.com` と `https://example.com/` は**別のプロパティ**。
+ *   見た目が同じサイトでも、登録した種類によって文字列が変わる。
+ */
+async function listSites(token: string): Promise<{ siteUrl: string; permissionLevel: string }[]> {
+  const res = await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites', {
+    headers: { authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) throw new Error(`プロパティ一覧の取得に失敗 (${res.status}): ${await res.text()}`)
+  const json = (await res.json()) as {
+    siteEntry?: { siteUrl: string; permissionLevel: string }[]
+  }
+  return json.siteEntry ?? []
+}
+
 interface ApiRow {
   keys: string[]
   clicks: number
@@ -226,6 +252,30 @@ async function main(): Promise<void> {
 
   const sa = JSON.parse(readFileSync(keyPath, 'utf8')) as ServiceAccount
   const token = await accessToken(sa)
+
+  if (has('sites')) {
+    const sites = await listSites(token)
+    console.log(`サービスアカウント: ${sa.client_email}`)
+    if (sites.length === 0) {
+      console.log('')
+      console.log('読めるプロパティが**0件**です。')
+      console.log('Search Console → 設定 → ユーザーと権限 → ユーザーを追加 で、')
+      console.log(`上のメールアドレスを「制限付き」で追加してください。`)
+      console.log('（APIを有効化しただけでは読めません）')
+      return
+    }
+    console.log(`読めるプロパティ ${sites.length}件:`)
+    for (const s of sites) console.log(`  ${s.siteUrl}  (${s.permissionLevel})`)
+    console.log('')
+    console.log(`いまの GSC_SITE_URL: ${siteUrl}`)
+    console.log(
+      sites.some((s) => s.siteUrl === siteUrl)
+        ? '→ 一致しています。'
+        : '→ **一致しません。** 上の一覧の文字列をそのまま .env に書いてください。',
+    )
+    return
+  }
+
   const rows = await fetchRows(token, siteUrl, ymd(start), ymd(end))
 
   console.log(`${rows.length}行 取得（${ymd(start)} 〜 ${ymd(end)}）`)

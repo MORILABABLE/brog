@@ -1,0 +1,147 @@
+{
+  "fetchedAt": "2026-09-03T06:55:26.588Z",
+  "range": {
+    "start": "2026-08-03",
+    "end": "2026-08-31"
+  },
+  "pages": {
+    "/posts/2026-09-upcoming-prime-video-western": [
+      {
+        "query": "プライムビデオ 2026年9月",
+        "clicks": 1,
+        "impressions": 1,
+        "position": 21
+      }
+    ],
+    "/posts/conan-movies": [
+      {
+        "query": "u-next コナン 配信終了",
+        "clicks": 1,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/category/leaving/netflix": [
+      {
+        "query": "五等分の花嫁 netflix 配信終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 7
+      }
+    ],
+    "/leaving/netflix": [
+      {
+        "query": "デスノート配信終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 10
+      },
+      {
+        "query": "ネトフリ五等分の花嫁 配信終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 7
+      }
+    ],
+    "/works/142": [
+      {
+        "query": "アメリカンビューティー 配信",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 12
+      }
+    ],
+    "/works/16353": [
+      {
+        "query": "その 女 諜報 員 アレックス どこで 見れる",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/2059": [
+      {
+        "query": "ミザリー 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 10
+      }
+    ],
+    "/works/305": [
+      {
+        "query": "スパイダーマン:ノー ウェイ ホーム 配信 終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 6
+      }
+    ],
+    "/works/35212": [
+      {
+        "query": "シークレット ミッション 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 12
+      }
+    ],
+    "/works/4352": [
+      {
+        "query": "鉄板英雄伝説 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/4901": [
+      {
+        "query": "マッシブ タレント 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 12
+      },
+      {
+        "query": "マッシブタレント 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 12
+      }
+    ],
+    "/works/5346": [
+      {
+        "query": "スリザー 配信",
+        "clicks": 0,
+        "impressions": 7,
+        "position": 10.7
+      },
+      {
+        "query": "スリザー 映画 配信",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 15.3
+      }
+    ],
+    "/works/6216": [
+      {
+        "query": "チャーリーと14人のキッズ 配信",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 9
+      }
+    ],
+    "/works/8487": [
+      {
+        "query": "言の葉の庭 配信",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 27
+      }
+    ],
+    "/works/9279": [
+      {
+        "query": "キラークラウン サービス 終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 8
+      }
+    ]
+  }
+}
