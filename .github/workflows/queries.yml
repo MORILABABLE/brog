@@ -1,0 +1,130 @@
+name: queries
+
+# Search Console から「どのページに、どの検索語で来ているか」を取り込む。
+#
+# ■ 何に使うか
+# サイトの Amazon 導線（記事末尾のCTAと右の追従枠）の検索語。
+# ページの題材と、読者が実際に打った言葉はずれる。ずれの実測値を
+# 持っているのは Search Console だけなので、そこから取ってビルドに焼き込む。
+# 使う側は site/src/lib/page-intent.ts、経緯は docs/AFFILIATE.md 1-3。
+#
+# ■ collect 系と分けている理由
+# 見に行く先も、変わる速さも違う。
+#
+#   collect          配信API。無料枠 500req/月。週2回。**在庫が動く**
+#   collect:unext    実ブラウザ。相手の負荷が制約。週2回
+#   queries          Search Console API。無料・回数制限が実質問題にならない。
+#                    ただし**28日窓の集計**なので、日単位ではほとんど動かない
+#
+# ■ なぜ週1回なのか
+# 取れる値が28日の集計で、しかもGoogle側の反映に2〜3日かかる。
+# 毎日走らせても返ってくるものはほぼ同じで、コミットとサイトの再ビルドが
+# 増えるだけになる。**変化が出るのは記事が増えたときで、それは週単位の出来事。**
+#
+# ★ 中身が前回と同じなら queries.ts はファイルを書かない。
+#   だから空振りの週は「変化なし」で終わり、コミットも再ビルドも起きない。
+#
+# ■ 詰まったときは --sites
+#   npm run queries -- --sites
+# 読めるプロパティを一覧する。searchAnalytics/query は
+# 「プロパティ名が違う」ときも「権限が無い」ときも**同じ403**を返すので、
+# エラーだけでは切り分けられない（2026-09-03 に実際に踏んだ）。
+
+on:
+  schedule:
+    # 毎週 日曜 07:00 JST (= 土曜 22:00 UTC)
+    # collect（火・金 04:00 JST）とも announce（毎日 05:00 JST）とも
+    # 曜日と時刻をずらしてある。data/ への push がぶつからないよう
+    # concurrency でも直列化しているが、待たせないに越したことはない。
+    - cron: '0 22 * * 6'
+  workflow_dispatch:
+    inputs:
+      days:
+        description: '何日ぶんを集計するか（既定28）'
+        default: '28'
+      sites:
+        description: 'true にすると取り込まず、読めるプロパティの一覧だけ出す'
+        default: 'false'
+
+permissions:
+  # data/search-queries.json をコミットするために要る。
+  # collect 系と違って Issue は立てないので issues は不要。
+  contents: write
+
+# collect.yml / collect-unext.yml / announce.yml と同じグループ。
+# data/ を全員が書くので直列に流す。
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  queries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      # シークレット未登録は最も多い失敗原因。
+      # 素の exit 1 だと原因が分からないので、ここで明示的に検出する。
+      - name: 必要なシークレットを確認
+        env:
+          KEY: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::GSC_SERVICE_ACCOUNT_JSON が登録されていません"
+            echo "リポジトリの Settings → Secrets and variables → Actions →"
+            echo "New repository secret から GSC_SERVICE_ACCOUNT_JSON を登録してください。"
+            echo "値は secrets/gsc.json の中身をまるごと貼ります（JSON全体）。"
+            exit 1
+          fi
+          echo "シークレット: 登録済み"
+
+      - run: npm ci
+
+      # ★ 鍵は $RUNNER_TEMP に書く。**リポジトリの中に置かないこと。**
+      #   ワークスペースに書くと、後段の `git add data/` の並びやミスひとつで
+      #   秘密鍵がコミットされうる。$RUNNER_TEMP は作業ツリーの外にあり、
+      #   ジョブが終われば消える。
+      - name: サービスアカウントの鍵を用意
+        env:
+          KEY: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: |
+          printf '%s' "$KEY" > "$RUNNER_TEMP/gsc.json"
+          chmod 600 "$RUNNER_TEMP/gsc.json"
+
+      - name: 検索語を取り込む
+        env:
+          # ★ プロパティの文字列。**秘密ではない**ので直接書いている。
+          #   このサイトは URLプレフィックス プロパティ（2026-09-03 実測）。
+          #   ドメイン プロパティ（sc-domain:…）とは別物で、混同すると403になる。
+          #   移行したら `npm run queries -- --sites` で正しい文字列を確認して直す。
+          GSC_SITE_URL: https://mihoudairader.com/
+          GSC_SERVICE_ACCOUNT: ${{ runner.temp }}/gsc.json
+          DAYS: ${{ inputs.days || '28' }}
+          SITES: ${{ inputs.sites || 'false' }}
+        run: |
+          if [ "$SITES" = "true" ]; then
+            npm run queries -- --sites
+          else
+            npm run queries -- --days "$DAYS"
+          fi
+
+      # 中身が前回と同じなら queries.ts はファイルを書かないので、
+      # ここは「変化なし」で静かに終わる。
+      - name: 結果をコミット
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f data/search-queries.json ]; then
+            git add data/search-queries.json
+          fi
+          if git diff --staged --quiet; then
+            echo "変化なし"
+          else
+            git commit -m "chore(queries): $(date -u +%Y-%m-%d)"
+            git push
+          fi

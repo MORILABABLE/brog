@@ -320,6 +320,25 @@ async function main(): Promise<void> {
     return
   }
 
+  // ★ **中身が同じなら書かない。**
+  //   毎週の自動実行（.github/workflows/queries.yml）がそのままコミットするので、
+  //   fetchedAt だけが変わったファイルを書くと**意味のないコミットとサイトの再ビルドが
+  //   毎週発生する。** 検索語は28日窓の集計なので、週単位ではしばしば動かない。
+  //
+  // ★ 比べるのは `pages` だけ。`fetchedAt` と `range` は「いつ取ったか」の記録で、
+  //   中身が変わっていないなら前回の値のままでよい（データの由来としては正しい）。
+  if (existsSync(OUT)) {
+    try {
+      const prev = JSON.parse(readFileSync(OUT, 'utf8')) as SearchQueries
+      if (JSON.stringify(prev.pages) === JSON.stringify(pages)) {
+        console.log(`${count}ページぶん。前回と同じ内容なので書きません。`)
+        return
+      }
+    } catch {
+      // 壊れていたら読めなかったものとして、下で普通に書き直す
+    }
+  }
+
   mkdirSync(dirname(OUT), { recursive: true })
   writeFileSync(OUT, `${JSON.stringify(data, null, 2)}\n`, 'utf8')
   console.log(`${count}ページぶんを ${OUT} に書きました。`)
