@@ -11,6 +11,13 @@ LLM APIは使わず、このセッションで書く（`/article` と同じ経�
 > 何を差し替えて何を残すかは `data/draft/prompt.md` に埋め込まれて渡される。
 > このファイルの記述と食い違ったら prompt.md に従う。
 
+> **月次記事はここに出てこない。出さなくてよい。**
+> 月を名乗る記事（`2026-08-leaving` など）は本文が古くならない
+> （タイトルも見出しも本文も月・日付・基準日を名乗っている）。古くなるのは
+> frontmatter の `category` と `tags` だけで、**毎日 GitHub Actions が自動で直している**
+> （`npm run retire` / `.github/workflows/retire.yml`）。
+> **月次記事を手で書き直さないこと。** 決まりは docs/EDITING.md「月が過ぎた月次記事は、機械が名乗り直す」。
+
 引数: `$ARGUMENTS`（対象のスラッグ。省略可）
 
 ## 手順

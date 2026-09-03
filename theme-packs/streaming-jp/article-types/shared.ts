@@ -81,6 +81,31 @@ export function articleMonth(ctx: ArticleContext): number {
   return Number(ctx.targetMonth.split('-')[1])
 }
 
+/**
+ * **タグの並びから、その記事が名乗っている月を取り出す**（`2026年8月` → `2026-08`）。
+ * 名乗っていなければ `undefined`。
+ *
+ * ■ 何のためにあるか
+ * 月次記事は年月のタグを付け、シリーズ記事は**意図的に付けない**（`series.ts` の `tags()`）。
+ * つまりこのタグの有無が「月を名乗る記事かどうか」の目印になっている。
+ * `ArticleType.retire` の `monthOf` がこれを使い、月が過ぎた記事だけを拾う（`core/retire.ts`）。
+ *
+ * ★ 書いている側は各記事タイプの `tags()`（`${y}年${Number(m)}月`）。
+ *   `leaving` / `ended` / `arrivals` / `arrivals-service` / `upcoming` /
+ *   `upcoming-service` / `special` の7つ。**書式を変えるならここも直すこと。**
+ * ★ 0埋めのどちらでも読めるようにしてある（`2026年8月` / `2026年08月`）。
+ *   書式が片方に寄っても、静かに「月を名乗っていない」と判定されないため。
+ * ★ 特報の「2026年9月配信開始」のような**後ろに語が付くタグは月と見なさない**。
+ *   あれは期間の呼び名（`special.ts` の `periodLabel`）であってタグではない。
+ */
+export function monthTagOf(tags: readonly string[]): string | undefined {
+  for (const t of tags) {
+    const m = /^(\d{4})年(\d{1,2})月$/.exec(t)
+    if (m) return `${m[1]}-${String(Number(m[2])).padStart(2, '0')}`
+  }
+  return undefined
+}
+
 /** 記事作成日。「8月9日」形式 */
 export function asOfLabel(ctx: ArticleContext): string {
   return formatMonthDay(ctx.now.toISOString(), ctx.theme.utc_offset_minutes)

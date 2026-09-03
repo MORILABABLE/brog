@@ -2,8 +2,8 @@
 title: '【2026年8月】U-NEXTで見放題終了する作品80本まとめ｜ウルトラシリーズ・名探偵コナン'
 description: '8月31日にウルトラシリーズ13作品と「名探偵コナン」劇場版6作がU-NEXTで見放題終了。80本を終了日順にまとめました。ポイントで残る作品も併記しています。'
 pubDate: 2026-08-25
-category: 'leaving'
-tags: ['U-NEXT', '配信終了', '2026年8月']
+category: 'ended'
+tags: ['U-NEXT', '配信終了済み', '2026年8月']
 sources:
   - label: '配信状況・見放題終了日は U-NEXT の作品ページに掲載されている情報'
     url: 'https://video.unext.jp/'

@@ -19,3 +19,7 @@ dist/
 # OS
 Thumbs.db
 .DS_Store
+
+# afb の成果データ（npm run afb）。**このリポジトリは公開**なので、
+# 報酬額・成果ID・リンク元ページを入れない。手元の台帳としてだけ持つ。
+data/afb-conversions.json

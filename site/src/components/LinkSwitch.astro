@@ -22,12 +22,19 @@ import { AFFILIATE } from '../config'
  * PUBLIC_VC_LINKSWITCH_PID が空ならこのタグは描画されない。
  * サイトはJSゼロのまま動く。
  *
- * ★ 有効化する前に、VC管理画面の**ブロック設定**で以下を除外すること。
- *   - Amazon : アソシエイトのタグと二重計上になる（規約違反になりうる）
- *   - DMM    : AdSense審査のリスク回避のため当面アフィリエイト対象外
- *   コード側の除外は src/lib/affiliate.ts の EXCLUDED_HOSTS。
- *   ただし LinkSwitch の変換はVC側で走るので、**管理画面の設定が本体**。
- *   詳細は docs/AFFILIATE.md。
+ * ★ **変換されるのは「提携済みの広告主」だけ**（2026-09-03 にVCへ確認）。
+ *   既定で提携状態になっている広告主と、自分で提携申請した広告主の2種類しかない。
+ *   Amazon も U-NEXT も**VCでは提携申請していない**ので、
+ *   アソシエイトや afb との二重計上は**起きない**。
+ *
+ * 🔴 **VCで新しく広告主に提携申請したら、この前提が崩れる。**
+ *   その瞬間から、サイトに残っている素のリンクが変換されて両取りになる。
+ *   コードもデプロイも挟まらないので、気づく手がかりが管理画面にしかない。
+ *   申請するときは VC管理画面の**ブロック設定**（LinkSwitch対象外設定）と
+ *   afb の提携先を突き合わせること。詳細は docs/AFFILIATE.md 2節 / 11-8。
+ *
+ *   コード側の除外は src/lib/affiliate.ts の EXCLUDED_HOSTS にもあるが、
+ *   LinkSwitch の変換はVC側で走るので、**管理画面の設定が本体**。
  */
 const pid = AFFILIATE.linkSwitchPid
 ---

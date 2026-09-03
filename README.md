@@ -175,6 +175,8 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | `npm run write -- --refresh` | **公開済みの記事のうち、いまのデータと食い違っているもの**を急ぐ順に出す（見放題終了予定 → 見放題終了 など）。API消費なし → [docs/EDITING.md](./docs/EDITING.md) |
 | `npm run write -- --refresh --emit` | そのうち1本ぶんのプロンプトを書き出す。**前の版の本文が付く**（書き直しは差し替え） |
 | `npm run write -- --register --type … --slug …` | 公開済みの記事を**控え**（`data/articles.json`）に登録する。2026-09-02 より前の記事だけ一度必要 |
+| `npm run retire` | **月が過ぎた記事の名乗り直しを一覧する**（`配信終了予定` → `配信終了済み`）。書き換えない・API消費なし |
+| `npm run retire -- --write` | 実際に書き換える。**frontmatter の `category` と `tags` の2行だけ**で、本文もタイトルも触らない。毎日 GitHub Actions が自動で回している（`.github/workflows/retire.yml`）ので、手で打つ必要は普段ない |
 | `/article` | **このセッションで記事を執筆（API課金なし）** |
 | `/refresh` | **このセッションで書き直しをまとめて回す（API課金なし）** |
 | `npm run write -- --type <記事> [--genre <ジャンル>] --emit` | プロンプトを `data/draft/prompt.md` に書き出す |

@@ -11,6 +11,7 @@
     "collect:unext": "tsx pipeline/cli/collect-unext.ts",
     "collect:announce": "tsx pipeline/cli/collect-announce.ts",
     "queries": "tsx pipeline/cli/queries.ts",
+    "afb": "tsx pipeline/cli/afb.ts",
     "notify": "tsx pipeline/cli/notify.ts",
     "enrich": "tsx pipeline/cli/enrich.ts",
     "write": "tsx pipeline/cli/write.ts",
@@ -24,6 +25,7 @@
     "unext:refresh": "tsx pipeline/cli/unext-refresh.ts",
     "backfill:images": "tsx pipeline/cli/backfill-images.ts",
     "stock": "tsx pipeline/cli/upcoming-stock.ts",
+    "retire": "tsx pipeline/cli/retire.ts",
     "unpublish": "tsx pipeline/cli/publish.ts",
     "publish": "tsx pipeline/cli/publish.ts --show"
   },

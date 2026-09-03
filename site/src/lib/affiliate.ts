@@ -38,6 +38,15 @@ export const AFFILIATE_HOSTS = [
   'www.hulu.jp',
   'hulu.jp',
   'abema.tv',
+  // afb のリンクコードの転送ドメイン（`https://t.afi-b.com/visit.php?…`）。
+  //
+  // ★ **ここに入れないと afb のリンクに `noreferrer` が付く。**
+  //   relFor() は「知らない外部ホスト」に noopener noreferrer を付ける。
+  //   afb はリンク元ページ（成果データの `ref`）をリファラで見ているので、
+  //   noreferrer が付くと**どのページから成果が出たか分からなくなる**。
+  //   afb が許可しているリンクコードの改変も `rel="sponsored"` までなので
+  //   （docs/AFFILIATE.md 11-3）、sponsored noopener に揃うこの側が正しい。
+  't.afi-b.com',
 ]
 
 /**

@@ -30,6 +30,7 @@ import {
   halfWidthSymbols,
   isTargetMonth,
   itemTitles,
+  monthTagOf,
   namingRules,
   normalizeBody,
   phraseReader,
@@ -183,6 +184,22 @@ export const leavingArticle: ArticleType = {
   variantFlag: 'service',
   variantNoun: 'サービス',
   minItems: MIN_ITEMS,
+
+  /*
+   * その月が終わったら「終了予定」ではなく「終了済み」。**本文は直さない。**
+   * 直すのは frontmatter の2行だけで、理由は `core/article.ts` の `retire` に書いてある。
+   *
+   * ★ 下の `select()` が「対象月に終了」かつ「終了日が未来」で絞っているから、
+   *   月が終わった時点で載っている全作品の終了日が過ぎたと**確定できる**。
+   *   ここが `retire` を宣言してよい根拠そのもの。片方を変えるならもう片方も見ること。
+   * ★ タグで引くので、同じ `配信終了` を付ける特報（`--kind expiring`）も一緒に移る。
+   */
+  retire: {
+    tag: '配信終了',
+    becomes: '配信終了済み',
+    category: 'ended',
+    monthOf: monthTagOf,
+  },
 
   select(rawEvents, _ledger: Ledger, ctx) {
     const service = ctx.variant?.key

@@ -1,0 +1,107 @@
+name: retire
+
+# 月が過ぎた記事を「配信終了済み」に名乗り直させる。**人の確認を挟まない。**
+#
+# ■ 何が起きるか
+#   ① 記事の frontmatter の `category` と `tags` の2行だけを書き換える
+#      （`npm run retire -- --write` / 中身は pipeline/core/retire.ts）
+#   ② 差分が無ければそこで終わり。コミットも再ビルドも起きない
+#   ③ 差分があればサイトのビルドを通してからコミットして push する
+#   ④ push を検知して Cloudflare Pages がサイトをビルドし直す（DEPLOY.md）
+#
+# ■ なぜ確認が要らないか
+# 判断材料は frontmatter のタグだけで、**作品も本文も1件も見ていない。**
+# `leaving` の `select()` が「対象月に終了」かつ「終了日が未来」で絞っているので、
+# その月が終われば載っている全作品の終了日が過ぎたと確定する。数え直す余地が無い。
+# 本文・タイトル・見出しは月や日付を名乗っていて古くならないので、触らない。
+#
+# ■ なぜ毎日なのか（月1ではなく）
+# 状態が変わるのは月初だけなので、月1回で足りるように見える。**足りない。**
+# 月1で失敗すると、次の実行まで1か月ぶん間違ったバッジが出たままになり、
+# しかも**誰も気づかない**。このリポジトリが `--refresh` を作った理由と同じ失敗の形
+# （pipeline/core/stale.ts の「問題は『いつ書き直すか』を誰も見ていなかったこと」）。
+#
+# 毎日にすると、月初のずれは最大1時間で閉じ、実行が1回飛んでも翌日が拾う。
+# 空振りの日は `npm ci` と tsx 1回で終わる（差分が無いのでサイトのビルドまで行かない）。
+#
+# ■ 規則を足すには
+# ワークフローもCLIも触らない。記事タイプに `retire` を宣言するだけ
+# （`theme-packs/streaming-jp/article-types/leaving.ts`）。
+# ★ 配信開始側には宣言しないこと。理由は pipeline/core/article.ts の `retire`。
+
+on:
+  schedule:
+    # 毎日 01:00 JST (= 前日 16:00 UTC)
+    # collect（火・金 04:00 JST）・announce（毎日 05:00 JST）・
+    # queries（日 07:00 JST）のどれとも時刻をずらしてある。
+    - cron: '0 16 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'true にすると書き換えず、何が変わるかだけ出す'
+        default: 'false'
+
+permissions:
+  # 記事をコミットするために要る
+  contents: write
+
+# data/ を書く収集系とは別グループ。publish.yml と同じく、触るのは site/ だけ。
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  retire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # 手動実行で dry_run を選んだときは、ここで一覧だけ出して終わる。
+      - name: 何が変わるかを見る
+        if: inputs.dry_run == 'true'
+        run: npm run retire
+
+      - name: 名乗り直す
+        if: inputs.dry_run != 'true'
+        run: npm run retire -- --write
+
+      # 空振りの日はここで終わる。**サイトのビルドまで行かない**のが毎日回せる理由。
+      - name: 差分があるか
+        if: inputs.dry_run != 'true'
+        id: changed
+        run: |
+          if git diff --quiet -- site/src/content/posts/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "名乗り直しが要る記事はありませんでした"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git --no-pager diff --stat -- site/src/content/posts/
+          fi
+
+      # ★ ビルドを通してから push する。
+      #   frontmatter を壊した状態を本番に送らないための関門
+      #   （site/src/content.config.ts の schema 検証がここで走る）。
+      - name: サイトがビルドできるか確かめる
+        if: steps.changed.outputs.changed == 'true'
+        working-directory: site
+        run: npm ci && npm run build
+
+      - name: コミットして反映する
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/src/content/posts/
+          git commit -m "chore(posts): 月が過ぎた記事を配信終了済みにする"
+          git pull --rebase
+          git push
+          echo "push しました。Cloudflare Pages が数分でビルドし直します。"
