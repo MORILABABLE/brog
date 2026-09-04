@@ -23,6 +23,8 @@
     "typecheck": "tsc --noEmit",
     "unext:menu": "tsx pipeline/cli/unext-menu.ts",
     "unext:refresh": "tsx pipeline/cli/unext-refresh.ts",
+    "unext:ng": "tsx pipeline/cli/unext-ng.ts",
+    "check:unext": "tsx pipeline/cli/check-unext.ts",
     "backfill:images": "tsx pipeline/cli/backfill-images.ts",
     "stock": "tsx pipeline/cli/upcoming-stock.ts",
     "retire": "tsx pipeline/cli/retire.ts",

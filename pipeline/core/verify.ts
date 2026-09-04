@@ -6,6 +6,7 @@
  */
 import type { ChangeEvent } from '../sources/types.ts'
 import type { ParsedArticle } from './article.ts'
+import { adPolicyHits } from './ad-policy.ts'
 import { mentionsByTitle } from './coverage.ts'
 
 export interface VerifyIssue {
@@ -186,6 +187,17 @@ export function verifyArticle(input: VerifyInput): VerifyIssue[] {
         '      日本語では「〜します。**次の文」のように閉じ記号の直前が約物だと閉じられません。\n' +
         '      「〜します**。次の文」のように、句点や括弧を強調の外に出してください。',
     )
+  }
+
+  // --- 広告主のガイドライン ---
+  // **記事は広告の載る面そのもの**なので、本文の言い回しがそのまま
+  // アフィリエイトの違反になる。違反は提携解除と過去分を含む成果の全件却下に
+  // つながるので、公開を止める（一覧と条番号は core/ad-policy.ts）。
+  //
+  // ★ タイトルと説明文も見る。検索結果に出るのはそちらで、
+  //   「今なら無料」の類はまずタイトルに書かれる。
+  for (const hit of adPolicyHits(`${parsed.title}\n${parsed.description}\n${parsed.body}`)) {
+    err(`広告主のガイドラインで禁止されている表現があります: 「${hit.found}」（${hit.why}）`)
   }
 
   // --- 出典表記 ---

@@ -167,6 +167,8 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | `npm run collect:announce -- --check` | 告知が出ているかだけ見る（何も書かない・API消費なし） |
 | `npm run unext:refresh` | U-NEXT の作品台帳を取り直す（**終了日の変更を見つける**） |
 | `npm run unext:menu` | U-NEXT のジャンル・カテゴリIDを調べる |
+| `npm run unext:ng` | **U-NEXT のアフィリエイトで扱えない作品の一覧を作る**（TBS／日テレ／FOD）。月1回でよい → [docs/AFFILIATE.md 12節](./docs/AFFILIATE.md) |
+| `npm run check:unext` | **ビルド済みのサイトを U-NEXT のガイドラインで検査する**（禁止表現・掲載NG作品・必須文言）。`cd site && npm run build` のあとに実行する |
 | `npm run notify` | **前回以降の変化を運用者に通知する（Issue→メール）。API消費なし** |
 | `npm run notify -- --dry-run` | 送らずに通知本文だけ表示する |
 | `npm run research` | **これから書く記事の作品を日本語版 Wikipedia で下調べする（無料・キー不要）**。作風・評判・広がり方を事実で書くための素材 → [templates/writing.md](./theme-packs/streaming-jp/templates/writing.md) |

@@ -1,0 +1,137 @@
+---
+import { unextAd, type UnextSlot } from '../lib/unext-ad'
+import type { CategorySlug } from '../config'
+
+/**
+ * U-NEXT（afb）への導線。
+ *
+ * ■ 中身の判断はこのファイルにない
+ * 出すかどうか・どのLPへ送るか・何と書くかは `src/lib/unext-ad.ts` が決める。
+ * ここは返ってきたものを描くだけ。**文言をこのファイルに書き足さないこと。**
+ * ガイドラインの遵守を1か所で確かめられなくなる（U-NEXT は表現そのものを縛る）。
+ *
+ * ■ 未設定なら何も描かない
+ * afb のリンクコード（`PUBLIC_AFB_UNEXT_LP`）が入るまで `unextAd()` は
+ * null を返すので、このコンポーネントを置いても1バイトも出ない。
+ * 提携が通る前に置き場所だけ決めておける。
+ *
+ * ■ 掲載NG作品のページには出ない
+ * `pageText` に記事本文や作品名の一覧を渡すと、掲載NGの作品・権利元が
+ * 含まれるページでは広告そのものが消える（`src/lib/unext-ng.ts`）。
+ * **渡し忘れると素通りする。** 呼び出し側は必ず渡すこと。
+ *
+ * ■ Amazon の枠を置き換えない
+ * 単価は afb のほうが桁違いに高いが、Amazon は**クリックから24時間の
+ * あらゆる購入**が成果になる別の性質を持つ。**並べて枠別に測る**
+ * （docs/AFFILIATE.md 11-7）。AmazonCta を消してここに替えないこと。
+ */
+interface Props {
+  /**
+   * どの枠か。成果データの `id1` に入る。既定は記事末尾の `cta`。
+   *
+   * ★ **`slot` という名前にしてはいけない。** Astro では `slot` が予約語で、
+   *   名前付きスロットへの割り当てとして解釈される。コンポーネントに
+   *   `slot="work"` を渡すと、**そのコンポーネントごと出力から消える**
+   *   （親に `work` という名前のスロットが無いため。2026-09-04 に踏んだ）。
+   */
+  spot?: UnextSlot
+  /** 記事カテゴリ。文面が変わる（配信終了の記事で「観られます」と書かないため） */
+  category?: CategorySlug
+  /** 記事のジャンル、または U-NEXT のジャンルキー。LPの選択に使う */
+  genre?: string
+  /** ページに出ている文字列。**掲載NGの判定に要る。必ず渡す** */
+  pageText?: string
+  /** 注意文言に出す基準日。記事の dataAsOf */
+  asOf?: Date
+}
+
+const { spot = 'cta', category, genre, pageText, asOf } = Astro.props
+
+const ad = unextAd({ slot: spot, category, genre, pageText, asOf })
+---
+
+{
+  ad && (
+    <aside class="unext-cta" aria-label="U-NEXTで探す">
+      <p class="label">
+        <span class="pr">PR</span>U-NEXT
+      </p>
+      <p class="lead">{ad.body}</p>
+      {ad.trial && <p class="trial">{ad.trial}</p>}
+      <a
+        class="action"
+        href={ad.href}
+        rel="sponsored noopener"
+        target="_blank"
+        data-affiliate="true"
+        data-unext-ad={ad.lp}
+      >
+        {ad.action}
+      </a>
+      {/*
+        記載必須の注意文言（ガイドライン注意事項【4】）。
+        **広告と同じ枠に置くこと。** 文面は lib/unext-ad.ts の noticeFor()。
+      */}
+      <p class="note">{ad.notice}</p>
+    </aside>
+  )
+}
+
+<style>
+  /*
+   * 見た目は AmazonCta と揃える。同じ「探す導線」なので、
+   * 片方だけ派手にすると読者には広告の強さの差にしか見えない。
+   */
+  .unext-cta {
+    margin: 2rem 0;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-subtle);
+  }
+  .label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .pr {
+    padding: 0.1rem 0.45rem;
+    border: 1px solid var(--text-muted);
+    border-radius: 3px;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+  }
+  .lead {
+    margin: 0 0 0.8rem;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+  .trial {
+    margin: 0 0 0.8rem;
+    font-size: 0.86rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+  .action {
+    display: inline-block;
+    padding: 0.6rem 1.1rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .action:hover {
+    opacity: 0.9;
+  }
+  .note {
+    margin: 0.7rem 0 0;
+    font-size: 0.76rem;
+    color: var(--text-muted);
+  }
+</style>

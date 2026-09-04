@@ -327,6 +327,46 @@ export class UnextSource implements Source {
     return { titles: d?.titles ?? [], pageInfo: d?.pageInfo }
   }
 
+  /**
+   * カテゴリ1つぶんの作品を、最後のページまで読む。
+   *
+   * ■ 何のためにあるか
+   * U-NEXT のアフィリエイトガイドラインは、掲載NGの権利元を
+   * **U-NEXT のジャンルメニューのURLで**指している（TBSオンデマンド／日テレ／FOD）。
+   * つまり「どの作品が該当するか」はそのメニューを読めば分かる。
+   * `npm run unext:ng` がここを呼んで一覧を作る（data/unext-ng.json）。
+   *
+   * ★ 作品ページは開かない。要るのは作品IDと題名だけで、
+   *   終了日も配信状況も要らない（判定に使うのは名前だけ）。
+   *   1カテゴリ数十ページの一覧アクセスで済む。
+   *
+   * ★ **全部読めたかどうかを呼び出し側に返す**（`total` と `pages`）。
+   *   途中で打ち切ったことに気づけないと、**一覧が欠けたまま「NGなし」と
+   *   判定される**。掲載NGの用途ではそれが最悪の壊れ方になる。
+   *
+   * @param maxPages 上限。相手への負荷を自分で握るために**必ず渡す**。
+   */
+  async listCategoryTitles(
+    genre: string,
+    category: string,
+    maxPages: number,
+  ): Promise<{ rows: { id: string; title: string }[]; total: number; pages: number }> {
+    const rows: { id: string; title: string }[] = []
+    let total = 0
+    let pages = 0
+    for (let page = 1; page <= maxPages; page++) {
+      const { titles, pageInfo } = await this.#listPage(genre, category, page, 'popular')
+      for (const t of titles) rows.push({ id: t.id, title: t.titleName })
+      if (pageInfo) {
+        total = pageInfo.results
+        pages = pageInfo.pages
+      }
+      if (titles.length === 0) break
+      if (pageInfo && page >= pageInfo.pages) break
+    }
+    return { rows, total: total || rows.length, pages: pages || 1 }
+  }
+
   /** ジャンル配下のカテゴリ一覧。theme.yaml に書く ID を調べるために使う。 */
   async listCategories(genreId: string): Promise<{ name: string; categories: UnextCategory[] }> {
     // カテゴリIDは URL の飾りで、メニューの問い合わせはジャンルIDだけで決まる。

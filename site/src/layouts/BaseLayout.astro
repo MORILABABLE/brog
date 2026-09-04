@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro'
 import LinkSwitch from '../components/LinkSwitch.astro'
 import LeftRail from '../components/LeftRail.astro'
 import FollowRail from '../components/FollowRail.astro'
+import { UNEXT_AD_ENABLED } from '../lib/unext-ad'
 import '../styles/global.css'
 
 interface Props {
@@ -223,6 +224,22 @@ const jsonLd = jsonLdOverride ?? (publishedAt
       （＝サイトはJSゼロのまま）。詳細は docs/AFFILIATE.md。
     */}
     <LinkSwitch />
+
+    {/*
+      afb の vref.js（2026-09-04 追加）。**afb のリンクを置いたときだけ出す。**
+
+      ■ 何をするスクリプトか
+      ページ内の `t.afi-b.com` 宛のリンクに `v_ref=<いまのページURL>` を足すだけ。
+      これが無いと、成果データの「リンク元ページ」は**オリジンだけ**になり
+      （ブラウザ既定の `strict-origin-when-cross-origin`）、
+      700ページのどこで成果が出たのかが永久に分からない（docs/AFFILIATE.md 11-5）。
+
+      ★ **リンクを置く前に入れないこと。** afb のリンクが1本も無いページで
+        外部スクリプトを1本増やすだけになる。判定は U-NEXT の広告と同じ
+        `UNEXT_AD_ENABLED`（＝リンクコードが .env に入っているか）。
+      ★ 成果が出てから遡って直せない値なので、**リンクを置くのと同時に入れる。**
+    */}
+    {UNEXT_AD_ENABLED && <script is:inline async src="https://t.afi-b.com/jslib/vref.js" />}
   </head>
 
   <body>

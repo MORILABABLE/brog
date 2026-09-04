@@ -318,10 +318,23 @@ export const AFFILIATE = {
    *   提携が通れば、その時点からコード変更なしで成果対象になる。
    */
   linkSwitchPid: import.meta.env.PUBLIC_VC_LINKSWITCH_PID ?? '',
+  /**
+   * afb の U-NEXT の既定LPのリンクコード。**値を使うのはここではない。**
+   *
+   * ★ 中身を扱うのは src/lib/unext-ad.ts（LPの選び分け・文言・掲載NGの判定）。
+   *   ここで読んでいるのは**広告表記（PR）を出すかどうかの判定**のためだけ。
+   *   afb のリンクだけが有効な状態（Amazon も LinkSwitch も未設定）で
+   *   「PR」が出ないと、広告があるのに広告表記が無いページになる。
+   *
+   * ★ 環境変数の名前を変えるときは src/lib/unext-ad.ts の LP.default も直すこと。
+   */
+  unextAfbLp: import.meta.env.PUBLIC_AFB_UNEXT_LP ?? '',
 } as const
 
 /** アフィリエイトが1つでも有効か。広告表記の出し分けに使う。 */
-export const AFFILIATE_ENABLED = Boolean(AFFILIATE.amazonTag || AFFILIATE.linkSwitchPid)
+export const AFFILIATE_ENABLED = Boolean(
+  AFFILIATE.amazonTag || AFFILIATE.linkSwitchPid || AFFILIATE.unextAfbLp,
+)
 
 /**
  * 枠別のトラッキングid（2026-09-03 追加）。

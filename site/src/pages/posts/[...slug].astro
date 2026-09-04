@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AdSlot from '../../components/AdSlot.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
+import UnextCta from '../../components/UnextCta.astro'
 import { CATEGORIES, GENRES, hubFor } from '../../config'
 import { formatDate, isoDate } from '../../utils/date'
 
@@ -27,6 +28,23 @@ const genre = post.data.genre ? GENRES[post.data.genre] : undefined
  * ここを cat.slug のままにすると、生成されないURLへのリンクになる。
  */
 const hub = hubFor(post.data.category)
+/*
+ * U-NEXT（afb）の導線を出すか。**U-NEXT を扱っている記事にだけ出す。**
+ *
+ * ★ 全記事に出さない理由は2つ。
+ *   1. ガイドライン【6】「関連性が薄いサイト」。Netflix だけの記事に
+ *      U-NEXT の広告を貼るのは、ページの中身と広告が噛み合っていない
+ *   2. 噛み合っていない枠は押されない。**枠を増やすほど成果は薄まる**
+ *
+ * ★ 判定はタグ。サービス軸のページ（config.ts の SERVICE_HUBS）が使うのと
+ *   同じ文字列で、記事側は theme-packs の `tags()` が書く。
+ */
+const unextSubject = post.data.tags.includes('U-NEXT')
+/*
+ * 掲載NGの判定に渡す文字列。**タイトル・説明文・本文をすべて渡す。**
+ * 表の作品名も解説文も本文の中にあるので、これで足りる（src/lib/unext-ng.ts）。
+ */
+const unextPageText = [post.data.title, post.data.description, post.body ?? ''].join('\n')
 ---
 
 <BaseLayout
@@ -100,6 +118,28 @@ const hub = hubFor(post.data.category)
       トラッキングID未設定なら描画されない。
     */}
     <AmazonCta category={post.data.category} />
+
+    {/*
+      U-NEXT（afb）への導線。**Amazon の枠を置き換えるものではない。**
+      単価は afb のほうが桁違いに高いが、Amazon はクリックから24時間の
+      あらゆる購入が成果になる別の性質を持つ。並べて枠別に測る
+      （docs/AFFILIATE.md 11-7 / 12節）。
+
+      ★ afb のリンクコードが未設定なら1バイトも出ない。
+      ★ 掲載NGの作品・権利元が本文にあるページでは、この枠ごと消える
+        （ガイドライン「掲載NG権利元、作品について」）。
+    */}
+    {
+      unextSubject && (
+        <UnextCta
+          spot="cta"
+          category={post.data.category}
+          genre={post.data.genre}
+          pageText={unextPageText}
+          asOf={post.data.dataAsOf}
+        />
+      )
+    }
 
     <AdSlot />
 

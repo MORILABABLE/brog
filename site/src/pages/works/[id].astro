@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
+import UnextCta from '../../components/UnextCta.astro'
 import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
@@ -178,6 +179,19 @@ const observedSince = history.length > 0 ? observationStart() : null
  * ここで件数を足したり、別の条件で拾い直したりしないこと。
  */
 const relatedGroups = relatedWorks(w)
+
+/*
+ * U-NEXT（afb）の掲載NG判定に渡す文字列。
+ *
+ * **このページに名前が出る作品を全部渡す。** 本作だけでなく関連作品も渡すのは、
+ * 掲載NGの作品名がページのどこかに出ていたら「扱っている」と読まれうるため
+ * （ガイドライン「掲載NG権利元、作品について」）。取りこぼすより広く止める。
+ */
+const unextPageText = [
+  w.title,
+  w.originalTitle ?? '',
+  ...relatedGroups.flatMap((g) => g.items.map((i) => i.title)),
+].join('\n')
 
 // --- 構造化データ --------------------------------------------------------------
 
@@ -374,6 +388,17 @@ const jsonLd = {
   </section>
 
   <AmazonCta category={STATE_CATEGORY[w.state]} query={w.title} />
+
+  {/*
+    U-NEXT（afb）への導線。**「他のサービスで探す」のすぐ後ろに置く。**
+    この位置の読者は「この作品をどこで観られるか」を探している最中で、
+    サイト内でいちばん意図がはっきりしている（枠は `work`）。
+
+    ★ 「U-NEXTで配信中」とは書かない。当サイトは U-NEXT の作品別の
+      配信状況を持っていない（上の .find-note と同じ線引き）。
+    ★ 掲載NGの作品が本作にも関連作品にも無いときだけ出る。
+  */}
+  <UnextCta spot="work" pageText={unextPageText} />
 
   {
     relatedGroups.length > 0 && (

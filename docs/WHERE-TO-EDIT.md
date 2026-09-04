@@ -186,16 +186,22 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
 
     1. Amazonへの導線   → site/src/components/AmazonCta.astro
                           文面はカテゴリで変わる（終了記事に「見放題で探す」と出さない）
-    2. 広告枠           → site/src/components/AdSlot.astro
+    2. U-NEXTへの導線   → site/src/components/UnextCta.astro（見た目だけ）
+                          **文言とLPの選び方は site/src/lib/unext-ad.ts にある。**
+                          U-NEXT のタグが付いた記事にだけ出る。
+                          PUBLIC_AFB_UNEXT_LP 未設定なら何も描かれない。
+                          掲載NG作品（TBS／日テレ／FOD）が本文にあるページでは
+                          枠ごと消える（site/src/lib/unext-ng.ts）
+    3. 広告枠           → site/src/components/AdSlot.astro
                           PUBLIC_ADSENSE_CLIENT 未設定なら何も描かれない
-    3. 出典             → 中身は記事の frontmatter `sources`
+    4. 出典             → 中身は記事の frontmatter `sources`
                           並べ方は [...slug].astro の <section class="sources">
-    4. タグ             → 記事の frontmatter `tags`
+    5. タグ             → 記事の frontmatter `tags`
                           ★ ジャンル（アニメ／洋画／邦画）は**タグではなくバッジ**で出す。
                             見出し下の日付の左、カテゴリバッジの隣。
                             出どころは frontmatter の `genre`、見た目は
                             global.css の `.badge.genre`
-    5. フッター         → site/src/components/Footer.astro（全ページ共通）
+    6. フッター         → site/src/components/Footer.astro（全ページ共通）
 
 **記事本文の中**の定型文（「他のサービスで探す」の前置きなど）は記事側ではなくテンプレート。
 
