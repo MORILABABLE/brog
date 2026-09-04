@@ -1,12 +1,17 @@
 {
   "note": "告知の邦題から特定した作品。npm run collect:announce が書く。手で編集しない（手で決めたいものは data/announcement-pins.json）。",
-  "updatedAt": "2026-09-02T22:09:17.597Z",
+  "updatedAt": "2026-09-04T21:56:39.840Z",
   "works": {
     "netflix|Blippi|": {
       "title": "Blippi",
       "imdbId": "tt6594882",
       "checkedAt": "2026-09-02T22:09:17.356Z",
       "apiShowId": "24056"
+    },
+    "netflix|Famous Last Words: Gloria Steinem|": {
+      "title": "Famous Last Words: Gloria Steinem",
+      "imdbId": null,
+      "checkedAt": "2026-09-04T21:56:39.839Z"
     },
     "netflix|Instadocs: エアフォースワンを\"おとり\"に|": {
       "title": "Instadocs: エアフォースワンを\"おとり\"に",
