@@ -37,6 +37,9 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
 
     ヘッダー（サイト名・メニュー・記事検索窓）
       → site/src/components/Header.astro
+      色（紺の背景・明るい文字） → site/src/styles/global.css の :root の --header-*
+                         ★ --header-bg は --bg-tint 参照。地の色を変えると一緒に動く
+                         ★ 背景だけ戻さないこと（文字が白いままになる）
       メニューの項目   → site/src/config.ts の CATEGORY_HUBS
                          ★ CATEGORIES ではない。カテゴリは4つ、メニューは3つ
       メニューを押すと開くサービス名

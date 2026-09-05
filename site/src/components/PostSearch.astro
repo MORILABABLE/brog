@@ -208,8 +208,13 @@ const index = posts
     font-size: 0.8rem;
     font-family: inherit;
   }
+  /*
+   * ★ 枠の**外側**に出る線なので、載るのは入力欄ではなく**ヘッダーの紺**。
+   *   --accent（#1f6feb）だと紺に沈むので、ヘッダー用の明るい青を使う
+   *   （2026-09-05。ヘッダーを紺にしたときに合わせた・global.css の --header-link）。
+   */
   input:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--header-link);
     outline-offset: 1px;
   }
   /*

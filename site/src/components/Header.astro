@@ -175,9 +175,20 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
 </script>
 
 <style>
+  /*
+   * ★ 紺。**背景の地と同じ色**で、フッターの紺と上下で挟む形にしてある
+   *   （2026-09-05 に白から変更。色は global.css の :root の --header-*）。
+   *
+   *   ここを白に戻すなら、**下の文字色4か所も一緒に戻すこと**
+   *   （.brand / nav a / summary / PostSearch の focus）。
+   *   背景だけ白にすると、明るい文字が白地に載って読めなくなる。
+   *
+   * ★ 境目の線は --border（薄いグレー）では紺の上でほぼ見えない。
+   *   フッターと同じ半透明の白（--header-border）にしてある。
+   */
   header {
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    border-bottom: 1px solid var(--header-border);
+    background: var(--header-bg);
     position: sticky;
     top: 0;
     z-index: 5;
@@ -201,7 +212,8 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
   .brand {
     font-weight: 700;
     font-size: 1.1rem;
-    color: var(--text);
+    /* 紺の上なので白。メニュー（--header-text）より一段強く出す */
+    color: var(--header-title);
     text-decoration: none;
     white-space: nowrap;
   }
@@ -223,11 +235,12 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
     font-size: 0.88rem;
   }
   nav a {
-    color: var(--text-muted);
+    color: var(--header-text);
     text-decoration: none;
   }
   nav a:hover {
-    color: var(--accent);
+    /* --accent（#1f6feb）は紺の上でほとんど沈む。明るい青を使う */
+    color: var(--header-link);
   }
 
   /* --- 押すと開くメニュー --- */
@@ -241,7 +254,7 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
     align-items: center;
     gap: 0.3rem;
     cursor: pointer;
-    color: var(--text-muted);
+    color: var(--header-text);
     white-space: nowrap;
     /* 指で押す範囲。狭いと隣のメニューを押してしまう */
     padding-block: 0.15rem;
@@ -250,10 +263,10 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
     display: none;
   }
   summary:hover {
-    color: var(--accent);
+    color: var(--header-link);
   }
   summary:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--header-link);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -270,7 +283,7 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
     transform: translateY(0.06rem) rotate(-135deg);
   }
   .menu[open] > summary {
-    color: var(--accent);
+    color: var(--header-link);
   }
 
   /*

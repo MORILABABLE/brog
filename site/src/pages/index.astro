@@ -71,4 +71,31 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
     color: var(--text-muted);
     font-size: 0.95rem;
   }
+
+  /*
+   * ★ スマホだけ第一画面を詰める（2026-09-05）。
+   *
+   *   ヘッダーは 47rem 未満で**2段**になる（サイト名＋検索窓／メニュー。
+   *   Header.astro の @media）。そのぶん第一画面の上が埋まっているところへ
+   *   2rem を空けると、**サイトの説明文とPR表記だけで画面の上半分が終わる。**
+   *   広い画面はヘッダーが1段なので、上の値のままにしてある。
+   *
+   *   ここで詰めているのは**間隔だけ**で、並び（説明文 → PR表記 → 棚 → 一覧）は
+   *   変えていない。PR表記の位置は景品表示法（ステマ規制）の要件そのものなので、
+   *   詰めるついでに動かさないこと（AffiliateNotice.astro）。
+   */
+  @media (max-width: 47rem) {
+    .hero {
+      /* 上は .content-card の padding-top 0.6rem と合わせて約1.4rem */
+      padding: 0.8rem 0 0.6rem;
+    }
+    /*
+     * 説明文とPR表記の間隔。既定は 1rem（AffiliateNotice.astro）。
+     * ★ `:global` が要る。**別コンポーネントのクラス**なので、
+     *   スコープ付きのままでは印が付かず1つも当たらない。
+     */
+    .hero :global(.affiliate-notice) {
+      margin-top: 0.5rem;
+    }
+  }
 </style>

@@ -81,7 +81,7 @@ const label = subject ? `「${subject}」をPrime Videoで探す` : 'Prime Video
 {
   show && (
     /*
-      ★ `hidden` を付けたまま出す。**1画面スクロールするまで見せない**（下のスクリプト）。
+      ★ `hidden` を付けたまま出す。**読み込み直後は見せない**（下のスクリプト）。
         JavaScript が動かない環境ではこのまま出ないが、それでよい
         （読み込んだ瞬間から広告が貼り付いているほうが害が大きい）。
     */
@@ -117,10 +117,16 @@ const label = subject ? `「${subject}」をPrime Videoで探す` : 'Prime Video
   /**
    * 出すタイミングと、閉じる操作。
    *
-   * ■ 1画面ぶんスクロールしてから出す
-   * 読み込み直後から貼り付いていると、トップページの第一画面が
+   * ■ 読み込み直後は出さない。**少しでもスクロールしたら出す**（2026-09-05 変更）
+   * 読み込んだ瞬間から貼り付いていると、トップページの第一画面が
    * 「記事一覧より先に広告」になる（`pages/index.astro` が CTA を一覧の下に
    * 置いているのと同じ理由）。AdSense の審査でも見られる面。
+   *
+   * ★ **その条件を満たすのに1画面ぶん待つ必要は無かった。**
+   *   2026-09-05 まではしきい値が `window.innerHeight`（＝画面1枚ぶん）で、
+   *   トップページでは**シリーズの棚（SeriesShelf）が画面から出るころ**に
+   *   ようやく現れていた。スマホの読者はそこまで進まずに離れることもある。
+   *   いまは下の `SHOW_AFTER_PX`。第一画面が広告なしで出ることは変わらない。
    *
    * ■ 一度出したら引っ込めない
    * スクロールに合わせて出したり消したりすると読者の邪魔になる。
@@ -144,8 +150,19 @@ const label = subject ? `「${subject}」をPrime Videoで探す` : 'Prime Video
     }
 
     if (!closed) {
+      /**
+       * 出しはじめる位置（px）。**「読者が自分でスクロールを始めた」と言える最小の量。**
+       *
+       * ★ 0 にしないこと。戻る操作でのスクロール復元や `#` 付きURL、
+       *   端末によっては読み込み直後の1〜2pxで、
+       *   **読者が動かしていないのに出る**ことがある。
+       * ★ 大きくしないこと。ここを画面の高さに戻すと、
+       *   上の「■」に書いた 2026-09-05 以前の状態に戻る。
+       */
+      const SHOW_AFTER_PX = 24
+
       const show = () => {
-        if (window.scrollY <= window.innerHeight) return
+        if (window.scrollY <= SHOW_AFTER_PX) return
         bar.hidden = false
         window.removeEventListener('scroll', show)
       }

@@ -26,14 +26,38 @@
   --dot-gap: 22px;                         /* 点の間隔。広げるほど目立たなくなる */
 
   /*
+   * ★ この4つは「**紺の地の上に直接載る文字**」の色。
+   *   フッターだけでなく、**ヘッダー**（下の --header-*）と
+   *   左右の枠の見出し（LeftRail / GenreRail / SeriesRail の .block-title）が
+   *   同じものを使っている。`--text`（ほぼ黒）は紺に沈んで読めないため。
+   *
    * フッターも背景の地に合わせて紺にしている。
    * ここだけ明るいままだと、ページの一番下で色が切り替わって浮く。
-   * 文字とリンクは地の上に直接載るので、専用の明るい色を持たせている。
    */
   --footer-bg: #16305c;
   --footer-text: #bccbe4;
   --footer-link: #9dc4ff;
   --footer-border: rgba(255, 255, 255, 0.12);
+
+  /*
+   * ヘッダーの色（2026-09-05 に白から紺へ）。
+   * **背景の地と同じ紺**にして、フッターの紺と上下で挟む形にしてある。
+   *
+   * ★ `--header-bg` は `--bg-tint` を**参照している**。
+   *   地の色を変えるとヘッダーも一緒に動き、
+   *   **ダークモード側に書き足す必要が無い**（`--bg-tint` が両方にあるため）。
+   *   下の3つも同じ理由でフッターの色を参照している。
+   *   ここを直値に置き換えると、ダークの分岐を書き忘れて片方だけ取り残される。
+   *
+   * ★ サイト名だけ白。メニューより一段強く見せるため
+   *   （`--footer-text` は本文的な明るいグレーで、サイト名には弱い）。
+   *   紺はライト(#1b3a6e)・ダーク(#0b1d3a)ともに暗いので、白は両方で読める。
+   */
+  --header-bg: var(--bg-tint);
+  --header-title: #ffffff;
+  --header-text: var(--footer-text);
+  --header-link: var(--footer-link);
+  --header-border: var(--footer-border);
 
   /*
    * カテゴリバッジの色。読者が一覧で「観られるのか、もう観られないのか」を
@@ -129,8 +153,10 @@ body {
   margin: 0;
   /*
    * 地色は var(--bg) ではなく背景グラフィック。本文は .content-card で白く浮かせる。
-   * ヘッダー(--bg)とフッター(--bg-subtle)は不透明なので、点が見えるのは
+   * ヘッダー(--header-bg)とフッター(--footer-bg)は不透明なので、点が見えるのは
    * その間の余白部分だけになる。
+   * ★ ヘッダーは**地と同じ紺**（--header-bg は --bg-tint 参照）。
+   *   点が無いぶんだけ地と見分けが付き、下の境目は --header-border が引いている。
    */
   background-color: var(--bg-tint);
   background-image: radial-gradient(var(--dot-color) 1px, transparent 1.3px);
