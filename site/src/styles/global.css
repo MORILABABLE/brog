@@ -167,10 +167,16 @@ img {
  * 外形は .wrap と同じ幅だが、カードの内側に余白を取るぶん本文はわずかに狭くなる。
  */
 .content-card {
+  /*
+   * ★ 左右の余白は**変数を通す**。カードの外まで流したい部品が
+   *   これを打ち消して使う（SeriesShelf.astro の横スクロール）。
+   *   直値で書くと、下の 47rem のときに片方だけ古い値のまま残る。
+   */
+  --content-pad: 1.9rem;
   width: 100%;
   max-width: var(--max-width);
   margin: 1.6rem auto 0;
-  padding: 0.6rem 1.9rem 2.2rem;
+  padding: 0.6rem var(--content-pad) 2.2rem;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -249,8 +255,9 @@ img {
  */
 @media (max-width: 47rem) {
   .content-card {
+    /* padding は上の shorthand が変数を見ているので、値はここだけで足りる */
+    --content-pad: 1.15rem;
     margin-top: 0;
-    padding-inline: 1.15rem;
     border: none;
     border-radius: 0;
   }

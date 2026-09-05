@@ -1,8 +1,7 @@
 ---
 import { getCollection } from 'astro:content'
 import Thumb from './Thumb.astro'
-import { CATEGORIES } from '../config'
-import { seriesPosts } from '../lib/series-posts'
+import { RAIL_MAX_ITEMS, seriesBadgeLabel, seriesPosts } from '../lib/series-posts'
 
 /**
  * 右の枠の「シリーズ配信」。**最新記事の上**に置く。
@@ -60,9 +59,17 @@ import { seriesPosts } from '../lib/series-posts'
  *   絵はその高さに合わせた60pxを左に置いているだけ。
  *   追従枠の最新記事と同じ寸法・同じ理屈（FollowRail.astro の .body の説明）。
  *
+ * ■ 狭い画面には出ない。代わりがトップの横スクロール
+ * この枠は画面幅1200px未満で消える（下の「出す条件」）。**スマホでは
+ * トップページの横スクロールの棚**（SeriesShelf.astro）が同じ中身を出す。
+ * 本数の上限もバッジの文字も `lib/series-posts.ts` の
+ * `RAIL_MAX_ITEMS` / `seriesBadgeLabel()` を共有していて、
+ * **画面幅で載る記事が変わらない**ようにしてある。
+ *
  * ■ 項目を増やしすぎない
  * ここが伸びると、下の最新記事とPR枠が画面の下へ押し出される
- * （LeftRail.astro が左へ移された経緯と同じ）。**上限は3段あわせて6本**。
+ * （LeftRail.astro が左へ移された経緯と同じ）。**上限は3段あわせて6本**
+ * （`RAIL_MAX_ITEMS`。なぜ6本かはそちらに書いてある）。
  * 7本目からは一覧ページ（`/series`）へ送る。
  * ★ 上の並びと合わせて、**枠に載るのは急ぎ度の高い6本**になる。
  *   終了済みの記事は6本目までに入らなければ `/series` 側で見せる。
@@ -81,44 +88,16 @@ import { seriesPosts } from '../lib/series-posts'
  * ■ 出す条件
  * 画面幅 75rem(1200px) 以上（styles/global.css の `.layout`）。
  * **狭い画面では枠ごと消える**ので、ここをシリーズ記事の唯一の入口にしないこと。
+ * スマホの入口はトップページの棚（SeriesShelf.astro）。
  * 記事自体はカテゴリ一覧・サービス別ページ・サイトマップからも辿れる。
  */
-
-/**
- * 枠に出す本数の上限。**3段（終了予定・配信中・終了済み）の合計。**
- *
- * ★ 1件あたり「絵60px ＝ バッジ＋タイトル2行」＋上下の余白で、追従枠の
- *   最新記事1件とほぼ同じ高さ。6本ぶんで、その下の最新記事5本とPR枠が
- *   初期表示に残る限界がこのあたり。
- *
- * ★ 2026-09-05 に 5 → 6。枠を1つにまとめたぶん（上の「枠は1つ」）、
- *   1本だけ増やしてある。**段ごとの上限は持たせない。**
- *   3段に割り当てると、記事の少ない段のぶんだけ枠が空くか、
- *   急ぎ度の高い記事が段の割り当てに押し出されるかのどちらかになる。
- */
-const MAX_ITEMS = 6
 
 const all = seriesPosts(await getCollection('posts'))
 
 /** 枠に載せるぶん。並びは `seriesPosts()` が決めている（ここで並べ替えない） */
-const series = all.slice(0, MAX_ITEMS)
+const series = all.slice(0, RAIL_MAX_ITEMS)
 /** 枠に載らなかった本数。0 なら「シリーズから探す」を出さない */
 const rest = all.length - series.length
-
-/**
- * バッジの文字。**カテゴリのラベルが基本で、`streaming` のときだけ差し替える。**
- *
- * ★ 色は差し替えない（`data-category` をそのまま渡す）。色はカテゴリの意味に
- *   使い切ってあり（styles/global.css の :root）、ここで別の色を足すと
- *   同じ枠の中で色の意味が2種類になる。
- *
- * ★ `streaming` のカテゴリは `arrivals`＝「新着配信」。この枠では
- *   **何が新着なのかが伝わらない**ので、文字だけ「配信中」にする。
- *   終了日を持たない記事の見分け方は `lib/series-posts.ts` の `STREAMING_TAG`。
- */
-function badgeLabel(s: (typeof series)[number]): string {
-  return s.streaming ? '配信中' : CATEGORIES[s.category].label
-}
 
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
 const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
@@ -142,7 +121,7 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
               <Thumb src={s.heroImage} category={s.category} size={60} />
               <span class="body">
                 <span class="badge" data-category={s.category}>
-                  {badgeLabel(s)}
+                  {seriesBadgeLabel(s)}
                 </span>
                 <span class="name">{s.label}</span>
               </span>

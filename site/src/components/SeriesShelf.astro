@@ -1,0 +1,233 @@
+---
+import { getCollection } from 'astro:content'
+import Thumb from './Thumb.astro'
+import { RAIL_MAX_ITEMS, seriesBadgeLabel, seriesPosts } from '../lib/series-posts'
+
+/**
+ * 横スクロールの「シリーズ配信」。**狭い画面（1200px 未満）のトップページだけ。**
+ *
+ * ■ なぜ要るのか（2026-09-05 追加）
+ * シリーズ記事への入口は右の枠（SeriesRail.astro）だけで、
+ * **その枠は 1200px 未満で消える。** つまりスマホの読者には、
+ * サイトのいちばん上に「シリーズ」という探し方が存在していなかった。
+ *
+ *   - ヘッダーのメニューはカテゴリと月別だけで、シリーズの行が無い
+ *   - フッターにもシリーズの行は無い
+ *   - `/series` を指しているのはサイトマップだけ
+ *
+ * 記事自体は下の一覧に混ざって出るが、**日付の降順に並ぶただの1本**になり、
+ * 「シリーズでまとめて観られる」ことが読者に伝わらない。
+ *
+ * ■ なぜ横スクロールか
+ * 右の枠は縦に6本並べている。同じものを縦のままトップに置くと、
+ * **記事一覧が画面6本ぶん下に落ちる**（スマホの初期表示から一覧が消える）。
+ * 横に流せば1件ぶんの高さで6本ぶんの入口を置ける。
+ * 絵が横に並ぶ形は動画サービスのアプリと同じなので、
+ * 「これは一覧ではなく棚だ」という読み方も伝わりやすい。
+ *
+ * ■ 置き場所は「サイト説明とPR表記の下、記事一覧の上」
+ * ヘッダーの直下（サイト説明より上）には置かない。
+ *
+ *   - **PR表記（AffiliateNotice）を押し下げるため。** 景品表示法（ステマ規制）は
+ *     「一般消費者が見れば分かる位置」を求めていて、あの1行を
+ *     絵の並ぶ棚の下へ送るのは要件の方向に逆行する
+ *   - サイト説明（`SITE.description`）はトップの導入文で、`h1` の次に読む文。
+ *     ここを飛ばして棚から始めると、初めて来た読者に何のサイトか伝わらない
+ *
+ * 一覧より上には置く。右の枠の並び（ジャンル → シリーズ → 最新記事）と同じ
+ * **「探し方が先、中身が後」**をそのまま縦に落とした位置になる。
+ *
+ * ■ 右の枠と中身をずらさない
+ * 本数の上限（`RAIL_MAX_ITEMS`）・並び（`seriesPosts()`）・バッジの文字
+ * （`seriesBadgeLabel()`）は**すべて lib/series-posts.ts の共有**。
+ * ここで `slice` の数やバッジの文言を直接書かないこと。
+ * **同じ記事が画面幅によって違って見える**のがいちばん困る。
+ *
+ * ■ 「シリーズから探す」は常に出す（右の枠と違うのはここだけ）
+ * 右の枠は7本目が出るまでリンクを出さない（押しても同じものが並ぶだけのため）。
+ * こちらは**スマホで唯一の `/series` への入口**なので、本数に関わらず出す。
+ * 残りがあるときだけ「（ほか◯本）」を足すのは右の枠と同じ。
+ *
+ * ■ 出す条件
+ * 画面幅 1200px 未満（下の CSS）。**1200px 以上では右の枠が同じ中身を出す**ので、
+ * ここは消える。しきい値は styles/global.css の `.layout`（min-width: 75rem）の
+ * 裏返しで、FollowBar.astro と同じ考え方。**片方だけ動かすと両方出る幅ができる。**
+ *
+ * ★ 記事が1本も無いあいだは HTML を1バイトも出さない（右の枠と同じ作り）。
+ */
+
+const all = seriesPosts(await getCollection('posts'))
+
+/** 棚に載せるぶん。並びは `seriesPosts()` が決めている（ここで並べ替えない） */
+const series = all.slice(0, RAIL_MAX_ITEMS)
+/** 棚に載らなかった本数。0 なら「（ほか◯本）」を出さない（リンク自体は出す） */
+const rest = all.length - series.length
+---
+
+{
+  series.length > 0 && (
+    <nav class="shelf" aria-label="シリーズ配信">
+      <div class="head">
+        <p class="title">シリーズ配信</p>
+        {/*
+          行き先は右の枠と同じ `/series`。
+          **すべてのシリーズ記事を、他の一覧と同じ記事カードで並べたページ**で、
+          記事が0本でも必ず作られる（pages/series.astro）。
+        */}
+        <a class="all" href="/series">
+          シリーズから探す{rest > 0 && `（ほか${rest}本）`}
+        </a>
+      </div>
+
+      <ul class="track">
+        {series.map((s) => (
+          <li>
+            <a class="card" href={s.href} title={s.fullTitle}>
+              {/*
+                132px。**カードの幅（8.25rem）と同じ値**。
+                絵・バッジ・タイトルを縦に積むので、右の枠（60px・横並び）とは
+                寸法が違う。**片方を直しても、もう片方は追随しない。**
+                絵が無い記事でもカテゴリ色のタイルが同じ大きさで出るので、
+                棚の高さは揃う（Thumb.astro）。
+              */}
+              <Thumb src={s.heroImage} category={s.category} size={132} />
+              {/* 色はカテゴリのまま。文字だけ `seriesBadgeLabel()` が決める */}
+              <span class="badge" data-category={s.category}>
+                {seriesBadgeLabel(s)}
+              </span>
+              <span class="name">{s.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  /*
+   * ★ 1200px 以上では出さない。右の枠（FollowRail 内の SeriesRail）が
+   *   同じ中身を持つので、両方出すと同じ記事が画面に2組並ぶ。
+   *   しきい値は styles/global.css の `.layout`（min-width: 75rem）の裏返し。
+   *   FollowBar.astro と同じ理由で、**片方だけ動かさないこと。**
+   */
+  @media (min-width: 75rem) {
+    .shelf {
+      display: none;
+    }
+  }
+
+  .shelf {
+    /* 上は .hero の下余白に任せる。下は記事一覧の1枚目との間 */
+    margin: 0.2rem 0 1.4rem;
+  }
+
+  /* 見出しと「シリーズから探す」を1行に収める */
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 0.55rem;
+  }
+  /*
+   * ★ 見出しは <p>。**<h2> にしない。**
+   *   トップページの見出し階層は h1（サイトのタグライン）→ 各記事の h2 で、
+   *   ここに h2 を挟むと「シリーズ配信」という記事が1本あるように読まれる
+   *   （右の枠の .block-title と同じ扱い）。
+   *   枠の名前は nav の aria-label が持っている。
+   */
+  .title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .all {
+    flex: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .all:hover {
+    text-decoration: underline;
+  }
+
+  /*
+   * 横に流す帯。**スクロールするのはこの中だけ。**
+   * body は overflow-x: hidden（global.css）なので、
+   * ページそのものが横に動くことはない。
+   *
+   */
+  .track {
+    display: flex;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0 0 0.35rem;
+    list-style: none;
+    overflow-x: auto;
+    /* 指を離した位置がカードの途中でも、近ければ端にそろえる */
+    scroll-snap-type: x proximity;
+    /* 端まで振り切ったときにブラウザの「戻る」が起きないようにする */
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+  .track > li {
+    flex: none;
+    scroll-snap-align: start;
+  }
+
+  /*
+   * ★ スマホだけ、左右の余白を打ち消して**画面の端まで流す**。
+   *   カードの左端は本文と同じ位置から始まり、右は画面の外へ続く形になる。
+   *   端で切れて見えるほうが「まだ先がある」と伝わる。
+   *
+   *   `--content-pad` は本文カードの左右padding（global.css の .content-card）。
+   *   **直値を書かないこと。** 47rem を境に 1.9rem ⇔ 1.15rem と変わる。
+   *
+   * ★ 47rem より広い画面では**はみ出させない。** あちらは .content-card が
+   *   枠線と角丸を持つ白いカードとして見えていて（global.css の 47rem の分岐）、
+   *   中身がその枠線に触れると、カードが途中で切れているように見える。
+   */
+  @media (max-width: 47rem) {
+    .track {
+      margin-inline: calc(var(--content-pad, 0rem) * -1);
+      padding-inline: var(--content-pad, 0rem);
+    }
+  }
+
+  /*
+   * ★ カードの幅は絵と同じ 8.25rem＝132px。
+   *   360pxの画面で2枚と少しが見え、**3枚目が切れて見える**ので
+   *   横に続いていることが分かる。広げると1枚しか入らず、棚に見えなくなる。
+   */
+  .card {
+    display: block;
+    width: 8.25rem;
+    text-decoration: none;
+  }
+  .badge {
+    margin-top: 0.45rem;
+    font-size: 0.68rem;
+    padding: 0.05rem 0.45rem;
+  }
+  /*
+   * タイトルは長い。3行で切る。
+   * ★ 右の枠は2行だが、こちらは幅が半分以下（132px 対 約200px）なので
+   *   2行だと主題そのものが読めない。**行数と幅は2つセットで決めること。**
+   */
+  .name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  a.card:hover .name {
+    color: var(--accent);
+  }
+</style>

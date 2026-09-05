@@ -28,7 +28,7 @@
  *   1文字でも違うと、記事はできているのに枠から消える（0件の枠は描画されない）。
  */
 import type { CollectionEntry } from 'astro:content'
-import type { CategorySlug } from '../config'
+import { CATEGORIES, type CategorySlug } from '../config'
 
 /** シリーズ記事の目印。`article-types/series.ts` の `tags()` と揃えること。 */
 export const SERIES_TAG = 'シリーズ'
@@ -52,6 +52,25 @@ export const SERIES_TAG = 'シリーズ'
  *   1文字でも違うと、終了日を持たない記事に「新着配信」のバッジが出る。
  */
 export const STREAMING_TAG = '見放題配信中'
+
+/**
+ * 枠と棚に出す本数の上限。**3段（終了予定・配信中・終了済み）の合計。**
+ *
+ * ■ なぜ6本か（決めているのは縦の枠の都合）
+ * 右の枠（`SeriesRail.astro`）は1件あたり「絵60px ＝ バッジ＋タイトル2行」で、
+ * 追従枠の最新記事1件とほぼ同じ高さ。6本ぶんで、その下の最新記事5本とPR枠が
+ * 初期表示に残る限界がこのあたり。2026-09-05 に 5 → 6（2つの枠を1つに統合したため）。
+ *
+ * ■ なぜ横の棚（`SeriesShelf.astro`）も同じ数にするのか
+ * 横に並べるぶんには縦の制約は効かない。それでも同じ数にするのは、
+ * **本数が違うと「シリーズから探す」の出る条件が画面幅で変わる**ため。
+ * 広い画面では「ほか2本」と出るのに狭い画面では出ない、という状態になる。
+ * 読者から見れば同じサイトなので、載る本数と残りの行き先はそろえておく。
+ *
+ * ★ **段ごとの上限は持たせない。** 3段に割り当てると、記事の少ない段のぶんだけ
+ *   枠が空くか、急ぎ度の高い記事が段の割り当てに押し出されるかのどちらかになる。
+ */
+export const RAIL_MAX_ITEMS = 6
 
 export interface SeriesPost {
   /**
@@ -102,6 +121,24 @@ export interface SeriesPost {
    * **段（並び順）はカテゴリで決まるので、ここは並びに効かない。**
    */
   streaming: boolean
+}
+
+/**
+ * 枠・棚に出すバッジの文字。**カテゴリのラベルが基本で、`streaming` だけ差し替える。**
+ *
+ * ★ **色は差し替えない。** 呼ぶ側は `data-category` に記事のカテゴリを
+ *   そのまま渡すこと。色はカテゴリの意味に使い切ってあり
+ *   （styles/global.css の :root）、ここで別の色を足すと
+ *   同じ並びの中で色の意味が2種類になる。
+ *
+ * ★ `streaming` のカテゴリは `arrivals`＝「新着配信」。枠では
+ *   **何が新着なのかが伝わらない**ので、文字だけ「配信中」にする。
+ *
+ * ★ **右の枠と横の棚が同じ文字を出すために、ここに置いてある。**
+ *   片方だけ直すと、同じ記事のバッジが画面幅で変わる。
+ */
+export function seriesBadgeLabel(post: SeriesPost): string {
+  return post.streaming ? '配信中' : CATEGORIES[post.category].label
 }
 
 /**

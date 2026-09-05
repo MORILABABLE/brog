@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import PostCard from '../components/PostCard.astro'
 import AffiliateNotice from '../components/AffiliateNotice.astro'
 import AmazonCta from '../components/AmazonCta.astro'
+import SeriesShelf from '../components/SeriesShelf.astro'
 import { SITE } from '../config'
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
@@ -26,6 +27,20 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
     <p>{SITE.description}</p>
     <AffiliateNotice />
   </section>
+
+  {/*
+    シリーズ記事の横スクロール。**狭い画面（1200px 未満）でしか出ない。**
+    1200px 以上では右の枠（SeriesRail.astro）が同じ中身を縦に出す。
+
+    ★ **サイト説明とPR表記より下、記事一覧より上。** この位置は選んである。
+      上に出すと景品表示法（ステマ規制）で求められるPR表記が
+      絵の並ぶ棚の下へ落ちるうえ、初めて来た読者がサイトの説明より先に
+      棚を読むことになる。一覧より上なのは、右の枠と同じ
+      「探し方が先、中身が後」の並び（理由は SeriesShelf.astro）。
+
+    ★ 記事が0本のあいだは HTML を1バイトも出さない。
+  */}
+  <SeriesShelf />
 
   {
     posts.length === 0 ? (

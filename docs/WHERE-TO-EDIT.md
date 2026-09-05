@@ -379,6 +379,9 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
     シリーズ記事（保存版）の構成・文体 → theme-packs/streaming-jp/templates/series.md
     シリーズ記事の状態（予定/済/復帰） → theme-packs/streaming-jp/article-types/series.ts の STANCES
     右の枠の「シリーズ配信」            → site/src/components/SeriesRail.astro
+    スマホのトップの横スクロール       → site/src/components/SeriesShelf.astro
+                                       ★ 本数・並び・バッジは右の枠と共有
+                                         （site/src/lib/series-posts.ts）
     シリーズ記事の一覧ページ（/series） → site/src/pages/series.astro
     横断シリーズの候補出し（--list）   → pipeline/core/series-candidates.ts
     ショート台本の構成・尺・禁止事項  → theme-packs/streaming-jp/templates/short-script.md
