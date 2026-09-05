@@ -1,0 +1,172 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PostCard from '../../components/PostCard.astro'
+import { ARCHIVE, SITE } from '../../config'
+import { archiveGroups, archiveMonths, servicesIn } from '../../lib/archive'
+
+/**
+ * その月の全記事（`/archive/2026-09`）。
+ *
+ * ■ 並べ方
+ *   1. 月の切り替え（前後の月へ1手で移れる）
+ *   2. サービスで絞る（→ `/archive/<月>/<サービス>`）
+ *   3. ハブごとの節（新着配信／配信終了予定・終了済み）に記事カード
+ *
+ * **ハブで分けるのが本題。** 読者の用事は「9月に何が始まって、何が終わるのか」で、
+ * その2つは行動が正反対（観に行く／観ておく）。1本の時系列に混ぜると読み分けられない。
+ * サービスで絞るのはその次の手なので、絞り込みの帯として上に置く。
+ *
+ * ★ 記事1本が複数のサービスを名乗ることがある（ジャンル軸の記事）。
+ *   **この月のページには1回だけ出る**（絞り込みは次のページの仕事）。
+ *
+ * ★ 中身が0本の月は作られない。月は記事から数えているので、
+ *   そもそも記事の無い月は `archiveMonths` が返さない（lib/archive.ts）。
+ */
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft)
+  const months = archiveMonths(posts)
+
+  return months.map((m, i) => ({
+    params: { month: m.month },
+    props: {
+      current: m,
+      /** 月の帯に出す全月。**どの月からでも全部へ1手で移れる** */
+      months: months.map(({ month, label }) => ({ month, label })),
+      /* 新しい順に並んでいるので、次の月が手前・前の月が奥 */
+      newer: i > 0 ? months[i - 1]! : null,
+      older: i < months.length - 1 ? months[i + 1]! : null,
+    },
+  }))
+}
+
+const { current, months, newer, older } = Astro.props
+
+const groups = archiveGroups(current.posts)
+const services = servicesIn(current.posts)
+
+const title = `${current.label}の見放題まとめ`
+const description =
+  `${current.label}に見放題配信が始まった作品と終了する作品の記事${current.posts.length}本を、` +
+  `サービス別にまとめています。${SITE.name}が追いかけている${services.map((s) => s.label).join('・')}の情報はこのページから辿れます。`
+---
+
+<BaseLayout title={title} description={description}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a> ›
+    <a href={ARCHIVE.base}>{ARCHIVE.label}</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  {/* 月の切り替え。現在地はリンクを外す（カテゴリ×サービスのページと同じ扱い） */}
+  <nav class="chips" aria-label="月を切り替える">
+    {
+      months.map((m) =>
+        m.month === current.month ? (
+          <span class="chip is-current" aria-current="page">
+            {m.label}
+          </span>
+        ) : (
+          <a class="chip" href={`${ARCHIVE.base}/${m.month}`}>
+            {m.label}
+          </a>
+        ),
+      )
+    }
+  </nav>
+
+  {
+    /*
+     * サービスで絞る導線。**記事があるサービスだけ**を出す
+     * （押した先が空のページになる組み合わせを作らない。lib/archive.ts）。
+     */
+    services.length > 0 && (
+      <nav class="chips services" aria-label="サービスで絞り込む">
+        {services.map((s) => (
+          <a class="chip" href={`${ARCHIVE.base}/${current.month}/${s.slug}`}>
+            {s.label}
+          </a>
+        ))}
+      </nav>
+    )
+  }
+
+  {
+    groups.map((g) => (
+      <section>
+        <h2>
+          {g.hub.heading}
+          <span class="count">{g.posts.length}本</span>
+        </h2>
+        {g.posts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </section>
+    ))
+  }
+
+  {/* 前後の月へ。一覧の末尾は「次にどこへ行くか」を必ず持たせる */}
+  <nav class="pager" aria-label="前後の月">
+    {older ? <a href={`${ARCHIVE.base}/${older.month}`}>← {older.label}</a> : <span />}
+    {newer && <a href={`${ARCHIVE.base}/${newer.month}`}>{newer.label} →</a>}
+  </nav>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  /* カテゴリ×サービスのページの `.services` と同じ見た目。ずらさないこと。 */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 0.6rem;
+  }
+  .chips.services {
+    margin-bottom: 1.4rem;
+  }
+  .chip {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--text);
+    text-decoration: none;
+  }
+  a.chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .chip.is-current {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  section {
+    margin-top: 2.2rem;
+  }
+  h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .count {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2.4rem;
+    font-size: 0.88rem;
+  }
+</style>

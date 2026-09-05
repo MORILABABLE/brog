@@ -46,10 +46,15 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                            行き先は /category/<ハブ>/<サービス>
       記事検索窓       → site/src/components/PostSearch.astro
                          ★ 常設ページの「作品検索」(WorkSearch.astro) とは別物
-      「監督・出演者」  → Header.astro（カテゴリのハブとは**別枠**の <details>）
-                         出す人数は同ファイルの MENU_PEOPLE、顔ぶれは people.ts の topPeople
-                         ★ 狭い画面では**ここが人物ページへの唯一の入口**
-                           （左の枠は 1200px 未満で消えるため）
+      「月別まとめ」    → Header.astro（カテゴリのハブとは**別枠**の <details>）
+                         文言と出す月数 → site/src/config.ts の ARCHIVE
+                         月の作り方     → site/src/lib/archive.ts の monthOf()
+                                          （記事の `2026年9月` タグだけを見る。pubDate は使わない）
+                         行き先         → /archive/<月> と /archive/<月>/<サービス>
+                         ★ 2026-09-05 に「監督・出演者」から入れ替えた。
+                           人物ページの入口は**左の枠とフッター**が持つ
+                           （左の枠は 1200px 未満で消えるので、
+                             **フッターの `/person` の行を消さないこと**）
       並び             → サイト名だけ左、メニューと検索窓は右
                          （Header.astro の .inner / .brand）
 
@@ -71,6 +76,9 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
       枠と並び            → site/src/components/LeftRail.astro の RAIL_PEOPLE（出す人数）
       誰を出すか          → site/src/lib/people.ts の topPeople()（作品の多い順・全ページ固定）
       一覧ページ          → site/src/pages/person.astro（/person）
+      ★ 狭い画面では枠ごと消えるので、**フッターにも同じリンクがある**
+        （Footer.astro）。ヘッダーから外した 2026-09-05 以降、
+        狭い画面ではフッターが唯一の入口。**片方だけ消さないこと**
 
     本文カード（白い箱）
       幅・角丸・余白 → site/src/styles/global.css の .content-card と --max-width
@@ -128,6 +136,16 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                             記事も常設ページも0件なら noindex
                             （判定は site/src/lib/service-pages.ts）
                             ※ いまは全ページに中身がある
+    月別まとめ            → site/src/pages/archive.astro（月の一覧）
+                            月            → site/src/pages/archive/[month].astro
+                            月×サービス   → site/src/pages/archive/[month]/[service].astro
+                            束ね方は site/src/lib/archive.ts、文言は config.ts の ARCHIVE
+                            ★ 月は記事の `2026年9月` タグから取る。**pubDate は使わない**
+                              （9月の記事は8月末に出る）
+                            ★ シリーズ記事は月を名乗らないので出ない（入口は /series）
+                            ★ **記事がある月・サービスのぶんしか作らない。**
+                              カテゴリ×サービスと違って0件のページが1枚も無い
+                              （ヘッダーのメニューが月までしか開かないため）
     トップページ          → site/src/pages/index.astro
     運営方針・活用法      → site/src/pages/guide.astro
                             画像の掲載方針と「新着配信・終了一覧」の使い方。
@@ -338,6 +356,12 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
     メニューと一覧ページの構成        → site/src/config.ts の CATEGORY_HUBS
     メニューに出すサービス名          → site/src/config.ts の SERVICE_HUBS
     出典の表記                       → site/src/config.ts の ATTRIBUTION
+    常設ページの「随時更新」バッジ     → site/src/config.ts の EVERGREEN_BADGE
+                                       （ページ本体に出る説明の1行も同じ場所。
+                                         色は global.css の .badge.evergreen）
+    「PR」の広告表記                  → site/src/components/AffiliateNotice.astro
+                                       ★ 景表法（ステマ規制）上の義務。
+                                         消す・下げる・小さくするときは根拠を確かめること
     常設ページのタイトルの形          → site/src/lib/evergreen.ts
     記事の定型文                     → theme-packs/streaming-jp/templates/fixed-phrases.md
     記事の構成そのもの                → theme-packs/streaming-jp/templates/*.md

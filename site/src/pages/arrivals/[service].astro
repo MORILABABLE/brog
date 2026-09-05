@@ -5,7 +5,7 @@ import AmazonCta from '../../components/AmazonCta.astro'
 import WorkTable from '../../components/WorkTable.astro'
 import WorkSearch from '../../components/WorkSearch.astro'
 import LeadImage from '../../components/LeadImage.astro'
-import { ATTRIBUTION, SITE } from '../../config'
+import { ATTRIBUTION, CATEGORIES, EVERGREEN_BADGE, SITE } from '../../config'
 import { formatDate } from '../../utils/date'
 import { serviceImage } from '../../lib/images'
 import { evergreenTitle } from '../../lib/evergreen'
@@ -69,6 +69,20 @@ const description =
   <LeadImage image={lead} alt="" />
 
   <h1>{title}</h1>
+
+  {/*
+    ★ 記事ページ（pages/posts/[...slug].astro）の `.meta` と同じ位置・同じ形。
+      **違いはバッジだけ**にしてある。記事は「公開 ◯月◯日」が並び、
+      ここは「随時更新」が並ぶ。並べて比べれば種類の違いが一目で分かる。
+      説明の1行は**外から直接来た読者**のためのもの（config.ts の EVERGREEN_BADGE）。
+      ★ 終了予定の常設ページ（pages/leaving/[service].astro）と同じ形にすること。
+  */}
+  <div class="meta">
+    <span class="badge" data-category={CATEGORIES.arrivals.slug}>{CATEGORIES.arrivals.label}</span>
+    <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
+  </div>
+
+  <p class="kind-note">{EVERGREEN_BADGE.note}</p>
 
   <AffiliateNotice />
 
@@ -160,6 +174,22 @@ const description =
   .breadcrumb {
     margin: 1.4rem 0 1rem;
     font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  /* 記事ページの .meta と同じ値。**ずらさないこと**（並べて比べる前提の形なので） */
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.7rem 1rem;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+  }
+  /* バッジの意味を1行で補う。すぐ下の広告表記と続けて読める大きさにする */
+  .kind-note {
+    margin: 0.7rem 0 0;
+    font-size: 0.84rem;
+    line-height: 1.8;
     color: var(--text-muted);
   }
   /* 冒頭文の位置は .list-head 側で決めている（styles/global.css） */

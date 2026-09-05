@@ -1,6 +1,6 @@
 ---
 import Thumb from './Thumb.astro'
-import { CATEGORIES } from '../config'
+import { CATEGORIES, EVERGREEN_BADGE } from '../config'
 import { serviceImage } from '../lib/images'
 import { evergreenTitle, type EvergreenPage } from '../lib/evergreen'
 
@@ -42,6 +42,14 @@ const thumb = serviceImage(page.thumbKey)
   <div class="main">
     <div class="meta">
       <span class="badge" data-category={cat.slug}>{cat.label}</span>
+      {/*
+        ★ **記事カードと見分けを付けるのがこのバッジの役目**（2026-09-05 追加）。
+          カードの体裁を PostCard と揃えてあるので、これが無いと
+          一覧の中で「日付つきの記事」と同じものに見える。
+          文言と理由は config.ts の EVERGREEN_BADGE、色は
+          styles/global.css の .badge.evergreen。
+      */}
+      <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
     </div>
     <h2><a href={page.href}>{evergreenTitle(page.titleBase, dataAsOf)}</a></h2>
     <p class="desc">
@@ -67,8 +75,10 @@ const thumb = serviceImage(page.thumbKey)
   }
   .meta {
     display: flex;
+    /* バッジが2つ並ぶので、狭い画面では折り返してよい（PostCard と同じ） */
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.7rem;
+    gap: 0.5rem 0.7rem;
     font-size: 0.82rem;
     color: var(--text-muted);
   }

@@ -2,11 +2,13 @@
 import { getCollection } from 'astro:content'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import {
+  ARCHIVE,
   CATEGORY_HUBS,
   SERVICE_HUBS,
   SERVICE_MENU_HUBS,
   SITE,
 } from '../config'
+import { archiveMonths, servicesIn } from '../lib/archive'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../lib/events-data'
 import { EVERGREEN_PAGES, evergreenSummary, evergreenTitle } from '../lib/evergreen'
 import { serviceHasContent, serviceSection } from '../lib/service-pages'
@@ -86,6 +88,22 @@ const servicePages = SERVICE_HUBS.map((service) => ({
   hasContent: serviceHasContent(serviceSection(posts, service)),
 })).filter((p) => p.hasContent)
 
+/*
+ * 月別まとめ（2026-09-05 追加）。**記事があるものしか作られない**ので、
+ * ここで絞り込む必要がない（lib/archive.ts の archiveMonths / servicesIn）。
+ */
+const archiveMonthPages = archiveMonths(posts).map((m) => ({
+  href: `${ARCHIVE.base}/${m.month}`,
+  label: m.label,
+  count: m.posts.length,
+  services: servicesIn(m.posts).map((s) => ({
+    href: `${ARCHIVE.base}/${m.month}/${s.slug}`,
+    label: `${m.label}の${s.label}`,
+  })),
+}))
+
+const archivePages = archiveMonthPages.reduce((n, m) => n + 1 + m.services.length, 0)
+
 // --- 作品ページ ---------------------------------------------------------------
 
 const works = publishableWorkPages()
@@ -118,6 +136,7 @@ const fixedPages = [
   { href: '/', label: 'トップページ' },
   { href: '/stats', label: '見放題の増減（定点観測）' },
   { href: '/guide', label: '当サイトの運営方針および活用について' },
+  { href: ARCHIVE.base, label: ARCHIVE.heading },
   { href: '/person', label: '監督・出演者から探す' },
   /*
    * シリーズ記事の一覧。**右の枠の「もっと見る」の行き先**（SeriesRail.astro）。
@@ -139,6 +158,7 @@ const total =
   categoryPages.length +
   categoryServicePages.length +
   servicePages.length +
+  archivePages +
   works.length
 
 /*
@@ -280,6 +300,27 @@ const description = `${SITE.name}の全ページ一覧です。作品ページ${
     <ul>
       {servicePages.map((s) => (<li><a href={s.href}>{s.label}</a></li>))}
     </ul>
+  </section>
+
+  <section>
+    <h2>月別まとめ<span class="count">{archivePages}</span></h2>
+    <p class="lead">
+      月ごとに、その月の配信開始・配信終了の記事を束ねたページ。
+      <strong>記事がある月・あるサービスのぶんしか作らない</strong>ので、空のページは無い。
+    </p>
+    {
+      archiveMonthPages.map((m) => (
+        <div class="group">
+          <h3>
+            <a href={m.href}>{m.label}</a>
+            <span class="count">{m.count}本</span>
+          </h3>
+          <ul>
+            {m.services.map((s) => (<li><a href={s.href}>{s.label}</a></li>))}
+          </ul>
+        </div>
+      ))
+    }
   </section>
 
   <section>

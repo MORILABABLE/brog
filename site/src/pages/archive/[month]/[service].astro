@@ -1,0 +1,160 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import PostCard from '../../../components/PostCard.astro'
+import { ARCHIVE, SITE } from '../../../config'
+import { archiveGroups, archiveMonths, inService, servicesIn } from '../../../lib/archive'
+import { serviceHasContent, serviceSection } from '../../../lib/service-pages'
+
+/**
+ * 月 × サービス（`/archive/2026-09/netflix`）。
+ * **「9月のNetflixの記事はどれか」に1ページで答えるのがこのページ。**
+ *
+ * ■ 作るページ
+ * **その月にその サービスの記事が1本以上あるものだけ。**
+ * `/category/<ハブ>/<サービス>` は0件でもページを作るが（ヘッダーのメニューが
+ * そこへリンクしているので404にできない）、ここはメニューの行き先ではないので
+ * **空のページを1枚も作らない**ほうを採る。判定は lib/archive.ts の `servicesIn`。
+ *
+ * ■ 記事は「タグの完全一致」で拾う
+ * lib/service-pages.ts と同じ拾い方。ジャンル軸の記事は複数のサービスを名乗るので、
+ * **同じ記事が複数のサービスのページに出る。** それが正しい
+ * （「8月のNetflixの新着」を探す読者にとって、アニメ記事は確かに答えの1つ）。
+ *
+ * ★ 常設ページ（/leaving/… /arrivals/…）はここに出さない。
+ *   あれは月に属さない「いまの一覧」。行き先だけ末尾に1本置く。
+ */
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft)
+
+  return archiveMonths(posts).flatMap((m) =>
+    servicesIn(m.posts).map((service) => ({
+      params: { month: m.month, service: service.slug },
+      props: {
+        month: m,
+        service,
+        /** この月に記事があるサービス。切り替えの帯に出す */
+        services: servicesIn(m.posts),
+        /*
+         * サービス別まとめ（/service/<サービス>）が作られるかどうか。
+         * ★ 中身が0件のサービスのページは作られない（service/[service].astro）。
+         *   同じ判定を使って、末尾のリンクごと出し分ける。**404を作らないため。**
+         */
+        hasServicePage: serviceHasContent(serviceSection(posts, service)),
+      },
+    })),
+  )
+}
+
+const { month, service, services, hasServicePage } = Astro.props
+
+const mine = month.posts.filter((p) => inService(p, service))
+const groups = archiveGroups(mine)
+
+const title = `${month.label}の${service.label}の見放題まとめ`
+const description =
+  `${month.label}に${service.label}で見放題配信が始まった作品と終了する作品の記事${mine.length}本をまとめています。` +
+  `${SITE.name}が追いかけている${service.label}の情報はこのページから辿れます。`
+---
+
+<BaseLayout title={title} description={description}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a> ›
+    <a href={ARCHIVE.base}>{ARCHIVE.label}</a> ›
+    <a href={`${ARCHIVE.base}/${month.month}`}>{month.label}</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  {/* サービスの切り替え。**同じ月の中だけを行き来する** */}
+  <nav class="chips" aria-label="サービスを切り替える">
+    <a class="chip" href={`${ARCHIVE.base}/${month.month}`}>すべて</a>
+    {
+      services.map((s) =>
+        s.slug === service.slug ? (
+          <span class="chip is-current" aria-current="page">
+            {s.label}
+          </span>
+        ) : (
+          <a class="chip" href={`${ARCHIVE.base}/${month.month}/${s.slug}`}>
+            {s.label}
+          </a>
+        ),
+      )
+    }
+  </nav>
+
+  {
+    groups.map((g) => (
+      <section>
+        <h2>
+          {g.hub.heading}
+          <span class="count">{g.posts.length}本</span>
+        </h2>
+        {g.posts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </section>
+    ))
+  }
+
+  {
+    hasServicePage && (
+      <p class="related">
+        <a href={`/service/${service.slug}`}>{service.label}の配信情報まとめ（月を問わず）</a>
+      </p>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  /* 月のページと同じ見た目。ずらさないこと（あちらは [month].astro） */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.4rem;
+  }
+  .chip {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--text);
+    text-decoration: none;
+  }
+  a.chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .chip.is-current {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  section {
+    margin-top: 2.2rem;
+  }
+  h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .count {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+  .related {
+    margin-top: 2rem;
+    font-size: 0.88rem;
+  }
+</style>

@@ -21,6 +21,14 @@ const year = new Date().getFullYear()
           左の枠は 1200px 未満で消えるので、狭い画面ではここが唯一の入口になる。
       */}
       <a href="/guide">運営方針・活用法</a>
+      {/*
+        ★ **この行を消さないこと**（2026-09-05 追加）。
+          人物ページへの入口はヘッダーのメニューにあったが、その枠は
+          「月別まとめ」に替えた（components/Header.astro）。
+          残る入口は左の枠（LeftRail.astro の3ブロック目）とここの2つで、
+          **左の枠は 1200px 未満で消える**ので、狭い画面ではここが唯一になる。
+      */}
+      <a href="/person">監督・出演者</a>
       <a href="/about">運営者情報</a>
       <a href="/privacy">プライバシーポリシー</a>
       <a href="/contact">お問い合わせ</a>

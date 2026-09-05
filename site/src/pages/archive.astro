@@ -1,0 +1,139 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { ARCHIVE, SITE } from '../config'
+import { archiveGroups, archiveMonths, servicesIn } from '../lib/archive'
+
+/**
+ * 月別まとめの入口（`/archive`）。**月の一覧**。
+ *
+ * ■ なぜ要るか
+ * このサイトの記事はほぼすべてが月次なのに、月で辿る道が無かった。
+ * カテゴリ×サービスの一覧は月をまたいで新しい順に積むだけなので、
+ * 「9月のNetflixの記事はどれか」を探すには読者が日付を目で拾うしかない。
+ * 月が増えるほど下へ流れて見つからなくなる（config.ts の ARCHIVE）。
+ *
+ * ■ ここに出すもの
+ * 月ごとに**記事の本数・ハブの内訳・サービス名**を1行で見せる。
+ * 記事カードは出さない（1か月ぶん並べると、月の一覧という役目が消える）。
+ * カードが並ぶのは月のページ（`/archive/<月>`）。
+ *
+ * ★ **月を名乗らない記事（シリーズ）はここに出ない。** 保存版であって
+ *   特定の月のものではないため。入口は右の枠と `/series`（lib/archive.ts）。
+ */
+const posts = await getCollection('posts', ({ data }) => !data.draft)
+const months = archiveMonths(posts)
+
+/** 月ごとの内訳。**数字は数えたものを出す**（固定値を書くと静かに嘘になる） */
+const rows = months.map((m) => ({
+  ...m,
+  /** 「新着配信3本／配信終了済み・予定4本」 */
+  breakdown: archiveGroups(m.posts)
+    .map((g) => `${g.hub.label}${g.posts.length}本`)
+    .join('／'),
+  services: servicesIn(m.posts),
+}))
+
+const empty = rows.length === 0
+const total = months.reduce((n, m) => n + m.posts.length, 0)
+
+const title = ARCHIVE.heading
+const description = empty
+  ? `${SITE.name}の${ARCHIVE.description}`
+  : `${SITE.name}の記事を月ごとにまとめた一覧です。` +
+    `${rows[rows.length - 1]!.label}から${rows[0]!.label}までの${rows.length}か月ぶん、記事${total}本を掲載しています。`
+---
+
+<BaseLayout title={title} description={description} noindex={empty}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  <p class="lead">
+    {ARCHIVE.description}
+    月を押すと、その月の<strong>配信開始と配信終了の記事</strong>がサービス別に確認できます。
+  </p>
+
+  {
+    empty ? (
+      <p class="muted">月別にまとめられる記事はまだありません。</p>
+    ) : (
+      <ul class="months">
+        {rows.map((m) => (
+          <li>
+            <a class="month" href={`${ARCHIVE.base}/${m.month}`}>
+              <span class="name">{m.label}</span>
+              <span class="count">記事{m.posts.length}本</span>
+            </a>
+            <p class="detail">
+              {m.breakdown}
+              {
+                m.services.length > 0 && (
+                  <span class="services">{m.services.map((s) => s.label).join('・')}</span>
+                )
+              }
+            </p>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .lead {
+    font-size: 0.95rem;
+    line-height: 1.9;
+  }
+  .months {
+    margin: 1.6rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .months li {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  /* 月そのものが主役なので、記事カードの見出しと同じくらいの大きさで出す */
+  .month {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .month:hover .name {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  .count {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .detail {
+    margin: 0.35rem 0 0;
+    font-size: 0.84rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+  /* サービス名は内訳より弱く。行が長いので折り返す */
+  .services {
+    display: block;
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+</style>

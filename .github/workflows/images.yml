@@ -1,0 +1,107 @@
+name: images
+
+# 記事の画像を、**あとから取れるようになった版に差し替える。**
+#
+# ■ なぜ要るか
+# セクション画像には3つの版がある（docs/APPEARANCE.md 10節）。
+#
+#   ① ポスターが揃った節   `[![…](/sections/posters/…-1.webp)](…)` 2枚＋導線リンク
+#   ② 生成ポスターの節     `[![…](/sections/tiles/…-1.webp)](…)`   2枚＋導線リンク
+#   ③ どちらも作れない節   `![…](/sections/….jpg)`                 文字だけのカード1枚
+#
+# **どれになるかは記事を書いた日のデータで決まり、行の形そのものが違う。**
+# 告知（`kind: upcoming`）から書いた記事は配信が始まる前なので画像が1枚も無く、
+# ③で書き出される。ところが**配信が始まれば配信APIが同じ作品を返す**ので、
+# announce.yml の `npm run backfill:images` が画像を入れ、翌日には①が作れる。
+#
+# それでも記事は③を指したままで、次の2つが同時に起きる。
+#
+#   1. いつまでも文字だけのカードのまま（差し替えが起きない）
+#   2. **本番の絵が消える。** ①を作った回は③を作らないので、記事が指す .jpg が
+#      どこにも無くなる。手元は前の回の残りで気づけないが、
+#      **Cloudflare のビルドはまっさらなので本番だけ 404 になる**
+#
+# 2 のほうは make-sections.mjs 側で塞いである（`--write` なしのビルドは
+# **記事がいま指している画像も作り直す**）。このワークフローは 1 を回す。
+#
+# ■ なぜ毎日か
+# 画像が付くのは**配信が始まった日**で、記事を書いた日とも告知が出た日とも関係ない。
+# 元になるデータが動くのは collect（火・金 04:00）と announce（毎日 05:00）なので、
+# その後ろに置く。
+#
+# ■ なぜビルド（prebuild）でやらないか
+# **ビルドに記事ファイルを書き換えさせない**という分担があるため
+# （docs/APPEARANCE.md 10節「記事を書いたら1度だけ実行する」）。
+# Cloudflare のビルドは書き換えても捨てられるので、そもそも残らない。
+#
+# ■ APIを消費しない
+# 読むのは収集済みの `data/events/*.jsonl` と `data/image-manifest.json` だけ。
+# 配信APIは叩かない。ポスターの画像そのものは提供元CDNから取得するので、
+# `site/.image-cache` を actions/cache に載せて帯域を使い切らないようにしている
+# （提供元の無料枠は 1GB/月。docs/APPEARANCE.md 11節）。
+
+on:
+  schedule:
+    # 毎日 JST 05:30（= 前日 20:30 UTC）。announce.yml（05:00）の後ろ。
+    - cron: '30 20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# collect / announce と同じグループ。記事と data/ を書くので直列に流す。
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      # 画像を作るのは site 側のスクリプト（sharp / opentype.js）。
+      # パイプライン（リポジトリ直下）の依存は要らない。
+      - name: 依存をインストール
+        working-directory: site
+        run: npm ci
+
+      # 取得済みのポスターを持ち越す。無くても動く（落としに行くだけ）が、
+      # 毎日まっさらだと提供元CDNの帯域を無駄に使う。
+      - name: 取得済みポスターのキャッシュ
+        uses: actions/cache@v4
+        with:
+          path: site/.image-cache
+          key: image-cache-${{ hashFiles('data/image-manifest.json') }}
+          restore-keys: image-cache-
+
+      # 記事の `![…]()` と frontmatter の `heroImage:` を、いま作れる版に合わせる。
+      # 何も変わっていなければ記事は1文字も動かない（何度実行しても同じ結果になる）。
+      - name: 画像の参照を差し替える
+        working-directory: site
+        run: node scripts/make-sections.mjs --write
+
+      - name: 結果をコミット
+        run: |
+          # ★ 台帳は戻す。make-sections は「自分が使った作品」だけに絞って書くので、
+          #   単体で走らせた結果を commit すると、表のサムネイルと作品ページぶんが
+          #   消える（あちらは make-thumbs が足し戻す）。make-sections.mjs 末尾の注意書き。
+          git checkout -- data/image-manifest.json
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/src/content/posts/
+          if git diff --staged --quiet; then
+            echo "差し替えるものはありませんでした"
+          else
+            git commit -m "chore(images): $(date -u +%Y-%m-%d)"
+            git push
+          fi

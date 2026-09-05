@@ -22,6 +22,18 @@
  * 見出し → 画像 → 表 → 地の文 の順。読者が節に入った瞬間に絵が目に入る。
  * 旧位置（表の直後）に残っている画像は `--write` が消してから入れ直す。
  *
+ * ■ あとから画像が付いたら差し替える（2026-09-05）
+ * どの版になるかは**その日のデータで決まる**。告知から書いた記事は配信開始前で
+ * 画像が1枚も無いので③（文字だけ）になるが、配信が始まれば配信APIが同じ作品を返し、
+ * `npm run backfill:images` が画像を入れる。**次のビルドでは①が作れる。**
+ *
+ *   `--write`      … 記事の参照を新しい版に差し替える（images.yml が毎日回す）
+ *   `--write` なし … 差し替え待ちを一覧に出し、**記事がいま指している画像も作り直す**
+ *
+ * 作り直しが要るのは、①を作った回は③を作らないため。手元は前の回の残りで
+ * 気づけないが、**Cloudflare のビルドはまっさらなので本番だけ絵が消える。**
+ * 詳しくは下の「版が変わったときの差し替え」。
+ *
  * ■ 作品ポスターについて
  * 配信API(Movie of the Night)の返すポスターを**ビルド時に取得**し、
  * 自分のドメインから配信している。再ホストは提供元に照会して許諾済み。
@@ -730,6 +742,89 @@ function labelFor(title, years) {
   return y ? `${title}（${y}年）` : title
 }
 
+// --- 版が変わったときの差し替え -------------------------------------------
+//
+// **記事の Markdown は「どの版を使ったか」を焼き込んでいる。**
+// `![…](/sections/xxx.jpg)` と `[![…](/sections/posters/xxx-1.webp)]…` では
+// 行の形そのものが違うので、版が変われば記事側も書き換わらないといけない。
+//
+// ところが版は**その日のデータで決まる**。告知（`kind: upcoming`）から書いた記事は
+// 配信が始まる前なので画像が1枚も無く、③（文字だけ）で書き出される。
+// **配信が始まると配信APIが同じ作品を返し、`npm run backfill:images` が画像を入れる**
+// ので、次のビルドでは①（ポスター）が作れるようになる。
+// このとき記事はまだ③を指したままで、**2つの食い違いが同時に起きる。**
+//
+//   1. 差し替えが起きない … いつまでも文字だけのカードのまま
+//   2. **絵が消える** … ①を作った回は③を作らないので、記事が指す .jpg が
+//      どこにも無くなる。手元は前の回の残りで気づけないが、
+//      **Cloudflare のビルドはまっさらなので本番だけ 404 になる**
+//
+// そこで、
+//   ・`--write` … 記事の参照を新しい版に**差し替える**（`.github/workflows/images.yml` が毎日）
+//   ・`--write` なし（＝ビルド）… **記事がいま指している画像も作り直す。**
+//     差し替えが commit されるまでの間、本番の絵が消えない
+//
+// ★ ここが「作れるものは作る」で止まっているのは、①だけは作れないため。
+//   第三者のポスターは取得できなければ手元に無い。②③は自前の生成物なので必ず作れる。
+
+/** `![…](/sections/…)` の行が参照している公開パスをすべて取り出す */
+function imagePaths(line) {
+  return [...String(line ?? '').matchAll(/\((\/sections\/[^)\s]+)\)/g)].map((m) => m[1])
+}
+
+/** その行が指しているのはどの版か。①posters ②tiles ③text */
+function formOf(line) {
+  const p = imagePaths(line)[0]
+  if (!p) return null
+  if (p.startsWith('/sections/posters/')) return 'posters'
+  if (p.startsWith('/sections/tiles/')) return 'tiles'
+  return 'text'
+}
+
+const FORM_LABEL = { posters: 'ポスター', tiles: '生成ポスター', text: '文字だけ' }
+
+/** `…-2.webp` → 1（節の中の並び順。0始まりに直す） */
+function indexIn(name) {
+  return Number(/-(\d+)\.webp$/.exec(name)?.[1] ?? 1) - 1
+}
+
+/**
+ * 記事がまだ指している画像を作り直す。**版が変わっても本番の絵を消さないため。**
+ * 返り値は作り直した枚数。作れないもの（取得できなかったポスター）は黙って飛ばす。
+ */
+async function keepAlive(paths, { section, shown, arts, tileBufs, years, genres }) {
+  let made = 0
+  for (const p of paths) {
+    const name = p.split('/').pop()
+    try {
+      if (p.startsWith('/sections/posters/')) {
+        // 取得できた絵が手元にあるときだけ。第三者の画像は自分では作れない。
+        const buf = arts[indexIn(name)]
+        if (!buf) continue
+        writeFileSync(join(posterDir, name), buf)
+      } else if (p.startsWith('/sections/tiles/')) {
+        const i = indexIn(name)
+        let buf = tileBufs[i]
+        if (!buf) {
+          const w = shown[i]
+          if (!w || !genres.has(w.title)) continue
+          const svg = buildTileSvg(w.title, years.get(w.title), genreKeyOf(genres.get(w.title)))
+          buf = await sharp(Buffer.from(svg)).webp({ quality: 90 }).toBuffer()
+        }
+        writeFileSync(join(tileDir, name), buf)
+      } else {
+        await sharp(Buffer.from(buildSvg(section, years)))
+          .jpeg({ quality: 88, mozjpeg: true })
+          .toFile(join(outDir, name))
+      }
+      made++
+    } catch {
+      // 1枚のためにビルドを落とさない（posters.mjs 冒頭と同じ方針）
+    }
+  }
+  return made
+}
+
 // --- 記事のヘッダー画像（heroImage） --------------------------------------
 
 /** frontmatter を雑に読む。**書き換えはしない**ので、YAMLパーサは持ち込まない。 */
@@ -919,6 +1014,12 @@ let withText = 0
 let heroes = 0
 let heroesWritten = 0
 let genericHeroes = 0
+/** 記事が指している版と、いま作れる版が食い違っている節 */
+const pending = []
+/** そのうち、記事が指しているほうを作り直した枚数（`--write` なしのとき） */
+let kept = 0
+/** 作り直せなかった枚数。**取得できなかったポスターだけがここに来る**（②③は必ず描ける） */
+let unrecoverable = 0
 
 /**
  * すでにどれかの記事のヘッダー画像に使った作品。
@@ -943,6 +1044,8 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   const slug = file.replace(/\.md$/, '')
   const path = join(postsDir, file)
   let md = readFileSync(path, 'utf8')
+  /** いま記事に書かれている行。節が指している画像を読むために持つ（書き換えは下） */
+  const mdLines = md.split('\n')
   const dateSections = parseBlocks(md)
   /*
    * 本文にセクション画像を挿す節。
@@ -1007,6 +1110,11 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
       shown.length > 0 &&
       shown.every((w) => genres.has(w.title))
 
+    /** この回に書き出した公開パス。記事が指しているものと突き合わせる（下） */
+    const madePaths = []
+    /** 生成ポスターの絵。作り直しで二度描かないために持つ */
+    const tileBufs = []
+
     if (arts.length > 0) {
       /*
        * ポスターがある節は**絵だけ**を置く。枠も日付も見出しも描かない。
@@ -1021,6 +1129,7 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
         const label = labelFor(shown[i].title, years)
         // 導線リンク。トラッキングIDはビルド時に rehype-affiliate が付ける。
         links.push(`[![${label}](/sections/posters/${name})](${posterLink(shown[i].title)})`)
+        madePaths.push(`/sections/posters/${name}`)
         images++
       }
       refs.set(s.heading, links.join(' '))
@@ -1039,6 +1148,8 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
         writeFileSync(join(tileDir, name), buf)
         const label = labelFor(w.title, years)
         links.push(`[![${label}](/sections/tiles/${name})](${posterLink(w.title)})`)
+        madePaths.push(`/sections/tiles/${name}`)
+        tileBufs.push(buf)
         images++
       }
       refs.set(s.heading, links.join(' '))
@@ -1049,8 +1160,35 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
         .jpeg({ quality: 88, mozjpeg: true })
         .toFile(join(outDir, name))
       refs.set(s.heading, `![${altFor(s, years)}](/sections/${name})`)
+      madePaths.push(`/sections/${name}`)
       images++
       withText++
+    }
+
+    /*
+     * 記事が指している画像と、いま作った画像の突き合わせ。
+     * **食い違うのは、記事を書いたあとにデータが増えた（減った）とき。**
+     * 告知から書いた記事が、配信開始後に③→①へ上がるのが典型
+     * （`npm run backfill:images` が画像を入れた翌日）。
+     *
+     * ★ `--write` なら下のブロックが参照を差し替えるので、ここでは数えるだけ。
+     * ★ `--write` が無い（＝ビルド）なら**記事が指しているほうも作り直す。**
+     *   差し替えが commit されるまでの間、本番の絵が消えないようにするため。
+     */
+    const currentLine = s.imageLine >= 0 ? mdLines[s.imageLine] : ''
+    const orphans = imagePaths(currentLine).filter((p) => !madePaths.includes(p))
+    if (orphans.length > 0) {
+      pending.push({
+        slug,
+        heading: s.heading,
+        from: formOf(currentLine),
+        to: formOf(refs.get(s.heading)),
+      })
+      if (!WRITE) {
+        const made = await keepAlive(orphans, { section: s, shown, arts, tileBufs, years, genres })
+        kept += made
+        unrecoverable += orphans.length - made
+      }
     }
   }
 
@@ -1175,6 +1313,42 @@ console.log(
   `ヘッダー画像: ${heroes}本の記事に用意（うち汎用画像 ${genericHeroes}本）` +
     (WRITE ? ` / frontmatter ${heroesWritten}件を更新` : ''),
 )
+
+/*
+ * 記事が指している版と、いま作れる版の食い違い。
+ * **見えるところに必ず出す。** 気づける場所がここしかない
+ * （記事は表示できてしまうので、読者にも運用者にも古いままだと分からない）。
+ */
+if (pending.length > 0) {
+  const label = (p) =>
+    p.from === p.to
+      ? `${FORM_LABEL[p.to] ?? '画像'}（見出しが変わった）`
+      : `${FORM_LABEL[p.from] ?? '画像なし'} → ${FORM_LABEL[p.to] ?? '画像なし'}`
+  const head = WRITE ? '差し替えた節' : '差し替え待ちの節'
+  console.log(`${head}: ${pending.length}件`)
+  for (const p of pending.slice(0, 12)) {
+    console.log(`  ${p.slug}  ${p.heading.slice(0, 28)}  ${label(p)}`)
+  }
+  if (pending.length > 12) console.log(`  …ほか ${pending.length - 12}件`)
+  if (!WRITE) {
+    console.log(
+      `  → cd site && npm run sections -- --write で記事に反映されます\n` +
+        `    （それまでは記事がいま指している画像も作り直すので絵は消えません: ${kept}枚）`,
+    )
+    /*
+     * ★ ここに来るのは**取得できなかったポスターだけ**（②③は必ず描ける）。
+     *   差し替えるまで、その節の絵は本番で出ない。放置してよい警告ではない。
+     */
+    if (unrecoverable > 0) {
+      console.warn(
+        `  ! うち ${unrecoverable}枚は作り直せませんでした（取得できなかったポスター）。\n` +
+          '    差し替えるまで、その絵は本番で出ません。' +
+          'URLが失効しているなら npm run refresh:images（docs/APPEARANCE.md 11節）',
+      )
+    }
+  }
+}
+
 /*
  * フォントに無い文字があれば最後に出す。**黙って〓になるのを防ぐため。**
  * 出たら scripts/font-safe.mjs の FOLD に寄せ先を足すか、フォントを見直す。
@@ -1189,5 +1363,12 @@ if (posters) {
   posters.report()
   // 台帳は「サイトが使った作品」だけに絞って書き直す。
   // 使わなくなった作品を残すと、取り直し(refresh:images)が無駄にAPIを叩く。
+  //
+  // ★ **ここは「絞り込み」なので、単体で走らせた台帳は commit しないこと。**
+  //   このスクリプトが書くのはセクション画像とヘッダー画像に使った作品だけ。
+  //   表のサムネイルと作品ページのぶんは、このあと走る make-thumbs.mjs が
+  //   **足し戻す**（あちらは merge で書く）。prebuild は両方をこの順で呼ぶので
+  //   ビルドすれば揃うが、`--write` だけを回す `.github/workflows/images.yml` は
+  //   台帳を書き戻して commit の対象から外している。
   saveManifest(repo, usedWorks)
 }

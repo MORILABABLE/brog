@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content'
-import { SITE, CATEGORY_HUBS, SERVICE_HUBS } from '../config'
-import { publishablePeople, topPeople } from '../lib/people'
+import { ARCHIVE, SITE, CATEGORY_HUBS, SERVICE_HUBS } from '../config'
+import { archiveMonths } from '../lib/archive'
 import PostSearch from './PostSearch.astro'
 
 /**
@@ -21,17 +21,23 @@ import PostSearch from './PostSearch.astro'
  *   下のスクリプトが足しているのは「他のメニューを閉じる」「外を押したら閉じる」
  *   「Escで閉じる」だけで、**無くてもメニューとして成立する。**
  *
- * ■ 「監督・出演者」は**別枠**（2026-08-30）
- * カテゴリ×サービスの2段メニューとは軸が違う（何が起きたか／誰の作品か）ので、
+ * ■ 「月別まとめ」は**別枠**（2026-09-05。それまでは「監督・出演者」だった）
+ * カテゴリ×サービスの2段メニューとは軸が違う（何が起きたか／いつの話か）ので、
  * ハブの並びに混ぜず、右端に独立した枠として置く。
- * **狭い画面ではここが人物ページへの唯一の入口**になる
- * （左の枠は 1200px 未満で消える。components/LeftRail.astro）。
+ * 開くと**新しい月から順に並ぶ**ので、押した先が「9月の配信まとめ」になる。
+ *
+ * ★ **「監督・出演者」をここから外した。** 記事はほぼすべてが月次なのに
+ *   月で辿る道が1本も無く、枠1つぶんの価値はこちらのほうが高いと判断した
+ *   （理由は config.ts の ARCHIVE）。人物ページへの入口は
+ *   **左の枠（LeftRail.astro）とフッター（Footer.astro）が持つ。**
+ *   左の枠は 1200px 未満で消えるので、**フッターの行を消さないこと**
+ *   （消すと狭い画面から人物ページへ入れなくなる）。
  *
  * ■ 並びは**すべて左詰めの1行**（2026-08-30 に変更）
  * サイト名 → メニュー → 検索窓 の順に左から詰める。
  *
  * ★ **1行に収まる幅で作ること。** 以前はサイト名を左、メニューと検索窓を右に
- *   離していたが、「監督・出演者」を足した時点で合計幅が行を超え、
+ *   離していたが、4つ目のメニューを足した時点で合計幅が行を超え、
  *   **検索窓だけが2行目に落ちた**（1行に収まる保証が無い作りだった）。
  *
  *   ヘッダーの中身に使える幅は 46rem − 左右padding = **約699px**。内訳の実測見積り:
@@ -43,16 +49,9 @@ import PostSearch from './PostSearch.astro'
  *   合計 683px で、**約16pxの余裕**がある（ブラウザで実測・2026-08-30）。
  *   **メニューを1つ増やすときは、この計算をやり直すこと。**
  *   確かめ方は 780px 以上でヘッダーを見て、検索窓が2行目に落ちていないこと。
- */
-
-/**
- * メニューに出す人物の数。**左の枠（LeftRail の RAIL_PEOPLE）と同じ顔ぶれにする。**
- * 画面の広さで中身が変わると、同じサイトなのに別の場所に見える。
- */
-const MENU_PEOPLE = 6
-
-const menuPeople = topPeople(MENU_PEOPLE)
-const peopleTotal = publishablePeople().length
+ *
+ *   ★ 4つ目を「監督・出演者」（6文字）から「月別まとめ」（5文字）に替えたので、
+ *     この見積りより**狭くなっている**。余裕は増える方向。
 
 /**
  * **記事が1本も無いハブはメニューに出さない**（2026-08-31）。
@@ -70,12 +69,21 @@ const peopleTotal = publishablePeople().length
  * ★ ページ自体は生成し続ける（`/category/<ハブ>` を 404 にしない）。
  *   空のあいだは pages/category/[category].astro が noindex にする。
  */
-const hubs = await (async () => {
-  const posts = await getCollection('posts', ({ data }) => !data.draft)
-  return CATEGORY_HUBS.filter((h) =>
-    posts.some((p) => (h.includes as readonly string[]).includes(p.data.category)),
-  )
-})()
+const posts = await getCollection('posts', ({ data }) => !data.draft)
+
+const hubs = CATEGORY_HUBS.filter((h) =>
+  posts.some((p) => (h.includes as readonly string[]).includes(p.data.category)),
+)
+
+/**
+ * メニューに出す月。**新しい順**。全部への経路は「すべて見る」が持つ。
+ *
+ * ★ 月を名乗らない記事（シリーズ）は数に入らない（lib/archive.ts の `monthOf`）。
+ * ★ 月が1つも無ければ枠ごと出さない。**押した先が空のページになる形を作らない**
+ *   （記事が0本のハブをメニューから外したのと同じ方針・2026-08-31）。
+ */
+const months = archiveMonths(posts)
+const menuMonths = months.slice(0, ARCHIVE.menuMonths)
 ---
 
 <header>
@@ -109,22 +117,22 @@ const hubs = await (async () => {
         )
       }
       {/*
-        ★ カテゴリのハブとは**別枠**。中身は人物なのでサービスでは割らない。
-          出す人数は左の枠と同じ考え方（lib/people.ts の topPeople）。
-          全員への経路は「すべて見る」が持つ。
+        ★ カテゴリのハブとは**別枠**。軸が「いつの話か」なのでサービスでは割らない
+          （サービスで絞るのは月を選んだ次の手・pages/archive/[month].astro）。
+          全部への経路は「すべて見る」が持つ。
       */}
       {
-        menuPeople.length > 0 && (
+        menuMonths.length > 0 && (
           <details class="menu" data-menu>
-            <summary>監督・出演者</summary>
+            <summary>{ARCHIVE.label}</summary>
             <div class="panel">
-              <a class="panel-all" href="/person">
-                監督・出演者をすべて見る（{peopleTotal}人）
+              <a class="panel-all" href={ARCHIVE.base}>
+                {ARCHIVE.label}をすべて見る（{months.length}か月）
               </a>
               <ul>
-                {menuPeople.map((person) => (
+                {menuMonths.map((m) => (
                   <li>
-                    <a href={`/person/${person.id}`}>{person.name}</a>
+                    <a href={`${ARCHIVE.base}/${m.month}`}>{m.label}</a>
                   </li>
                 ))}
               </ul>
