@@ -418,7 +418,8 @@ export const AFFILIATE_ENABLED = Boolean(
  * 枠別のトラッキングid（2026-09-03 追加）。
  *
  * ■ 何のためにあるか
- * サイト内の Amazon 導線は5種類ある（節ポスター / 表 / CTA / 追従枠 / 作品ページ）。
+ * サイト内の Amazon 導線は6種類ある
+ * （節ポスター / 表 / CTA / 右の追従枠 / 作品ページ / 下の追従枠）。
  * IDが1本だとアソシエイトのレポートは合計しか返さず、
  * **どの導線が効いているのかが永久に分からない。**
  * 導線を足すか減らすかを決める前に、まず分けて測るためのもの。
@@ -448,6 +449,12 @@ export const AMAZON_TAGS: AmazonTags = {
   rail: import.meta.env.PUBLIC_AMAZON_TAG_RAIL ?? '',
   /** 作品ページ（/works/<ID>）の各リンク */
   work: import.meta.env.PUBLIC_AMAZON_TAG_WORK ?? '',
+  /**
+   * 画面下の追従枠（FollowBar.astro）。**1200px 未満でしか出ない。**
+   * rail と対になる枠で、**同じページの同じ主題を狭い画面に出したもの。**
+   * 分けてあるのは「PCの右枠とスマホの下枠のどちらが効くか」を読むため。
+   */
+  bar: import.meta.env.PUBLIC_AMAZON_TAG_BAR ?? '',
   /** 記事本文のその他のリンク。上のどれにも当たらないもの */
   body: import.meta.env.PUBLIC_AMAZON_TAG_BODY ?? '',
 }

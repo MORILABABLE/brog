@@ -1,0 +1,285 @@
+---
+import { amazonTagFor } from '../config'
+import { amazonVideoSearchUrl, withAmazonTag } from '../lib/affiliate'
+import { followBarOn } from '../lib/follow-bar'
+import { ctaQueryFor } from '../lib/page-intent'
+
+/**
+ * 画面下の追従枠。**狭い画面（75rem 未満）専用。**
+ *
+ * ■ 何を埋めるための枠か
+ * 右の追従枠（`FollowRail.astro`）は 75rem(1200px) 以上でしか出ない。
+ * つまりスマホとタブレットには追従枠が存在せず、2026-09-05 の実測では
+ * トップページで押せる広告が**画面を19枚ぶんスクロールした先の1本**だけだった。
+ * 流入の半数超がスマホなので、そこだけ機会が落ちていた。
+ *
+ * ■ 右のレールとの関係
+ * **追従枠は画面に常にちょうど1つ。** 幅で排他にしてある。
+ *   75rem 以上 … 右の `FollowRail`（この枠は `display: none`）
+ *   75rem 未満 … この枠（`FollowRail` は `.layout` 側で `display: none`）
+ * 送り先と文言はどちらも `lib/page-intent.ts` の `ctaQueryFor()` から作るので、
+ * **同じページなら幅が違っても同じ作品に送る。**
+ *
+ * ■ 出すページを絞ってある
+ * 判断は `lib/follow-bar.ts` の1か所。**冒頭の広告表記（`AffiliateNotice`）を
+ * 出しているページとまったく同じ集合**にしてある。理由はそちらのコメント。
+ *
+ * ■ U-NEXT（afb）は載せない
+ * 追従枠に U-NEXT を入れていないのと同じ理由（docs/AFFILIATE.md 12-2）。
+ *   1. 注意事項【4】の必須文言（「本ページの情報は◯年◯月時点…」）を
+ *      **広告と同じ枠**に出す義務があり、1行のバーには入らない
+ *   2. 掲載NG作品の判定に `pageText` が要るが、`BaseLayout` はページ本文を持たない
+ * 載せるなら**バーを2行にして注意文言を出す**のと、
+ * **ページ側から `pageText` を流す**のが両方要る。片方だけやらないこと。
+ *
+ * ■ AdSense と置き換えるとき
+ * AdSense のアンカー広告も画面下に fixed で出るので、**両方出すと重なる。**
+ * `lib/follow-bar.ts` の `FOLLOW_BAR_ENABLED` を false にする。
+ */
+
+interface Props {
+  /**
+   * 検索語。
+   *
+   * ★ **省略してよい。** 省略した場合はそのページに来ている検索語か
+   *   シリーズ記事の主題から自動で決まる（`lib/page-intent.ts`）。
+   *   **呼び出し側が主題を知っているときだけ**渡す（`AmazonCta.astro` と同じ扱い）。
+   *   作品ページ（`w.title`）と人物ページ（`p.name`）がこれに当たり、
+   *   合わせて662ページある。ここを渡さないと、この2種類だけ
+   *   「とりあえずAmazonへ」の空の入口になる（docs/AFFILIATE.md 1-3 の問題）。
+   *   渡し口は `layouts/BaseLayout.astro` の `adQuery`。
+   */
+  query?: string
+}
+
+const { query } = Astro.props
+const tag = amazonTagFor('bar')
+
+/**
+ * この枠を描くか。**3つとも満たしたときだけ。**
+ *   1. トラッキングIDがある（未設定なら「PR」だけが出る枠になってしまう）
+ *   2. そのページが対象（`followBarOn()`）
+ *   3. ※ 幅の条件は CSS 側。HTMLは出して、狭い画面でだけ見せる
+ */
+const show = Boolean(tag) && followBarOn(Astro.url.pathname)
+
+/**
+ * 送り先。**右のレール・記事末尾のCTAと同じ決め方**（`ctaQueryFor()`）。
+ * 主題が決まらなければ従来どおり Prime Video の売り場トップへ落ちる。
+ *
+ * ★ 主題が決まっていても「観られる」と書かないこと。
+ *   当サイトは Amazon の在庫を持っていない。言ってよいのは「探せる」まで
+ *   （`AmazonCta.astro` の `.note` と同じ線引き）。
+ */
+const subject = show ? (query ?? (await ctaQueryFor(Astro.url.pathname))) : undefined
+const href = subject
+  ? amazonVideoSearchUrl(subject, tag)
+  : withAmazonTag('https://www.amazon.co.jp/gp/video/storefront', tag)
+const label = subject ? `「${subject}」をPrime Videoで探す` : 'Prime Videoで作品を探す'
+---
+
+{
+  show && (
+    /*
+      ★ `hidden` を付けたまま出す。**1画面スクロールするまで見せない**（下のスクリプト）。
+        JavaScript が動かない環境ではこのまま出ないが、それでよい
+        （読み込んだ瞬間から広告が貼り付いているほうが害が大きい）。
+    */
+    <aside class="follow-bar" aria-label="広告" hidden>
+      {/* 景品表示法（ステマ規制）上、広告面には表記が要る */}
+      <span class="pr">PR</span>
+      {/*
+        枠のほぼ全体が1本のリンク。指で押す面を大きく取るため、
+        文言とボタンを分けずに1つにしてある（右のレールは縦に余裕があるので分けている）。
+        題名は長い（実測で50字超がある）ので1行で省略し、全体は title 属性で読める。
+      */}
+      <a
+        class="action"
+        href={href}
+        title={label}
+        rel="sponsored noopener"
+        target="_blank"
+        data-affiliate="true"
+      >
+        {label}
+      </a>
+      {/*
+        閉じるボタン。**追従広告は「誤クリック誘発」と見られやすい領域**なので、
+        読者が自分で消せる状態にしておく（docs/AFFILIATE.md 10-5 の判断と同じ向き）。
+        消した状態はそのタブのセッションのあいだだけ保つ（sessionStorage）。
+      */}
+      <button class="close" type="button" aria-label="広告を閉じる">×</button>
+    </aside>
+  )
+}
+
+<script>
+  /**
+   * 出すタイミングと、閉じる操作。
+   *
+   * ■ 1画面ぶんスクロールしてから出す
+   * 読み込み直後から貼り付いていると、トップページの第一画面が
+   * 「記事一覧より先に広告」になる（`pages/index.astro` が CTA を一覧の下に
+   * 置いているのと同じ理由）。AdSense の審査でも見られる面。
+   *
+   * ■ 一度出したら引っ込めない
+   * スクロールに合わせて出したり消したりすると読者の邪魔になる。
+   * **リスナは初回で自分を外す**（一方向のラッチ）。
+   * 記事の最後まで読むと本文のCTAとこの枠に同じボタンが並ぶが、
+   * 出入りさせるほうが害が大きいので許容している。
+   *
+   * ★ フッターに重ならないようにするのは CSS 側（`body` の下余白）。
+   *   最初から余白を入れてあるので、バーが現れてもレイアウトは動かない。
+   */
+  const KEY = 'follow-bar-closed'
+  const bar = document.querySelector<HTMLElement>('.follow-bar')
+
+  if (bar) {
+    let closed = false
+    try {
+      closed = sessionStorage.getItem(KEY) === '1'
+    } catch {
+      // プライベートブラウジング等で sessionStorage に触れないことがある。
+      // 読めないだけなら「閉じていない」として扱う（枠が出るほうに倒す）。
+    }
+
+    if (!closed) {
+      const show = () => {
+        if (window.scrollY <= window.innerHeight) return
+        bar.hidden = false
+        window.removeEventListener('scroll', show)
+      }
+      window.addEventListener('scroll', show, { passive: true })
+      // 途中の位置で開かれることがある（戻る操作でのスクロール復元、`#` 付きURL）。
+      show()
+    }
+
+    bar.querySelector('.close')?.addEventListener('click', () => {
+      bar.hidden = true
+      try {
+        sessionStorage.setItem(KEY, '1')
+      } catch {
+        // 書けなくても閉じる動作自体は成立する。次の読み込みでまた出るだけ。
+      }
+    })
+  }
+</script>
+
+<style>
+  /*
+   * ★ `[hidden]` を明示的に打ち消せるようにしておくこと。
+   *   `display: flex` を素で書くと、**ブラウザ既定の `[hidden] { display: none }` に
+   *   打ち勝ってしまい、hidden のまま見えてしまう**（作者スタイルはUAスタイルより強い）。
+   *   この2行はセットで、片方だけ消さないこと。
+   */
+  .follow-bar {
+    display: flex;
+  }
+  .follow-bar[hidden] {
+    display: none;
+  }
+
+  .follow-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* ヘッダー（sticky, z-index:5）より上。画面の最前面に来る唯一の要素 */
+    z-index: 20;
+    align-items: center;
+    gap: 0.5rem;
+    /*
+     * 高さは約52px＋ホームバーの余白。
+     * ★ Better Ads Standards は追従広告に「画面高の30%以下」を求める。
+     *   52px は 640px の画面で 8%。**2行にするなら必ずこの上限を確認すること。**
+     */
+    padding: 0.5rem 0.7rem calc(0.5rem + env(safe-area-inset-bottom));
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    /* 下から浮いて見えるように。地の暗い背景でも境目が分かる程度に留める */
+    box-shadow: 0 -2px 10px rgb(0 0 0 / 0.12);
+  }
+
+  /*
+   * ★ 75rem 以上では出さない。右の追従枠（FollowRail）がその役目を持つ。
+   *   しきい値は styles/global.css の `.layout`（min-width: 75rem）の裏返しで、
+   *   **1px の隙間も作らないよう 74.9375rem = 1199px にしてある。**
+   *   片方だけ動かすと、両方出る幅か両方消える幅ができる。
+   */
+  @media (min-width: 75rem) {
+    .follow-bar {
+      display: none;
+    }
+  }
+
+  /*
+   * バーがフッターの文字に重なったままにならないように、本文の下に余白を作る。
+   *
+   * ★ **バーが出る前から入れておく。** 現れた瞬間に入れるとレイアウトが動く（CLS）。
+   * ★ このスタイルは枠を描いたページにしか出ないので、
+   *   対象外のページに余白は残らない（判断は lib/follow-bar.ts）。
+   */
+  @media (max-width: 74.9375rem) {
+    :global(body) {
+      padding-bottom: calc(3.25rem + env(safe-area-inset-bottom));
+    }
+  }
+
+  .pr {
+    flex: none;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--text-muted);
+    border-radius: 3px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  /*
+   * 押す面。残り幅をすべて取る。
+   * ★ `min-width: 0` が要る。これが無いと中身の長さで押し広げられ、
+   *   狭い画面で閉じるボタンが画面外へ出る。
+   */
+  .action {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+    text-decoration: none;
+    /* 題名は長い。1行で省略する（全体は title 属性で読める） */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .action:hover {
+    opacity: 0.9;
+  }
+
+  /*
+   * 閉じるボタン。**押す面（.action）から離して置く。**
+   * 誤って広告を押すより、誤って閉じるほうが害が小さい向きに寄せてある。
+   */
+  .close {
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .close:hover {
+    background: var(--bg-subtle);
+  }
+</style>

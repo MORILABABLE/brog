@@ -59,8 +59,8 @@ export const EXCLUDED_HOSTS = ['tv.dmm.com', 'dmm.com', 'www.dmm.com']
  * Amazon の導線の種類。**トラッキングIDを分ける単位**（2026-09-03 追加）。
  *
  * ■ なぜ分けるのか
- * サイト内の Amazon リンクは 3,140本あるが、出ている場所は5種類しかない。
- * IDが1本だと、アソシエイトのレポートは**その5種類の合計**しか返さない。
+ * サイト内の Amazon リンクは 3,140本あるが、出ている場所は6種類しかない。
+ * IDが1本だと、アソシエイトのレポートは**その6種類の合計**しか返さない。
  * 「節ポスターが効いているのか、表なのか、追従枠なのか」が分からないまま
  * 導線を増減させることになる。**出し分けの前に、まず分けて測る。**
  *
@@ -70,7 +70,7 @@ export const EXCLUDED_HOSTS = ['tv.dmm.com', 'dmm.com', 'www.dmm.com']
  *   未設定の枠は既定ID（PUBLIC_AMAZON_TAG）に落ちるので、
  *   1つずつ作って1つずつ足していける。
  */
-export const AMAZON_SLOTS = ['poster', 'table', 'cta', 'rail', 'work', 'body'] as const
+export const AMAZON_SLOTS = ['poster', 'table', 'cta', 'rail', 'work', 'bar', 'body'] as const
 
 export type AmazonSlot = (typeof AMAZON_SLOTS)[number]
 

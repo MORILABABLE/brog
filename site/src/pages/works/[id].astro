@@ -223,7 +223,8 @@ const jsonLd = {
 }
 ---
 
-<BaseLayout title={title} description={description} jsonLd={jsonLd}>
+{/* adQuery は下の <AmazonCta query={w.title}> と同じ値。画面下の追従枠が使う */}
+<BaseLayout title={title} description={description} jsonLd={jsonLd} adQuery={w.title}>
   <nav class="breadcrumb" aria-label="パンくず">
     <a href="/">ホーム</a> ›
     <a href={`/category/${hub.slug}`}>{hub.label}</a>

@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro'
 import LinkSwitch from '../components/LinkSwitch.astro'
 import LeftRail from '../components/LeftRail.astro'
 import FollowRail from '../components/FollowRail.astro'
+import FollowBar from '../components/FollowBar.astro'
 import { UNEXT_AD_ENABLED } from '../lib/unext-ad'
 import '../styles/global.css'
 
@@ -33,6 +34,18 @@ interface Props {
    *   画面で断定しないものを、構造化データでだけ断定してはいけない。
    */
   jsonLd?: Record<string, unknown>
+  /**
+   * 画面下の追従枠（`FollowBar`）が送る先の検索語。
+   *
+   * **ページが自分の主題を知っているときだけ渡す。** 省略すれば
+   * `lib/page-intent.ts` が検索語かシリーズ記事の主題から決め、
+   * どちらも無ければ Prime Video の売り場トップに落ちる。
+   *
+   * ★ 渡しているのは作品ページ（`w.title`）と人物ページ（`p.name`）の2つ。
+   *   この2種類は**本文のCTA（`AmazonCta` の `query`）にも同じ値を渡している。**
+   *   片方だけ渡すと、同じページの上と下で送り先が食い違う。
+   */
+  adQuery?: string
 }
 
 const {
@@ -43,6 +56,7 @@ const {
   noindex = false,
   ogImagePath,
   jsonLd: jsonLdOverride,
+  adQuery,
 } = Astro.props
 
 /**
@@ -273,5 +287,20 @@ const jsonLd = jsonLdOverride ?? (publishedAt
       <FollowRail />
     </div>
     <Footer />
+
+    {/*
+      画面下の追従枠。**狭い画面（1200px 未満）だけ**に出る、右のレールの対。
+      1200px 以上では右の FollowRail が同じ役目を持つので何も出ない。
+
+      ★ **DOM の最後に置くこと。** position: fixed で画面の前面に浮くので、
+        本文・フッターより先に読み上げや Tab が来ると、
+        広告が本文の前に立つことになる。上の <div class="layout"> の
+        「画面での並びと同じ順に置く」と同じ理由。
+
+      ★ 出すページは絞ってある（src/lib/follow-bar.ts）。
+        全ページに出しているわけではないので、ここに置いてあることを
+        「全ページに広告がある」と読まないこと。
+    */}
+    <FollowBar query={adQuery} />
   </body>
 </html>

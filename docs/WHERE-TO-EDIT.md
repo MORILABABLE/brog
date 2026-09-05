@@ -93,6 +93,15 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
       ★ 「サービスから探す」は 2026-08-27 に廃止。
         同じ導線はヘッダーのメニューにある（枠は1200px未満で消えるため）
 
+    画面下の追従枠（スマホ・1200px未満だけ。上の右の枠と対）
+      → site/src/components/FollowBar.astro
+      どのページに出すか → site/src/lib/follow-bar.ts
+      ★ 追従枠は画面に常にちょうど1つ。1200px以上なら右、未満なら下。
+        しきい値は global.css の .layout（75rem）と裏返しの値なので、
+        **片方だけ動かさないこと**
+      ★ バーごと止めるのは follow-bar.ts の FOLLOW_BAR_ENABLED = false。
+        AdSense のアンカー広告を入れる日はここを false にする（同じ場所に出るため）
+
     フッター（運営者情報・出典・著作権）
       → site/src/components/Footer.astro
 
