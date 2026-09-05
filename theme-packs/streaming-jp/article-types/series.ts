@@ -904,9 +904,9 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
      * ★ `streaming` だけ「配信終了」を付けない（2026-09-05）。
      *   終了日が1本も分かっていない記事にそのタグを付けると、
      *   **タグ一覧で「終わる作品の記事」として並ぶ**ことになる。
-     *   サイト側はこの `見放題配信中` タグで枠を出し分ける
+     *   サイト側はこの `見放題配信中` タグで、右の枠のバッジを「配信中」にする
      *   （`site/src/lib/series-posts.ts` の `STREAMING_TAG`）。
-     *   カテゴリでは分けられない。`returned` と同じ `arrivals` になるため。
+     *   カテゴリでは見分けられない。`returned` と同じ `arrivals` になるため。
      */
     const stanceTag = stanceOf(items, ctx) === 'streaming' ? '見放題配信中' : '配信終了'
     return [...services, stanceTag, 'シリーズ']

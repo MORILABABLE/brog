@@ -2,15 +2,42 @@
 import { getCollection } from 'astro:content'
 import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
-import { seriesRails } from '../lib/series-posts'
+import { seriesPosts } from '../lib/series-posts'
 
 /**
- * 右の枠の「シリーズから探す」。**最新記事の上**に置く。
+ * 右の枠の「シリーズ配信」。**最新記事の上**に置く。
  *
  * ■ 何を出すか
  * シリーズ記事（保存版）へのリンク。中身の拾い方は `lib/series-posts.ts`。
  * **記事が1本も無いあいだは HTML を1バイトも出さない**（GenreRail と同じ作り）。
  * フラグは持たせていない。記事が公開されればそのまま出る。
+ *
+ * ■ 枠は1つ（2026-09-05 統合）
+ * 同じ日の午前だけ「見放題終了」と「見放題配信中」の2枠に割っていた。
+ * 割った理由は**バッジの読み方（締切の有無）を混ぜないため**だったが、
+ *
+ *   - 同じ「シリーズ記事」への入口が画面の2か所に出る。読者から見れば
+ *     **同じ探し方を2回見せられている**だけで、右の枠は
+ *     ジャンル・シリーズ・シリーズ・最新記事・PRの5ブロックになっていた
+ *   - 2枠それぞれが最大5本＝**合わせて最大10本**まで伸びうる。
+ *     この枠の上限を5本にしていた理由（下の最新記事とPR枠を
+ *     初期表示から落とさない）が、枠を割った時点で効かなくなっていた
+ *
+ * 締切の有無は**バッジの文字**（配信終了予定／配信中／配信終了済み）と
+ * **並び順**（下記）で伝わる。枠まで割る必要はなかった。
+ *
+ * ★ **また分けたくなったら、上の2つに先に答えること。**
+ *   合計の上限と、「探し方のブロックが1つ増えること」の両方に答えが要る。
+ *
+ * ■ 並びは「まだ観られるものが上」
+ * `lib/series-posts.ts` が決める。**見放題終了予定 → 配信中 → 配信終了済み**の3段で、
+ * 段の中は `pubDate` の降順（＝最後に書き直した順）。
+ * 段で先に切ってあるので、**終了済みの記事を書き直しても、
+ * まだ観られる記事を押し出さない**（経緯は `seriesPosts()` の説明）。
+ *
+ * ★ 「配信中」の段には**いま配信中の記事と、見放題に復帰した記事**が両方入る。
+ *   カテゴリはどちらも `arrivals` で、読者への答えも同じ「いま観られる」。
+ *   違うのはバッジの文字だけ（下の `badgeLabel`）。
  *
  * ■ なぜ「最新記事」の上か
  * シリーズは**探し方**で、最新記事は**中身**。探し方を先に見せる
@@ -33,25 +60,19 @@ import { seriesRails } from '../lib/series-posts'
  *   絵はその高さに合わせた60pxを左に置いているだけ。
  *   追従枠の最新記事と同じ寸法・同じ理屈（FollowRail.astro の .body の説明）。
  *
- * ■ 並びは「まだ観られるものが上」（2026-09-02 変更）
- * `lib/series-posts.ts` が決める。終了予定 → 見放題に復帰 → 終了済みの順で、
- * 上2段は**本数の多い順**、終了済みだけ**本数の少ない順**。
- * それまでは `pubDate` の降順（＝最後に書き直した順）だったので、
- * **全作終了した記事を書き直した日に、それが枠のいちばん上に来ていた。**
- * 枠に載るのは5本だけなので、もう観られない記事がまだ観られる記事を押し出す。
- *
  * ■ 項目を増やしすぎない
  * ここが伸びると、下の最新記事とPR枠が画面の下へ押し出される
- * （LeftRail.astro が左へ移された経緯と同じ）。**上限は5本**。
- * 6本目からは一覧ページ（`/series`）へ送る。
- * ★ 上の並びと合わせて、**枠に載るのは急ぎ度の高い5本**になる。
- *   終了済みの記事は5本目までに入らなければ `/series` 側で見せる。
+ * （LeftRail.astro が左へ移された経緯と同じ）。**上限は3段あわせて6本**。
+ * 7本目からは一覧ページ（`/series`）へ送る。
+ * ★ 上の並びと合わせて、**枠に載るのは急ぎ度の高い6本**になる。
+ *   終了済みの記事は6本目までに入らなければ `/series` 側で見せる。
  *
- * ★ **「もっと見る」は6本目が出てから現れる**（2026-08-31 追加）。
- *   5本以下なら枠に全部載っているので、押しても同じものが並ぶだけになる。
+ * ★ **「シリーズから探す」は7本目が出てから現れる**（2026-08-31 追加）。
+ *   6本以下なら枠に全部載っているので、押しても同じものが並ぶだけになる。
  *   残りの本数を出すのは、押す前に何本あるか分かるようにするため
  *   （GenreRail が行ごとに件数を出しているのと同じ考え方）。
- *   リンク先の `/series` は**記事が0本でも必ず作られる**ので、
+ *   リンク先の `/series` は**すべてのシリーズ記事を、他の一覧と同じ記事カードで
+ *   並べたページ**。**記事が0本でも必ず作られる**ので、
  *   ここが指してリンク切れになることはない（pages/series.astro）。
  *
  * ■ 追従しない
@@ -64,31 +85,40 @@ import { seriesRails } from '../lib/series-posts'
  */
 
 /**
- * 枠に出す本数の上限。
+ * 枠に出す本数の上限。**3段（終了予定・配信中・終了済み）の合計。**
+ *
  * ★ 1件あたり「絵60px ＝ バッジ＋タイトル2行」＋上下の余白で、追従枠の
- *   最新記事1件とほぼ同じ高さ。5本ぶんで、その下の最新記事5本とPR枠が
+ *   最新記事1件とほぼ同じ高さ。6本ぶんで、その下の最新記事5本とPR枠が
  *   初期表示に残る限界がこのあたり。
+ *
+ * ★ 2026-09-05 に 5 → 6。枠を1つにまとめたぶん（上の「枠は1つ」）、
+ *   1本だけ増やしてある。**段ごとの上限は持たせない。**
+ *   3段に割り当てると、記事の少ない段のぶんだけ枠が空くか、
+ *   急ぎ度の高い記事が段の割り当てに押し出されるかのどちらかになる。
  */
-const MAX_ITEMS = 5
+const MAX_ITEMS = 6
 
-const rails = seriesRails(await getCollection('posts'))
+const all = seriesPosts(await getCollection('posts'))
+
+/** 枠に載せるぶん。並びは `seriesPosts()` が決めている（ここで並べ替えない） */
+const series = all.slice(0, MAX_ITEMS)
+/** 枠に載らなかった本数。0 なら「シリーズから探す」を出さない */
+const rest = all.length - series.length
 
 /**
- * 上の枠「シリーズから探す」。**終了日が分かっている記事だけ。**
- * バッジ（終了予定／終了済み）が締切の有無を伝える役目を持っているので、
- * 締切を持たない記事を混ぜない（`lib/series-posts.ts` の `seriesRails`）。
+ * バッジの文字。**カテゴリのラベルが基本で、`streaming` のときだけ差し替える。**
+ *
+ * ★ 色は差し替えない（`data-category` をそのまま渡す）。色はカテゴリの意味に
+ *   使い切ってあり（styles/global.css の :root）、ここで別の色を足すと
+ *   同じ枠の中で色の意味が2種類になる。
+ *
+ * ★ `streaming` のカテゴリは `arrivals`＝「新着配信」。この枠では
+ *   **何が新着なのかが伝わらない**ので、文字だけ「配信中」にする。
+ *   終了日を持たない記事の見分け方は `lib/series-posts.ts` の `STREAMING_TAG`。
  */
-const series = rails.dated.slice(0, MAX_ITEMS)
-/** 枠に載らなかった本数。0 なら「もっと見る」を出さない */
-const rest = rails.dated.length - series.length
-
-/**
- * 下の枠「見放題配信中」。**終了日が分かっていない記事だけ。**
- * こちらは締切が無いので、上の枠とバッジの意味が変わる。
- * 分けて置くことで、上の枠の「期限まで観られる」の読み方を壊さない。
- */
-const streaming = rails.streaming.slice(0, MAX_ITEMS)
-const streamingRest = rails.streaming.length - streaming.length
+function badgeLabel(s: (typeof series)[number]): string {
+  return s.streaming ? '配信中' : CATEGORIES[s.category].label
+}
 
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
 const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
@@ -96,8 +126,8 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
 
 {
   series.length > 0 && (
-    <nav class="block" aria-label="見放題終了">
-      <p class="block-title">見放題終了</p>
+    <nav class="block" aria-label="シリーズ配信">
+      <p class="block-title">シリーズ配信</p>
       <ul class="series">
         {series.map((s) => {
           const isCurrent = s.href === current
@@ -112,7 +142,7 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
               <Thumb src={s.heroImage} category={s.category} size={60} />
               <span class="body">
                 <span class="badge" data-category={s.category}>
-                  {CATEGORIES[s.category].label}
+                  {badgeLabel(s)}
                 </span>
                 <span class="name">{s.label}</span>
               </span>
@@ -135,77 +165,13 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
         })}
       </ul>
       {/*
-        枠に載らなかったぶんの行き先。**5本以下では出ない。**
+        枠に載らなかったぶんの行き先。**6本以下では出ない。**
         リンクの文言に本数を入れているのは、押す前に
         「あと何本あるか」が分かるようにするため。
       */}
       {rest > 0 && (
         <a class="more" href="/series">
-          シリーズをすべて見る（ほか{rest}本）
-        </a>
-      )}
-    </nav>
-  )
-}
-
-{
-  /*
-    「見放題配信中」の枠。**終了日が分かっていないシリーズ記事だけ**を出す。
-
-    ■ 上の枠と分けている理由
-    上の枠はバッジ（終了予定／終了済み）で締切の有無を伝えている。
-    終了日を持たない記事を同じ並びに混ぜると、**バッジの読み方が割れる。**
-    読者の用事も別で、こちらは「いつまで」ではなく「いま観られる？」に答える。
-
-    ■ 上に置かない理由
-    締切のある記事のほうが先。**期限を逃すと取り返しがつかない**ので、
-    画面の上のほうは締切のある枠に譲る（並びは ジャンル → シリーズ → ここ → 最新記事）。
-
-    ★ 記事が0本のあいだは HTML を1バイトも出さない（上の枠と同じ作り）。
-  */
-}
-{
-  streaming.length > 0 && (
-    <nav class="block" aria-label="見放題配信中">
-      <p class="block-title">見放題配信中</p>
-      <ul class="series">
-        {streaming.map((s) => {
-          const isCurrent = s.href === current
-          const Inner = (
-            <>
-              <Thumb src={s.heroImage} category={s.category} size={60} />
-              <span class="body">
-                {/*
-                  ★ バッジの文言だけ枠に合わせる。**カテゴリの色はそのまま使う**
-                    （`data-category` を渡しているので新着配信の色になる）。
-                    CATEGORIES[s.category].label は「新着配信」で、
-                    この枠では「何が新着なのか」が伝わらない。
-                */}
-                <span class="badge" data-category={s.category}>
-                  配信中
-                </span>
-                <span class="name">{s.label}</span>
-              </span>
-            </>
-          )
-          return (
-            <li>
-              {isCurrent ? (
-                <span class="item is-current" aria-current="page" title={s.fullTitle}>
-                  {Inner}
-                </span>
-              ) : (
-                <a class="item" href={s.href} title={s.fullTitle}>
-                  {Inner}
-                </a>
-              )}
-            </li>
-          )
-        })}
-      </ul>
-      {streamingRest > 0 && (
-        <a class="more" href="/series">
-          シリーズをすべて見る（ほか{streamingRest}本）
+          シリーズから探す（ほか{rest}本）
         </a>
       )}
     </nav>
@@ -284,6 +250,8 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
    *   シリーズ記事のカテゴリは**素材に合わせて3つを行き来する**
    *   （全作終われば ended、終わった作品が見放題に戻れば arrivals）。
    *   ここを固定文字にしないこと（lib/series-posts.ts の説明）。
+   *   文字だけ差し替えるのは `streaming`（＝終了日が1本も無い）ときで、
+   *   判断は上の `badgeLabel` に置いてある。**色はカテゴリのまま。**
    */
   .badge {
     font-size: 0.68rem;
@@ -305,8 +273,8 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
     color: var(--text);
   }
   /*
-   * 「もっと見る」。**項目（.item）と同じ枠にしない。**
-   *   同じ見た目にすると6行目の項目に見え、シリーズ記事が1本増えたと読まれる。
+   * 「シリーズから探す」。**項目（.item）と同じ枠にしない。**
+   *   同じ見た目にすると7行目の項目に見え、シリーズ記事が1本増えたと読まれる。
    *   枠のいちばん下に、文字だけの1行として置く。
    */
   .more {

@@ -18,8 +18,11 @@
  *
  * カテゴリでは拾えないので、記事タイプ側が必ず付けるタグ1つで拾う。
  *
- * ★ **`arrivals` の2つは別の枠に出す。** 復帰は終了日を持ちうるが、
- *   配信中は持たない。カテゴリでは区別できないので `STREAMING_TAG` で分ける。
+ * ★ **`arrivals` の2つはバッジの文字だけ分ける**（2026-09-05 変更）。
+ *   復帰は終了日を持ちうるが、配信中は持たない。読者に見せる言葉が
+ *   「新着配信」と「配信中」で変わるので `STREAMING_TAG` で見分ける。
+ *   **枠は分けない。** 一度は2枠に割ったが同じ日に1枠へ戻している
+ *   （経緯は SeriesRail.astro の「枠は1つ」）。
  *
  * ★ `SERIES_TAG` は `series.ts` の `tags()` が入れる文字列と**完全に一致させること。**
  *   1文字でも違うと、記事はできているのに枠から消える（0件の枠は描画されない）。
@@ -33,15 +36,20 @@ export const SERIES_TAG = 'シリーズ'
 /**
  * **終了日がまだ分かっていない**シリーズ記事の目印（2026-09-05 追加）。
  *
- * ■ なぜカテゴリで分けられないのか
+ * ■ なぜカテゴリで見分けられないのか
  * `series.ts` の `stanceOf()` は `streaming`（いま配信中）も
  * `returned`（見放題に復帰）も**同じ `arrivals` カテゴリ**にする。
  * どちらも読者に渡すのが「いま観られる」ことなので、それ自体は正しい。
- * だが枠を分けるには**締切があるかどうか**で区別する必要があり、
+ * だがバッジに出す言葉は違い（「配信中」と「新着配信」）、
  * カテゴリにはその情報が無い。
  *
+ * ★ **使い道はバッジの文言だけ**（SeriesRail.astro）。**並び順には効かない。**
+ *   段を決めるのは下の `TIER`＝カテゴリで、`streaming` も `returned` も
+ *   同じ2段目（配信中）に入る。ここで段を分けると、
+ *   読者にとって同じ「いま観られる」が枠の中で2か所に散る。
+ *
  * ★ `article-types/series.ts` の `tags()` が入れる文字列と**完全に一致させること。**
- *   1文字でも違うと、記事はできているのに「見放題配信中」の枠から消える。
+ *   1文字でも違うと、終了日を持たない記事に「新着配信」のバッジが出る。
  */
 export const STREAMING_TAG = '見放題配信中'
 
@@ -87,66 +95,13 @@ export interface SeriesPost {
    */
   heroImage?: string
   /**
-   * その記事が扱っている作品数。**並び順にだけ使う**（画面には出さない）。
-   *
-   * ■ なぜタイトルから取るのか
-   * frontmatter に本数は入っていない。入れる手もあるが、
-   * **読者が数えられる本数はタイトルに出ている数**（`series.ts` の `workCount()`）で、
-   * 表の行数と一致させてある。別の場所に第2の本数を作ると、
-   * 表示と並び順が別々の数字を見ることになる。
-   *
-   * ★ タイトルの形は `naming.md` が決めている（`…{動詞句}作品{本数}本…`）。
-   *   本数の無いタイトルは品質ゲートが警告を出すので、ここでは 0 に落として
-   *   同じ段のいちばん下に置くだけにする（枠から消さない）。
-   */
-  works: number
-  /**
    * **終了日が1本も分かっていない記事か**（`STREAMING_TAG` が付いている）。
    *
    * `true` の記事は「いま観られる」ことだけを言っていて、締切を持たない。
-   * 枠は締切のあるものと分けて出す（`seriesRails()`）。
+   * 枠のバッジを「配信中」にするのにだけ使う（`SeriesRail.astro`）。
+   * **段（並び順）はカテゴリで決まるので、ここは並びに効かない。**
    */
   streaming: boolean
-}
-
-/**
- * 枠に出すための2つの束。**「シリーズから探す」と「見放題配信中」。**
- *
- * ■ なぜ分けるのか（2026-09-05 追加）
- * 「シリーズから探す」の枠は、終了予定・終了済みのバッジが付くことで
- * **「何のシリーズが期限まで観られるか」を一目で伝える**ようになっている。
- * そこへ終了日を持たない記事を混ぜると、**同じ並びの中で締切の有無が割れて**
- * バッジの読み方が壊れる。
- *
- * 終了日が分かっていない記事は読者への用事が別（「いま観られる？」）なので、
- * 枠ごと分けて下に置く。**順番も意味を持つ**（締切のあるほうが先）。
- */
-export interface SeriesRails {
-  /** 終了日が分かっている記事（終了予定・復帰・終了済み） */
-  dated: SeriesPost[]
-  /** 終了日が分かっていない記事（いま見放題で配信中） */
-  streaming: SeriesPost[]
-}
-
-/** `seriesPosts()` を2つの枠に振り分ける。並びはそれぞれの中で保たれる。 */
-export function seriesRails(posts: CollectionEntry<'posts'>[]): SeriesRails {
-  const all = seriesPosts(posts)
-  return {
-    dated: all.filter((p) => !p.streaming),
-    streaming: all.filter((p) => p.streaming),
-  }
-}
-
-/**
- * タイトルから作品数を取る。`作品32本` → 32。
- *
- * ★ `作品(\d+)本` を先に見る。見どころ（`｜` の後ろ）に
- *   「劇場版5本も終了」のような数字が入ることがあり、
- *   最初に見つかった `◯本` を拾うと**そちらを本数として並べてしまう**。
- */
-function workCount(title: string): number {
-  const m = /作品(\d+)本/.exec(title) ?? /(\d+)本/.exec(title)
-  return m ? Number(m[1]) : 0
 }
 
 /**
@@ -156,12 +111,12 @@ function workCount(title: string): number {
  * シリーズ記事のカテゴリは**読者にとっての急ぎ具合**そのもの
  * （`series.ts` の `stanceOf()`）。
  *
- *   leaving  まだ観られる／締切がある     → いちばん上
- *   arrivals 見放題に復帰した（締切は無い） → 次
- *   ended    もう観られない               → いちばん下
+ *   leaving  見放題終了予定。締切がある          → いちばん上
+ *   arrivals 配信中（いま配信中／見放題に復帰）   → 次
+ *   ended    配信終了済み。もう観られない        → いちばん下
  *
- * ★ `arrivals`（復帰）を `leaving` に混ぜない。締切のある記事のほうが先で、
- *   混ぜると「急ぐ必要のある記事」が本数の少なさで下がることがある。
+ * ★ `arrivals` の2つ（配信中・復帰）を分けない。読者への答えはどちらも
+ *   「いま観られる」で同じ。違うのは**バッジの文字だけ**（`STREAMING_TAG`）。
  * ★ `ranking` はシリーズ記事には付かないが、`CategorySlug` の値なので置いておく。
  */
 const TIER: Record<CategorySlug, number> = { leaving: 0, arrivals: 1, ended: 2, ranking: 3 }
@@ -191,24 +146,29 @@ function railLabel(title: string): string {
 /**
  * 公開中のシリーズ記事を、**まだ観られるものから**返す。
  *
- * ■ 並び（2026-09-02 変更。それまでは `pubDate` の降順だった）
+ * ■ 並び（2026-09-05 変更）
  *
- *   1段目 `leaving`  まだ観られる … **本数の多い順**
- *   2段目 `arrivals` 見放題に復帰 … 同上
- *   3段目 `ended`    もう観られない … **本数の少ない順**
+ *   1段目 `leaving`  見放題終了予定
+ *   2段目 `arrivals` 配信中（いま配信中・見放題に復帰の両方）
+ *   3段目 `ended`    配信終了済み
  *
- * ★ **なぜ「最近手を入れた順」をやめたか。**
- *   シリーズ記事は書き直すたびに `pubDate` が振り直される（`buildMarkdown` が
- *   `pubDate: now`）。つまり前の並びは「最後に書き直した順」で、
- *   **全作終了した記事を書き直した日に、その記事が枠のいちばん上に来ていた。**
- *   枠に載るのは5本だけなので、もう観られない記事が
- *   まだ観られる記事を押し出す形になっていた。
+ * **段の中は `pubDate` の降順＝最後に書き直した順。**
  *
- * ★ **終了済みだけ昇順**。もう観られない記事は下へ行くほど目に入らなくてよく、
- *   大きいシリーズほど下に置く。上2段とは逆向きなのが意図。
+ * ★ **段を先に見るのが要。** `pubDate` だけで並べていたころは、
+ *   全作終了した記事を書き直した日に、それが枠のいちばん上に来ていた
+ *   （シリーズ記事は書き直すたびに `pubDate` が振り直される。
+ *   `buildMarkdown` が `pubDate: now`）。段で先に切ってあれば、
+ *   どれだけ書き直しても**急ぎ度の順は崩れない。**
  *
- * ★ 同数のときだけ `pubDate` の降順に落とす。並びが実行のたびに揺れないように、
- *   最後は必ず決着する比較にしておくこと。
+ * ★ **段の中を「本数の多い順」にするのはやめた**（2026-09-02〜09-05）。
+ *   本数はタイトルから取った数で、書き直すたびに増減する。
+ *   読者にとっては「大きいシリーズが上」でしかなく、
+ *   段の中の順番として意味を持っていなかった。
+ *   枠が1つになり、段をまたいで6本まで載るようになったので、
+ *   段の中は**最後に手を入れた新しい順**にしてある。
+ *
+ * ★ 同じ日時のときだけ `id` で決着させる。並びが実行のたびに揺れないように、
+ *   最後は必ず決まる比較にしておくこと。
  */
 export function seriesPosts(posts: CollectionEntry<'posts'>[]): SeriesPost[] {
   return posts
@@ -220,14 +180,13 @@ export function seriesPosts(posts: CollectionEntry<'posts'>[]): SeriesPost[] {
       fullTitle: p.data.title,
       category: p.data.category,
       heroImage: p.data.heroImage,
-      works: workCount(p.data.title),
       streaming: p.data.tags.includes(STREAMING_TAG),
     }))
     .sort((a, b) => {
       const tier = TIER[a.category] - TIER[b.category]
       if (tier !== 0) return tier
-      const byWorks = a.category === 'ended' ? a.works - b.works : b.works - a.works
-      if (byWorks !== 0) return byWorks
-      return b.entry.data.pubDate.valueOf() - a.entry.data.pubDate.valueOf()
+      const byDate = b.entry.data.pubDate.valueOf() - a.entry.data.pubDate.valueOf()
+      if (byDate !== 0) return byDate
+      return a.entry.id.localeCompare(b.entry.id)
     })
 }
