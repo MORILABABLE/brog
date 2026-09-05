@@ -3294,10 +3294,16 @@
     "article:2026-08-arrivals-western",
     "article:2026-08-ended",
     "article:2026-08-leaving-u-next",
+    "article:2026-09-arrivals-netflix",
+    "article:2026-09-arrivals-netflix",
+    "article:2026-09-arrivals-prime-video",
+    "article:2026-09-arrivals-prime-video",
     "article:2026-09-leaving-netflix",
     "article:2026-09-leaving-netflix",
     "article:2026-09-leaving-netflix",
     "article:2026-09-leaving-netflix",
+    "article:2026-09-leaving-prime-video",
+    "article:2026-09-leaving-prime-video",
     "article:2026-09-leaving-prime-video",
     "article:2026-09-leaving-u-next",
     "article:2026-09-special-prime-video-lineup",
@@ -3322,6 +3328,8 @@
     "article:conan-movies",
     "article:conan-movies",
     "article:harry-potter",
+    "article:mission-impossible",
+    "article:resident-evil",
     "article:transformers",
     "article:transformers",
     "article:transformers",
@@ -3329,5 +3337,5 @@
     "article:ultraman",
     "article:ultraman"
   ],
-  "updatedAt": "2026-09-04T21:56:39.842Z"
+  "updatedAt": "2026-09-05T07:55:55.944Z"
 }

@@ -31,13 +31,24 @@
  * 「文言をデータから決める。手書きの説明文を挟むとビルドのたびに古くなる」
  * としているのと同じ考え方（docs/GROWTH.md 3-1）。
  *
- * ■ 素材は `expiring` と `removed` だけ
- * `new` しか観測していない作品（＝いま見放題だが終了日が分からない）は載せない。
- * 理由は2つあって、どちらも外すと記事の性格が変わる。
+ * ■ 素材は `expiring` / `removed` / `new`。`upcoming` は載せない
+ * 「いつまで観られるか」に答えられる観測（expiring・removed）と、
+ * 「いま観られる」ことが分かる観測（new）を扱う。
+ * まだ観られない `upcoming` だけは、この記事の用事に答えられないので入れない。
  *
- *   1. この記事が答えるのは「**いつまで**観られるか」。終了日が無い作品は答えられない
- *   2. 作品ページの掲載条件と同じ集合になるので、**表の全行が作品ページへ繋がる**
- *      （`isWorkPagePublishable` の「終了日を言える」と同じ線）
+ * ★ **`new` を入れたのは 2026-09-05 から。** それまでは終了日を言える観測だけに
+ *   絞っていたが、そうすると**配信が始まったばかりのシリーズが1本も書けない**
+ *   （実測: バイオハザードの実写6作が9月にPrime Videoでそろったのに素材0件）。
+ *   読者の「◯◯シリーズ、いま観られる？」は「いつまで観られる？」と同じだけ実在する。
+ *
+ * ★ **「いつまで」を優先する順序は変えていない。** `select()` の `latest` が
+ *   作品ごとに最新の観測を残すので、終了日が判明した作品はそちらが勝ち、
+ *   記事は同じURLのまま「いつまで」に答える形（`leaving`）へ移る。
+ *
+ * ★ 引き換えに、`new` だけの作品は**作品ページを持たない**
+ *   （`isWorkPagePublishable` が終了日を言えることを条件にしているため）。
+ *   表の題名にリンクが付かない行が混ざるが、リンクの有無は `hasWorkPage` が
+ *   1件ずつ見るので壊れない。終了日が判明すれば書き直しで自動的に付く。
  *
  * ■ 文章の型は2つのファイルに分かれている
  *   templates/series.md            構成と文体のルール
@@ -111,6 +122,7 @@ const REQUIRED_PHRASES = [
   'series-lead-first-sentence',
   'series-update-lead-first-sentence',
   'series-returned-lead-first-sentence',
+  'series-streaming-lead-first-sentence',
   'series-ended-lead-first-sentence',
   'series-unext-note',
   'other-services-intro',
@@ -155,9 +167,10 @@ function workKey(title: string): string {
 /**
  * この記事がいまどちら向きの記事なのか。**素材から決まる。**
  *
- * `leaving`  … まだ終わっていない作品が1本でもある。「いつまで観られるか」の記事
- * `returned` … 終了予定は無いが、**外れたあとに見放題へ戻った作品**がある
- * `ended`    … 全部終わっている。「いつまで観られたか」の記事
+ * `leaving`   … まだ終わっていない作品が1本でもある。「いつまで観られるか」の記事
+ * `returned`  … 終了予定は無いが、**外れたあとに見放題へ戻った作品**がある
+ * `streaming` … 終了予定も復帰も無いが、**いま見放題で配信中の作品**がある
+ * `ended`     … 全部終わっている。「いつまで観られたか」の記事
  *
  * ★ 途中で入れ替わる。コナンの27本が全部終われば、次に書き直したとき
  *   同じURLのまま `ended` の記事になる。**それが正しい挙動。**
@@ -174,9 +187,25 @@ function workKey(title: string): string {
  *   書き続ける**ことになる。ここが唯一その嘘を止められる場所。
  *
  * ★ 復帰したあとに新しい終了日が付けば、そのサービスの観測が最新になるので
- *   `leaving` に戻る（`select()` の `latest`）。**3つの状態を行き来する。**
+ *   `leaving` に戻る（`select()` の `latest`）。**状態のあいだを行き来する。**
+ *
+ * ★ **`streaming` を足した理由**（2026-09-05）
+ *   それまでは「終了日を言える作品」だけを素材にしていたので、
+ *   配信が始まったばかりのシリーズは**1本も記事にできなかった**
+ *   （実測: バイオハザードの実写6作が9月にPrime Videoでそろったが素材0件）。
+ *   読者の「◯◯シリーズ、いま観られる？」に答える記事が作れないのは、
+ *   「いつまで観られる？」に答えられないのと同じだけの取りこぼしになる。
+ *
+ *   **「いつまで」を捨てたわけではない。** 終了日が判明した時点で
+ *   `leaving` に移り、記事は同じURLのまま「いつまで」に答える形へ変わる。
+ *   `streaming` は、その手前の期間を空白にしないための状態。
+ *
+ * ★ この状態の作品は**作品ページを持たない**（`isWorkPagePublishable` が
+ *   終了日を言えることを条件にしているため）。表の題名にリンクが付かない行が
+ *   混ざるが、リンクの有無は `hasWorkPage` が1件ずつ見るので壊れはしない。
+ *   **終了日が判明すれば、書き直したときに自動でリンクが付く。**
  */
-type Stance = 'leaving' | 'returned' | 'ended'
+type Stance = 'leaving' | 'returned' | 'streaming' | 'ended'
 
 interface StanceTraits {
   category: Category
@@ -211,6 +240,18 @@ const STANCES: Record<Stance, StanceTraits> = {
     category: 'arrivals',
     verbPhrase: '見放題配信が再開した',
     leadKey: 'series-returned-lead-first-sentence',
+  },
+  /*
+   * ★ カテゴリは `arrivals`（新着配信）。`returned` と同じ理由で、
+   *   この記事が渡すのは「終わること」ではなく「いま観られること」。
+   *
+   * ★ 動詞句に「予定」も「終了」も入れないこと。**この状態だけは締切が無い。**
+   *   終了日を持たない作品を集めた記事なので、期限を匂わせた時点で嘘になる。
+   */
+  streaming: {
+    category: 'arrivals',
+    verbPhrase: '見放題配信中の',
+    leadKey: 'series-streaming-lead-first-sentence',
   },
   ended: {
     category: 'ended',
@@ -309,18 +350,44 @@ function revivals(matched: ChangeEvent[]): Set<ChangeEvent> {
   return out
 }
 
-/** 表の「状態」列にそのまま出る3つの値。**ここ以外に状態の呼び方を作らないこと。** */
-type State = '終了予定' | '終了済み' | '見放題に復帰'
+/** 表の「状態」列にそのまま出る値。**ここ以外に状態の呼び方を作らないこと。** */
+type State = '終了予定' | '終了済み' | '見放題に復帰' | '見放題配信中'
+
+/**
+ * 復帰と判定された観測。**`select()` が置き、`stateOf()` が読む。**
+ *
+ * ■ なぜモジュール変数なのか
+ * 「その `new` が復帰なのか、ただの配信開始なのか」は**作品の履歴を見ないと決まらない**
+ * （`revivals()`）。ところが `select()` は作品ごとに**最新の観測1件だけ**を残すので、
+ * 復帰の根拠になった過去の `removed` は素材から消えている。
+ * つまり `stateOf()` に渡る素材だけでは、もう区別が付かない。
+ *
+ * 判定できるのは全履歴を持っている `select()` の中だけなので、そこで印を付ける。
+ * CLI は `--emit` でも `--apply` でも **`select()` → `buildPrompt`／`verify`** の順に
+ * 呼ぶので、読む側から見れば必ず埋まっている。
+ *
+ * ★ 万一空だったときは「見放題配信中」に倒す（下の `stateOf`）。
+ *   ただの配信開始を「復帰」と書くのは**起きていないことを書く**ことになるが、
+ *   復帰を「配信中」と書くのは説明が粗いだけで嘘にはならない。
+ */
+let revivedKeys = new Set<string>()
+
+/** `revivedKeys` のキー。サービスが違えば別の観測として数える。 */
+function eventKeyOf(e: ChangeEvent): string {
+  return `${e.service}/${e.work.id}/${e.collectedAt}`
+}
 
 /**
  * 1件の観測が、いま読者にとってどういう状態か。
  *
- * ★ `new` がここに来るのは**復帰と判定されたものだけ**（`select()` の `revivals`）。
- *   ふつうの `new`（ただの配信開始）は素材に入らないので、
- *   この関数が「見放題に復帰」を返すのは復帰の観測に限られる。
+ * ★ `new` には2種類ある。**取り違えると読者に嘘をつく。**
+ *     見放題に復帰 … 一度外れたあと戻ってきた（`revivals()` が判定）
+ *     見放題配信中 … ただ配信が始まっただけ。終了日はまだ分からない
  */
 function stateOf(e: ChangeEvent, now: Date): State {
-  if (e.kind === 'new') return '見放題に復帰'
+  if (e.kind === 'new') {
+    return revivedKeys.has(eventKeyOf(e)) ? '見放題に復帰' : '見放題配信中'
+  }
   if (e.kind === 'removed') return '終了済み'
   return Date.parse(e.at!) >= now.getTime() ? '終了予定' : '終了済み'
 }
@@ -328,17 +395,23 @@ function stateOf(e: ChangeEvent, now: Date): State {
 /**
  * 記事の向きを素材から決める。**上から順に見る（優先順位がある）。**
  *
- *   1. 終了予定が1本でもある      → `leaving`  「いつまで観られるか」
- *   2. 無いが、復帰が1本でもある  → `returned` 「また観られるようになった」
- *   3. どちらも無い               → `ended`    「いつまで観られたか」
+ *   1. 終了予定が1本でもある      → `leaving`   「いつまで観られるか」
+ *   2. 無いが、復帰が1本でもある  → `returned`  「また観られるようになった」
+ *   3. 無いが、配信中が1本ある    → `streaming` 「いま観られる」
+ *   4. どれも無い                 → `ended`     「いつまで観られたか」
  *
  * ★ 1 が 2 より先。終了予定と復帰が混ざる記事（復帰したあと別の作品が
  *   終わりかけている、など）で読者にとって急ぐ理由があるのは締切のほう。
+ *
+ * ★ 2 が 3 より先。どちらも「いま観られる」だが、復帰は
+ *   **一度観られなくなった作品が戻った**という報せがあるぶん、
+ *   ただ配信中であることより読者に伝える値打ちが大きい。
  */
 function stanceOf(items: ChangeEvent[], ctx: ArticleContext): Stance {
   const states = items.map((e) => stateOf(e, ctx.now))
   if (states.includes('終了予定')) return 'leaving'
   if (states.includes('見放題に復帰')) return 'returned'
+  if (states.includes('見放題配信中')) return 'streaming'
   return 'ended'
 }
 
@@ -348,6 +421,7 @@ function tally(items: ChangeEvent[], ctx: ArticleContext): Record<State, number>
     終了予定: 0,
     終了済み: 0,
     見放題に復帰: 0,
+    見放題配信中: 0,
   }
   for (const e of items) out[stateOf(e, ctx.now)] += 1
   return out
@@ -441,11 +515,22 @@ export const seriesArticle: ArticleType = {
       })
 
     const revived = revivals(matched)
+    // ★ 「復帰」の印を残す。ここでしか判定できない（`revivedKeys` の説明）。
+    revivedKeys = new Set([...revived].map(eventKeyOf))
 
     const target = matched
-      // 「いつまで」に答えられる観測と、**復帰の観測**だけ。
-      // ただの `new`（終了日が分からない配信開始）と `upcoming` は載せない（冒頭の理由）
-      .filter((e) => e.kind === 'expiring' || e.kind === 'removed' || revived.has(e))
+      /*
+       * 「いつまで」に答えられる観測（expiring / removed）と、
+       * **見放題で観られる観測**（new）。`upcoming` はまだ観られないので載せない。
+       *
+       * ★ `new` を入れるのは 2026-09-05 から（`Stance` の説明）。
+       *   それまでは終了日を言える観測だけに絞っていたので、
+       *   配信が始まったばかりのシリーズは記事にできなかった。
+       *   下の `latest` が作品ごとに最新だけを残すので、
+       *   **`new` のあとに終了日が判明した作品はそちらが勝つ。**
+       *   「いつまで」に答えられるなら必ずそちらを使う、という順序は変わっていない。
+       */
+      .filter((e) => e.kind === 'expiring' || e.kind === 'removed' || e.kind === 'new')
       .filter((e) => !service || e.service === service)
 
     /*
@@ -474,13 +559,15 @@ export const seriesArticle: ArticleType = {
      * 並びは「まだ観られるものが先、日付の早い順」。
      * 読者が最初に知りたいのは締切の近い作品で、終了済みは後ろでよい。
      *
-     * ★ 復帰は終了予定と終了済みのあいだ。締切がある作品ほどは急がないが、
-     *   **もう観られない作品より先に見せる**（また観られる、が要点なので）。
+     * ★ 復帰と配信中は終了予定と終了済みのあいだ。締切がある作品ほどは急がないが、
+     *   **もう観られない作品より先に見せる**（いま観られる、が要点なので）。
+     *   復帰が配信中より先なのは `stanceOf()` と同じ理由。
      */
     const ORDER: Record<State, number> = {
       終了予定: 0,
       見放題に復帰: 1,
-      終了済み: 2,
+      見放題配信中: 2,
+      終了済み: 3,
     }
     return limited.sort((a, b) => {
       const d = ORDER[stateOf(a, ctx.now)] - ORDER[stateOf(b, ctx.now)]
@@ -502,6 +589,7 @@ export const seriesArticle: ArticleType = {
     const stillOn = count['終了予定']
     const alreadyOff = count['終了済み']
     const backOn = count['見放題に復帰']
+    const onNow = count['見放題配信中']
 
     /*
      * 同じ作品が複数サービスに出ているか。**表を1行にまとめてよい印**を素材に付ける。
@@ -581,13 +669,19 @@ export const seriesArticle: ArticleType = {
               : '',
         `  状態: ${state}`,
         /*
-         * ★ **復帰の行に終了日は無い。** `at` は配信**開始**日なので、
+         * ★ **`new` の行に終了日は無い。** `at` は配信**開始**日なので、
          *   終了日として出すと真逆の日付を表に書かせることになる。
          *   次の終了日が付いたら、その観測が最新になって行ごと入れ替わる。
+         *
+         * ★ 復帰と配信中で**呼び名を変える**。どちらも開始日だが、
+         *   復帰は「戻ってきた日」、配信中は「入った日」で読者への意味が違う。
+         *   同じ語にすると、一度も終わっていない作品が「復帰した」と読まれる。
          */
         state === '見放題に復帰'
           ? `  復帰日: ${formatMonthDay(e.at!, offset)}（★終了日は未定。表の終了日の欄には「—」と書くこと）`
-          : `  終了日: ${formatMonthDay(e.at!, offset)}`,
+          : state === '見放題配信中'
+            ? `  配信開始日: ${formatMonthDay(e.at!, offset)}（★終了日は未定。表の終了日の欄には「—」と書くこと）`
+            : `  終了日: ${formatMonthDay(e.at!, offset)}`,
         w.year ? `  公開年: ${w.year}年` : '',
         w.rating ? `  評価: ${w.rating}/100（★表にだけ書き、地の文には書かないこと）` : '',
         w.genres.length ? `  ジャンル: ${w.genres.join(' / ')}` : '',
@@ -669,16 +763,19 @@ ${
 | まだ観られる（終了予定） | ${stillOn}本 |
 | もう観られない（終了済み） | ${alreadyOff}本 |
 | 一度終わったあと見放題に戻った（見放題に復帰） | ${backOn}本 |
+| いま見放題で配信中（見放題配信中） | ${onNow}本 |
 
 ${
-  [stillOn, alreadyOff, backOn].filter((n) => n > 0).length > 1
+  [stillOn, alreadyOff, backOn, onNow].filter((n) => n > 0).length > 1
     ? `**この記事には複数の状態が混ざっています。** 表の「状態」列で1行ずつ区別し、
 地の文でも取り違えないでください。終了済みの作品に「お見逃しなく」と書いてはいけません。`
     : stillOn > 0
       ? '**全作品がまだ観られます。** 「終了しました」と過去形で書かないでください。'
       : backOn > 0
         ? '**全作品が見放題に戻っています。** 「もう観られません」と書かないでください。'
-        : '**全作品がすでに終了しています。** 「お見逃しなく」「今のうちに」は書けません。'
+        : onNow > 0
+          ? '**全作品がいま見放題で配信中です。** 「終了しました」「終了予定です」と書かないでください。'
+          : '**全作品がすでに終了しています。** 「お見逃しなく」「今のうちに」は書けません。'
 }${
       backOn > 0
         ? `
@@ -690,6 +787,19 @@ ${
 - 「終了しました」と書かないでください。**戻ってきたことがこの行の要点**です
 - **いつまで観られるかは書けません。** 「◯月まで」「当面は観られます」と書かないこと
 - 復帰の理由（契約・権利）を推測しないでください`
+        : ''
+    }${
+      onNow > 0
+        ? `
+
+**「見放題配信中」の${onNow}本は、いま観られます。** 見放題での配信が始まったことは
+観測できていますが、**終了日はまだ分かっていません。**
+
+- 表の**終了日の欄は「—」**にしてください。推測した日付を書いてはいけません
+- **「いつまで観られるか」を書かないこと。** 「当面は観られます」「しばらく観られます」も
+  推測なので書けません。書けるのは「いま見放題で配信中」までです
+- 「終了予定」「終了しました」と書かないでください。どちらも起きていません
+- 急かさないでください。**締切が無いので「お見逃しなく」「今のうちに」は書けません**`
         : ''
     }
 
@@ -790,8 +900,16 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
      *
      * ★ 「シリーズ」は右の枠（SeriesRail.astro）がこのタグで記事を拾う。
      *   **文字列を変えると枠から消える。**
+     *
+     * ★ `streaming` だけ「配信終了」を付けない（2026-09-05）。
+     *   終了日が1本も分かっていない記事にそのタグを付けると、
+     *   **タグ一覧で「終わる作品の記事」として並ぶ**ことになる。
+     *   サイト側はこの `見放題配信中` タグで枠を出し分ける
+     *   （`site/src/lib/series-posts.ts` の `STREAMING_TAG`）。
+     *   カテゴリでは分けられない。`returned` と同じ `arrivals` になるため。
      */
-    return [...services, '配信終了', 'シリーズ']
+    const stanceTag = stanceOf(items, ctx) === 'streaming' ? '見放題配信中' : '配信終了'
+    return [...services, stanceTag, 'シリーズ']
   },
 
   slug(ctx) {
@@ -897,6 +1015,7 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     const stillOn = count['終了予定']
     const alreadyOff = count['終了済み']
     const backOn = count['見放題に復帰']
+    const onNow = count['見放題配信中']
     // 他社に生きている観測を知らせるときのサービス名（下の liveElsewhere）
     const labelOf = serviceLabels(ctx)
 
@@ -929,7 +1048,9 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
      *   「配信中です」「今のうちに」は、戻ってきた作品については事実。
      *   全作が終了済みのときだけ禁じる（それが元々の趣旨）。
      */
-    if (stillOn === 0 && backOn === 0) {
+    // ★ 「いま観られる」作品が1本でもあれば、全作終了の検査は当てない。
+    //   配信中・復帰の作品に「もう観られません」と書かせないための線引き。
+    if (stillOn === 0 && backOn === 0 && onNow === 0) {
       for (const phrase of MISLEADING_AFTER_END) {
         if (md.includes(phrase)) {
           err(
@@ -945,10 +1066,9 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       /*
        * ★ **「終了しました」と書く直前に、他社に生きている観測が無いかを見る。**
        *
-       *   この記事の素材は主題に当たる観測だけで、**他社での配信開始は入らない**
-       *   （`select()` は expiring / removed / 復帰しか残さない）。
-       *   そのため「Netflixで終了、しかしAmazon Prime Videoでは配信開始を観測したまま」
-       *   という作品があっても、記事は素材の範囲で「終了しました」と書いてしまう。
+       *   素材は作品ごとに**最新の観測1件**しか残らない（`select()` の `latest`）。
+       *   そのため「Netflixで終了、しかしAmazon Prime Videoでは配信中」という作品でも、
+       *   Netflix の終了のほうが新しければ記事は「終了しました」と書いてしまう。
        *
        * ★ **warn。公開は止めない。** 観測しているのは変化であって在庫ではないので、
        *   「他社で配信中」とは言い切れない（`core/cross-service.ts` の説明）。
@@ -968,8 +1088,57 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
         )
       }
     }
-    if (alreadyOff === 0 && backOn === 0 && /終了しました/.test(md)) {
+    if (alreadyOff === 0 && backOn === 0 && onNow === 0 && /終了しました/.test(md)) {
       err('終了を過去形で書いています。この記事の作品はまだ観られます（全件が終了予定）。')
+    }
+
+    /*
+     * --- 見放題配信中の書き方 ---
+     *
+     * ★ この状態の作品には**終了日が無い。** 素材に日付が無いので、
+     *   期間に触れた時点でそれは書き手が作った日付になる。
+     *   復帰（上）と同じ危険だが、`streaming` は記事まるごとがこの状態になりうるので
+     *   「いつまで」を匂わせる言い方を広めに見る。
+     */
+    if (onNow > 0) {
+      for (const phrase of [
+        '当面は観られます',
+        '当面は視聴できます',
+        'しばらくは観られます',
+        'いつまで観られるかは未定ですが',
+        '終了日は未定です',
+      ]) {
+        if (md.includes(phrase)) {
+          err(
+            `「${phrase}」が含まれています。見放題配信中の作品の終了日は分かりません。` +
+              '観られる期間には触れず、いま見放題で配信中であることだけを書いてください。',
+          )
+        }
+      }
+      // 全作が配信中の記事で締切を匂わせるのは、起きていないことを書くことになる。
+      if (stillOn === 0 && alreadyOff === 0 && /終了予定|終了します/.test(md)) {
+        err(
+          'この記事の作品はすべて見放題で配信中で、終了予定の作品は1本もありません。' +
+            '「終了予定」「終了します」と書かないでください。',
+        )
+      }
+      /*
+       * ★ **`MISLEADING_AFTER_END` を流用しないこと。**
+       *   あちらには「配信中です」「観られます」も入っている。
+       *   全作終了の記事では嘘になるから禁じているのであって、
+       *   **この状態の記事ではそれこそが書くべきこと**になる。
+       *   ここで止めたいのは「締切が無いのに急かす」言い方だけ。
+       */
+      if (stillOn === 0 && alreadyOff === 0) {
+        for (const phrase of ['お見逃しなく', 'お見逃しがないように', '見逃せません', '今のうちに', 'まだ間に合']) {
+          if (md.includes(phrase)) {
+            err(
+              `「${phrase}」が含まれています。終了日が分かっていないので急かせません。` +
+                'いま見放題で配信中であることだけを書いてください。',
+            )
+          }
+        }
+      }
     }
 
     /*

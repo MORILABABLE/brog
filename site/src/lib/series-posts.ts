@@ -10,13 +10,16 @@
  * ■ なぜタグで拾うのか
  * 記事の frontmatter には「記事タイプ」が入らない。入っているのは
  * カテゴリ（leaving / ended / arrivals / ranking）とタグだけで、
- * **シリーズ記事のカテゴリは3つを行き来する**（`series.ts` の `stanceOf()`）。
+ * **シリーズ記事のカテゴリは行き来する**（`series.ts` の `stanceOf()`）。
  *
  *   leaving  終了予定が1本でもある
  *   ended    全部終わっている
- *   arrivals 終了予定は無いが、**見放題に復帰した作品**がある
+ *   arrivals 終了予定が無い。**見放題に復帰した作品**か、**いま配信中の作品**がある
  *
  * カテゴリでは拾えないので、記事タイプ側が必ず付けるタグ1つで拾う。
+ *
+ * ★ **`arrivals` の2つは別の枠に出す。** 復帰は終了日を持ちうるが、
+ *   配信中は持たない。カテゴリでは区別できないので `STREAMING_TAG` で分ける。
  *
  * ★ `SERIES_TAG` は `series.ts` の `tags()` が入れる文字列と**完全に一致させること。**
  *   1文字でも違うと、記事はできているのに枠から消える（0件の枠は描画されない）。
@@ -26,6 +29,21 @@ import type { CategorySlug } from '../config'
 
 /** シリーズ記事の目印。`article-types/series.ts` の `tags()` と揃えること。 */
 export const SERIES_TAG = 'シリーズ'
+
+/**
+ * **終了日がまだ分かっていない**シリーズ記事の目印（2026-09-05 追加）。
+ *
+ * ■ なぜカテゴリで分けられないのか
+ * `series.ts` の `stanceOf()` は `streaming`（いま配信中）も
+ * `returned`（見放題に復帰）も**同じ `arrivals` カテゴリ**にする。
+ * どちらも読者に渡すのが「いま観られる」ことなので、それ自体は正しい。
+ * だが枠を分けるには**締切があるかどうか**で区別する必要があり、
+ * カテゴリにはその情報が無い。
+ *
+ * ★ `article-types/series.ts` の `tags()` が入れる文字列と**完全に一致させること。**
+ *   1文字でも違うと、記事はできているのに「見放題配信中」の枠から消える。
+ */
+export const STREAMING_TAG = '見放題配信中'
 
 export interface SeriesPost {
   /**
@@ -82,6 +100,41 @@ export interface SeriesPost {
    *   同じ段のいちばん下に置くだけにする（枠から消さない）。
    */
   works: number
+  /**
+   * **終了日が1本も分かっていない記事か**（`STREAMING_TAG` が付いている）。
+   *
+   * `true` の記事は「いま観られる」ことだけを言っていて、締切を持たない。
+   * 枠は締切のあるものと分けて出す（`seriesRails()`）。
+   */
+  streaming: boolean
+}
+
+/**
+ * 枠に出すための2つの束。**「シリーズから探す」と「見放題配信中」。**
+ *
+ * ■ なぜ分けるのか（2026-09-05 追加）
+ * 「シリーズから探す」の枠は、終了予定・終了済みのバッジが付くことで
+ * **「何のシリーズが期限まで観られるか」を一目で伝える**ようになっている。
+ * そこへ終了日を持たない記事を混ぜると、**同じ並びの中で締切の有無が割れて**
+ * バッジの読み方が壊れる。
+ *
+ * 終了日が分かっていない記事は読者への用事が別（「いま観られる？」）なので、
+ * 枠ごと分けて下に置く。**順番も意味を持つ**（締切のあるほうが先）。
+ */
+export interface SeriesRails {
+  /** 終了日が分かっている記事（終了予定・復帰・終了済み） */
+  dated: SeriesPost[]
+  /** 終了日が分かっていない記事（いま見放題で配信中） */
+  streaming: SeriesPost[]
+}
+
+/** `seriesPosts()` を2つの枠に振り分ける。並びはそれぞれの中で保たれる。 */
+export function seriesRails(posts: CollectionEntry<'posts'>[]): SeriesRails {
+  const all = seriesPosts(posts)
+  return {
+    dated: all.filter((p) => !p.streaming),
+    streaming: all.filter((p) => p.streaming),
+  }
 }
 
 /**
@@ -168,6 +221,7 @@ export function seriesPosts(posts: CollectionEntry<'posts'>[]): SeriesPost[] {
       category: p.data.category,
       heroImage: p.data.heroImage,
       works: workCount(p.data.title),
+      streaming: p.data.tags.includes(STREAMING_TAG),
     }))
     .sort((a, b) => {
       const tier = TIER[a.category] - TIER[b.category]

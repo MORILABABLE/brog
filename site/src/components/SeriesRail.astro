@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content'
 import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
-import { seriesPosts } from '../lib/series-posts'
+import { seriesRails } from '../lib/series-posts'
 
 /**
  * 右の枠の「シリーズから探す」。**最新記事の上**に置く。
@@ -71,10 +71,24 @@ import { seriesPosts } from '../lib/series-posts'
  */
 const MAX_ITEMS = 5
 
-const all = seriesPosts(await getCollection('posts'))
-const series = all.slice(0, MAX_ITEMS)
+const rails = seriesRails(await getCollection('posts'))
+
+/**
+ * 上の枠「シリーズから探す」。**終了日が分かっている記事だけ。**
+ * バッジ（終了予定／終了済み）が締切の有無を伝える役目を持っているので、
+ * 締切を持たない記事を混ぜない（`lib/series-posts.ts` の `seriesRails`）。
+ */
+const series = rails.dated.slice(0, MAX_ITEMS)
 /** 枠に載らなかった本数。0 なら「もっと見る」を出さない */
-const rest = all.length - series.length
+const rest = rails.dated.length - series.length
+
+/**
+ * 下の枠「見放題配信中」。**終了日が分かっていない記事だけ。**
+ * こちらは締切が無いので、上の枠とバッジの意味が変わる。
+ * 分けて置くことで、上の枠の「期限まで観られる」の読み方を壊さない。
+ */
+const streaming = rails.streaming.slice(0, MAX_ITEMS)
+const streamingRest = rails.streaming.length - streaming.length
 
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
 const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
@@ -82,8 +96,8 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
 
 {
   series.length > 0 && (
-    <nav class="block" aria-label="シリーズから探す">
-      <p class="block-title">シリーズから探す</p>
+    <nav class="block" aria-label="見放題終了">
+      <p class="block-title">見放題終了</p>
       <ul class="series">
         {series.map((s) => {
           const isCurrent = s.href === current
@@ -128,6 +142,70 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
       {rest > 0 && (
         <a class="more" href="/series">
           シリーズをすべて見る（ほか{rest}本）
+        </a>
+      )}
+    </nav>
+  )
+}
+
+{
+  /*
+    「見放題配信中」の枠。**終了日が分かっていないシリーズ記事だけ**を出す。
+
+    ■ 上の枠と分けている理由
+    上の枠はバッジ（終了予定／終了済み）で締切の有無を伝えている。
+    終了日を持たない記事を同じ並びに混ぜると、**バッジの読み方が割れる。**
+    読者の用事も別で、こちらは「いつまで」ではなく「いま観られる？」に答える。
+
+    ■ 上に置かない理由
+    締切のある記事のほうが先。**期限を逃すと取り返しがつかない**ので、
+    画面の上のほうは締切のある枠に譲る（並びは ジャンル → シリーズ → ここ → 最新記事）。
+
+    ★ 記事が0本のあいだは HTML を1バイトも出さない（上の枠と同じ作り）。
+  */
+}
+{
+  streaming.length > 0 && (
+    <nav class="block" aria-label="見放題配信中">
+      <p class="block-title">見放題配信中</p>
+      <ul class="series">
+        {streaming.map((s) => {
+          const isCurrent = s.href === current
+          const Inner = (
+            <>
+              <Thumb src={s.heroImage} category={s.category} size={60} />
+              <span class="body">
+                {/*
+                  ★ バッジの文言だけ枠に合わせる。**カテゴリの色はそのまま使う**
+                    （`data-category` を渡しているので新着配信の色になる）。
+                    CATEGORIES[s.category].label は「新着配信」で、
+                    この枠では「何が新着なのか」が伝わらない。
+                */}
+                <span class="badge" data-category={s.category}>
+                  配信中
+                </span>
+                <span class="name">{s.label}</span>
+              </span>
+            </>
+          )
+          return (
+            <li>
+              {isCurrent ? (
+                <span class="item is-current" aria-current="page" title={s.fullTitle}>
+                  {Inner}
+                </span>
+              ) : (
+                <a class="item" href={s.href} title={s.fullTitle}>
+                  {Inner}
+                </a>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+      {streamingRest > 0 && (
+        <a class="more" href="/series">
+          シリーズをすべて見る（ほか{streamingRest}本）
         </a>
       )}
     </nav>

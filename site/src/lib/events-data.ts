@@ -101,6 +101,36 @@ const KANA = /[ぁ-んァ-ヶ]/
 
 let cached: RawEvent[] | null = null
 
+/**
+ * U-NEXT の作品台帳が持っている配信開始日（作品ID → ISO）。
+ *
+ * ★ 規則は pipeline/core/events.ts の withUnextStartDate と同じ。
+ *   **片方だけ変えると、記事とサイトで配信開始日が食い違う。**
+ *
+ * 新着の日付は作品ページにしか無く、収集の予算を使い切ると日付なしで記録される。
+ * イベントログは追記のみなので、あとから台帳(ledger)に弾かれて二度と付かない。
+ * 日付は `unext:refresh` が台帳に書き込んでいるので、読み込み時にそこから写す。
+ *
+ * **開始日だけに限ること。** 終了日は延びも前倒しもするので台帳の値は使えない
+ * （pipeline/sources/unext-store.ts 冒頭の決まり）。開始日は動かない過去の事実。
+ */
+function unextStartDates(dir: string): Map<string, string> {
+  const path = join(resolve(dir, '..'), 'unext-titles.json')
+  const map = new Map<string, string>()
+  if (!existsSync(path)) return map
+  try {
+    const parsed = JSON.parse(readFileSync(path, 'utf8')) as {
+      titles?: Record<string, { publicStartDate?: string }>
+    }
+    for (const [id, rec] of Object.entries(parsed.titles ?? {})) {
+      if (rec?.publicStartDate) map.set(id, rec.publicStartDate)
+    }
+  } catch {
+    // 台帳が壊れていても常設ページは出す（日付が付かないだけで済む）。
+  }
+  return map
+}
+
 function readAll(): RawEvent[] {
   if (cached) return cached
   const dir = findEventsDir()
@@ -112,6 +142,7 @@ function readAll(): RawEvent[] {
     )
   }
   const out: RawEvent[] = []
+  const startDates = unextStartDates(dir)
   for (const f of readdirSync(dir).filter((n) => n.endsWith('.jsonl')).sort()) {
     for (const line of readFileSync(join(dir, f), 'utf8').split('\n')) {
       const s = line.trim()
@@ -123,6 +154,13 @@ function readAll(): RawEvent[] {
       //   片方だけ変えると、記事とサイトで題名が食い違う。
       if (!e.work.localizedTitle && e.work.originalTitle && KANA.test(e.work.originalTitle)) {
         e.work.localizedTitle = e.work.originalTitle.replace(/ {2,}/g, ' ').trim()
+      }
+      // ★ U-NEXT の見放題入りに、台帳が持っている配信開始日を充てる。
+      //   規則は pipeline/core/events.ts の withUnextStartDate と同じ。
+      //   **new だけ。** 終了日は動くので台帳の値を使ってはいけない。
+      if (!e.at && e.service === 'u-next' && e.kind === 'new') {
+        const at = startDates.get(String(e.work.id))
+        if (at) e.at = at
       }
       // ★ 出さないと決めた作品はここで落とす（data/excluded-works.json）。
       //   読み込みの1か所で外すので、常設ページも定点観測も自動的に揃う。

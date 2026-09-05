@@ -15,6 +15,7 @@
 | **作品ページを実装する（設計）** | **[docs/WORK-PAGES.md](./docs/WORK-PAGES.md)** |
 | **U-NEXT の収集（APIの外側）** | **[docs/UNEXT.md](./docs/UNEXT.md)** |
 | **翌月のラインナップを先出しで書く** | **[docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md)** |
+| 横断で「いま観られるサービス」を出す（**保留中の設計**） | [docs/CROSS-SERVICE.md](./docs/CROSS-SERVICE.md) |
 | 設計の全体像・判断の理由 | [DESIGN.md](./DESIGN.md) |
 | ドメイン・GitHub・Cloudflare の操作 | [DEPLOY.md](./DEPLOY.md) |
 

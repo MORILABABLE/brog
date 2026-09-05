@@ -11,6 +11,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { ChangeEvent } from '../sources/types.ts'
 import { currentYearMonth } from './datetime.ts'
+import { unextStartDates } from '../sources/unext-store.ts'
 
 export const EVENT_DIR = join('data', 'events')
 export const LEDGER_PATH = join('data', 'ledger.json')
@@ -131,6 +132,46 @@ function withJapaneseTitle(e: ChangeEvent): ChangeEvent {
   return e
 }
 
+/**
+ * U-NEXT の「見放題入り」に、台帳が持っている配信開始日を補う。
+ *
+ * ■ なぜ要るか
+ * 新着の日付は作品ページにしか無く、収集時の予算を使い切ると
+ * **日付の無いまま記録される。** イベントログは追記のみなので、
+ * 次回の収集では台帳(ledger)に既出として弾かれ、二度と日付が付かない。
+ * 実測で 2026-09 は新着313件すべてが日付を持たず、記事の素材が0件になった。
+ *
+ * 日付自体は `unext:refresh` が作品ページから台帳に書き込んでいる
+ * （収集のたびに150件ずつ、`detailCheckedAt` の無いものから埋める）。
+ * **答えは台帳にあって、素材に届いていないだけ**だったので、ここで写す。
+ *
+ * ■ 開始日だけに限る
+ * 終了日は延びも前倒しもするので、台帳の値で記事を書くと嘘になりうる
+ * （`sources/unext-store.ts` 冒頭の決まり）。
+ * 配信開始日は**すでに起きた過去の事実で、あとから動かない。**
+ * だから `kind: 'new'` だけを対象にする。**expiring に広げないこと。**
+ *
+ * ■ 収集ログは書き換えない
+ * `withJapaneseTitle` と同じく、やるのは読み込み時の補完だけ。
+ */
+function withUnextStartDate(e: ChangeEvent): ChangeEvent {
+  if (e.at || e.service !== 'u-next' || e.kind !== 'new') return e
+  const at = unextStartDates().get(String(e.work.id))
+  if (at) e.at = at
+  return e
+}
+
+/**
+ * 読み込んだ1件の解釈。
+ *
+ * ★ **非同期版と同期版で必ず同じものを通すこと。** 片方だけ変えると、
+ *   記事の素材（`readEvents`）と品質ゲート（`readAllEventsSync`）が
+ *   違うデータを見ることになる。1か所にまとめてあるのはそのため。
+ */
+function interpret(line: string): ChangeEvent {
+  return withUnextStartDate(withJapaneseTitle(JSON.parse(line) as ChangeEvent))
+}
+
 /** 指定月のイベントを読み込む（記事生成用） */
 export async function readEvents(yearMonth: string): Promise<ChangeEvent[]> {
   const path = join(EVENT_DIR, `${yearMonth}.jsonl`)
@@ -139,7 +180,7 @@ export async function readEvents(yearMonth: string): Promise<ChangeEvent[]> {
     return raw
       .split('\n')
       .filter((l) => l.trim())
-      .map((l) => withJapaneseTitle(JSON.parse(l) as ChangeEvent))
+      .map((l) => interpret(l))
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') return []
     throw err
@@ -174,8 +215,8 @@ export async function readEvents(yearMonth: string): Promise<ChangeEvent[]> {
  * CLI の1回の実行の中で1度しか走らず、読むのは手元のファイルだけなので、
  * ここだけ同期で読むほうが影響が小さい。
  *
- * ★ 中身の解釈（邦題の補完）は非同期版と**同じ関数**を通すこと。
- *   片方だけ変えると、記事の素材と検査が別の題名を見ることになる。
+ * ★ 中身の解釈は非同期版と**同じ関数**（`interpret`）を通すこと。
+ *   片方だけ変えると、記事の素材と検査が別のデータを見ることになる。
  */
 export function readAllEventsSync(): ChangeEvent[] {
   let files: string[]
@@ -190,7 +231,7 @@ export function readAllEventsSync(): ChangeEvent[] {
   for (const f of files) {
     const raw = readFileSync(join(EVENT_DIR, f), 'utf8')
     for (const line of raw.split('\n')) {
-      if (line.trim()) out.push(withJapaneseTitle(JSON.parse(line) as ChangeEvent))
+      if (line.trim()) out.push(interpret(line))
     }
   }
   return out
