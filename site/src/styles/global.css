@@ -434,6 +434,165 @@ h3 {
   text-align: left;
   white-space: nowrap;
 }
+
+/*
+ * ★ `.prose` を**コンテナ**にする（在庫の行が幅を測るため）。
+ *   `container-type: inline-size` は横方向のサイズだけを封じるもので、
+ *   本文の見た目は変わらない。**入れないと `100cqi` が画面幅に落ちる。**
+ */
+.prose {
+  container-type: inline-size;
+}
+
+/*
+ * 在庫の行（plugins/rehype-availability.ts が作る）。
+ *
+ * ■ ねらい
+ * **表の中に「では、どこで観られるか」の答えを置く。**
+ * 実測でスクロール90%到達は22%しかないので、本文で答えても届かない
+ * （docs/FUNNEL.md 5-3）。
+ *
+ * ■ 見せ方（2026-09-06 に作り直した）
+ * 最初は「Netflix ○」を素の文字で並べただけで、**付け足したように見えた。**
+ * 直した点は3つ。**文字サイズは変えていない。**
+ *
+ *   1. 1つずつを**チップ**にして、行の中で独立した要素に見せる
+ *   2. **記号を名前の前**に置き、別の要素として色を分ける
+ *      （後ろだと「Netflix ○」が名前の一部に見える）
+ *   3. 行の頭に「観られる先」の**ラベル**を置き、何の行かを言う
+ *
+ * ★ **上の行と1組に見せる。** 間の罫線を消し、左に少し寄せる。
+ *   独立した行に見えると、どの作品の話か分からなくなる。
+ */
+.prose tr.avail-row > td {
+  padding-top: 0.15rem;
+  padding-bottom: 0.7rem;
+  /* チップが並ぶので折り返しを許す。1行に収まらない幅でも溢れない */
+  white-space: normal;
+}
+/* 上の行と1組に見せる。間の罫線を消して、下だけ引く */
+.prose tr.has-avail > td {
+  border-bottom: 0;
+  padding-bottom: 0.3rem;
+}
+.prose .avail-cell {
+  /* 作品名の位置まで少し寄せる。上の行にぶら下がって見える */
+  padding-left: 1.1rem;
+}
+/*
+ * ★ **チップを左端に留める。**
+ * `colspan` のセルは表のスクロール幅いっぱい（実測853px）に広がるので、
+ * そのまま並べると**チップが画面外に出て切れる**（375px で実際に切れた）。
+ * `sticky` で左に留め、**見えている幅**の中で折り返させる。
+ *
+ * ★ `100vw` を使うのは、**表の幅ではなく画面の幅**に合わせたいから。
+ *   親（表）は横に長いので `100%` では効かない。
+ */
+.prose .avail-inner {
+  position: sticky;
+  left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.1rem;
+  /*
+   * ★ **本文カラムの幅**で折り返させる。表の幅ではない。
+   *
+   *   `100%`  … 親は表なので、横に長い表の幅いっぱいになる（切れる）
+   *   `100vw` … 画面の幅。**PCでは本文カラムより広い**ので、やはり切れる
+   *             （900px幅で10行ともはみ出した。2026-09-06 の実測）
+   *   `100cqi`… `.prose` の幅。**これが唯一正しい**
+   *
+   * 引いている 1.6rem はセルの左右の余白ぶん。
+   */
+  max-width: calc(100cqi - 1.6rem);
+}
+.prose .avail-label {
+  display: inline-block;
+  margin-right: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+.prose .avail-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.15rem 0.35rem 0.15rem 0;
+  padding: 0.12rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  font-size: 0.78rem;
+  line-height: 1.7;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+/* ★ 記号だけ色を持たせる。名前は本文と同じ色のままにして、
+   チップが色の塊にならないようにする */
+.prose .avail-mark {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+/*
+ * ★ 見放題の印は**青**（`--accent`）。緑（`--tag-evergreen`）から変えた
+ *   （2026-09-06・運用者の指定）。緑の ● は小さい字で潰れて見えた。
+ *   輪郭の ○ ＋ 青のほうが、△・× と線の太さが揃って読みやすい。
+ */
+.prose .avail-item[data-mark='subscription'] .avail-mark {
+  color: var(--accent);
+}
+.prose .avail-item[data-mark='paid'] .avail-mark {
+  color: var(--text-muted);
+}
+/* ★ 取り扱いなしは**沈める**。4社を揃えて出すぶん、
+   ●（見放題）が埋もれないように差を付ける */
+.prose .avail-item[data-mark='none'] {
+  opacity: 0.55;
+}
+.prose .avail-item[data-mark='none'] .avail-mark {
+  color: var(--text-muted);
+}
+.prose .avail-item a,
+.prose .avail-item > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: inherit;
+  text-decoration: none;
+}
+.prose .avail-item:has(a):hover {
+  border-color: var(--text-muted);
+}
+.prose .avail-item a:hover {
+  text-decoration: underline;
+}
+
+/* 表の直後の凡例。記号の意味を、記号を見た流れで読ませる */
+.prose .avail-legend {
+  margin: -1rem 0 1.4rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 40rem) {
+  /* ★ チップは横スクロールの外に置きたいが、行は表の中にある。
+     せめて左の余白を詰めて、最初のチップが必ず見えるようにする */
+  .prose .avail-cell {
+    padding-left: 0.6rem;
+  }
+  /* ★ 幅が足りないと「観られる先」とチップ1枚で1行が埋まり、
+     残りが次の行に落ちて不揃いに見える。**ラベルだけで1行**にして、
+     チップは左端から揃えて並べる。`display: block` では効かない
+     （親が flex なので、行を占めるには flex-basis が要る）。 */
+  .prose .avail-label {
+    flex-basis: 100%;
+    margin: 0 0 0.1rem;
+  }
+}
 .prose th {
   background: var(--bg-subtle);
   font-weight: 600;

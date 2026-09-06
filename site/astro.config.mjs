@@ -7,6 +7,7 @@ import { lastmodFor } from './src/lib/lastmod.ts'
 import { noindexPersonPaths } from './src/lib/people.ts'
 import { rehypeAffiliate } from './plugins/rehype-affiliate.ts'
 import { rehypeWorkLinks } from './plugins/rehype-work-links.ts'
+import { rehypeAvailability } from './plugins/rehype-availability.ts'
 
 // astro.config は Astro が .env を読み込む前に評価されるため、
 // ここでは import.meta.env が使えない。Vite の loadEnv で明示的に読む。
@@ -108,6 +109,9 @@ export default defineConfig({
     //   トラッキングIDも rel="sponsored" も付かないまま公開される。
     rehypePlugins: [
       rehypeWorkLinks,
+      // ★ workLinks のあと・affiliate の前。前段が作った作品名のリンクを読み、
+      //   ここで作った ○ / △ のリンクに後段が tag= と rel="sponsored" を付ける。
+      rehypeAvailability,
       [rehypeAffiliate, { tags: amazonTags }],
     ],
   },

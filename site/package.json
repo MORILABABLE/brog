@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "dev:fresh": "node scripts/clear-cache.mjs && astro dev",
+    "build:fresh": "node scripts/clear-cache.mjs && astro build",
     "cards": "node scripts/make-cards.mjs",
     "sections": "node scripts/make-sections.mjs",
     "shorts": "node scripts/make-shorts.mjs",

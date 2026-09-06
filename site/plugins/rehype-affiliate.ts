@@ -67,6 +67,14 @@ export interface AffiliateOptions {
 function slotOf(node: Node): AmazonSlot {
   const cls = node.properties?.className
   if (Array.isArray(cls) && cls.includes('work-link')) return 'table'
+  /*
+   * ★ 表の ○ / △（plugins/rehype-availability.ts が作る）。
+   *   **`table` と混ぜないこと。** あちらは作品名のリンクで、こちらは
+   *   「どこで観られるか」の答えそのもの。**どちらが押されているかが、
+   *   表に答えを入れた施策が効いたかどうかの唯一の証拠**になる
+   *   （docs/FUNNEL.md 7-5）。
+   */
+  if (Array.isArray(cls) && cls.includes('avail-link')) return 'avail'
 
   for (const child of node.children ?? []) {
     if (child.tagName !== 'img') continue

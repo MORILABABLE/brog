@@ -83,6 +83,13 @@ interface ApiShow {
   streamingOptions?: Record<string, ApiStreamingOption[]>
 }
 
+/** `fetchAvailability()` が返す1サービスぶん。core/availability.ts の型と揃える。 */
+export interface ServiceAvailabilityRow {
+  service: string
+  types: string[]
+  link?: string
+}
+
 interface ApiStreamingOption {
   service?: { id?: string; name?: string }
   type?: string
@@ -185,6 +192,76 @@ export class StreamingAvailabilitySource implements Source {
   /** 生レスポンスの確認用（フィールド名の検証に使う） */
   async raw(path: string, params: Record<string, string | number>): Promise<unknown> {
     return this.#get<unknown>(path, params)
+  }
+
+  /**
+   * キーワードで**在庫**を取る。`/changes` とは別の口。
+   *
+   * ■ なぜキーワードなのか
+   * `/shows/{id}` は1作品1リクエストだが、`/shows/search/filters` は
+   * **シリーズをまとめて返す**。実測（2026-09-06）で
+   * `keyword=Harry Potter` が **8作品を1リクエスト**で返した。
+   * 無料枠は500/月しかないので、この差が施策の可否を分ける
+   * （docs/CROSS-SERVICE.md 9-4）。
+   *
+   * ■ 突き合わせは `show.id`
+   * 返ってくる `id` は**収集イベントの `work.id` と同じ体系**（実測で一致を確認）。
+   * 題名の正規化で突き合わせる必要がない。
+   *
+   * ★ **`catalogs` を絞らない。** 絞っても他社の取扱は返るが、
+   *   絞ると**その catalog に無い作品が結果から落ちる**。
+   *   「Netflixで終わる作品が Prime にあるか」を知りたいので、
+   *   落としてはいけないのはまさにその作品。
+   *
+   * ★ **`streamingOptions` をそのまま返さない。** テーマのサービスキーへ
+   *   解決したうえで、取扱区分（subscription / addon / rent / buy）を保つ。
+   *   `addon` を捨てないのは、**捨てると「無い」と「別料金である」の
+   *   区別が付かなくなる**ため（判定は core/availability.ts）。
+   */
+  async fetchAvailability(
+    keyword: string,
+    opts: { maxPages?: number } = {},
+  ): Promise<Map<string, { services: ServiceAvailabilityRow[] }>> {
+    const out = new Map<string, { services: ServiceAvailabilityRow[] }>()
+    let cursor: string | undefined
+    const maxPages = opts.maxPages ?? 3
+
+    for (let page = 0; page < maxPages; page++) {
+      const params: Record<string, string | number> = {
+        country: this.theme.country,
+        keyword,
+        output_language: this.theme.api_language,
+        series_granularity: 'show',
+      }
+      if (cursor) params.cursor = cursor
+
+      const res = await this.#get<{
+        shows?: ApiShow[]
+        hasMore?: boolean
+        nextCursor?: string
+      }>('/shows/search/filters', params)
+
+      for (const show of res.shows ?? []) {
+        if (show.id == null) continue
+        const byService = new Map<string, ServiceAvailabilityRow>()
+        for (const o of show.streamingOptions?.[this.theme.country] ?? []) {
+          const apiId = o.service?.id
+          if (!apiId || !o.type) continue
+          // API のサービスIDをテーマのキーへ。未知のサービスはそのまま残す
+          // （zee5 のような対象外も「そこにある」という事実ではあるため）。
+          const key = this.#serviceByCatalogId.get(apiId)?.key ?? apiId
+          const row = byService.get(key) ?? { service: key, types: [], link: o.link }
+          if (!row.types.includes(o.type)) row.types.push(o.type)
+          if (!row.link && o.link) row.link = o.link
+          byService.set(key, row)
+        }
+        out.set(String(show.id), { services: [...byService.values()] })
+      }
+
+      if (!res.hasMore || !res.nextCursor) break
+      cursor = res.nextCursor
+    }
+    return out
   }
 
   async collectChanges(opts: CollectOptions): Promise<ChangeEvent[]> {

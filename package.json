@@ -17,6 +17,7 @@
     "enrich": "tsx pipeline/cli/enrich.ts",
     "write": "tsx pipeline/cli/write.ts",
     "research": "tsx pipeline/cli/research.ts",
+    "availability": "tsx pipeline/cli/availability.ts",
     "preview": "tsx pipeline/cli/preview.ts",
     "refresh:images": "tsx pipeline/cli/refresh-images.ts",
     "catalogs": "tsx pipeline/cli/catalogs.ts",

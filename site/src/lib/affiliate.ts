@@ -70,7 +70,7 @@ export const EXCLUDED_HOSTS = ['tv.dmm.com', 'dmm.com', 'www.dmm.com']
  *   未設定の枠は既定ID（PUBLIC_AMAZON_TAG）に落ちるので、
  *   1つずつ作って1つずつ足していける。
  */
-export const AMAZON_SLOTS = ['poster', 'table', 'cta', 'rail', 'work', 'bar', 'body', 'prime'] as const
+export const AMAZON_SLOTS = ['poster', 'table', 'cta', 'rail', 'work', 'bar', 'body', 'prime', 'avail'] as const
 
 export type AmazonSlot = (typeof AMAZON_SLOTS)[number]
 

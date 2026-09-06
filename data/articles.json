@@ -43,10 +43,10 @@
       "flags": {
         "topic": "「ハリー・ポッター」シリーズ",
         "slug": "harry-potter",
-        "match": "ハリー・ポッター|ファンタスティック・ビースト"
+        "match": "ハリー・ポッターと|ファンタスティック・ビースト"
       },
       "category": "leaving",
-      "writtenAt": "2026-09-01"
+      "writtenAt": "2026-09-06"
     },
     {
       "slug": "mission-impossible",
@@ -97,5 +97,5 @@
       "writtenAt": "2026-09-02"
     }
   ],
-  "updatedAt": "2026-09-05T07:55:55.953Z"
+  "updatedAt": "2026-09-06T11:06:17.700Z"
 }

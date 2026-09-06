@@ -66,6 +66,12 @@ import {
 import { buildSearchLinks } from '../../../pipeline/core/search-links.ts'
 import { liveElsewhere } from '../../../pipeline/core/cross-service.ts'
 import { readAllEventsSync } from '../../../pipeline/core/events.ts'
+import {
+  isFresh,
+  loadAvailabilitySync,
+  paidServices,
+  subscriptionServices,
+} from '../../../pipeline/core/availability.ts'
 import { formatMonthDay } from '../../../pipeline/core/datetime.ts'
 import { themeFile } from '../../../pipeline/theme.ts'
 import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
@@ -125,6 +131,8 @@ const REQUIRED_PHRASES = [
   'series-streaming-lead-first-sentence',
   'series-ended-lead-first-sentence',
   'series-unext-note',
+  'series-lead-elsewhere',
+  'series-lead-updating',
   'other-services-intro',
   'attribution',
   'attribution-unext',
@@ -647,6 +655,53 @@ export const seriesArticle: ArticleType = {
       ])
     }
 
+    /*
+     * 在庫（いまどこで観られるか）。**変化ログとは根拠が違う別の台帳。**
+     *
+     * ★ **無くてもよい。** `npm run availability` を走らせていなければ空で、
+     *   記事は今までどおり「終了日」だけで書ける。**在庫の行が出ないだけ。**
+     *
+     * ★ **古い在庫は使わない**（`isFresh`）。14日を過ぎたら「分からない」に倒す。
+     *   在庫は日々変わるので、黙って古い事実を出すほうが害が大きい。
+     */
+    const availability = loadAvailabilitySync()
+
+    /**
+     * その作品の「では、どこで観られるか」の1行。**素材に渡す唯一の形。**
+     *
+     * ■ なぜ要るのか
+     * 読者の問いは「いつ終わるか」ではなく**「では、終わったあとどこで観るのか」**。
+     * 従来の素材には終了日しか無く、記事は「分かっていません」と書くしかなかった
+     * （docs/FUNNEL.md 7-3 の実測。サイト最大の流入記事がそうなっていた）。
+     *
+     * ■ 絶対に守ること
+     *   - **見放題とレンタル・購入を1つにまとめない。** 「観られる」の意味が違う
+     *   - **`addon`（別料金チャンネル）を見放題に混ぜない。** 判定は
+     *     `subscriptionServices()` に閉じてある（docs/CROSS-SERVICE.md 4-1）
+     *   - **取得時点を必ず添える。** 在庫は日々変わる
+     *   - **台帳に無い作品は行ごと出さない。** 「無い」ではなく「分からない」で、
+     *     0件と未取得を混同すると**在庫が無いと断定する記事**ができる
+     */
+    function availabilityLine(e: ChangeEvent): string {
+      const a = availability.works[String(e.work.id)]
+      if (!isFresh(a, ctx.now.getTime())) return ''
+
+      // その作品がいま終わろうとしているサービスは、答えから外す。
+      // 「Netflixで終わります。Netflixで見放題です」では答えにならない。
+      const subs = subscriptionServices(a).filter((sv) => sv !== e.service)
+      const paid = paidServices(a).filter((sv) => sv !== e.service)
+      const name = (sv: string) => labelOf.get(sv) ?? sv
+      const asOf = formatMonthDay(a!.fetchedAt, offset)
+
+      if (subs.length === 0 && paid.length === 0) {
+        return `  ★他社の在庫（${asOf}時点）: 見放題・レンタル購入とも確認できませんでした（**「どこにも無い」とは書かないこと**）`
+      }
+      const parts: string[] = []
+      if (subs.length) parts.push(`**${subs.map(name).join(' / ')}で見放題**`)
+      if (paid.length) parts.push(`レンタル・購入は ${paid.map(name).join(' / ')}`)
+      return `  ★他社の在庫（${asOf}時点）: ${parts.join('、')}`
+    }
+
     const rows = items.map((e) => {
       const w = e.work
       const state = stateOf(e, ctx.now)
@@ -700,6 +755,7 @@ export const seriesArticle: ArticleType = {
           : state === '見放題配信中'
             ? `  配信開始日: ${formatMonthDay(e.at!, offset)}（★終了日は未定。表の終了日の欄には「—」と書くこと）`
             : `  終了日: ${formatMonthDay(e.at!, offset)}`,
+        availabilityLine(e),
         w.year ? `  公開年: ${w.year}年` : '',
         w.rating ? `  評価: ${w.rating}/100（★表にだけ書き、地の文には書かないこと）` : '',
         w.genres.length ? `  ジャンル: ${w.genres.join(' / ')}` : '',
@@ -874,6 +930,36 @@ ${OUTPUT_FORMAT}`
           : ''
       }`,
       `**評価スコアは表にだけ書き、地の文には一切書かないこと。**`,
+      /*
+       * ★ **この記事タイプの一番大事な指示**（2026-09-06 追加）。
+       *
+       * 実測（docs/FUNNEL.md 7-3）で、サイト最大の流入記事のまとめが
+       * 「それ以降にどのサービスで扱われるかは分かっていません」で終わっていた。
+       * 読者の問いは「いつ終わるか」ではなく**「では、どこで観るのか」**で、
+       * そこに答えないまま検索リンクを30本並べていた＝丸投げ。
+       *
+       * ★ **素材に「★他社の在庫」の行があるときだけ出す。**
+       *   `npm run availability` を走らせていない記事では行が無いので、
+       *   この指示も出ない（下の条件）。**無い在庫を書かせない。**
+       */
+      rows.some((r) => r.includes('★他社の在庫'))
+        ? `**「どこで観られるか」は表が答えます。文章で書かないでください。**
+   素材に「★他社の在庫」の行がある記事では、**サイトが表の各行の下に1行足します**。
+
+     | 9月30日 | ハリー・ポッターと賢者の石 | 終了予定 | 77/100 | Netflix |
+     |  配信中  ● Amazon Prime Video   × Disney+   △ Apple TV+  |  ← サイトが足す
+
+   ★ **行も列も自分で書き足さないこと。** 表は「終了日 / 作品 / 状態 / 評価 / サービス」の
+     5列でこれまでどおり書いてください。列は1つも落としません（横スクロールでよい）。
+   ★ **その行のサービス（上の例なら Netflix）はサイト側が外します。**
+     「終了する行に、そこで観られると出す」ことにならないようにするためです。
+   ★ **「◯月◯日時点」も書かなくてよい。** 表の凡例が持っています。
+   ★ **在庫を段落で説明しないこと。** 同じ事実が表と文章の2か所になり、
+     書き直すたびに片方だけ古くなります。読者の8割は最後まで読まないので、
+     **答えは表に置いたほうが届きます**（一度そう書いて撤去した経緯があります）。
+   ★ まとめでは**表を指すだけ**にしてください（「上の表のとおりです」）。
+     「分かっていません」とは書かないこと — 表が答えています。`
+        : '',
       alreadyOff > 0
         ? `**終了済みの${alreadyOff}本を「これから終わる」と書かないこと。**
    その作品には「お見逃しなく」「今のうちに」「観ておきましょう」「配信中です」を使えません。
@@ -1069,6 +1155,92 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     const onNow = count['見放題配信中']
     // 他社に生きている観測を知らせるときのサービス名（下の liveElsewhere）
     const labelOf = serviceLabels(ctx)
+
+    /*
+     * --- 裏付けの無い「見放題」を書いていないか（2026-09-06 追加） ---
+     *
+     * ■ なぜ要るか
+     * 在庫の行を素材に足したことで、記事が**「◯◯で見放題」と断定できる**ようになった。
+     * 裏を返すと、**素材に無いサービスまで断定する余地**が同時に生まれている。
+     * とくに U-NEXT・Hulu・DMM TV は**在庫データを一件も持っていない**ので
+     * （docs/CROSS-SERVICE.md 9-3）、そこを断定されると根拠が無い。
+     *
+     * ■ 判定
+     * 「◯◯**で**見放題」「◯◯**の**見放題」の直後が
+     * 終了・終わりの語でないものを**現在形の断定**とみなし、
+     * そのサービスが在庫台帳に `subscription` として載っているかを見る。
+     *
+     * ★ **warn にとどめる。** 言い回しの空間が広く、
+     *   正しく書いた記事を止めるほうが害が大きい。
+     *   **人が読んで判断する材料**として出す。
+     *
+     * ★ **取りこぼしがある。** 検査は本文全体を見ていて、
+     *   「どの作品について言っているか」までは分からない。
+     *   素材に U-NEXT の作品が1件でも入っていると、
+     *   **無関係な作品について「U-NEXTで見放題」と書いても素通りする。**
+     *   確実に捕まえられるのは、**在庫を一度も持てないサービス**
+     *   （Hulu / DMM TV）についての断定だけ。そこがいちばん危ないので、
+     *   まずそこを塞いである。作品単位の帰属まで見るなら、
+     *   本文の解析ではなく**素材の側に持たせる**こと。
+     */
+    const backed = new Set<string>()
+    {
+      const ledger = loadAvailabilitySync()
+      for (const e of items) {
+        const a = ledger.works[String(e.work.id)]
+        if (!isFresh(a, ctx.now.getTime())) continue
+        for (const sv of subscriptionServices(a)) backed.add(labelOf.get(sv) ?? sv)
+      }
+      /*
+       * ★ **「まだそこにある」と素材が言っているサービスも裏付けに数える。**
+       *   終了予定・配信中・復帰の観測は「いまそこで見放題」の根拠になる
+       *   （在庫レスポンスではないが、記事はもともとこれを根拠に書いている）。
+       *
+       * ★ **終了済みは数えない。** そこはもう見放題ではない。
+       *   ここを緩めると「終わったサービスで見放題」と書いた記事が素通りする。
+       */
+      for (const e of items) {
+        if (stateOf(e, ctx.now) === '終了済み') continue
+        backed.add(labelOf.get(e.service) ?? e.service)
+      }
+    }
+
+    /*
+     * 検査するサービス名。**在庫を持たない検索リンク先（Hulu / DMM TV）を必ず含める。**
+     * `labelOf` はカタログ4社と U-NEXT しか持たないので、それだけだと
+     * **いちばん裏付けの無いサービスが検査から漏れる**（2026-09-06 に踏んだ）。
+     */
+    const checkedLabels = new Set<string>([
+      ...labelOf.values(),
+      ...(ctx.theme.search_links ?? []).map((l) => l.label),
+    ])
+    /**
+     * その名前が「いま見放題である」と読める書き方で出てくるか。
+     *
+     * ★ **サービス名を正規表現に埋め込まない。** `Disney+` の `+` のような
+     *   特殊文字を毎回退避することになり、退避を1文字忘れると
+     *   検査が静かに壊れる（正しい記事を止めるか、間違いを見逃す）。
+     *   名前は `indexOf` で探し、**後ろの文字列だけ**を正規表現で見る。
+     */
+    const claimsSubscription = (label: string): boolean => {
+      // 「で」「の」「は」＋（12字以内）＋「見放題」。直後が終了・終わりなら断定ではない
+      const tail = /^\s*[でのは][^。]{0,12}見放題(?!配信が?終了|が?終了|の終了|終わ)/u
+      for (let i = md.indexOf(label); i >= 0; i = md.indexOf(label, i + 1)) {
+        if (tail.test(md.slice(i + label.length, i + label.length + 24))) return true
+      }
+      return false
+    }
+
+    for (const label of checkedLabels) {
+      if (backed.has(label)) continue
+      if (claimsSubscription(label)) {
+        warn(
+          `「${label}」で見放題だと読める書き方がありますが、**在庫の裏付けがありません**。` +
+            `当サイトは ${label} の在庫データを持っていないか、この記事の作品では取得できていません。` +
+            '「検索リンクから確認できます」の形に留めてください（docs/CROSS-SERVICE.md 9-3）。',
+        )
+      }
+    }
 
     /*
      * --- 主題から離れていないか ---
@@ -1336,9 +1508,37 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
   const topic = ctx.flags?.topic ?? ''
   const isUpdate = previousAsOf(ctx.flags?.slug ?? '') !== undefined
 
+  /*
+   * リードの直後に足す1文のための「他社」。
+   *
+   * ■ 何を入れるか
+   * **その記事の作品が、いま見放題で観られる他社。** 台帳（在庫）から出す。
+   *
+   * ★ **その記事が終了を扱っているサービスは入れない。**
+   *   「Netflixで終わります。Netflixで観られます」は答えになっていない。
+   * ★ **在庫データを持つ4社だけ**。U-NEXT・Hulu・DMM TV は調べていないので
+   *   入りようがない（docs/CROSS-SERVICE.md 9-3）。
+   * ★ 並びはサービスの定義順。**紹介料の高い順にしない**（docs/AFFILIATE.md 7節）。
+   */
+  const elsewhere: string[] = (() => {
+    const ledger = loadAvailabilitySync()
+    const own = new Set(items.map((e) => e.service))
+    const hit = new Set<string>()
+    for (const e of items) {
+      const a = ledger.works[String(e.work.id)]
+      if (!isFresh(a, ctx.now.getTime())) continue
+      for (const sv of subscriptionServices(a)) {
+        if (!own.has(sv)) hit.add(sv)
+      }
+    }
+    // 定義順に揃える（`labelOf` はテーマの定義順で作られている）
+    return [...labelOf.keys()].filter((k) => hit.has(k)).map((k) => labelOf.get(k) ?? k)
+  })()
+
   const get = phraseReader(fixedPhrases(ctx, REQUIRED_PHRASES), {
     主題: topic,
     サービス: services.length === 2 ? services.join('と') : services.join('・'),
+    他社: elsewhere.length === 2 ? elsewhere.join('と') : elsewhere.join('・'),
     基準日: asOf,
     // ★ 素材の件数ではなく**作品数**（`workCount` の説明）。
     //   タイトルの「◯本」とリードの「◯本」は必ず同じ数にする。
@@ -1363,9 +1563,20 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
   if (items.some((e) => sourceOf(e) === 'u-next')) attributions.push(get('attribution-unext'))
   if (attributions.length === 0) attributions.push(get('attribution'))
 
+  /*
+   * ★ **リードは「事実の1文」＋「次の一手の1文」の2文で1つ。**
+   *   後半は他社で観られるかどうかで変わる。
+   *   旧「見逃さないようにチェックしましょう！」の役割はここが引き受けている
+   *   （templates/fixed-phrases.md の series-lead-first-sentence の注意書き）。
+   *
+   *   検査は `md.includes(leadFirstSentence)` なので、**繋げた文字列がそのまま
+   *   本文に入っていること**が条件になる。プロンプトにも同じ形で出る。
+   */
+  const leadTail = elsewhere.length > 0 ? get('series-lead-elsewhere') : get('series-lead-updating')
+
   return {
     topic,
-    leadFirstSentence: get(leadKey),
+    leadFirstSentence: `${get(leadKey)}${leadTail}`,
     unextNote: items.some((e) => hasLineup(e.service)) ? get('series-unext-note') : '',
     otherServicesIntro: get('other-services-intro'),
     attributions,

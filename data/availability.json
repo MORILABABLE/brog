@@ -1,0 +1,266 @@
+{
+  "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
+  "updatedAt": "2026-09-06T11:03:23.792Z",
+  "works": {
+    "218": {
+      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0K34FKPLFE01DV0I8HITAS2MD7?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-deathly-hallows-part-2/umc.cmc.4a5c366ol33jmntkgz0vwkwhg?playableId=tvs.sbd.9001%3A456902191"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70120085"
+        }
+      ]
+    },
+    "282": {
+      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60004478"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-sorcerers-stone/umc.cmc.55wxtmrughu40phd8lgr6qejr?playableId=tvs.sbd.9001%3A399348466"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0JXM9K5QSXG0X1O6M4CHGIYACB?ref_=atv_dp"
+        }
+      ]
+    },
+    "428": {
+      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60024925"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0R9T1YYWU54G4KKG8BIWWK2STE?ref_=atv_dp"
+        }
+      ]
+    },
+    "429": {
+      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60034567"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.98c1b69a-4e7d-47cd-a79c-bf9dd59f5410"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-prisoner-of-azkaban/umc.cmc.1uwqg0s65yo3lzxz96krkieoq?playableId=tvs.sbd.9001%3A397683999"
+        }
+      ]
+    },
+    "491": {
+      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "buy"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.a0a9f68b-222e-8332-81bc-52300b2adbf7"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70058027"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-order-of-the-phoenix/umc.cmc.37a9axm70raoztdprh6fimsth?playableId=tvs.sbd.9001%3A399510878"
+        }
+      ]
+    },
+    "536": {
+      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.86c06623-8b49-43e1-81d1-c0337e467f51"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-deathly-hallows-part-1/umc.cmc.2e5zll6jrv7fpc4j73kiw6teq?playableId=tvs.sbd.9001%3A418110939"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70115887"
+        }
+      ]
+    },
+    "548": {
+      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70099612"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0SS5KJYCLUB3VU1DW8MF5UCMQZ?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-half-blood-prince/umc.cmc.4pxzxmpprsj02d4cf8g5jve3b?playableId=tvs.sbd.9001%3A395594526"
+        }
+      ]
+    },
+    "677": {
+      "fetchedAt": "2026-09-06T11:03:23.790Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0S132AJVCRNJ1RBM69AVFBLF34?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/fantastic-beasts-and-where-to-find-them/umc.cmc.60w160x6m11tx1ygyn54hsxn9?playableId=tvs.sbd.9001%3A1206927301"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80111501"
+        }
+      ]
+    },
+    "1379": {
+      "fetchedAt": "2026-09-06T11:03:23.790Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/fantastic-beasts-the-crimes-of-grindelwald/umc.cmc.17gzytl325ditzggpp5aaso4f?playableId=tvs.sbd.9001%3A1440342126"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80997275"
+        }
+      ]
+    },
+    "3217": {
+      "fetchedAt": "2026-09-06T11:03:23.790Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/fantastic-beasts-the-secrets-of-dumbledore/umc.cmc.7047tkwu9l3iub33hqtkb6p3l?playableId=tvs.sbd.9001%3A1613754352"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81516447"
+        }
+      ]
+    }
+  }
+}

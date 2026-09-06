@@ -30,7 +30,12 @@
  * 記事の `.md` が変わらないかぎり、`data/events` を更新しても
  * **手元のビルドには反映されない**（リンク先もサムネイルも古いまま）。
  *
- *   cd site && rm -rf node_modules/.astro dist && npm run build
+ *   cd site && npm run dev:fresh      （= キャッシュを消してから dev）
+ *   cd site && npm run build:fresh
+ *
+ * ★ `dist` は消さないこと。**開いているサーバやエディタが掴んでいると
+ *   Windows では削除に失敗する**（`Device or resource busy`）。
+ *   ビルドが作り直すので消す必要もない（scripts/clear-cache.mjs）。
  *
  * Cloudflare のビルドは毎回まっさらなので、**公開されるものは常に最新**。
  * 手元で確認するときだけ気をつける。
