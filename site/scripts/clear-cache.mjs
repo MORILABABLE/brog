@@ -4,6 +4,16 @@
  *   cd site && npm run dev:fresh      キャッシュを消してから dev
  *   cd site && npm run build:fresh    キャッシュを消してからビルド
  *
+ * ★ **`build:fresh` は `astro build` を直接呼ばないこと。**
+ *   `npm run build` を経由する。そうしないと **`prebuild` が走らない**
+ *   （npm のライフサイクルは `build` にしか付いていない）。
+ *   `prebuild` は make-cards / make-sections / make-thumbs を回していて、
+ *   **make-sections が記事の frontmatter に `heroImage` を書き戻している。**
+ *
+ *   2026-09-06 に実際に踏んだ: `npm run write -- --apply` が frontmatter を
+ *   組み直すときに `heroImage` を落とし、`build:fresh` が `prebuild` を
+ *   飛ばしたため、**書き直した2本だけヘッダー画像が消えた。**
+ *
  * ■ なぜ要るのか
  * **記事の描画結果（HTML）がキャッシュされる。**
  * `.md` が変わらないかぎり再描画されないので、

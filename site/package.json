@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "dev:fresh": "node scripts/clear-cache.mjs && astro dev",
-    "build:fresh": "node scripts/clear-cache.mjs && astro build",
+    "build:fresh": "node scripts/clear-cache.mjs && npm run build",
     "cards": "node scripts/make-cards.mjs",
     "sections": "node scripts/make-sections.mjs",
     "shorts": "node scripts/make-shorts.mjs",
