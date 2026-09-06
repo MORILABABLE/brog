@@ -548,11 +548,21 @@ h3 {
   color: var(--text-muted);
 }
 /* ★ 取り扱いなしは**沈める**。4社を揃えて出すぶん、
-   ●（見放題）が埋もれないように差を付ける */
+   ○（見放題）が埋もれないように差を付ける */
 .prose .avail-item[data-mark='none'] {
   opacity: 0.55;
 }
 .prose .avail-item[data-mark='none'] .avail-mark {
+  color: var(--text-muted);
+}
+/* ★ 未確認（—）は取り扱いなしより更に沈める。
+   **×（調べたうえで無い）と見分けが付くこと**が要件で、
+   同じ濃さで並べると読者には同じものに見える */
+.prose .avail-item[data-mark='unknown'] {
+  opacity: 0.45;
+  border-style: dashed;
+}
+.prose .avail-item[data-mark='unknown'] .avail-mark {
   color: var(--text-muted);
 }
 .prose .avail-item a,

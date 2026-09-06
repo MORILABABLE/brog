@@ -9,6 +9,7 @@
  *   npm run availability -- --keyword "Harry Potter"   キーワードを指定する
  *   npm run availability -- --max-by-id 5   ID直引きの上限（既定12・1件1リクエスト）
  *   npm run availability -- --no-by-id      ID直引きをしない（キーワードだけ）
+ *   npm run availability -- --ids 138947,2699508   作品IDを直に指定する（下書きを見ない）
  *
  * ■ なぜ `--emit` のあとなのか
  * **調べる対象は「その記事に載る作品」だけでよい。**
@@ -29,6 +30,13 @@
  * ★ **キーワードは記事の主題から作る。** `--topic "「ハリー・ポッター」シリーズ"`
  *   のような日本語の主題からは当たらないことがある（APIの題名は英語）。
  *   当たらなければ `--keyword` で原題を渡すこと。**推測で日本語を投げ続けない。**
+ *
+ * ★ **`--ids` は「表に残っているのに素材から外れた作品」のためにある。**
+ *   記事の書き直しは前の版の表の行を落とさない（templates/series.md）ので、
+ *   **表にはあるが今回の素材には無い**作品が出る。下書きから作る `wanted` には
+ *   入らないため、在庫が永久に取れず、表のその行だけ印が出ない
+ *   （2026-09-06 にコナンで踏んだ。`名探偵コナン 緋色の不在証明` など3件）。
+ *   IDは `data/events/*.jsonl` の `work.id`。**SID… は渡さない**（U-NEXTのIDは当たらない）。
  *
  * ★ **取れなかった作品を「無い」と書かせない。** 台帳に載らなかった作品は
  *   `data/availability.json` に現れない ＝ 記事側は「分からない」として扱う。
@@ -127,6 +135,41 @@ async function main(): Promise<void> {
     ctx = JSON.parse(await readFile(CONTEXT_PATH, 'utf8')) as DraftContext
   } catch {
     // --keyword を直接渡す使い方なら下書きは要らない
+  }
+
+  /*
+   * `--ids` は下書きを見ない別経路。**1件1リクエスト**なので、
+   * 数件の取りこぼしを埋めるためだけに使う（まとめて取るならキーワード）。
+   */
+  const explicitIds = (arg('ids') ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (explicitIds.length > 0) {
+    const ledger = await loadAvailability()
+    const source = new StreamingAvailabilitySource(apiKey, theme)
+    const fetchedAt = new Date().toISOString()
+    let hit = 0
+    for (const id of explicitIds) {
+      if (isUnextWork(id)) {
+        console.log(`  ${id} … U-NEXTのIDなので飛ばします（配信APIのIDではありません）`)
+        continue
+      }
+      const row = await source.fetchAvailabilityById(id)
+      if (!row) {
+        console.log(`  ${id} … APIに無し`)
+        continue
+      }
+      hit++
+      if (!has('dry-run')) ledger.works[id] = { fetchedAt, services: row.services }
+      const subs = row.services.filter((s) => s.types.includes('subscription')).map((s) => s.service)
+      console.log(`  ${id} … 見放題: ${subs.join(' / ') || '（なし）'}`)
+    }
+    await addUsage(source.requestCount, theme.utc_offset_minutes)
+    if (!has('dry-run') && hit > 0) await saveAvailability(ledger)
+    console.log(`
+台帳に入れた: ${hit}件 / 指定 ${explicitIds.length}件  リクエスト: ${source.requestCount}`)
+    return
   }
 
   const keyword = arg('keyword') ?? keywordFrom(ctx.items)

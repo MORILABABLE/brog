@@ -235,6 +235,8 @@ interface Entry {
 interface Index {
   byId: Map<string, Entry>
   byTitle: Map<string, Entry>
+  /** 表記ゆれを潰した題 → その題のエントリ全部（`workIdsForTitle` 用） */
+  byWorkKey: Map<string, Entry[]>
 }
 
 let index: Index | null = null
@@ -273,7 +275,7 @@ function buildIndex(): Index {
   const dir = findUp('data', 'events')
   if (!dir) {
     // 収集前でもページは出す。リンクもサムネイルも付かないだけ。
-    index = { byId, byTitle }
+    index = { byId, byTitle, byWorkKey: new Map() }
     return index
   }
 
@@ -327,8 +329,78 @@ function buildIndex(): Index {
     if (original && !byTitle.has(original)) put(byTitle, original, e)
   }
 
-  index = { byId, byTitle }
+  /*
+   * 表記ゆれを潰した索引。**在庫の印を引くときの受け皿**（`workIdsForTitle`）。
+   * 同じ映画が配信元ごとに別の題・別のIDで入っているため（下の説明）。
+   */
+  const byWorkKey = new Map<string, Entry[]>()
+  for (const entry of new Set(byTitle.values())) {
+    const k = workKey(entry.title)
+    if (!k) continue
+    const list = byWorkKey.get(k)
+    if (list) list.push(entry)
+    else byWorkKey.set(k, [entry])
+  }
+
+  index = { byId, byTitle, byWorkKey }
   return index
+}
+
+/**
+ * 題の表記ゆれを潰した突き合わせ用の鍵。
+ *
+ * ★ **`theme-packs/streaming-jp/article-types/series.ts` の `workKey` と同じ規則。**
+ *   あちらは記事の表を1行にまとめるのに使う。**site は theme-packs を import しない**
+ *   という境界のために写してある（`availability.ts` が見放題の規則を写しているのと同じ）。
+ *   **どちらかを変えるときは両方を変えること。**
+ *
+ * ★ **これを送り先やサムネイルの解決に使わないこと。** 正規化を効かせすぎると、
+ *   別作品どうしが当たって**表の行がまったく別の作品へ飛ぶ**（`buildIndex` の注意書き）。
+ *   使ってよいのは**在庫の印**だけで、そこでも当たりが割れたら出さない
+ *   （plugins/rehype-availability.ts）。
+ */
+const TITLE_PREFIX = /^(劇場版|総集編|TVシリーズ特別編集版|テレビシリーズ特別編集版)/
+
+function workKey(title: string): string {
+  let s = title
+    .replace(/[（(][^）)]*[）)]/g, '')
+    .replace(/[「」『』]/g, '')
+    .replace(/[～〜―—\-－]/g, '')
+    .replace(/[\s　]/g, '')
+  for (let prev = ''; prev !== s; ) {
+    prev = s
+    s = s.replace(TITLE_PREFIX, '')
+  }
+  return s
+}
+
+/**
+ * その題が指しうる**作品IDを全部**返す。完全一致のものが先。
+ *
+ * ■ 何のためにあるのか
+ * **同じ映画が、配信元ごとに別のIDで台帳に入っている。**
+ *
+ *     U-NEXT   `劇場版 名探偵コナン 黒鉄の魚影（サブマリン）`  → SID…（在庫を取れない）
+ *     配信API  `名探偵コナン 黒鉄の魚影`                        → 数値ID（在庫がある）
+ *
+ * 表のセルに出ている題はどちらか一方なので、**完全一致だけで在庫を引くと、
+ * U-NEXT 由来の行にだけ印が出ない。** 読者には
+ * 「調べたうえで取り扱いなし」と「そもそも出ていない」の区別が付かず、
+ * 不具合に見える（2026-09-06・運用者の指摘）。
+ *
+ * ★ 呼び出し側は**先頭から順に試して、当たったものを使う**。
+ *   複数当たったときの扱いは呼び出し側の責任（上の `workKey` の注意書き）。
+ */
+export function workIdsForTitle(title: string): string[] {
+  const { byTitle, byWorkKey } = buildIndex()
+  const exact = byTitle.get(title) ?? byTitle.get(plainPunctuation(title))
+  const ids: string[] = []
+  const push = (e: Entry) => {
+    for (const link of e.byService.values()) if (!ids.includes(link.workId)) ids.push(link.workId)
+  }
+  if (exact) push(exact)
+  for (const e of byWorkKey.get(workKey(title)) ?? []) if (e !== exact) push(e)
+  return ids
 }
 
 /**

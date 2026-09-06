@@ -472,6 +472,23 @@ npm run write -- --apply                    # 検証して site/ に書き出す
 
 `[NG]` が出たら `data/draft/response.md` を直して `--apply` をやり直す。
 
+#### ★ `--apply` はヘッダー画像の指定を落とす（2026-09-06 明文化）
+
+`--apply` は frontmatter を組み立て直すので、**`heroImage:` の行が消える。**
+消えたままだと記事の先頭とカードの絵が出ない。**手元で直すときは書き戻すこと。**
+
+```powershell
+cd C:\Users\grate\brog\site
+node scripts/make-sections.mjs --write
+```
+
+- **`npm run build` では戻らない。** `prebuild` の `make-sections` は `--write` 無しで、
+  絵は作り直すが frontmatter は書かない（`--write` 無しのビルドで記事を
+  書き換えないための作り。docs/APPEARANCE.md「ビルドのたび」の行）。
+- 放っておいても **GitHub Actions（`images.yml`）が `--write` 付きで走って直す**が、
+  そのぶん確認が1往復遅れる。**手元で `--apply` したらその場で走らせるのが早い。**
+- ハリー・ポッターとコナンの記事でヘッダー画像が消えたのはこれ（2026-09-06）。
+
 ### 3. 壊れていないか確認する
 
 ```powershell

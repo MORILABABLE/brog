@@ -1607,36 +1607,58 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
   const isUpdate = previousAsOf(ctx.flags?.slug ?? '') !== undefined
 
   /*
-   * リードの直後に足す1文のための「他社」。
+   * リードの直後に足す1文のための「他社」と、そこが**一部の作品だけ**かどうか。
    *
    * ■ 何を入れるか
-   * **その記事の作品が、いま見放題で観られる他社。** 台帳（在庫）から出す。
+   * **その記事の作品が、いま見放題で観られるサービス。** 台帳（在庫）から出す。
    *
-   * ★ **その記事が終了を扱っているサービスは入れない。**
-   *   「Netflixで終わります。Netflixで観られます」は答えになっていない。
-   * ★ **在庫データを持つ4社だけ**。U-NEXT・Hulu・DMM TV は調べていないので
-   *   入りようがない（docs/CROSS-SERVICE.md 9-3）。
-   * ★ 並びはサービスの定義順。**紹介料の高い順にしない**（docs/AFFILIATE.md 7節）。
+   * ★ **「その記事が終了を扱っているサービス」を一律に外さない**（2026-09-06 修正）。
+   *   外し方を state で決める。
+   *
+   *     そのサービスの素材に 終了予定／配信中／復帰 が1つでもある
+   *       → **記事が既に「そこではまだ観られる」と言っている。** 他社として挙げない
+   *         （「Netflixで終わります。Netflixでも観られます」になる）
+   *     そのサービスの素材が**全部 終了済み**なのに、在庫にはまだある
+   *       → **これは新しい事実。** 挙げる
+   *
+   *   実例（2026-09-06）: コナンは Disney+ で終了済みと書いてあるが、
+   *   2作は**いま Disney+ の見放題にある**。Disney+ を一律に外していたため、
+   *   リードが Amazon しか挙げていなかった。
+   *
+   * ★ **一部の作品だけなら、そう書く。** シリーズ全部が観られると読ませない。
    */
-  const elsewhere: string[] = (() => {
+  const { elsewhere, partial } = (() => {
     const ledger = loadAvailabilitySync()
-    const own = new Set(items.map((e) => e.service))
+    const now = ctx.now.getTime()
+
+    // サービスごとに「記事が既に観られると言っているか」を見る
+    const claimedAvailable = new Set<string>()
+    for (const e of items) {
+      if (stateOf(e, ctx.now) !== '終了済み') claimedAvailable.add(e.service)
+    }
+
     const hit = new Set<string>()
+    const covered = new Set<string>()
     for (const e of items) {
       const a = ledger.works[String(e.work.id)]
-      if (!isFresh(a, ctx.now.getTime())) continue
+      if (!isFresh(a, now)) continue
       for (const sv of subscriptionServices(a)) {
-        if (!own.has(sv)) hit.add(sv)
+        if (claimedAvailable.has(sv)) continue
+        hit.add(sv)
+        covered.add(workKey(e.work.localizedTitle ?? e.work.title))
       }
     }
-    // 定義順に揃える（`labelOf` はテーマの定義順で作られている）
-    return [...labelOf.keys()].filter((k) => hit.has(k)).map((k) => labelOf.get(k) ?? k)
+    // 並びはテーマの定義順（紹介料の高い順にしない。docs/AFFILIATE.md 7節）
+    const names = [...labelOf.keys()].filter((k) => hit.has(k)).map((k) => labelOf.get(k) ?? k)
+    return { elsewhere: names, partial: covered.size > 0 && covered.size < workCount(items) }
   })()
 
   const get = phraseReader(fixedPhrases(ctx, REQUIRED_PHRASES), {
     主題: topic,
     サービス: services.length === 2 ? services.join('と') : services.join('・'),
     他社: elsewhere.length === 2 ? elsewhere.join('と') : elsewhere.join('・'),
+    // 一部の作品だけなら「一部タイトルが」。全部なら空
+    一部: partial ? '一部タイトルが' : '',
     基準日: asOf,
     // ★ 素材の件数ではなく**作品数**（`workCount` の説明）。
     //   タイトルの「◯本」とリードの「◯本」は必ず同じ数にする。
@@ -1662,19 +1684,34 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
   if (attributions.length === 0) attributions.push(get('attribution'))
 
   /*
-   * ★ **リードは「事実の1文」＋「次の一手の1文」の2文で1つ。**
+   * ★ **リードは「事実」＋「次の一手」で1つ。**
    *   後半は他社で観られるかどうかで変わる。
    *   旧「見逃さないようにチェックしましょう！」の役割はここが引き受けている
    *   （templates/fixed-phrases.md の series-lead-first-sentence の注意書き）。
    *
    *   検査は `md.includes(leadFirstSentence)` なので、**繋げた文字列がそのまま
    *   本文に入っていること**が条件になる。プロンプトにも同じ形で出る。
+   *
+   * ★ **他社を挙げられるときは、前の文と「が、」で繋ぐ**（2026-09-06）。
+   *
+   *     …32本すべての見放題配信が終了していますが、同じ時点で…
+   *
+   *   「終了しています。同じ時点で…」と切ると、**逆接なのに並列に読める。**
+   *   繋ぐのはこちら側の仕事にしてある（固定文言に「が、」を持たせると、
+   *   前の文の終わり方に依存する文言になって読めなくなる）。
+   *
+   * ★ 他社を挙げられないときは繋がない。あちらは逆接ではないので、
+   *   文を切ったほうが読みやすい。
    */
-  const leadTail = elsewhere.length > 0 ? get('series-lead-elsewhere') : get('series-lead-updating')
+  const base = get(leadKey)
+  const leadFirstSentence =
+    elsewhere.length > 0
+      ? `${base.replace(/。$/u, 'が、')}${get('series-lead-elsewhere')}`
+      : `${base}${get('series-lead-updating')}`
 
   return {
     topic,
-    leadFirstSentence: `${get(leadKey)}${leadTail}`,
+    leadFirstSentence,
     unextNote: items.some((e) => hasLineup(e.service)) ? get('series-unext-note') : '',
     otherServicesIntro: get('other-services-intro'),
     attributions,
