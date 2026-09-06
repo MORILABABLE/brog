@@ -218,6 +218,44 @@ export class StreamingAvailabilitySource implements Source {
    *   `addon` を捨てないのは、**捨てると「無い」と「別料金である」の
    *   区別が付かなくなる**ため（判定は core/availability.ts）。
    */
+  /**
+   * **作品IDを名指しで**在庫を取る。キーワード検索の取りこぼしを拾う口。
+   *
+   * ■ なぜ要るか
+   * `fetchAvailability()`（キーワード）は**まとめて取れるが、当たらないことがある。**
+   * 2026-09-06 の実測で「Transformers」は60作を返したのに、
+   * **こちらが持っている5作のIDが1件も含まれていなかった**
+   * （検索の並び順とページングの都合で、後ろのページに居たとみられる）。
+   *
+   * **1作品1リクエスト。** 枠を食うので、
+   * **キーワードで取りこぼしたぶんだけ**に使うこと（cli/availability.ts）。
+   */
+  async fetchAvailabilityById(
+    showId: string,
+  ): Promise<{ services: ServiceAvailabilityRow[] } | undefined> {
+    let show: ApiShow
+    try {
+      show = await this.#get<ApiShow>(`/shows/${encodeURIComponent(showId)}`, {
+        country: this.theme.country,
+        output_language: this.theme.api_language,
+      })
+    } catch {
+      // 404（その国に無い等）は「分からない」。**落とさない。**
+      return undefined
+    }
+    const byService = new Map<string, ServiceAvailabilityRow>()
+    for (const o of show.streamingOptions?.[this.theme.country] ?? []) {
+      const apiId = o.service?.id
+      if (!apiId || !o.type) continue
+      const key = this.#serviceByCatalogId.get(apiId)?.key ?? apiId
+      const row = byService.get(key) ?? { service: key, types: [], link: o.link }
+      if (!row.types.includes(o.type)) row.types.push(o.type)
+      if (!row.link && o.link) row.link = o.link
+      byService.set(key, row)
+    }
+    return { services: [...byService.values()] }
+  }
+
   async fetchAvailability(
     keyword: string,
     opts: { maxPages?: number } = {},

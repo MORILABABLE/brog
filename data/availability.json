@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-06T11:03:23.792Z",
+  "updatedAt": "2026-09-06T12:44:09.273Z",
   "works": {
     "218": {
       "fetchedAt": "2026-09-06T10:51:17.400Z",
@@ -55,6 +55,28 @@
             "subscription"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0JXM9K5QSXG0X1O6M4CHGIYACB?ref_=atv_dp"
+        }
+      ]
+    },
+    "424": {
+      "fetchedAt": "2026-09-06T12:43:50.477Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0TZUGTU418BQ74NNO3UECYDAEN?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/transformers/umc.cmc.3fcj93vxd6o4wdku85sawi7in?playableId=tvs.sbd.9001%3A392082168"
         }
       ]
     },
@@ -193,6 +215,28 @@
         }
       ]
     },
+    "648": {
+      "fetchedAt": "2026-09-06T12:42:56.838Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mission-impossible---ghost-protocol/umc.cmc.336hwrshso6quvexif20889lu?playableId=tvs.sbd.9001%3A513669605"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.62a9f6c5-31f7-f8f8-0cd6-06ed29621c2d"
+        }
+      ]
+    },
     "677": {
       "fetchedAt": "2026-09-06T11:03:23.790Z",
       "services": [
@@ -222,6 +266,160 @@
         }
       ]
     },
+    "786": {
+      "fetchedAt": "2026-09-06T12:42:56.838Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mission-impossible/umc.cmc.4kidmvtsswrmh1bro4whi72o3?playableId=tvs.sbd.9001%3A390538178"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0QRG35JYN7QW5RYGJB83XQ62E6?ref_=atv_dp"
+        }
+      ]
+    },
+    "851": {
+      "fetchedAt": "2026-09-06T12:43:50.477Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/transformers-dark-of-the-moon/umc.cmc.5e3z28k0wx8kthg3youf4ky3e?playableId=tvs.sbd.9001%3A489912081"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.520e7b15-5580-4370-a81d-213612d74a01"
+        }
+      ]
+    },
+    "859": {
+      "fetchedAt": "2026-09-06T12:43:50.477Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0N9VS03N976VO0ZVNNUW479UXA?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/transformers-revenge-of-the-fallen/umc.cmc.1uzlcfsbzc8dttw7bakkrr7p0?playableId=tvs.sbd.9001%3A393758543"
+        }
+      ]
+    },
+    "965": {
+      "fetchedAt": "2026-09-06T12:42:56.838Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mission-impossible--rogue-nation/umc.cmc.5v3hpkm4ni9b2mf4585utgmjg?playableId=tvs.sbd.9001%3A1050045504"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0N0CRCTLQYVTR576AOTULWI0RV?ref_=atv_dp"
+        }
+      ]
+    },
+    "1023": {
+      "fetchedAt": "2026-09-06T12:42:56.838Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0FTNWHOE41T95KNZQDD0NX6NKT?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/m-flo-tour-2005-beat-space-nine-at-%E6%97%A5%E6%9C%AC%E6%AD%A6%E9%81%93%E9%A4%A8/umc.cmc.6nf5cnxv7nrbz8fuf2tc79anc?playableId=tvs.sbd.9001%3A1161320480"
+        }
+      ]
+    },
+    "1128": {
+      "fetchedAt": "2026-09-06T12:42:56.838Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.32c813e8-168f-41ea-ace6-971cf407bec7"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mission-impossible---fallout/umc.cmc.3drwjm4wydrpzfnzloeytmh8j?playableId=tvs.sbd.9001%3A1406594436"
+        }
+      ]
+    },
+    "1220": {
+      "fetchedAt": "2026-09-06T12:43:50.477Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0L2DDQTR374DGL3YKZAOLY0XFG?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/transformers-age-of-extinction/umc.cmc.4uksnn7vhrglth564at4qgzyv?playableId=tvs.sbd.9001%3A920998150"
+        }
+      ]
+    },
     "1379": {
       "fetchedAt": "2026-09-06T11:03:23.790Z",
       "services": [
@@ -242,6 +440,127 @@
         }
       ]
     },
+    "1481": {
+      "fetchedAt": "2026-09-06T12:44:09.271Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RMLETQRRL8A5XABZ7ZM7NMZ99?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/resident-evil/umc.cmc.5ymt7g8uenztp00efscah4tif?playableId=tvs.sbd.9001%3A548926887"
+        }
+      ]
+    },
+    "2232": {
+      "fetchedAt": "2026-09-06T12:44:09.271Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0QBPFKWN1KK5DOFPFM0FKL4T72?ref_=atv_dp"
+        }
+      ]
+    },
+    "2283": {
+      "fetchedAt": "2026-09-06T12:44:09.271Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "addon",
+            "subscription",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0HOJE0HM2DF8Y74QND5NRLDNFE?ref_=atv_dp"
+        }
+      ]
+    },
+    "2657": {
+      "fetchedAt": "2026-09-06T12:44:09.271Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/resident-evil-afterlife/umc.cmc.79kh5y08w2l67t2nx9ek6yl36?playableId=tvs.sbd.9001%3A411111955"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "addon",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0KVMM0DCH1ONG81R0PLQ8H5Q8V?ref_=atv_dp"
+        }
+      ]
+    },
+    "2983": {
+      "fetchedAt": "2026-09-06T12:43:50.477Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/transformers-the-last-knight/umc.cmc.4wweymvdwq3eekoolot5g1us9?playableId=tvs.sbd.9001%3A1245801358"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "subscription",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0PM61IIVCPNZ6SCU8RVWHTX000?ref_=atv_dp"
+        }
+      ]
+    },
+    "3205": {
+      "fetchedAt": "2026-09-06T12:44:09.271Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "addon",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0OSAJS5WWDO8D29AGJXGR66RYG?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/resident-evil-retribution/umc.cmc.pri2ktc2zvm8vccqtqrcihrm?playableId=tvs.sbd.9001%3A584739714"
+        }
+      ]
+    },
     "3217": {
       "fetchedAt": "2026-09-06T11:03:23.790Z",
       "services": [
@@ -259,6 +578,195 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/81516447"
+        }
+      ]
+    },
+    "4786": {
+      "fetchedAt": "2026-09-06T12:44:09.271Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0QOIMWQVE5ZKICXNKIQKZPEL6F?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/resident-evil-the-final-chapter/umc.cmc.1wfphs7n3l19iodazs2goix6k?playableId=tvs.sbd.9001%3A1199731548"
+        }
+      ]
+    },
+    "37264": {
+      "fetchedAt": "2026-09-06T12:44:05.674Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0N8W3ILIWPSAHPB579HLNS32EB"
+        }
+      ]
+    },
+    "41879": {
+      "fetchedAt": "2026-09-06T12:44:05.674Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LGWG5IJKH9XM4YAHZQUGAOD1L"
+        }
+      ]
+    },
+    "45173": {
+      "fetchedAt": "2026-09-06T12:37:58.778Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RMMI9XOHPO9B8LLQI9VX0IT4P?ref_=atv_dp"
+        }
+      ]
+    },
+    "47630": {
+      "fetchedAt": "2026-09-06T12:44:05.674Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0U8E1R62B0XI583MKJB01ZAE80"
+        }
+      ]
+    },
+    "49997": {
+      "fetchedAt": "2026-09-06T12:37:58.778Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.20ad9daa-1b49-86f2-6517-6ebfef5afc08"
+        }
+      ]
+    },
+    "50826": {
+      "fetchedAt": "2026-09-06T12:37:58.778Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.a47d00e2-4cf3-41b1-9ec8-a6f211bfa5d0"
+        }
+      ]
+    },
+    "51558": {
+      "fetchedAt": "2026-09-06T12:38:20.506Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.c8ad9daa-17d7-72ac-87fb-ee4890116a48"
+        }
+      ]
+    },
+    "60115": {
+      "fetchedAt": "2026-09-06T12:37:58.778Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0S3PEB23GVDJIR3W9YC5C7UYE2?ref_=atv_dp"
+        }
+      ]
+    },
+    "65879": {
+      "fetchedAt": "2026-09-06T12:38:20.506Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.38b8bd9e-2da3-c8c1-f287-6f36546b8314"
+        }
+      ]
+    },
+    "69907": {
+      "fetchedAt": "2026-09-06T12:37:58.778Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.e13101f2-0c27-4a03-9ce2-540d4af7cb70"
+        }
+      ]
+    },
+    "78674": {
+      "fetchedAt": "2026-09-06T12:37:58.778Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-5fa191b6-f099-4da1-a57a-b6e76d9eb753"
+        }
+      ]
+    },
+    "2093538": {
+      "fetchedAt": "2026-09-06T12:37:58.778Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-a8404387-a256-457e-bc63-ecc6af4d237a"
+        }
+      ]
+    },
+    "8847319": {
+      "fetchedAt": "2026-09-06T12:37:58.778Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-baebd23a-1e8e-441f-b097-aef885558aaa"
         }
       ]
     }

@@ -415,8 +415,45 @@ function stateOf(e: ChangeEvent, now: Date): State {
     return revivedKeys.has(eventKeyOf(e)) ? '見放題に復帰' : '見放題配信中'
   }
   if (e.kind === 'removed') return '終了済み'
-  return Date.parse(e.at!) >= now.getTime() ? '終了予定' : '終了済み'
+  if (Date.parse(e.at!) >= now.getTime()) return '終了予定'
+
+  /*
+   * ★ **予定日を過ぎただけの作品を「終了済み」に丸めない**（2026-09-06 修正）。
+   *
+   * `site/src/lib/works.ts` は最初からこう決めている:
+   *
+   *   > `passed` を `ended` に丸めない。予定日を過ぎたことは観測しているが、
+   *   > **実際に終わったことは観測していない**（延長されることがある）。
+   *
+   * **記事側だけがこの規律を守っていなかった。**
+   * 2026-09-06 に在庫を取って実測したところ、
+   *
+   *   トランスフォーマー実写5作      予定日経過。**Prime Video の見放題に今もある**
+   *   ミッション:インポッシブル5作   同上
+   *
+   * で、**公開中の記事が「見放題配信は終了しました」と書いていた。**
+   * 予定日は各社の予告であって、延期・撤回されることがある。
+   *
+   * ■ どう直したか
+   * **在庫（`data/availability.json`）が「そのサービスに今もある」と言うなら、
+   * 観測が古いほうを捨てる。** 在庫レスポンスは変化ログより新しく、直接的。
+   *
+   * ★ **在庫が無い／取れていないときは今までどおり「終了済み」。**
+   *   0件と未取得を混同しない。取れていないものを「まだある」とは書けない。
+   *   （在庫を取っていない記事の挙動は変わらない）
+   */
+  const a = availabilityLedger.works[String(e.work.id)]
+  if (isFresh(a, now.getTime()) && subscriptionServices(a).includes(e.service)) {
+    return '見放題配信中'
+  }
+  return '終了済み'
 }
+
+/**
+ * 在庫の台帳。**モジュールを読み込んだときに1回だけ読む。**
+ * `stateOf` は素材1件ごとに呼ばれるので、そのたびにファイルを開かない。
+ */
+const availabilityLedger = loadAvailabilitySync()
 
 /**
  * 記事の向きを素材から決める。**上から順に見る（優先順位がある）。**
@@ -753,7 +790,16 @@ export const seriesArticle: ArticleType = {
         state === '見放題に復帰'
           ? `  復帰日: ${formatMonthDay(e.at!, offset)}（★終了日は未定。表の終了日の欄には「—」と書くこと）`
           : state === '見放題配信中'
-            ? `  配信開始日: ${formatMonthDay(e.at!, offset)}（★終了日は未定。表の終了日の欄には「—」と書くこと）`
+            ? /*
+               * ★ **`expiring` 由来なら「配信開始日」と呼ばない。**
+               *   その日付は**終了予定日**であって、開始日ではない。
+               *   予定日を過ぎたが在庫にはまだある、という状態
+               *   （`stateOf` の注意書き）。ここを取り違えると、
+               *   記事が「9月1日に配信開始」と**真逆の日付の説明**を書く。
+               */
+              e.kind === 'expiring'
+              ? `  ★この作品は${formatMonthDay(e.at!, offset)}が見放題の終了予定日でしたが、その日を過ぎたあとも見放題で配信されています（在庫で確認済み）。**表の終了日の欄には「—」と書き、地の文でもこの日付を「終了日」として書かないこと。**`
+              : `  配信開始日: ${formatMonthDay(e.at!, offset)}（★終了日は未定。表の終了日の欄には「—」と書くこと）`
             : `  終了日: ${formatMonthDay(e.at!, offset)}`,
         availabilityLine(e),
         w.year ? `  公開年: ${w.year}年` : '',
@@ -1222,11 +1268,42 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
      *   検査が静かに壊れる（正しい記事を止めるか、間違いを見逃す）。
      *   名前は `indexOf` で探し、**後ろの文字列だけ**を正規表現で見る。
      */
+    /*
+     * ★ **固定文言は検査から外す。**
+     *   `series-unext-note` は「U-NEXTは見放題とポイントでの取り扱いが同居し…」と
+     *   U-NEXT の仕組みを説明する文で、**在庫の断定ではない。**
+     *   外さないと、**正しく書いた記事が毎回この警告を出す**（2026-09-06 に踏んだ）。
+     *   固定文言は別途「そのまま入っているか」を検査しているので、
+     *   ここで二重に見る必要がない。
+     */
+    const scanned = [resolved.leadFirstSentence, resolved.unextNote, resolved.otherServicesIntro]
+      .filter(Boolean)
+      .reduce((acc, phrase) => acc.split(phrase).join('　'), md)
+
+    /**
+     * その名前が「いま見放題である」と読める書き方で出てくるか。
+     *
+     * ★ **サービス名を正規表現に埋め込まない。** `Disney+` の `+` のような
+     *   特殊文字を毎回退避することになり、退避を1文字忘れると
+     *   検査が静かに壊れる（正しい記事を止めるか、間違いを見逃す）。
+     *
+     * ★ **判定は「文」の単位で見る。** 記号の直後だけを見ると、
+     *
+     *     Disney+での見放題配信は8月10日に終了しています
+     *
+     *   のように**終了を言っている文**を断定と読み違える（2026-09-06 に踏んだ）。
+     *   名前から**その文の終わり（。）まで**を取り、そこに終了・終わりの語が
+     *   1つでもあれば断定ではないと見なす。
+     */
     const claimsSubscription = (label: string): boolean => {
-      // 「で」「の」「は」＋（12字以内）＋「見放題」。直後が終了・終わりなら断定ではない
-      const tail = /^\s*[でのは][^。]{0,12}見放題(?!配信が?終了|が?終了|の終了|終わ)/u
-      for (let i = md.indexOf(label); i >= 0; i = md.indexOf(label, i + 1)) {
-        if (tail.test(md.slice(i + label.length, i + label.length + 24))) return true
+      for (let i = scanned.indexOf(label); i >= 0; i = scanned.indexOf(label, i + 1)) {
+        const rest = scanned.slice(i + label.length)
+        const end = rest.indexOf('。')
+        const sentence = end >= 0 ? rest.slice(0, end) : rest.slice(0, 60)
+        if (!/^\s*[でのは][^。]{0,12}見放題/u.test(sentence)) continue
+        // その文が終了・終わりを言っているなら、いま観られるという断定ではない
+        if (/終了|終わ|過ぎ/u.test(sentence)) continue
+        return true
       }
       return false
     }
@@ -1503,7 +1580,28 @@ interface ResolvedPhrases {
 function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhrases {
   const traits = traitsOf(items, ctx)
   const labelOf = serviceLabels(ctx)
-  const services = [...new Set(items.map((e) => labelOf.get(e.service) ?? e.service))]
+  /*
+   * リードの `{サービス}` に入れるサービス。
+   *
+   * ★ **その記事が名乗る状態のサービスだけ**を入れる。**全サービスではない。**
+   *   素材の状態は混ざる。「見放題配信中の記事」に終了済みのサービスが
+   *   1社でも混ざっていると、全サービスを並べた瞬間に
+   *   **終わったサービスまで「配信中です」と書くことになる。**
+   *
+   *   2026-09-06 に実際に踏んだ:
+   *     トランスフォーマー … Prime Video は配信中・Disney+ は終了済み
+   *     → リードが「Amazon Prime VideoとDisney+の見放題で配信中です」
+   *     品質ゲート（`claimsSubscription`）が止めて分かった。
+   *
+   * ★ 該当が1つも無いときだけ全サービスに落とす（文が空になるのを防ぐ）。
+   */
+  const stanceState = { leaving: '終了予定', returned: '見放題に復帰', streaming: '見放題配信中', ended: '終了済み' }[
+    stanceOf(items, ctx)
+  ]
+  const matching = items.filter((e) => stateOf(e, ctx.now) === stanceState)
+  const services = [
+    ...new Set((matching.length > 0 ? matching : items).map((e) => labelOf.get(e.service) ?? e.service)),
+  ]
   const asOf = asOfLabel(ctx)
   const topic = ctx.flags?.topic ?? ''
   const isUpdate = previousAsOf(ctx.flags?.slug ?? '') !== undefined

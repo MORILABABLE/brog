@@ -6,7 +6,9 @@
  *   npm run write -- ... --emit         ← もう一度出すと、素材に在庫が入る
  *
  *   npm run availability -- --dry-run   取って表示するだけ（**枠は消費する**）
- *   npm run availability -- --keyword "Harry Potter"   下書きを使わず直接
+ *   npm run availability -- --keyword "Harry Potter"   キーワードを指定する
+ *   npm run availability -- --max-by-id 5   ID直引きの上限（既定12・1件1リクエスト）
+ *   npm run availability -- --no-by-id      ID直引きをしない（キーワードだけ）
  *
  * ■ なぜ `--emit` のあとなのか
  * **調べる対象は「その記事に載る作品」だけでよい。**
@@ -180,6 +182,36 @@ async function main(): Promise<void> {
     if (paid.length) console.log(`     レンタル・購入: ${paid.map((s) => s.service).join(' / ')}`)
     // ★ addon は見放題ではない。**必ず別に出す**（core/availability.ts の「絶対に守ること」）
     if (addon.length) console.log(`     ★別料金チャンネル(addon): ${addon.join(' / ')}`)
+  }
+
+  /*
+   * ★ **キーワードで取りこぼしたぶんを、IDで拾う。**
+   *   検索は当たらないことがある（2026-09-06 の実測で「Transformers」は
+   *   60作を返しながら、こちらの5作を1件も含んでいなかった）。
+   *   **1作品1リクエスト**なので、下書きの作品数が多いときは打ち止めにする。
+   */
+  const stillMissing = [...wanted.keys()].filter((id) => !isFresh(ledger.works[id]) && !found.has(id))
+  const byIdLimit = Number(arg('max-by-id') ?? 12)
+  if (stillMissing.length > 0 && !has('no-by-id')) {
+    const targets = stillMissing.slice(0, byIdLimit)
+    if (stillMissing.length > targets.length) {
+      console.log(
+        `取りこぼし${stillMissing.length}件のうち${targets.length}件をIDで取ります` +
+          `（1件1リクエスト。上限は --max-by-id）。`,
+      )
+    } else {
+      console.log(`取りこぼし${targets.length}件をIDで取ります（1件1リクエスト）。`)
+    }
+    for (const id of targets) {
+      const row = await source.fetchAvailabilityById(id)
+      if (!row) continue
+      hit++
+      if (!has('dry-run')) ledger.works[id] = { fetchedAt, services: row.services }
+      const subs = row.services.filter((s) => s.types.includes('subscription')).map((s) => s.service)
+      console.log(`  ${(wanted.get(id) || id).slice(0, 34).padEnd(34)}`)
+      console.log(`     見放題: ${subs.join(' / ') || '（なし）'}`)
+    }
+    console.log('')
   }
 
   console.log('')

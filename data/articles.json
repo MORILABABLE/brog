@@ -34,7 +34,7 @@
         "match": "名探偵コナン"
       },
       "category": "ended",
-      "writtenAt": "2026-09-02"
+      "writtenAt": "2026-09-06"
     },
     {
       "slug": "harry-potter",
@@ -57,8 +57,8 @@
         "slug": "mission-impossible",
         "match": "ミッション:インポッシブル"
       },
-      "category": "ended",
-      "writtenAt": "2026-09-05"
+      "category": "arrivals",
+      "writtenAt": "2026-09-06"
     },
     {
       "slug": "resident-evil",
@@ -70,7 +70,7 @@
         "match": "バイオハザード"
       },
       "category": "arrivals",
-      "writtenAt": "2026-09-05"
+      "writtenAt": "2026-09-06"
     },
     {
       "slug": "transformers",
@@ -81,8 +81,8 @@
         "slug": "transformers",
         "match": "トランスフォーマー"
       },
-      "category": "ended",
-      "writtenAt": "2026-09-02"
+      "category": "arrivals",
+      "writtenAt": "2026-09-06"
     },
     {
       "slug": "ultraman",
@@ -94,8 +94,8 @@
         "match": "ウルトラマン"
       },
       "category": "ended",
-      "writtenAt": "2026-09-02"
+      "writtenAt": "2026-09-06"
     }
   ],
-  "updatedAt": "2026-09-06T11:06:17.700Z"
+  "updatedAt": "2026-09-06T12:57:48.356Z"
 }
