@@ -166,6 +166,54 @@ const jsonLd = jsonLdOverride ?? (publishedAt
     />
 
     {/*
+      枠別のアフィリエイトクリック計測（2026-09-06 追加）。
+
+      ■ なぜ要るのか
+      GA4 の拡張計測は外部リンクのクリックを `click` イベントで自動に拾うが、
+      **どの枠から出たのかは分からない。** 作品ページには Amazon の導線が
+      3つあり（状態行・本文CTA・追従枠）、実測ではその3つを合わせて
+      90日で5クリックしかない（docs/FUNNEL.md 5節）。
+      **どの枠が踏まれているかを知らないまま枠の役割を組み替えても、
+      当てずっぽうになる。** だから配分を変える前にこれを入れる。
+
+      ■ なぜイベント名に枠名を入れるのか
+      `gtag('event','affiliate_click',{slot:'cta'})` と**パラメータで送ると、
+      GA4 の管理画面でカスタムディメンションに登録するまでレポートに出ない。**
+      イベント名なら標準の `eventName` ディメンションでそのまま読めるので、
+      **管理画面の作業なしで `npm run analytics` から見える。**
+
+      ■ 仕組み
+      `data-slot` を持つ `<a>` を**1つのリスナーで拾う**（イベント委譲）。
+      枠ごとにスクリプトを増やさない（サイトはJSゼロが基本方針。docs/GROWTH.md 3-6）。
+      枠名を出しているのは:
+        components/{AmazonCta,PrimeCta,FollowBar,FollowRail,UnextCta,WorkTable}.astro
+        pages/works/[id].astro（状態行 `work` ／ 他社検索 `find`）
+        plugins/rehype-affiliate.ts（記事本文 `poster` / `table` / `body`）
+
+      ★ **`data-slot` であって `slot` ではない。** Astro では `slot` が予約語で、
+        コンポーネントの props に `slot` を渡すと**そのコンポーネントごと
+        出力から消える**（components/UnextCta.astro の注意書きと同じ罠）。
+
+      ★ **capture で拾う。** 途中で伝播を止める処理が入っても取りこぼさない。
+
+      ★ **リンクは止めない。** `preventDefault` も遅延も入れないこと。
+        リンクは別タブで開く（target="_blank"）ので、ページは遷移せず
+        イベントは通常どおり送られる。計測のために読者を待たせない。
+    */}
+    <script
+      is:inline
+      set:html={`document.addEventListener('click', function (e) {
+        var t = e.target;
+        if (!t || !t.closest) return;
+        var a = t.closest('a[data-slot]');
+        if (!a) return;
+        var slot = a.getAttribute('data-slot');
+        if (!slot || typeof gtag !== 'function') return;
+        gtag('event', 'aff_' + slot);
+      }, true);`}
+    />
+
+    {/*
       AdSense のコード（2026-09-03 追加）。**全ページの <head> に1本だけ。**
 
       ■ なぜここに要るのか

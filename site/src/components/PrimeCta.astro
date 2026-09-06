@@ -1,0 +1,101 @@
+---
+import { relFor } from '../lib/affiliate'
+import { primeAd, type PrimeAdInput } from '../lib/prime-ad'
+
+/**
+ * Amazonプライムのメンバー紹介枠（無料体験 500円/件）。
+ *
+ * **出す・出さないも文言も src/lib/prime-ad.ts が決める。**
+ * ここは受け取ったものを描くだけ。判断をこのファイルに書かないこと。
+ *
+ * ★ **`AmazonCta` と並べない。置き換える。**
+ *   同じ `cta` の位置に2つ出すと、読者はどちらを押せばいいか決められない
+ *   （docs/AFFILIATE.md 5節の方針）。呼び出し側は
+ *
+ *       {ad ? <PrimeCta ... /> : <AmazonCta ... />}
+ *
+ *   の形にすること。
+ *
+ * ★ 見た目は `AmazonCta` と揃えてある。同じ位置に出る同じ役割の枠なので、
+ *   ここだけ目立たせると広告然として読者の信用を落とす。
+ */
+interface Props extends PrimeAdInput {}
+
+const ad = primeAd(Astro.props)
+---
+
+{
+  ad && (
+    <aside class="prime-cta" aria-label="Amazonプライム">
+      <p class="label">
+        <span class="pr">PR</span>
+        Amazonプライム
+      </p>
+      <p class="lead">{ad.lead}</p>
+      {/*
+        ★ 枠名は `prime`。**他の Amazon 枠と成果の種類が違う**
+          （紹介料ではなく固定報酬）ので、必ず分けて数えること。
+          data-slot はクリック計測（BaseLayout.astro）が読む。
+      */}
+      <a
+        class="action"
+        href={ad.url}
+        rel={relFor(ad.url)}
+        target="_blank"
+        data-affiliate="true"
+        data-slot="prime"
+      >
+        {ad.action}
+      </a>
+      <p class="note">{ad.note}</p>
+    </aside>
+  )
+}
+
+<style>
+  .prime-cta {
+    margin: 2rem 0;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-subtle);
+  }
+  .label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.6rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .pr {
+    padding: 0.1rem 0.45rem;
+    border: 1px solid var(--text-muted);
+    border-radius: 3px;
+    font-size: 0.72rem;
+  }
+  .lead {
+    margin: 0 0 0.8rem;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+  .action {
+    display: inline-block;
+    padding: 0.6rem 1.1rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .action:hover {
+    opacity: 0.9;
+  }
+  .note {
+    margin: 0.7rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+  }
+</style>

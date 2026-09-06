@@ -4,8 +4,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AdSlot from '../../components/AdSlot.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
+import PrimeCta from '../../components/PrimeCta.astro'
 import UnextCta from '../../components/UnextCta.astro'
 import { CATEGORIES, GENRES, hubFor } from '../../config'
+import { primeAd } from '../../lib/prime-ad'
 import { formatDate, isoDate } from '../../utils/date'
 
 export async function getStaticPaths() {
@@ -40,6 +42,15 @@ const hub = hubFor(post.data.category)
  *   同じ文字列で、記事側は theme-packs の `tags()` が書く。
  */
 const unextSubject = post.data.tags.includes('U-NEXT')
+
+/*
+ * 本文のCTA。**Prime Video を主題にした「まだ観られる」記事だけ行き先が変わる。**
+ * 判断は lib/prime-ad.ts の1か所（サービス軸であること・カテゴリが
+ * arrivals か leaving であることの両方を見ている）。
+ * 配信終了済みの記事には出ない — 観られない作品のページで
+ * 会員登録を勧めることになるため。
+ */
+const primeSlot = primeAd({ tags: post.data.tags, category: post.data.category })
 /*
  * 掲載NGの判定に渡す文字列。**タイトル・説明文・本文をすべて渡す。**
  * 表の作品名も解説文も本文の中にあるので、これで足りる（src/lib/unext-ng.ts）。
@@ -116,8 +127,18 @@ const unextPageText = [post.data.title, post.data.description, post.body ?? ''].
       Amazon への導線。文面は記事カテゴリで変わる
       （配信終了記事に「見放題で探す」と出すのは誤誘導になるため）。
       トラッキングID未設定なら描画されない。
+
+      ★ **Prime Video の「まだ観られる」記事だけ、枠ごと置き換わる**
+        （プライムの無料体験は専用リンクでないと成果にならない。
+        docs/AFFILIATE.md 3-0）。**並べずに置き換えること。**
     */}
-    <AmazonCta category={post.data.category} />
+    {
+      primeSlot ? (
+        <PrimeCta tags={post.data.tags} category={post.data.category} />
+      ) : (
+        <AmazonCta category={post.data.category} />
+      )
+    }
 
     {/*
       U-NEXT（afb）への導線。**Amazon の枠を置き換えるものではない。**

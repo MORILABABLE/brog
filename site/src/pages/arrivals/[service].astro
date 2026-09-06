@@ -9,6 +9,8 @@ import { ATTRIBUTION, CATEGORIES, EVERGREEN_BADGE, SITE } from '../../config'
 import { formatDate } from '../../utils/date'
 import { serviceImage } from '../../lib/images'
 import { evergreenTitle, evergreenTitleBase } from '../../lib/evergreen'
+import PrimeCta from '../../components/PrimeCta.astro'
+import { primeAd } from '../../lib/prime-ad'
 import {
   ARRIVALS_SERVICES,
   ARRIVALS_WINDOW_DAYS,
@@ -54,6 +56,9 @@ const lead = serviceImage(service!)
  * 組み立ては lib/evergreen.ts の1か所に寄せてある。ここで文字列を作らないこと。
  */
 const title = evergreenTitle(evergreenTitleBase('arrivals', label), dataAsOf)
+
+// 本文のCTA。Prime Video の面だけ行き先が変わる（lib/prime-ad.ts）。
+const primeSlot = primeAd({ service, category: 'arrivals' })
 const description =
   works.length > 0
     ? `${label}で直近${ARRIVALS_WINDOW_DAYS}日間に見放題配信が始まった作品${works.length}本を、配信開始日の古い順にまとめています。`
@@ -129,7 +134,7 @@ const description =
     )
   }
 
-  <AmazonCta category="arrivals" />
+  {primeSlot ? <PrimeCta service={service} category="arrivals" /> : <AmazonCta category="arrivals" />}
 
   <section class="sources">
     <h2>出典</h2>

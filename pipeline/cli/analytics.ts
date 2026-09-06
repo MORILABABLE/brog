@@ -251,6 +251,23 @@ function productionHosts(siteUrl: string): string[] {
   return bare.startsWith('www.') ? [bare, bare.slice(4)] : [bare, `www.${bare}`]
 }
 
+/**
+ * 枠名 → どこに出ている枠か。**出力を読む人のための注釈**で、判定には使わない。
+ * 枠を足したらここにも足すこと（無くても数字は出る）。
+ */
+const SLOT_NOTE: Record<string, string> = {
+  work: '作品ページの状態行のボタン',
+  find: '作品ページ「他のサービスで探す」（U-NEXT検索を含む・成果にはならない）',
+  cta: '本文のCTA',
+  bar: '画面下の追従枠（1200px未満）',
+  rail: '右の追従枠（1200px以上）',
+  table: '表の作品名リンク',
+  poster: '記事本文の節ポスター',
+  body: '記事本文の地の文のリンク',
+  prime: 'Amazonプライムの無料体験（専用リンク・500円/件）',
+  unext: 'U-NEXT の afb 枠',
+}
+
 async function main(): Promise<void> {
   const site = process.env.GSC_SITE_URL
   const keyPath = process.env.GSC_SERVICE_ACCOUNT
@@ -440,6 +457,22 @@ async function main(): Promise<void> {
       ['sessions', 'screenPageViewsPerSession', 'engagementRate'],
       15
     )
+    /*
+     * 枠別のアフィリエイトクリック（2026-09-06 追加）。
+     *
+     * ★ **イベント名に枠名が入っている**（`aff_cta` `aff_work` …）。
+     *   パラメータで送るとGA4の管理画面でカスタムディメンションに登録するまで
+     *   レポートに出ないので、名前に埋めてある（layouts/BaseLayout.astro）。
+     *
+     * ★ 上の「外部リンククリック」（拡張計測の `click`）とは**別に数える**。
+     *   あちらは外部リンク全部の合計、こちらは枠別。
+     *   **合計がずれていてよい** — `data-slot` の無いリンクはこちらに出ない。
+     */
+    const bySlot = await g(['eventName'], ['eventCount'], 50, {
+      dimensionFilter: {
+        filter: { fieldName: 'eventName', stringFilter: { matchType: 'BEGINS_WITH', value: 'aff_' } },
+      },
+    })
 
     console.log('')
     console.log(`■ サイト内（GA4・本番ホストのみ: ${hostList.join(' / ')}）`)
@@ -464,6 +497,20 @@ async function main(): Promise<void> {
      *   知らないホストが増えていたら、それが本物かどうかを人が見て決めること
      *   （判定の材料は `productionHosts()` の注意書き）。
      */
+    console.log('')
+    console.log('■ 枠別のアフィリエイトクリック')
+    if (bySlot.length === 0) {
+      console.log('  まだ0件。計測を入れたのは 2026-09-06 で、それ以前のクリックは枠が分からない。')
+    } else {
+      const total = bySlot.reduce((acc, r) => acc + met(r, 0), 0)
+      for (const r of [...bySlot].sort((a, b) => met(b, 0) - met(a, 0))) {
+        const slot = dim(r, 0).replace(/^aff_/, '')
+        console.log(
+          `  ${n(met(r, 0), 5)}回 ${pct(met(r, 0) / total).padStart(6)}  ${slot}  ${SLOT_NOTE[slot] ?? ''}`
+        )
+      }
+    }
+
     console.log('')
     console.log('■ ホスト名の内訳（上の集計に入れたもの／外したもの）')
     let excluded = 0
@@ -543,7 +590,7 @@ async function main(): Promise<void> {
       )
     }
 
-    out.ga4 = { hostList, overall, allHosts, channels, clickDomains, landing }
+    out.ga4 = { hostList, overall, allHosts, channels, clickDomains, landing, bySlot }
   }
 
   if (has('write')) {

@@ -132,7 +132,7 @@ function searchText(title: string, originalTitle?: string): string {
                     /* 送り先が決まらなければリンクにしない。文字だけの行に戻る。 */
                     if (!p) return name
                     return (
-                      <a class="work-link" href={p.url} rel={p.rel} target={p.target}>
+                      <a class="work-link" href={p.url} rel={p.rel} target={p.target} data-slot="table">
                         {p.thumb && (
                           <img
                             class="work-thumb"

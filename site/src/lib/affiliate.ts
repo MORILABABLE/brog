@@ -70,7 +70,7 @@ export const EXCLUDED_HOSTS = ['tv.dmm.com', 'dmm.com', 'www.dmm.com']
  *   未設定の枠は既定ID（PUBLIC_AMAZON_TAG）に落ちるので、
  *   1つずつ作って1つずつ足していける。
  */
-export const AMAZON_SLOTS = ['poster', 'table', 'cta', 'rail', 'work', 'bar', 'body'] as const
+export const AMAZON_SLOTS = ['poster', 'table', 'cta', 'rail', 'work', 'bar', 'body', 'prime'] as const
 
 export type AmazonSlot = (typeof AMAZON_SLOTS)[number]
 
@@ -156,6 +156,33 @@ export function amazonVideoSearchUrl(query: string, tag: string): string {
   const u = new URL('https://www.amazon.co.jp/s')
   u.searchParams.set('k', query)
   u.searchParams.set('i', 'instant-video')
+  if (tag) u.searchParams.set('tag', tag)
+  return u.toString()
+}
+
+/**
+ * Amazonプライムのメンバー紹介リンク。**この形でないと500円は出ない。**
+ *
+ * Amazon 公式（アソシエイト・プログラム紹介料率表 別紙）の原文:
+ *
+ * > Amazonプライムメンバー紹介は
+ * > `https://www.amazon.co.jp/amazonprime?tag=AssociateTrackingID` の
+ * > **リンクを経由した場合のみ**紹介料の支払対象となります
+ *
+ * ■ ここが他の Amazon リンクと決定的に違う
+ * 商品の購入は**どのタグ付きリンクでもよい**（クリックから24時間のクッキーが拾う）。
+ * だが**無料体験の500円だけはクッキーで取れない。** 専用リンクを踏ませる必要がある。
+ * つまり「1本のリンクでビデオもプライムも両取り」は**成立しない**。
+ * 導線が2本要る（docs/AFFILIATE.md 3-0 / docs/FUNNEL.md 7-6）。
+ *
+ * ★ **URLを手で組み立てないこと。** パスもクエリ名も上の原文どおりで、
+ *   `/prime` や `/gp/prime` に変えると成果対象から外れる。
+ *
+ * ★ **出してよい面が限られる。** 判定は src/lib/prime-ad.ts。
+ *   見放題が終わった作品のページで「プライム会員になろう」は文脈が繋がらない。
+ */
+export function primeTrialUrl(tag: string): string {
+  const u = new URL('https://www.amazon.co.jp/amazonprime')
   if (tag) u.searchParams.set('tag', tag)
   return u.toString()
 }

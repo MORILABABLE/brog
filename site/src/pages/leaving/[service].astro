@@ -10,6 +10,8 @@ import { formatDate } from '../../utils/date'
 import { serviceImage } from '../../lib/images'
 import { LEAVING_SERVICES, groupByDate, loadLeaving } from '../../lib/events-data'
 import { evergreenTitle, evergreenTitleBase } from '../../lib/evergreen'
+import PrimeCta from '../../components/PrimeCta.astro'
+import { primeAd } from '../../lib/prime-ad'
 
 /**
  * 常設ページ「◯◯で配信終了予定の作品」。
@@ -50,6 +52,14 @@ const lead = serviceImage(service!)
  * **素のタイトルも組み立ても lib/evergreen.ts の1か所。ここで文字列を作らないこと。**
  */
 const title = evergreenTitle(evergreenTitleBase('leaving', label), dataAsOf)
+
+/*
+ * 本文のCTA。**Prime Video の面だけ行き先が変わる。**
+ * このページは「終了予定＝まだ見放題で観られる作品」が並ぶので、
+ * プライム会員の訴求が事実と噛み合う唯一の種類の面になる。
+ * 判断は lib/prime-ad.ts の1か所。ここでは出し分けるだけ。
+ */
+const primeSlot = primeAd({ service, category: 'leaving' })
 const description =
   works.length > 0
     ? `${label}で見放題配信が終了する予定の作品${works.length}本を終了日順にまとめています。最も近い終了日は${formatDate(nearest!.date)}です。`
@@ -123,7 +133,7 @@ const description =
     )
   }
 
-  <AmazonCta category="leaving" />
+  {primeSlot ? <PrimeCta service={service} category="leaving" /> : <AmazonCta category="leaving" />}
 
   <section class="sources">
     <h2>出典</h2>

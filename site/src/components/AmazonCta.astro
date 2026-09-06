@@ -109,7 +109,14 @@ const href = subject
   tag && (
     <aside class="amazon-cta" aria-label="Amazonで探す">
       <p class="lead">{copy.lead}</p>
-      <a class="action" href={href} rel="sponsored noopener" target="_blank" data-affiliate="true">
+      <a
+        class="action"
+        href={href}
+        rel="sponsored noopener"
+        target="_blank"
+        data-affiliate="true"
+        data-slot="cta"
+      >
         {copy.action}
       </a>
       <p class="note">リンク先はAmazonの検索結果です。配信・販売状況はAmazon側でご確認ください。</p>

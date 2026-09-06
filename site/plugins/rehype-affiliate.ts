@@ -101,6 +101,17 @@ function fixAnchor(node: Node, tags: AmazonTags): void {
   // アフィリエイトリンクは、目でも分かるように印を付けておく。
   // CSS から拾えるほか、公開後にHTMLを見て検証するときの手がかりになる。
   if (isAffiliate(tagged)) props['data-affiliate'] = 'true'
+
+  /*
+   * ★ 枠名をHTMLにも出す。**クリック計測が読む**（layouts/BaseLayout.astro）。
+   *   トラッキングIDの分離（tag=）はアソシエイトのレポート側、
+   *   こちらは GA4 側。**同じ枠名を両方で使う**ので、
+   *   `slotOf()` を直したら計測の意味も変わることに注意。
+   *
+   *   外部リンクなら Amazon 以外にも付ける。U-NEXT や Hulu の検索リンクが
+   *   どれだけ踏まれているかは、成果が出ない今こそ知りたい数字なので。
+   */
+  props['data-slot'] = slotOf(node)
 }
 
 function walk(node: Node, tags: AmazonTags): void {

@@ -450,6 +450,13 @@ export const AMAZON_TAGS: AmazonTags = {
   /** 作品ページ（/works/<ID>）の各リンク */
   work: import.meta.env.PUBLIC_AMAZON_TAG_WORK ?? '',
   /**
+   * Amazonプライムのメンバー紹介（無料体験 500円/件）。
+   * ★ **他の枠と成果の種類が違う**（紹介料ではなく固定報酬）。
+   *   混ぜるとレポートで単価が読めなくなるので、必ず別IDにすること。
+   *   出す面の判定は src/lib/prime-ad.ts。
+   */
+  prime: import.meta.env.PUBLIC_AMAZON_TAG_PRIME ?? '',
+  /**
    * 画面下の追従枠（FollowBar.astro）。**1200px 未満でしか出ない。**
    * rail と対になる枠で、**同じページの同じ主題を狭い画面に出したもの。**
    * 分けてあるのは「PCの右枠とスマホの下枠のどちらが効くか」を読むため。

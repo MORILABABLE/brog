@@ -228,7 +228,13 @@ const jsonLd = {
                 状態から「{s.label}で見る」と組むと**Netflix と書いてある広告リンクが
                 Amazon に飛ぶ**。2026-09-06 の実測で 517枚中248枚がその状態だった。
             */}
-            <a class="go" href={decorate(s.url).url} rel={decorate(s.url).rel} target="_blank">
+            <a
+              class="go"
+              href={decorate(s.url).url}
+              rel={decorate(s.url).rel}
+              target="_blank"
+              data-slot="work"
+            >
               {serviceCtaLabel(s, decorate(s.url).url)}
             </a>
           </li>
@@ -360,8 +366,15 @@ const jsonLd = {
     </p>
     <p class="find-links">
       {
+        /*
+          ★ 枠名は `find`。**ここは実測でサイト2番目に踏まれている導線。**
+            90日の外部クリック8件のうち2件（25%）が U-NEXT の検索リンクだった
+            （docs/FUNNEL.md 7-4）。成果にはならないが、
+            **どの作品でU-NEXTへ向かう意図が出ているか**の唯一の信号なので、
+            必ず枠として数えること。
+        */
         findLinks.map((l) => (
-          <a href={l.url} rel={l.rel} target="_blank">
+          <a href={l.url} rel={l.rel} target="_blank" data-slot="find">
             {l.label}で探す
           </a>
         ))
@@ -369,18 +382,25 @@ const jsonLd = {
     </p>
   </section>
 
-  <AmazonCta category={STATE_CATEGORY[w.state]} query={w.title} />
-
   {/*
     U-NEXT（afb）への導線。**「他のサービスで探す」のすぐ後ろに置く。**
     この位置の読者は「この作品をどこで観られるか」を探している最中で、
     サイト内でいちばん意図がはっきりしている（枠は `work`）。
+
+    ★ **2026-09-06 に AmazonCta より前へ移した。**
+      それまで間に AmazonCta が挟まっていて、**この注意書きどおりになっていなかった。**
+      直上の「他のサービスで探す」は実測でサイト2番目に踏まれている導線で
+      （90日の外部クリック8件のうち2件がU-NEXTの検索リンク。docs/FUNNEL.md 7-4）、
+      **成果にならないその意図の、すぐ隣に成果になる導線を置く**のがこの枠の役目。
+      単価も U-NEXT 1,320円 に対して Amazon は数十円（docs/AFFILIATE.md 3-0-1）。
 
     ★ 「U-NEXTで配信中」とは書かない。当サイトは U-NEXT の作品別の
       配信状況を持っていない（上の .find-note と同じ線引き）。
     ★ 掲載NGの作品が本作にも関連作品にも無いときだけ出る。
   */}
   <UnextCta spot="work" pageText={unextPageText} />
+
+  <AmazonCta category={STATE_CATEGORY[w.state]} query={w.title} />
 
   {
     relatedGroups.length > 0 && (
