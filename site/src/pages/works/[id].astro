@@ -14,9 +14,13 @@ import {
   observationStart,
   publishableWorkPages,
   relatedWorks,
+  serviceCtaLabel,
+  stateSentence,
+  workDescription,
+  workHeadline,
   workPage,
 } from '../../lib/works'
-import type { WorkPage, WorkServiceState } from '../../lib/works'
+import type { WorkPage } from '../../lib/works'
 import { personHref } from '../../lib/people'
 import { formatDate, isoDate } from '../../utils/date'
 
@@ -56,48 +60,19 @@ const w = work ?? workPage(Astro.params.id!)!
 
 // --- 言い回し ------------------------------------------------------------------
 
-/**
- * 状態ごとの一行。**ここが「言ってよいこと」の実体。**
- * lib/works.ts の `WorkState` の表と1対1で対応させること。
+/*
+ * **文言は lib/works.ts に移した（2026-09-06）。**
+ *
+ * 以前はここに `sentence()` と h1 を持ち、「WorkState の表と1対1で対応させること」と
+ * 注意書きで縛っていた。状態は毎日の収集で勝手に動く（leaving → passed → ended）ので、
+ * **人が対応を保つ形にしておくと、動いた日に静かにずれる。**
+ * `WorkState` と同じファイルに置けば、状態を足したときに型エラーで気づく。
+ *
+ * 見出しをどう組むか・なぜ問いを先に置くかは `workHeadline()` の注意書き。
  */
-function sentence(s: WorkServiceState): string {
-  const d = formatDate(s.at)
-  switch (s.state) {
-    case 'leaving':
-      return `${d}に見放題配信が終了する予定です`
-    // ★ `passed` を `ended` に丸めない。予定日を過ぎたことは観測しているが、
-    //   実際に終わったことは観測していない（延長されることがある）。
-    case 'passed':
-      return `見放題の終了予定日は${d}でした（この日を過ぎています）`
-    case 'ended':
-      return `${d}に見放題配信が終了しました`
-    // ★ 「配信中」と言い換えない。始まったことは観測した事実、
-    //   いま観られることは観測していない推測。
-    case 'started':
-      return `${d}に見放題配信が始まりました`
-  }
-}
-
 const head = w.services[0]!
-const yearPart = w.year ? `（${w.year}年）` : ''
-
-/*
- * h1。**作品名だけにしない。**
- * 作品名だけの見出しは公式・Wikipedia・レビューサイトと同じ的を撃つことになる。
- * 読者が打った質問をそのまま見出しにするほうが、競合の薄い語に当たる。
- */
-const title =
-  w.state === 'ended'
-    ? `「${w.title}」の見放題配信は終了しました`
-    : `「${w.title}」${yearPart}はいつまで見られる？`
-
-/*
- * meta description。全角120字に収める（config.ts の SITE.description と同じ基準）。
- * ここも状態と日付から組む。
- */
-const description = `「${w.title}」は${head.label}で${sentence(head)}。${
-  w.services.length > 1 ? `${w.services.length}サービスの` : ''
-}配信状況の確認先と、レンタル・購入で観る方法をまとめています。`
+const title = workHeadline(w)
+const description = workDescription(w)
 
 // パンくずの親。作品ページは公開日を持たないので、状態で親を決める。
 const hub = hubFor(w.state === 'started' ? 'arrivals' : 'leaving')
@@ -245,10 +220,16 @@ const jsonLd = {
             </span>
             <span class="line">
               <strong>{s.label}</strong>で
-              <time datetime={isoDate(s.at)}>{sentence(s)}</time>
+              <time datetime={isoDate(s.at)}>{stateSentence(s)}</time>
             </span>
+            {/*
+              ★ 文言は**リンク先**から決める（works.ts の serviceCtaLabel）。
+                見放題が終わった作品は Amazon の検索に落ちるので、
+                状態から「{s.label}で見る」と組むと**Netflix と書いてある広告リンクが
+                Amazon に飛ぶ**。2026-09-06 の実測で 517枚中248枚がその状態だった。
+            */}
             <a class="go" href={decorate(s.url).url} rel={decorate(s.url).rel} target="_blank">
-              {s.label}で見る
+              {serviceCtaLabel(s, decorate(s.url).url)}
             </a>
           </li>
         ))

@@ -11,6 +11,7 @@
     "collect:unext": "tsx pipeline/cli/collect-unext.ts",
     "collect:announce": "tsx pipeline/cli/collect-announce.ts",
     "queries": "tsx pipeline/cli/queries.ts",
+    "analytics": "tsx pipeline/cli/analytics.ts",
     "afb": "tsx pipeline/cli/afb.ts",
     "notify": "tsx pipeline/cli/notify.ts",
     "enrich": "tsx pipeline/cli/enrich.ts",

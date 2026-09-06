@@ -154,6 +154,151 @@ export const STATE_CATEGORY: Record<WorkState, CategorySlug> = {
 /** 読者にとって行動が要る順。一覧の並びはこれに従う。 */
 export const STATE_ORDER_KEYS: readonly WorkState[] = ['leaving', 'passed', 'ended', 'started']
 
+// --- 言い回し（作品ページの本文・見出し・meta） ---------------------------------
+
+/*
+ * ■ ここに文言を集めている理由
+ * 作品ページの文言は**状態から機械的に決まる**。手で書いた説明文を置くと、
+ * 状態が変わったビルドでそこだけ古くなる（events-data.ts 冒頭と同じ方針）。
+ *
+ * ★ **`WorkState` の隣に置くこと。** 以前は見出しだけ pages/works/[id].astro に
+ *   あり、「WorkState の表と1対1で対応させること」と注意書きで縛っていた。
+ *   状態は毎日の収集で勝手に動く（leaving → passed → ended）ので、
+ *   **人が対応を保つ形にしておくと、動いた日に静かにずれる。**
+ *   同じファイルに置けば、状態を足したときに型エラーで気づく。
+ */
+
+/**
+ * 状態ごとの一行。**ここが「言ってよいこと」の実体。**
+ * `WorkState` の表と同じ順・同じ粒度で並べる。
+ */
+export function stateSentence(s: WorkServiceState): string {
+  const d = formatDate(s.at)
+  switch (s.state) {
+    case 'leaving':
+      return `${d}に見放題配信が終了する予定です`
+    // ★ `passed` を `ended` に丸めない。予定日を過ぎたことは観測しているが、
+    //   実際に終わったことは観測していない（延長されることがある）。
+    case 'passed':
+      return `見放題の終了予定日は${d}でした（この日を過ぎています）`
+    case 'ended':
+      return `${d}に見放題配信が終了しました`
+    // ★ 「配信中」と言い換えない。始まったことは観測した事実、
+    //   いま観られることは観測していない推測。
+    case 'started':
+      return `${d}に見放題配信が始まりました`
+  }
+}
+
+/**
+ * 見出し（h1 と `<title>` の両方）。**作品名だけにしない。**
+ *
+ * ■ 型
+ *
+ *     「{作品名}」は{読者の問い}？{サービス}{観測した事実}
+ *
+ * ■ なぜ問いを先に置くのか（2026-09-06 変更）
+ * 変更前は `ended` を「「◯◯」の見放題配信は終了しました」にしていた。
+ * **事実としては正しいが、読者が打った問いへの答えになっていない。**
+ * 実測（docs/FUNNEL.md 3-2）で、同じ掲載順位帯（4〜10位）に居ながら
+ *
+ *     記事 `/posts/*`      CTR 9.9%
+ *     作品ページ `/works/*` CTR 2.9%   ← 461枚が「終了しました」で終わっていた
+ *
+ * と 1/3.4 の差が出た。**順位では説明できない差**なので、見出しの側を変える。
+ *
+ * 読者が実際に打っている語は「スリザー 配信」「◯◯ どこで見れる」
+ * 「◯◯ アマプラ いつまで」「◯◯ netflix 配信終了」の4つの形（同 2-1）。
+ * **問い（どこで／いつまで）と事実（サービス名・日付・終了）を1本に入れる**と
+ * その4つ全部に当たる。
+ *
+ * ■ 絶対に守ること
+ * **「配信中」と書かない**（このファイル冒頭）。問いの形で書くのは、
+ * 在庫を主張しないまま読者の言葉を使うための形でもある。
+ * 答えの側は `stateSentence()` と同じ観測事実しか名乗らない。
+ *
+ * ★ **状態が動けば見出しも動く。** leaving →（予定日を過ぎる）→ passed →
+ *   （終了を観測）→ ended と毎日の収集で勝手に変わるので、
+ *   **どの状態でも「読者の問い＋観測した事実」の形が崩れないようにしてある。**
+ *   変更前は `passed` が「いつまで見られる？」のまま日付だけ過去になり、
+ *   30枚が「答えが古い見出し」になっていた（docs/FUNNEL.md 3節）。
+ */
+export function workHeadline(w: WorkPage): string {
+  const head = w.services[0]!
+  const d = headlineDate(head.at)
+  switch (head.state) {
+    // まだ観られる。**締切を出すのがいちばん強い。**
+    case 'leaving':
+      return `「${w.title}」はいつまで見られる？${head.label}は${d}に見放題終了`
+    // 予定日は過ぎたが、終了は観測していない。**断定しない問いにする。**
+    case 'passed':
+      return `「${w.title}」はまだ見られる？${head.label}の見放題終了予定日は${d}`
+    // もう見放題では観られない。**読者の問いは「じゃあどこで」に移っている。**
+    case 'ended':
+      return `「${w.title}」はどこで見れる？${head.label}の見放題は${d}に終了`
+    // 開始を観測しただけ。「配信中」とは言えないので、観測した事実だけを置く。
+    case 'started':
+      return `「${w.title}」はどこで見れる？${head.label}が${d}に見放題配信を開始`
+  }
+}
+
+/**
+ * meta description。全角120字前後に収める（config.ts の SITE.description と同じ基準）。
+ * 見出しと同じく、状態と日付から組む。
+ */
+export function workDescription(w: WorkPage): string {
+  const head = w.services[0]!
+  const rest = w.services.length > 1 ? `他${w.services.length - 1}サービスの状況と、` : ''
+  return `「${w.title}」は${head.label}で${stateSentence(head)}。${rest}他のサービスでの探し方と、レンタル・購入で観る方法をまとめています。`
+}
+
+/**
+ * 配信状況の行に置くボタンの文言。**リンク先に合わせる。**
+ *
+ * ★ **状態から決めてはいけない。** 送り先は `work-links.ts` の `resolveUrl()` が
+ *   決めていて、**見放題が終わった作品は Amazon の検索に落ちる**
+ *   （作品ページは生きているが、もう見放題ではないため）。
+ *   状態から文言を作ると「Netflixで見る」と書いてある広告リンクが
+ *   Amazon に飛ぶ。2026-09-06 の実測で **517枚中248枚**がその状態だった。
+ *
+ * ★ 引数に URL を取るのはそのため。**呼び出し側が実際に張る URL を渡すこと。**
+ */
+export function serviceCtaLabel(s: WorkServiceState, url: string): string {
+  const toAmazon = /(^|\.)amazon\.co\.jp$/.test(hostOf(url) ?? '')
+  if (!toAmazon) return `${s.label}で見る`
+  // 見放題が終わっているなら、Amazon で探せるのはレンタル・購入。
+  return s.state === 'ended' || s.state === 'passed'
+    ? 'Prime Videoでレンタル・購入を探す'
+    : 'Prime Videoで探す'
+}
+
+/**
+ * 見出しに入れる日付。**今年なら年を落として「9月29日」にする。**
+ *
+ * ★ 記事タイトルの表記（`【9月12日更新】`）に合わせてある。
+ *   見出しは `「{長い作品名}」は{問い}？{サービス}は{日付}に…` と長くなりがちで、
+ *   **スマホの検索結果は全角30文字前後で切れる**。年の4文字＋「年」で5文字を
+ *   前に食われると、作品名の長い作品では問いの部分ごと切れる。
+ *
+ * ★ **年をまたいだ日付では年を残す。** 収集が1年を越えると
+ *   「1月5日」が今年なのか去年なのか読者に判別できなくなる。
+ *   本文（`stateSentence()`）は年を落とさない — あちらは切れないので、
+ *   正確さを優先する。
+ */
+function headlineDate(at: Date): string {
+  const full = formatDate(at)
+  const thisYear = formatDate(new Date()).split('年')[0]
+  return full.startsWith(`${thisYear}年`) ? full.slice(`${thisYear}年`.length) : full
+}
+
+function hostOf(url: string): string | null {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return null
+  }
+}
+
 export interface WorkServiceState {
   service: string
   label: string

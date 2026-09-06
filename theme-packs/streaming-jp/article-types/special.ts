@@ -125,6 +125,12 @@ interface KindTraits {
   future?: boolean
   /** 1記事に載せる上限（既定は MAX_ITEMS） */
   maxItems?: number
+  /**
+   * 主題の直後に置く問い。**`removed`（もう観られない）だけが持つ**（2026-09-06 追加）。
+   * 理由と実測は shared.ts の `TitleRule.questionClause`。
+   * シリーズ記事の `ended` と同じ扱い（article-types/series.ts の STANCES）。
+   */
+  questionClause?: string
 }
 
 const KINDS: Record<string, KindTraits> = {
@@ -169,6 +175,11 @@ const KINDS: Record<string, KindTraits> = {
     // まだ終わっていないものだけ。過ぎた作品を「これから終わる」と書かせない
     future: true,
   },
+  /*
+   * ★ **4つのうちこれだけタイトルに問いが入る**（`questionClause`）。
+   *   他の3つは「これから始まる／まだ観られる」記事なので動詞句だけで答えになる。
+   *   もう観られない作品を扱う記事だけが、動詞句だけだと行き止まりになる。
+   */
   removed: {
     kind: 'removed',
     category: 'ended',
@@ -178,6 +189,7 @@ const KINDS: Record<string, KindTraits> = {
     closerKey: 'ended-lead-closer',
     // もう終わったものだけ。データが先行することがあるので念のため絞る
     future: false,
+    questionClause: 'はどこで見れる？',
   },
 }
 
@@ -426,7 +438,15 @@ ${
 
 タイトルは **【${periodLabelOf(ctx)}】で始め**、主題（${resolved.topic}）を必ず入れてください。
 ${
-  traits.verbPhrase
+  traits.questionClause
+    ? `そのうえで「${traits.verbPhrase}」も必ず入れてください。
+**主題の直後には「${traits.questionClause}」を置いてください。**
+この記事の作品はもう見放題では観られません。「終了」とだけ名乗ると、
+読者が知りたいこと（**では、いまどこで観られるのか**）がタイトルから消えます。
+問いを先に置き、事実（終了）はそのあとに続けてください。
+
+  例: 【${periodLabelOf(ctx)}】${resolved.topic}${traits.questionClause}${traits.verbPhrase}した作品｜（見どころ）`
+    : traits.verbPhrase
     ? `そのうえで「${traits.verbPhrase}」も必ず入れてください。`
     : `先頭の【】が「配信開始」まで名乗るので、**動詞句を重ねて書かないでください**。
 かわりに **「見放題」の3文字を必ず入れてください**（購入・レンタルと区別するため）。
@@ -552,6 +572,7 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       isUpdate: previousAsOf(this.slug(ctx)) !== undefined,
       // 1作品だけの特報がありうるので本数は求めない
       requiresCount: false,
+      questionClause: traits.questionClause,
     })
 
     // ★ 先頭の【】から動詞句の検査を外したぶん、**見放題であることは必ず名乗らせる。**

@@ -8,7 +8,7 @@ import LeadImage from '../../components/LeadImage.astro'
 import { ATTRIBUTION, CATEGORIES, EVERGREEN_BADGE, SITE } from '../../config'
 import { formatDate } from '../../utils/date'
 import { serviceImage } from '../../lib/images'
-import { evergreenTitle } from '../../lib/evergreen'
+import { evergreenTitle, evergreenTitleBase } from '../../lib/evergreen'
 import {
   ARRIVALS_SERVICES,
   ARRIVALS_WINDOW_DAYS,
@@ -47,12 +47,13 @@ const groups = groupByDate(works)
 const lead = serviceImage(service!)
 
 /*
- * タイトルの頭に基準日を出す（`【2026年8月25日時点】…`）。
+ * タイトルの末尾に基準日を出す（`…作品一覧【9月1日更新】`）。
+ * 頭ではなく後ろに置く理由は lib/evergreen.ts の `evergreenTitle`。
  * 常設ページは公開日を持たず中身だけが入れ替わるので、
  * **いつ時点の一覧なのかをタイトルで先に伝える**（2026-08-25）。
  * 組み立ては lib/evergreen.ts の1か所に寄せてある。ここで文字列を作らないこと。
  */
-const title = evergreenTitle(`${label}で見放題になった作品一覧`, dataAsOf)
+const title = evergreenTitle(evergreenTitleBase('arrivals', label), dataAsOf)
 const description =
   works.length > 0
     ? `${label}で直近${ARRIVALS_WINDOW_DAYS}日間に見放題配信が始まった作品${works.length}本を、配信開始日の古い順にまとめています。`

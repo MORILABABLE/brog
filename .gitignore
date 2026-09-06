@@ -23,3 +23,7 @@ Thumbs.db
 # afb の成果データ（npm run afb）。**このリポジトリは公開**なので、
 # 報酬額・成果ID・リンク元ページを入れない。手元の台帳としてだけ持つ。
 data/afb-conversions.json
+
+# 流入・収益の実測（npm run analytics -- --write）。**このリポジトリは公開**なので、
+# 訪問数や成果の実数を入れない。手元の判断材料としてだけ持つ。
+data/analytics.json

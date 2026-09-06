@@ -12,6 +12,7 @@
 |---|---|
 | U-NEXT データの法務整理 | [UNEXT.md 4節・7-C](./UNEXT.md) / [SOURCES-UNEXT-HULU.md](./SOURCES-UNEXT-HULU.md) |
 | 記事の軸とタイトルの決まり | [ARTICLE-RULES.md](./ARTICLE-RULES.md) |
+| **★ 実測でどこが詰まっているか（GA4・Search Console）** | **[FUNNEL.md](./FUNNEL.md)** |
 | **どの検索語を狙うか（サジェスト実測・新しい記事ジャンル）** | **[KEYWORDS.md](./KEYWORDS.md)** |
 | アフィリエイトの掲載ルール | [AFFILIATE.md](./AFFILIATE.md) |
 | **積み上がる形にする（フロー／ストック／複利）** | **[STOCK.md](./STOCK.md)** |

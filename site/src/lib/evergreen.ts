@@ -19,7 +19,7 @@ export interface EvergreenPage {
    * 日付を含まない素のタイトル。
    *
    * ★ **これをそのまま画面に出さないこと。** 必ず `evergreenTitle()` を通す。
-   *   常設ページは中身が入れ替わり続けるので、いつ時点の情報かを
+   *   常設ページは中身が入れ替わり続けるので、いつ更新した情報かを
    *   タイトルに必ず添える方針にしてある（2026-08-25）。
    *   `title` ではなく `titleBase` という名前にしてあるのは、
    *   素で出す実装を書いたときに気づけるようにするため。
@@ -50,10 +50,28 @@ function shortOf(label: string): string {
   return SHORT_LABELS[label] ?? label
 }
 
+/**
+ * 常設ページの素のタイトル。**ここが唯一の定義。**
+ *
+ * ★ 以前は `EVERGREEN_PAGES` と `pages/leaving/[service].astro` の**両方**に
+ *   同じ文字列が書いてあった。ページ側を直して一覧側を直し忘れると、
+ *   **同じページがカードと見出しで別の名前を名乗る。** 関数にして口を1つにした。
+ *
+ * ★ **「見放題」を落とさないこと。** レンタル・購入と区別する言葉がここにしかない
+ *   （記事タイトルの決まりと同じ理由。templates/naming.md）。
+ */
+export function evergreenTitleBase(category: CategorySlug, label: string): string {
+  return category === 'leaving'
+    ? `${label}で見放題配信が終了する作品一覧`
+    : // ★ 「最近」は入れない。いつ時点かは evergreenTitle() が後ろに付ける。
+      //   「最近」と書いたまま日付を添えると、日付が古いときに矛盾して見える。
+      `${label}で見放題になった作品一覧`
+}
+
 export const EVERGREEN_PAGES: EvergreenPage[] = [
   ...LEAVING_SERVICES.map((s) => ({
     href: `/leaving/${s.key}`,
-    titleBase: `${s.label}で配信終了予定の作品一覧`,
+    titleBase: evergreenTitleBase('leaving', s.label),
     category: 'leaving' as CategorySlug,
     thumbKey: s.key,
     label: s.label,
@@ -61,9 +79,7 @@ export const EVERGREEN_PAGES: EvergreenPage[] = [
   })),
   ...ARRIVALS_SERVICES.map((s) => ({
     href: `/arrivals/${s.key}`,
-    // ★ 「最近」は入れない。いつ時点かは evergreenTitle() が頭に付ける。
-    //   「最近」と書いたまま日付を添えると、日付が古いときに矛盾して見える。
-    titleBase: `${s.label}で見放題になった作品一覧`,
+    titleBase: evergreenTitleBase('arrivals', s.label),
     category: 'arrivals' as CategorySlug,
     thumbKey: s.key,
     label: s.label,
@@ -88,24 +104,52 @@ export function evergreenForService(service: string): EvergreenPage[] {
 //
 // 常設ページは公開日を持たない。`collect` のたびに中身だけが入れ替わるので、
 // 読者から見ると「いつの情報か分からないページ」になりやすい。
-// そこで**基準日を必ず前に出す**。組み立てはこの2つの関数だけが行う
+// そこで**基準日を必ず添える**。組み立てはこの2つの関数だけが行う
 // （ページ・カード・左の枠でずれると、同じページが別の日付を名乗ることになる）。
 
 /**
- * 常設ページのタイトル。`【2026年8月25日時点】Netflixで配信終了予定の作品一覧`
+ * 常設ページのタイトル。`Netflixで見放題配信が終了する作品一覧【9月1日更新】`
  *
  * `<title>` と `<h1>`、一覧カードの見出しはすべてこれを使う。
  * 基準日が取れないときだけ、日付なしのタイトルに落ちる。
+ *
+ * ■ 2026-09-06 に、日付を**頭から後ろへ移した**（docs/FUNNEL.md 4-1）
+ * 変更前は `【2026年9月1日時点】Netflixで配信終了予定の作品一覧`。
+ * 実測でこうなっていた:
+ *
+ *     /leaving/netflix   表示115件（サイト最多）・クリック2件・**CTR 1.7%**・8.1位
+ *
+ * 8.1位でこのCTRは順位相応（3〜5%）を大きく下回る。原因は先頭の12文字。
+ *
+ *   1. **スマホの検索結果は全角30文字前後で切れる。** 頭に日付を置くと、
+ *      読者が最初に読むのが「2026年9月1日時点」になり、
+ *      **サービス名も「終了」も後ろへ押し出される**
+ *   2. 9月中旬に見た読者にとって「9月1日時点」は**古い情報に見える。**
+ *      鮮度を出すつもりの表示が、逆に働いていた
+ *
+ * ★ **「時点」ではなく「更新」。** 同じ日付でも、
+ *   「時点」は情報の古さを、「更新」は手入れの新しさを名乗る。
+ *   左の枠（`evergreenStamp`）が最初から「更新」だったので、そちらに揃えた。
+ *
+ * ★ **年を落とす。** 常設ページの基準日は必ず直近の収集日で、
+ *   年をまたいだ日付にはならない（またぐ前に収集が走る）。
+ *   作品ページの見出し（lib/works.ts の `headlineDate`）は
+ *   過去の日付を名乗ることがあるので、あちらは年を残している。
  */
 export function evergreenTitle(titleBase: string, dataAsOf: Date | null): string {
-  return dataAsOf ? `【${formatDate(dataAsOf)}時点】${titleBase}` : titleBase
+  if (!dataAsOf) return titleBase
+  const md = formatDate(dataAsOf).replace(/^\d+年/, '')
+  return `${titleBase}【${md}更新】`
 }
 
 /**
  * 常設枠（左の枠）に出す名前の頭。`【2026年8月25日更新】`
  *
- * タイトル側が「時点」なのに対してこちらが「更新」なのは、
- * 枠の役割が「この一覧はいつ更新されたか」を示すことだから。
+ * ★ タイトル側（`evergreenTitle`）と**言葉は「更新」で揃えてある**
+ *   （2026-09-06 に、タイトル側の「時点」を「更新」へ寄せた）。
+ *   違うのは位置と年の有無だけ — こちらは枠の**頭**に出し、年も残す。
+ *   枠は検索結果に出ないので文字数の制約が無く、正確さを優先できる。
+ *
  * 基準日が取れないときは空文字を返す（何も出さない）。
  */
 export function evergreenStamp(dataAsOf: Date | null): string {

@@ -212,6 +212,18 @@ interface StanceTraits {
   /** templates/naming.md の表と1文字も違えないこと */
   verbPhrase: string
   leadKey: string
+  /**
+   * 主題の直後に置く問い。**`ended` だけが持つ**（2026-09-06 追加）。
+   *
+   * 全作が終わっている記事は、「終わった」だけを名乗ると
+   * **読者が次に取れる行動がタイトルから消える。**
+   * 他の3つの状態は、まだ観られる作品があるので問いを足す必要がない
+   * （「いつまで」は動詞句の「終了予定の」が既に答えている）。
+   *
+   * 実測の根拠と、なぜサービス軸の月次記事には置かないのかは
+   * `shared.ts` の `TitleRule.questionClause` と docs/FUNNEL.md 7-3。
+   */
+  questionClause?: string
 }
 
 /**
@@ -253,10 +265,16 @@ const STANCES: Record<Stance, StanceTraits> = {
     verbPhrase: '見放題配信中の',
     leadKey: 'series-streaming-lead-first-sentence',
   },
+  /*
+   * ★ **この状態だけタイトルに問いが入る**（`questionClause`）。
+   *   他の3つは「まだ観られる作品がある」記事なので、動詞句だけで答えになっている。
+   *   全作が終わっている記事だけが、動詞句だけだと行き止まりのタイトルになる。
+   */
   ended: {
     category: 'ended',
     verbPhrase: '見放題配信が終了した',
     leadKey: 'series-ended-lead-first-sentence',
+    questionClause: 'はどこで見れる？',
   },
 }
 
@@ -733,8 +751,17 @@ ${
 **タイトルに「2026年9月」のような年月を書かないでください。**
 この記事は特定の月のものではなく、配信状況が変わるたびに同じURLを書き直します。
 主題（${resolved.topic}）と「${traits.verbPhrase}」を必ず入れてください。
+${
+  traits.questionClause
+    ? `**主題の直後に「${traits.questionClause}」を置いてください。**
+この記事の作品はすべて見放題配信が終わっています。「終わった」とだけ名乗ると、
+読者が知りたいこと（**では、いまどこで観られるのか**）がタイトルから消えます。
+問いを先に置き、事実（終了）はそのあとに続けてください。
 
-  例: 【保存版】${resolved.topic}の${traits.verbPhrase}作品${workCount(items)}本｜（見どころ）
+  例: 【保存版】${resolved.topic}${traits.questionClause}${traits.verbPhrase}作品${workCount(items)}本｜（見どころ）`
+    : `
+  例: 【保存版】${resolved.topic}の${traits.verbPhrase}作品${workCount(items)}本｜（見どころ）`
+}
 ${
   workCount(items) !== items.length
     ? `
@@ -982,6 +1009,30 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
           `タイトルに「${verbs.join('」か「')}」がありません。記事タイプごとに固定の言い方です` +
           '（「見放題終了する」「配信終了する」などに言い換えないこと）。',
       })
+    }
+
+    /*
+     * ★ 問いの句は**動詞句から状態を割り出して**求める。
+     *   この検査は素材を受け取らないので `stanceOf()` を呼べない。
+     *   だが「見放題配信が終了した」を名乗っている時点で、その記事は
+     *   `ended`（全作が終わっている）を名乗っているのと同じことなので、
+     *   タイトルの文字列だけで判定できる。
+     *
+     * ★ 動詞句どうしが部分文字列にならないことが前提。
+     *   「見放題配信が終了予定の」は「見放題配信が終了した」を含まない。
+     *   **状態を足すときはここを確かめること。**
+     */
+    for (const traits of Object.values(STANCES)) {
+      if (!traits.questionClause) continue
+      if (title.includes(traits.verbPhrase) && !title.includes(traits.questionClause)) {
+        issues.push({
+          level: 'error',
+          message:
+            `タイトルに「${traits.questionClause}」がありません。全作が終わっている記事は、` +
+            '「終わった」だけを名乗ると読者の問い（では、いまどこで観られるのか）への' +
+            '答えになりません。主題の直後に置いてください（templates/naming.md）。',
+        })
+      }
     }
 
     /*
