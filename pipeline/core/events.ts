@@ -119,16 +119,28 @@ const KANA = /[ぁ-んァ-ヶ]/
  * **同じ規則がサイト側にもある**（`site/src/lib/events-data.ts` の readAll）。
  * 片方だけ変えると、記事とサイトで題名が食い違う。
  */
-function withJapaneseTitle(e: ChangeEvent): ChangeEvent {
-  if (!e.work.localizedTitle && e.work.originalTitle && KANA.test(e.work.originalTitle)) {
+/**
+ * 作品1件ぶんの邦題補完。**イベント経由でない作品にも同じ規則を当てるため**に切り出した
+ * （在庫台帳から素材を作る `article-types/series.ts` の `stockEvents`。2026-09-07）。
+ *
+ * ★ **この規則を写して2か所に持たないこと。** 片方だけ直すと、
+ *   同じ作品が経路によって別の題で記事に出る。
+ */
+export function withJapaneseWorkTitle<T extends ChangeEvent['work']>(work: T): T {
+  if (!work.localizedTitle && work.originalTitle && KANA.test(work.originalTitle)) {
     // ★ 連続した半角スペースは1つに詰める。
     //   実測で「機動戦士ガンダム␣␣閃光のハサウェイ」のように2つ入って返る。
     //   取りこぼしの判定（`core/coverage.ts` の mentionsByTitle と `verify.ts`）は
     //   本文に題名がそのまま出ているかを見るので、書き手が普通に1つで書いた時点で
     //   **載っているのに「載っていない」と判定される。**
     //   全角スペースは題名の一部として使われることがあるので触らない。
-    e.work.localizedTitle = e.work.originalTitle.replace(/ {2,}/g, ' ').trim()
+    work.localizedTitle = work.originalTitle.replace(/ {2,}/g, ' ').trim()
   }
+  return work
+}
+
+function withJapaneseTitle(e: ChangeEvent): ChangeEvent {
+  withJapaneseWorkTitle(e.work)
   return e
 }
 

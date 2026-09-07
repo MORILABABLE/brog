@@ -32,6 +32,7 @@ import {
   type UnextTitleRecord,
 } from '../sources/unext-store.ts'
 import { daysUntil, formatFullDate } from '../core/datetime.ts'
+import { appendHistory, type StockChange } from '../core/history.ts'
 
 /** 最後の確認からこれだけたっていたら取り直す */
 const DEFAULT_STALE_DAYS = 14
@@ -120,6 +121,13 @@ async function main(): Promise<void> {
   const source = new UnextSource(cfg, browser)
 
   const changes: { title: string; from?: string; to?: string; note: string }[] = []
+  /*
+   * ★ **画面に出すだけでなく、履歴に積む**（2026-09-07 追加）。
+   *   終了日が動いたことは**毎週ここでしか観測できない**のに、
+   *   それまでは表示して捨てていた。積まないと二度と取り返せない
+   *   （`core/history.ts` 冒頭）。
+   */
+  const history: StockChange[] = []
 
   let failed = 0
 
@@ -169,11 +177,26 @@ async function main(): Promise<void> {
           to: detail.publicEndDate,
           note: !before ? '新たに判明' : !detail.publicEndDate ? '終了日が消えた' : '変更',
         })
+        history.push({
+          observedAt: new Date().toISOString(),
+          service: 'u-next',
+          workId: rec.id,
+          title: rec.title,
+          field: 'endDate',
+          from: before,
+          to: detail.publicEndDate,
+          // ★ 歩いた範囲。ここは**台帳にある作品の作品ページを1件ずつ**開いている。
+          //   一覧を歩いたのではないので、「載っていない＝消えた」は言えない。
+          via: 'unext:refresh (作品ページ)',
+        })
       }
     }
   } finally {
     await browser.close()
-    if (!dryRun) await saveStore(store)
+    if (!dryRun) {
+      await saveStore(store)
+      await appendHistory(history, theme.utc_offset_minutes)
+    }
   }
 
   if (changes.length) {

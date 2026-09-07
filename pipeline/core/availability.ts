@@ -32,6 +32,7 @@
 import { readFileSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import type { Work } from '../sources/types.ts'
 
 export const AVAILABILITY_PATH = join('data', 'availability.json')
 
@@ -61,6 +62,29 @@ export interface WorkAvailability {
   fetchedAt: string
   /** サービスごとの取扱。**空配列は「日本ではどこにも無い」と確認済み** */
   services: ServiceAvailability[]
+  /**
+   * 在庫検索が返した作品そのもの。**`npm run availability -- --adopt` のときだけ入る。**
+   *
+   * ■ なぜ台帳が作品を持つのか（2026-09-07 追加）
+   * それまで台帳は「素材に載っている作品の注釈」でしかなく、
+   * **素材そのものは `/changes`（変化ログ）だけから作られていた。**
+   * 変化ログは収集を始めた日以降しか無いので、
+   * **それ以前から在庫にある作品は、何年経っても記事に出ない。**
+   *
+   *   実測（2026-09-07・「仮面ライダー」）
+   *     変化ログ由来の素材            11本（すべて8月31日に new が立った分）
+   *     在庫で Prime Video の見放題    14本
+   *     → シン・仮面ライダー / 仮面ライダーBLACK SUN / 風都探偵 などが欠けていた
+   *
+   * 在庫（`streamingOptions.jp[].type === 'subscription'`）は
+   * **その時点で見放題であることの直接の根拠**なので（このファイル冒頭）、
+   * これを素材にしてよい。根拠が違うことは `work` の有無で1件ずつ分かる。
+   *
+   * ★ **`at`（配信開始日）は持てない。** 在庫は「いまある」としか言わない。
+   *   記事側はこの作品を「見放題配信中」として扱い、**日付を書かない**
+   *   （`theme-packs/streaming-jp/article-types/series.ts` の `stockEvents`）。
+   */
+  work?: Work
 }
 
 export interface AvailabilityLedger {

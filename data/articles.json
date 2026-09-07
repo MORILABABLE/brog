@@ -49,6 +49,18 @@
       "writtenAt": "2026-09-06"
     },
     {
+      "slug": "kamen-rider",
+      "typeId": "series",
+      "targetMonth": "2026-09",
+      "flags": {
+        "topic": "「仮面ライダー」シリーズ",
+        "slug": "kamen-rider",
+        "match": "仮面ライダー|風都探偵"
+      },
+      "category": "arrivals",
+      "writtenAt": "2026-09-07"
+    },
+    {
       "slug": "mission-impossible",
       "typeId": "series",
       "targetMonth": "2026-09",
@@ -97,5 +109,5 @@
       "writtenAt": "2026-09-06"
     }
   ],
-  "updatedAt": "2026-09-06T14:17:42.128Z"
+  "updatedAt": "2026-09-07T07:09:42.334Z"
 }

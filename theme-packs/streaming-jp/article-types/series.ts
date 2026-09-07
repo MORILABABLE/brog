@@ -126,6 +126,7 @@ const MONTH_IN_TITLE = /\d{4}年\d{1,2}月|\d{1,2}月\d{1,2}日(?!更新)/
 
 const REQUIRED_PHRASES = [
   'series-lead-first-sentence',
+  'series-lead-partial-first-sentence',
   'series-update-lead-first-sentence',
   'series-returned-lead-first-sentence',
   'series-streaming-lead-first-sentence',
@@ -134,6 +135,7 @@ const REQUIRED_PHRASES = [
   'series-lead-elsewhere',
   'series-lead-updating',
   'other-services-intro',
+  'series-coverage-note',
   'attribution',
   'attribution-unext',
 ] as const
@@ -404,6 +406,71 @@ function eventKeyOf(e: ChangeEvent): string {
 }
 
 /**
+ * **在庫台帳から作った素材の印**（2026-09-07 追加）。`revivedKeys` と同じ仕掛け。
+ *
+ * この素材は `at`（配信開始日）を持たない。在庫は「いまある」としか言わないので、
+ * **開始日を書けば、それは書き手が作った日付**になる。
+ * プロンプト側はこの印を見て日付の行そのものを出さない。
+ */
+let stockKeys = new Set<string>()
+
+/**
+ * 在庫台帳（`data/availability.json`）から素材を作る。
+ *
+ * ■ なぜ要るのか
+ * 素材はもともと `/changes`（変化ログ）だけから作られていた。
+ * 変化ログは**収集を始めた日以降しか無い**ので、それ以前から在庫にある作品は
+ * 何年経っても記事に出てこない。
+ *
+ *   実測（2026-09-07・「仮面ライダー」）
+ *     変化ログ由来            11本（すべて8月31日に new が立った分）
+ *     在庫の Prime Video 見放題 14本
+ *     → シン・仮面ライダー / 仮面ライダーBLACK SUN / 風都探偵 が欠けていた
+ *
+ * 在庫の `subscription` は**その時点で見放題であることの直接の根拠**なので
+ * （`core/availability.ts` 冒頭）、これを素材にしてよい。
+ *
+ * ★ **拾うのは `work` を持つ行だけ。** それは `npm run availability -- --adopt`
+ *   が入れたもので、**素材にしてよいと人が決めた作品**という印になっている。
+ *   注釈のために取っただけの行（`work` 無し）は、ここでは素材にしない。
+ * ★ **変化ログにある作品は変化ログを優先する。** あちらは終了日を持ちうる。
+ *   在庫で上書きすると「いつまで」に答えられなくなる。
+ * ★ **古い在庫は使わない**（`isFresh`）。0件と未取得を混同しない。
+ */
+function stockEvents(
+  taken: Set<string>,
+  match: RegExp,
+  service: string | undefined,
+  now: Date,
+): ChangeEvent[] {
+  const out: ChangeEvent[] = []
+  for (const [id, a] of Object.entries(availabilityLedger.works)) {
+    const w = a.work
+    if (!w) continue
+    if (!isFresh(a, now.getTime())) continue
+    // ★ 原題も見る。漢字だけの邦題は `localizedTitle` に入らない
+    //   （`withJapaneseWorkTitle` の判定がかな依存。cli/availability.ts の注記）。
+    const names = [w.title, w.localizedTitle, w.originalTitle].filter(Boolean) as string[]
+    if (!names.some((n) => match.test(n))) continue
+    for (const sv of subscriptionServices(a)) {
+      if (service && sv !== service) continue
+      if (taken.has(`${sv}/${id}`)) continue
+      const e: ChangeEvent = {
+        collectedAt: a.fetchedAt,
+        service: sv,
+        kind: 'new',
+        // ★ 在庫は開始日を持たない。**`at` を埋めない。**
+        at: undefined,
+        work: w,
+      }
+      stockKeys.add(eventKeyOf(e))
+      out.push(e)
+    }
+  }
+  return out
+}
+
+/**
  * 1件の観測が、いま読者にとってどういう状態か。
  *
  * ★ `new` には2種類ある。**取り違えると読者に嘘をつく。**
@@ -458,13 +525,18 @@ const availabilityLedger = loadAvailabilitySync()
 /**
  * 記事の向きを素材から決める。**上から順に見る（優先順位がある）。**
  *
- *   1. 終了予定が1本でもある      → `leaving`   「いつまで観られるか」
- *   2. 無いが、復帰が1本でもある  → `returned`  「また観られるようになった」
- *   3. 無いが、配信中が1本ある    → `streaming` 「いま観られる」
- *   4. どれも無い                 → `ended`     「いつまで観られたか」
+ *   1. 終了予定が**「いま観られる作品」以上**  → `leaving`   「いつまで観られるか」
+ *   2. そうでなく、復帰が1本でもある           → `returned`  「また観られるようになった」
+ *   3. そうでなく、配信中が1本ある             → `streaming` 「いま観られる」
+ *   4. 終了予定しか残っていない                → `leaving`
+ *   5. どれも無い                              → `ended`     「いつまで観られたか」
  *
  * ★ 1 が 2 より先。終了予定と復帰が混ざる記事（復帰したあと別の作品が
  *   終わりかけている、など）で読者にとって急ぐ理由があるのは締切のほう。
+ *
+ * ★ **ただし「1本でもあれば」ではない**（2026-09-07 修正）。
+ *   15本中1本しか終わらない記事が `終了予定の作品15本` と名乗ると、
+ *   **15本が終わると読める。** 数え方の詳細は `stanceOf()` の中。
  *
  * ★ 2 が 3 より先。どちらも「いま観られる」だが、復帰は
  *   **一度観られなくなった作品が戻った**という報せがあるぶん、
@@ -472,9 +544,31 @@ const availabilityLedger = loadAvailabilitySync()
  */
 function stanceOf(items: ChangeEvent[], ctx: ArticleContext): Stance {
   const states = items.map((e) => stateOf(e, ctx.now))
-  if (states.includes('終了予定')) return 'leaving'
-  if (states.includes('見放題に復帰')) return 'returned'
-  if (states.includes('見放題配信中')) return 'streaming'
+  const count = (s: State) => states.filter((x) => x === s).length
+  const leaving = count('終了予定')
+  const returned = count('見放題に復帰')
+  const streaming = count('見放題配信中')
+
+  /*
+   * ★ **終了予定が「少数派」なら、締切で記事全体を名乗らない**（2026-09-07 修正）。
+   *
+   *   以前は「終了予定が1本でもあれば `leaving`」だった。締切のある読者を
+   *   優先する趣旨で、素材が終了予定ばかりだった頃はそれで合っていた。
+   *
+   *   在庫から素材を拾えるようにしたことで前提が変わった（`stockEvents`）。
+   *   「いま観られる作品」が大量に入るようになり、**15本中1本しか終わらない記事**が
+   *   `見放題配信が終了予定の作品15本` と名乗るようになった。
+   *   **15本が終わると読める**ので、タイトルとして誤り。
+   *   （2026-09-07・仮面ライダーの記事で運営者が手で直した。その判断をここに入れる）
+   *
+   * ★ **同数なら締切を採る。** 迷う場面では、締切のある読者のほうが損が大きい。
+   * ★ 少数派でも**終了予定が消えるわけではない**。リードは混在用の文言に切り替わり
+   *   （`series-lead-partial-first-sentence`）、表の状態列と日付がそのまま出る。
+   */
+  if (leaving > 0 && leaving >= returned + streaming) return 'leaving'
+  if (returned > 0) return 'returned'
+  if (streaming > 0) return 'streaming'
+  if (leaving > 0) return 'leaving'
   return 'ended'
 }
 
@@ -612,7 +706,16 @@ export const seriesArticle: ArticleType = {
       if (!cur || e.collectedAt > cur.collectedAt) latest.set(key, e)
     }
 
-    const kept = [...latest.values()]
+    /*
+     * ★ **変化ログに出ない在庫を足す**（2026-09-07 追加。`stockEvents` の説明）。
+     *   変化ログで押さえた (サービス, 作品) はそのまま優先し、
+     *   在庫にしか無い組み合わせだけを「見放題配信中」として加える。
+     */
+    stockKeys = new Set<string>()
+    const kept = [
+      ...latest.values(),
+      ...stockEvents(new Set(latest.keys()), match, service, ctx.now),
+    ]
     const limited =
       kept.length <= MAX_ITEMS
         ? kept
@@ -635,7 +738,9 @@ export const seriesArticle: ArticleType = {
     return limited.sort((a, b) => {
       const d = ORDER[stateOf(a, ctx.now)] - ORDER[stateOf(b, ctx.now)]
       if (d !== 0) return d
-      return a.at!.localeCompare(b.at!)
+      // ★ 在庫由来の素材は `at` を持たない。**日付のあるものを先に置く。**
+      if (!a.at || !b.at) return a.at ? -1 : b.at ? 1 : 0
+      return a.at.localeCompare(b.at)
     })
   },
 
@@ -787,7 +892,14 @@ export const seriesArticle: ArticleType = {
          *   復帰は「戻ってきた日」、配信中は「入った日」で読者への意味が違う。
          *   同じ語にすると、一度も終わっていない作品が「復帰した」と読まれる。
          */
-        state === '見放題に復帰'
+        /*
+         * ★ **在庫台帳から作った素材には日付が1つも無い**（`stockEvents`）。
+         *   在庫は「いまある」としか言わないので、開始日を出せばそれは作った日付。
+         *   ここで行ごと落として、書き手に日付を渡さない。
+         */
+        stockKeys.has(eventKeyOf(e))
+          ? '  ★配信開始日は分かりません（在庫で見放題を確認しただけ）。**表の終了日の欄には「—」と書き、いつから／いつまで観られるかを書かないこと。**'
+          : state === '見放題に復帰'
           ? `  復帰日: ${formatMonthDay(e.at!, offset)}（★終了日は未定。表の終了日の欄には「—」と書くこと）`
           : state === '見放題配信中'
             ? /*
@@ -950,9 +1062,11 @@ ${resolved.unextNote}
 
 `
     : ''
-}## 「他のサービスで探す」の冒頭
+}## 「他のサービスで探す」の冒頭（2つとも、この順に続けて置く）
 
 ${resolved.otherServicesIntro}
+
+${resolved.coverageNote}
 
 ## 記事の末尾
 
@@ -1276,7 +1390,12 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
      *   固定文言は別途「そのまま入っているか」を検査しているので、
      *   ここで二重に見る必要がない。
      */
-    const scanned = [resolved.leadFirstSentence, resolved.unextNote, resolved.otherServicesIntro]
+    const scanned = [
+      resolved.leadFirstSentence,
+      resolved.unextNote,
+      resolved.otherServicesIntro,
+      resolved.coverageNote,
+    ]
       .filter(Boolean)
       .reduce((acc, phrase) => acc.split(phrase).join('　'), md)
 
@@ -1537,6 +1656,7 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       ['リードの1文目', resolved.leadFirstSentence],
       ['U-NEXTの但し書き', resolved.unextNote],
       ['他のサービスで探すの冒頭', resolved.otherServicesIntro],
+      ['掲載範囲の断り', resolved.coverageNote],
     ] as const) {
       if (text && !md.includes(text)) {
         err(
@@ -1571,6 +1691,8 @@ interface ResolvedPhrases {
   /** U-NEXT の作品が入るときだけ。入らなければ空文字で、使われない */
   unextNote: string
   otherServicesIntro: string
+  /** 何を載せていないかの断り。**シリーズ記事だけ**（fixed-phrases.md の注記） */
+  coverageNote: string
   /** 素材の出どころが混ざるので配列。**片方だけ書くと出典を偽ることになる。** */
   attributions: string[]
   asOf: string
@@ -1653,6 +1775,32 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
     return { elsewhere: names, partial: covered.size > 0 && covered.size < workCount(items) }
   })()
 
+  /**
+   * **終了日が分かっている作品の数。**
+   *
+   * `workCount` と同じく作品単位で数える（同じ映画が2社にあっても1本）。
+   * リードで「◯本の終了日が判明」と名乗る数はこれで、
+   * タイトルの「◯本」（＝記事が扱う作品数）とは別物。
+   */
+  const ending = items.filter((e) => stateOf(e, ctx.now) === '終了予定')
+  const endDated = new Set(
+    ending.map((e) => workKey(e.work.localizedTitle ?? e.work.title)),
+  ).size
+
+  /*
+   * ★ **終了するサービス**。`{サービス}` とは別に持つ。
+   *
+   *   `{サービス}` は**その記事が名乗る状態のサービス**（`stanceState` で絞ったもの）で、
+   *   混在の記事では「いま観られるサービス」になる。
+   *   混在用のリードは「〜で見放題配信を終了します」と書くので、そこに
+   *   `{サービス}` を入れると**終わっていないサービスが終了すると読める**
+   *   （2026-09-07 に踏んだ。「Amazon Prime VideoとNetflixで見放題配信を終了します」と
+   *   出たが、終了するのは U-NEXT の1本だけだった）。
+   */
+  const endingServices = [
+    ...new Set(ending.map((e) => labelOf.get(e.service) ?? e.service)),
+  ]
+
   const get = phraseReader(fixedPhrases(ctx, REQUIRED_PHRASES), {
     主題: topic,
     サービス: services.length === 2 ? services.join('と') : services.join('・'),
@@ -1663,15 +1811,30 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
     // ★ 素材の件数ではなく**作品数**（`workCount` の説明）。
     //   タイトルの「◯本」とリードの「◯本」は必ず同じ数にする。
     本数: workCount(items),
+    // ★ **終了日が分かっている作品数。** `本数` とは別（`leadKey` の下の注記）。
+    終了本数: endDated,
+    // ★ **終了するサービス。** `サービス` とは別（`endingServices` の注記）。
+    終了サービス:
+      endingServices.length === 2
+        ? endingServices.join('と')
+        : endingServices.join('・'),
   })
 
   /*
    * ★ 更新版の文言を持つのは `leaving` 側だけ。
    *   全作品が終了した記事は「今回新たに終了日が判明した」ということが起きないので、
    *   更新回でも初回と同じ書き出しでよい（`series-ended-lead-first-sentence`）。
+   *
+   * ★ **終了日を持たない作品が混ざる回は、さらに別の文言にする**（2026-09-07）。
+   *   `series-lead-first-sentence` は「{本数}本の終了日が判明しています」と書き、
+   *   `{本数}` は**記事が扱う作品数**なので、混ざった回はそのまま嘘になる
+   *   （実測: 対象14本・終了予定1本で「14本の終了日が判明」と書いていた）。
+   *   在庫から素材を拾えるようにしたぶん、混ざる回のほうが多くなる。
    */
-  const leadKey =
-    isUpdate && traits.leadKey === 'series-lead-first-sentence'
+  const mixed = endDated > 0 && endDated < workCount(items)
+  const leadKey = mixed
+    ? 'series-lead-partial-first-sentence'
+    : isUpdate && traits.leadKey === 'series-lead-first-sentence'
       ? 'series-update-lead-first-sentence'
       : traits.leadKey
 
@@ -1714,6 +1877,7 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
     leadFirstSentence,
     unextNote: items.some((e) => hasLineup(e.service)) ? get('series-unext-note') : '',
     otherServicesIntro: get('other-services-intro'),
+    coverageNote: get('series-coverage-note'),
     attributions,
     asOf,
   }

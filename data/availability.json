@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-06T14:20:58.617Z",
+  "updatedAt": "2026-09-07T07:12:36.789Z",
   "works": {
     "218": {
       "fetchedAt": "2026-09-06T10:51:17.400Z",
@@ -604,6 +604,47 @@
         }
       ]
     },
+    "22464": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.bd1681f9-dff8-424f-bce0-c645dfad90ce"
+        }
+      ],
+      "work": {
+        "id": "22464",
+        "title": "Kamen Rider Black Sun",
+        "originalTitle": "仮面ライダーBLACK SUN",
+        "type": "series",
+        "year": 2022,
+        "overview": "The year is 2022. It is an era of chaos, half a century after the government announced the coexistence of humans and kaijins. Aoi Izumi, a young human rights activist calling for the elimination of discrimination, meets a man named Kotaro Minami, the one called \"Black Sun\", who is a candidate for the next Creation King.",
+        "rating": 58,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Drama"
+        ],
+        "cast": [
+          "Hidetoshi Nishijima",
+          "Tomoya Nakamura",
+          "Aoi Nakamura",
+          "Kokoro Hirasawa",
+          "Takahiro Miura"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/22464/poster/vertical/en/480.jpg?Expires=1805558764&Signature=cSupO0UF5oliJYGMradFa11SzuFrZSV4iQFrBqQGgA1vbQMQ8m0l72NqmIDVuKEy4rN~U9FqAfBLQfLb2kkZzVcujF2VSoXakj7yrL0j1P63DctgaElSTxQKEU5ljr7G~lCfQHL1YY17LyKIsdHSN34~E0dYffFpKUr0CLDqzT7eNcqaZdIaGwC7wapkMztGHogdP5xA1XhBYkvFTdyqRdzkgmRcSM0gfXCC5qYan2GZTXPcKTvVQIUlc3VUs64j0ZEwnmnjczs~uZrB03TxkBSXUEXtN4-nbGnmBj0wCb1BtfKQ56bwIHFi97h-ROFiuZlInT-CvGZ4fNhc1ACo9g__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/22464/backdrop/horizontal/1080.jpg?Expires=1803266081&Signature=Jsbo~3aG55GloLKRzOGbzObnMKgkzwBF3OAg5d2ztjdAPnthIcSxE6RGW6CzXFeu-7NzWTuYPN-lPdHzKbEoBKUZQ7~Yb-c4PVXN3BrbOzQs6qrIcDRRxSuYjY12fe-WW~TmvqouZVnYatVMRVTmRiOJugO2ZBnTBEIUprg4vSM1v4SsiXmNXzQGNaJgBudp68742t499YXUfa~eJFLv7U74bI61SmmRX14MSqPRiCrYeqzjwl5ZHe-dB5Y6Zu1ebkDC4x~vpHFq7o3BElCHMMYgwdStKBx9K2Jb37n8YxPvvdTznj4gO5I3JPBqmWVvXg0H2xyE25ruNxmn88rY0Q__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.bd1681f9-dff8-424f-bce0-c645dfad90ce",
+        "meta": {
+          "imdbId": "tt14377480",
+          "tmdbId": "tv/135822"
+        },
+        "localizedTitle": "仮面ライダーBLACK SUN"
+      }
+    },
     "37264": {
       "fetchedAt": "2026-09-06T12:44:05.674Z",
       "services": [
@@ -616,6 +657,48 @@
           "link": "https://www.amazon.co.jp/gp/video/detail/0N8W3ILIWPSAHPB579HLNS32EB"
         }
       ]
+    },
+    "41831": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.88837b89-7013-499a-ac9a-d41a62d281c7"
+        }
+      ],
+      "work": {
+        "id": "41831",
+        "title": "Fuuto PI",
+        "originalTitle": "風都探偵",
+        "type": "series",
+        "year": 2022,
+        "overview": "In Fuuto, mysterious beings called Dopants wreak havoc by using the dangerous Gaia Memories; there are also heroes who utilize the Gaia Memories to fight these criminals.",
+        "rating": 53,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "cast": [
+          "Yoshimasa Hosoya",
+          "Koki Uchiyama",
+          "Akira Sekine",
+          "Mikako Komatsu",
+          "Makoto Furukawa"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/41831/poster/vertical/en/480.jpg?Expires=1805535054&Signature=Cfi0sf363nI8fKMRrJqdgvcGiHaHHGGBzruAOL758E7V7hYR2z8Q1YGwiWEIZxLQMyPwHmzEzrRD2MPlQ00T4rfg0DKkudzX0Oc4VSvLd23hL5Q8VTlhYT52dNwLmTQfs2u8fiRZGdGWgp9Sydg9LrtPHcfVlMeK8r4oR73PgI5MSMT1GhLhhFUESqO-NzTxHJeHeS~BCpIOA75BuEXyeazD74NPl7vEDA5rHwEOGVlNcGij9D-tM5TxBI~R0PbtF9IFiQmIlhQlZKPlV4Zqc5hll7caMFxkD0HkGg7qujxp8AbM8HhER76Q~BCpBl6-oWLXukZ~xlgBVp2po5dtcA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/41831/backdrop/horizontal/1080.jpg?Expires=1819369748&Signature=lA7nj215fG7ns9RZd2gTW4tr8akR0zXbf1~fK0uelWTE4vahwm5biiVGhuPa9PoDyUSI0rx5LT0MLQZSJ35Egkxg8tzkVC7UYXv7~V~ngvSSixqxZGb~vszmN-KnVGdDHWTn54tqeLOfiJuLGJV-m45XYaYsXYS8vkWvGmeL7TuDDHPNEEHihBcRX57Rn-xhxj6stE8x-Wr6LUD5LMZbMKLCUbHHDzJh8AIL~emhYuE6X8wPtYNhy45Dj16sMwU0V~cG8dgUFAPdrZbKAM0wCgskZrjXomf3GTWUy8EWyA1erZ6OIYvx5JyLWEdDKyreXqRYupzYjPbolAU3R~3weg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.88837b89-7013-499a-ac9a-d41a62d281c7",
+        "meta": {
+          "imdbId": "tt14377292",
+          "tmdbId": "tv/122369"
+        },
+        "localizedTitle": "風都探偵"
+      }
     },
     "41879": {
       "fetchedAt": "2026-09-06T12:44:05.674Z",
@@ -827,6 +910,170 @@
         }
       ]
     },
+    "228314": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.d586c459-4c3d-4eb9-ae97-f388e9f75f03"
+        }
+      ]
+    },
+    "255709": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "buy",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.8e29efd8-5d40-4c3a-ba67-380f39fc4b73"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/kamen-rider-beyond-generations/umc.cmc.3qv5bsnnwks864c92fq5749ql?playableId=tvs.sbd.9001%3A1614846171"
+        }
+      ]
+    },
+    "274179": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.dcb6b929-fb0e-48e5-84b8-74f1d8b2cbbd"
+        }
+      ]
+    },
+    "293505": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "addon",
+            "buy"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.08a1a368-c20a-4007-b2a5-40d403423026"
+        }
+      ]
+    },
+    "307234": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.d568ac05-662a-4337-b55c-f6152a516dbd"
+        }
+      ]
+    },
+    "336184": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.e71afe73-281a-408d-bd8a-0eeb4aa86b39"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/kamen-rider-revice-the-movie/umc.cmc.6ly2tflw145f4y40r5e9rek3s?playableId=tvs.sbd.9001%3A1596033434"
+        }
+      ]
+    },
+    "352889": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0G5KCPK14DZ7O7IET8YZ48P762?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/kamen-rider-den-o-pretty-den-o-appears/umc.cmc.6eez6auazuqhxceo3rr59zv5x?playableId=tvs.sbd.9001%3A1539884080"
+        }
+      ]
+    },
+    "1693196": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.e7e9d4fc-bd02-4e58-aa0c-0aee44134df5"
+        }
+      ],
+      "work": {
+        "id": "1693196",
+        "title": "Shin Kamen Rider",
+        "originalTitle": "シン・仮面ライダー",
+        "type": "movie",
+        "year": 2023,
+        "overview": "A man forced to bear power and stripped of humanity. A woman skeptical of happiness. Takeshi Hongo, an Augmentation made by SHOCKER, and Ruriko Midorikawa, a rebel of the organization, escape while fighting off assassins. What’s justice? What’s evil? Will this violence end? Despite his power, Hongo tries to remain human. Along with freedom, Ruriko has regained a heart. What paths will they choose?",
+        "rating": 63,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Drama"
+        ],
+        "directors": [
+          "Hideaki Anno"
+        ],
+        "cast": [
+          "Sosuke Ikematsu",
+          "Minami Hamabe",
+          "Tasuku Emoto",
+          "Mirai Moriyama",
+          "Nanase Nishino"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/1693196/poster/vertical/en/480.jpg?Expires=1803270465&Signature=VInpcDYeuEjacNKXr1lLVr9XkKTVeWKHA5bqEVqY5ZbFhJNxTUvxpZj7D8Gi19cUEsRvrrxDw88GahnjclO6AOvxDrxGoKSA9krrdmntKGrOWqv5x4RYwUuk5A1bi-Y6HJJiY7gfkbRxX15RNUw5sY6OG0NnJPOr4yto0UOFshZcqQxXFBwQmUGwU90g-BukHyVI~EnUqhysMIXT5aD3NSHCs3gxDD5L~wmqaeMCmFXP3vifnsbhuiZRwLXlkr4~qyukAYKeqiFGnPgDsD0OXp1UpVYdR8WfFZsOxqv3pBUmwBRuVTaUha8PqotFrZfvISBATRkXaKCbVXcdaZrSlg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/1693196/backdrop/horizontal/1080.jpg?Expires=1803270463&Signature=ks8I-8pvM-s8NezDipSb1PTbVt~qYV3qW0lSVBSBrif6HOCEPCApCL6VYOSawoqLAdskVlY3sggKTvxiC1G8ps959Tztqwp57a1g5TFUdUtR9lm1lNBbDLK-trn0aaHE70oZ6Bviidg9XZaXGc~4M1XUsrP0LqlJUIS6x0-DEPy810z8QHM5cbGGd3v5mxfrKOStKh7S-oXHthA154Hjdo7RQAUhiBycjmYjTUMYr3iaZeEauxjaJumflU7cY9GmHFp9rYWuEbqJQXa~0QbI0ArtK9uLulpGR98POe~k-hT4eC4V71y8IKHHcZ5FFldhgdHvTUxyKEIaGOn7-eOmPw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.e7e9d4fc-bd02-4e58-aa0c-0aee44134df5",
+        "meta": {
+          "imdbId": "tt14379088",
+          "tmdbId": "movie/813477"
+        },
+        "localizedTitle": "シン・仮面ライダー"
+      }
+    },
     "2093538": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": [
@@ -843,6 +1090,21 @@
       "fetchedAt": "2026-09-06T14:20:57.152Z",
       "services": []
     },
+    "7551786": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "subscription",
+            "rent",
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0HGQZF4QMVWGQHJ6WJIO4DTDLZ?ref_=atv_dp"
+        }
+      ]
+    },
     "8847319": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": [
@@ -858,6 +1120,75 @@
     "18863480": {
       "fetchedAt": "2026-09-06T14:20:57.152Z",
       "services": []
+    },
+    "19555339": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.89ed2586-33c8-40a6-9657-4c9f57cef8a0"
+        }
+      ]
+    },
+    "20109539": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon",
+            "rent",
+            "buy"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.ed9e9d99-c485-4bd3-b2a1-f4b1764861b3"
+        }
+      ]
+    },
+    "23401662": {
+      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82162824"
+        }
+      ],
+      "work": {
+        "id": "23401662",
+        "title": "Tojima Wants to Be a Kamen Rider",
+        "originalTitle": "東島丹三郎は仮面ライダーになりたい",
+        "type": "series",
+        "year": 2025,
+        "overview": "Tojima is about to give up on his dream of becoming a hero until a chance encounter with a robber changes his fate forever.",
+        "rating": 60,
+        "genres": [
+          "Action",
+          "Animation",
+          "Comedy"
+        ],
+        "cast": [
+          "Katsuyuki Konishi",
+          "Ai Kayano",
+          "Kenichi Suzumura",
+          "Soma Saito",
+          "Fairouz Ai"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/23401662/poster/vertical/en/480.jpg?Expires=1817826485&Signature=hYiyxOGrAh9wMnAkUHS4l8UpRTxylRAFt99yJOsLdLv1-wuC71yidiSv-vihaAMY7YDxUF4LVqz6ZcKI-dvPZQUYvWIyikOmMh9Rn5qpjmEvw5ScGJ~FLgGG2tvjM0DmYC2cUcSzRuAlur8e8ubxn1UJPowYzNnnl34oJgJ86~ROKx4uxR~5py6y4BWkIWZyr9wetS-GIXZpAG77nXCHfT9Ae9VVPdSkZDz8iejigh21hR~bPYUbt1Ts~qZF9MJS7HtT3FbavuyXDUV2v1bB9dvbdQFWuquOzzBmtRVGYR19YEXWPDdRLbcpKU3MEcUwvgiyiIqF39CLeObeS~IWnA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/23401662/backdrop/horizontal/1080.jpg?Expires=1810977313&Signature=aCjv9YfJMm-~haBiERkl1Z9gd~lZHDMhwBT8PZsrciKlkslMQ8SzpI0UwsixJ8plryPivi-deS8R0T98-oBX2i~J~u-PQFfqKX0hs9bIebdztDO2PAw41aNhWqmHUF0ZgjCmY2CTWiDWRE4LMwx~TnEvaj85eLDJNRVcKa~c7uKv~etDPrFlKXEEg2SSiZ8VXqA9KHUsDggjN84Na6U9BTmOWF4-5A6DK5Y9tjY-3X9GJM~tmoI4crSjx-HtLebZDCp2fn6zdC6wFRtY2ISbqgjiLHxk-JsmUheuCzGAh2oiw2dKBHXbVQAEGGNpuZ9FsTyVk6~RRQQTqAiiPZwx1g__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/82162824",
+        "meta": {
+          "imdbId": "tt37532319",
+          "tmdbId": "tv/285788"
+        },
+        "localizedTitle": "東島丹三郎は仮面ライダーになりたい"
+      }
     }
   }
 }

@@ -256,13 +256,27 @@ export class StreamingAvailabilitySource implements Source {
     return { services: [...byService.values()] }
   }
 
+  /**
+   * キーワードで在庫を引く。**作品そのものも返す**（`--adopt` が素材にする）。
+   *
+   * ★ **既定のページ数を3から8に上げた（2026-09-07）。**
+   *   `docs/CROSS-SERVICE.md` 9-3 は「Transformers は60作を返したのに
+   *   こちらの5作が1件も含まれていなかった。**後ろのページに居たとみられる**」と
+   *   推測で書いていたが、実測でそのとおりだった。
+   *
+   *     keyword=Kamen Rider   3ページ 60件 → こちらの3作が入らない
+   *                           5ページ 93件 → 3作とも入った（hasMore が尽きた）
+   *
+   *   1ページ＝1リクエストなので、上げても月500の枠に対して安い。
+   *   **打ち切りは「在庫が無い」に化ける**ので、枠より取りこぼしのほうが高くつく。
+   */
   async fetchAvailability(
     keyword: string,
-    opts: { maxPages?: number } = {},
-  ): Promise<Map<string, { services: ServiceAvailabilityRow[] }>> {
-    const out = new Map<string, { services: ServiceAvailabilityRow[] }>()
+    opts: { maxPages?: number; subscriptionOnly?: boolean } = {},
+  ): Promise<Map<string, { services: ServiceAvailabilityRow[]; work: Work }>> {
+    const out = new Map<string, { services: ServiceAvailabilityRow[]; work: Work }>()
     let cursor: string | undefined
-    const maxPages = opts.maxPages ?? 3
+    const maxPages = opts.maxPages ?? 8
 
     for (let page = 0; page < maxPages; page++) {
       const params: Record<string, string | number> = {
@@ -271,6 +285,18 @@ export class StreamingAvailabilitySource implements Source {
         output_language: this.theme.api_language,
         series_granularity: 'show',
       }
+      /*
+       * ★ **見放題を探すときは `catalogs` で絞る**（2026-09-07）。
+       *   絞らないと応答がレンタル・購入で埋まり、見放題の作品が
+       *   後ろのページへ押し出される。**それは「在庫が無い」に化ける。**
+       *
+       *     keyword=Kamen Rider          5ページ93件 → 見放題14件（1件取りこぼし）
+       *     ＋ catalogs=…subscription    1ページ15件 → 見放題15件（hasMore=false）
+       *
+       *   絞っても**他社の取扱は応答に残る**（`apple:rent` 等）ので、
+       *   表の下に出す「他社の在庫」は今までどおり作れる（docs/CROSS-SERVICE.md 2-1）。
+       */
+      if (opts.subscriptionOnly) params.catalogs = this.theme.catalogs.map((c) => c.id).join(',')
       if (cursor) params.cursor = cursor
 
       const res = await this.#get<{
@@ -293,7 +319,7 @@ export class StreamingAvailabilitySource implements Source {
           if (!row.link && o.link) row.link = o.link
           byService.set(key, row)
         }
-        out.set(String(show.id), { services: [...byService.values()] })
+        out.set(String(show.id), { services: [...byService.values()], work: toWork(show) })
       }
 
       if (!res.hasMore || !res.nextCursor) break

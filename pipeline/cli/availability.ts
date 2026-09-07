@@ -10,6 +10,29 @@
  *   npm run availability -- --max-by-id 5   ID直引きの上限（既定12・1件1リクエスト）
  *   npm run availability -- --no-by-id      ID直引きをしない（キーワードだけ）
  *   npm run availability -- --ids 138947,2699508   作品IDを直に指定する（下書きを見ない）
+ *   npm run availability -- --adopt --match "仮面ライダー|風都探偵"
+ *                                       下書きに無い作品も**素材として**台帳に入れる
+ *
+ * ■ `--adopt` — 変化ログに出ない作品を拾う（2026-09-07 追加）
+ * 既定の動きは「**下書きに載っている作品**の在庫を注釈する」だけで、
+ * キーワード検索が返した他の作品は捨てていた（`wanted.has(id)` の行）。
+ * だが素材そのものは `/changes`（変化ログ）だけから作られていて、
+ * **収集を始める前から在庫にある作品は、何年経っても記事に出ない。**
+ *
+ *   実測（2026-09-07・「仮面ライダー」）
+ *     変化ログ由来の素材            11本（すべて8月31日に new が立った分）
+ *     在庫で Prime Video の見放題    14本
+ *     → シン・仮面ライダー / 仮面ライダーBLACK SUN / 風都探偵 が欠けていた
+ *
+ * `--adopt` は**見放題（subscription）で観られる作品だけ**を、
+ * 作品そのものごと台帳に入れる。シリーズ記事の `select()` がそれを読んで
+ * 「見放題配信中」の素材に加える（`article-types/series.ts` の `stockEvents`）。
+ *
+ * ★ **`--match` で必ず絞ること。** 絞らないとキーワードに引っかかった
+ *   無関係な作品まで台帳に入り、次のシリーズ記事の素材に混ざる。
+ * ★ **`addon` を拾わない。** Prime Video チャンネル（東映特撮ファンクラブ等）は
+ *   別料金で、見放題ではない（core/availability.ts の「絶対に守ること」1）。
+ *   実測では「仮面ライダー」93作のうち17作が addon だった。
  *
  * ■ なぜ `--emit` のあとなのか
  * **調べる対象は「その記事に載る作品」だけでよい。**
@@ -47,11 +70,22 @@ import { join } from 'node:path'
 import { loadTheme } from '../theme.ts'
 import { StreamingAvailabilitySource } from '../sources/streaming-availability.ts'
 import { addUsage } from '../core/api-usage.ts'
+import { readAllEventsSync, withJapaneseWorkTitle } from '../core/events.ts'
+import { appendHistory, type StockChange } from '../core/history.ts'
+import {
+  loadTitleCache,
+  resolveTitles,
+  saveTitleCache,
+  titleCacheKey,
+  type TitleRef,
+} from '../sources/wikidata.ts'
+import type { Work } from '../sources/types.ts'
 import {
   AVAILABILITY_PATH,
   loadAvailability,
   saveAvailability,
   isFresh,
+  subscriptionServices,
   type WorkAvailability,
 } from '../core/availability.ts'
 
@@ -191,19 +225,69 @@ async function main(): Promise<void> {
     wanted.set(String(id), e.work?.localizedTitle ?? e.work?.title ?? '')
   }
 
-  // ★ すでに新しい在庫を持っている作品しか無いなら、叩かない。**枠を守る。**
+  /*
+   * ★ すでに新しい在庫を持っている作品しか無いなら、叩かない。**枠を守る。**
+   *
+   * ★ **`--adopt` のときは短絡しない**（2026-09-07）。あちらの目的は
+   *   **下書きに無い作品を見つけること**なので、「下書きは全部揃っている」は
+   *   理由にならない。ここで止めると、`--match` を広げて取り直すこともできない。
+   */
   const stale = [...wanted.keys()].filter((id) => !isFresh(ledger.works[id]))
-  if (wanted.size > 0 && stale.length === 0) {
+  if (!has('adopt') && wanted.size > 0 && stale.length === 0) {
     console.log(`下書きの${wanted.size}作品はすべて新しい在庫を持っています。取得しません。`)
     console.log(`（${AVAILABILITY_PATH} / 有効期限は core/availability.ts の MAX_AGE_DAYS）`)
     return
   }
 
+  /*
+   * `--adopt`：下書きに無い作品も素材として取り込む。
+   *
+   * ★ 条件は3つとも満たすこと。1つでも緩めると台帳の意味が変わる。
+   *   1. `--match` に当たる（無関係な作品を貯めない）
+   *   2. **見放題（subscription）がある**（addon・レンタルは素材にしない）
+   *   3. カタログに載っているサービス（未知のサービスIDを素材にしない）
+   *
+   * ★ **叩く前に検査する。** あとに置くと、`--match` の付け忘れで
+   *   リクエストを消費してから止まる。
+   */
+  const adopt = has('adopt')
+  const adoptRe = arg('match') ? new RegExp(arg('match')!, 'i') : undefined
+  const catalogKeys = new Set(theme.catalogs.map((c) => c.key))
+  if (adopt && !adoptRe) {
+    console.log('--adopt には --match が要ります（絞らないと無関係な作品を台帳に入れます）。')
+    return
+  }
+  const adopted: string[] = []
+  /** 採用した作品そのもの。**あとで邦題を引き直すために持っておく。** */
+  const adoptedWorks: Work[] = []
+  /*
+   * ★ **在庫が動いたことを履歴に積む**（2026-09-07 追加）。
+   *   台帳は上書きなので、それまでは**前回どうだったかが毎回消えていた。**
+   *   「Prime Video の見放題から外れた」「見放題に入った」は
+   *   在庫を取り直したこの瞬間にしか観測できない（`core/history.ts` 冒頭）。
+   */
+  const history: StockChange[] = []
+  const viaLabel = `availability${adopt ? ' --adopt' : ''} keyword=${keyword}`
+
+  /** 変化ログが持っている作品ID。採用の可否はここで決まる（下の `adoptable`）。 */
+  const inChangeLog = adopt
+    ? new Set(readAllEventsSync().map((e) => String(e.work.id)))
+    : new Set<string>()
+
   console.log(`キーワード: ${keyword}`)
   if (wanted.size > 0) console.log(`下書きの作品: ${wanted.size}件（うち要取得 ${stale.length}件）`)
 
   const source = new StreamingAvailabilitySource(apiKey, theme)
-  const found = await source.fetchAvailability(keyword)
+  /*
+   * ★ `--adopt` は**見放題のカタログに絞って引く。**
+   *   絞らないと応答がレンタル・購入で埋まり、見放題の作品が後ろのページへ
+   *   押し出される（`fetchAvailability` の注記）。絞ると1リクエストで
+   *   `hasMore=false` まで届くので、**安いうえに取りこぼさない。**
+   *
+   * ★ **注釈だけのとき（`--adopt` 無し）は絞らない。** あちらは下書きの作品の
+   *   取扱を知るのが目的で、レンタル・購入しか無い作品の情報も要る。
+   */
+  const found = await source.fetchAvailability(keyword, { subscriptionOnly: adopt })
   const fetchedAt = new Date().toISOString()
 
   console.log(`APIが返した作品: ${found.size}件  リクエスト: ${source.requestCount}`)
@@ -211,16 +295,95 @@ async function main(): Promise<void> {
 
   let hit = 0
   for (const [id, row] of found) {
-    // 下書きがあるときは、その作品だけを台帳へ入れる。
-    // キーワード検索は無関係な作品も返すので、記事に関係ないものまで貯めない。
-    if (wanted.size > 0 && !wanted.has(id)) continue
+    /*
+     * ★ **邦題の補完を変化ログと同じ規則で当てる。**
+     *   在庫検索の応答は `title` が英語・`originalTitle` が日本語で返る。
+     *   ここを通さないと、在庫から拾った作品だけ英語の題で記事に出る
+     *   （品質ゲートは「邦題が未確認なら原題のまま」と通してしまう）。
+     */
+    const w = withJapaneseWorkTitle(row.work)
+    const subsAll = row.services
+      .filter((s) => s.types.includes('subscription'))
+      .map((s) => s.service)
+      .filter((sv) => catalogKeys.has(sv))
+    /*
+     * ★ **原題（`originalTitle`）にも当てる。**
+     *   `localizedTitle` は「原題にかなが含まれるとき」だけ入る
+     *   （`withJapaneseWorkTitle`。中国語の題を邦題と誤認しないための判定）。
+     *   **漢字だけの邦題はそこを通らない**ので、原題を見ないと当たらない。
+     *   実測: `風都探偵`（Prime Video の見放題）が
+     *   `--match "仮面ライダー|風都探偵"` で拾えていなかった（2026-09-07）。
+     */
+    const names = [w.title, w.localizedTitle, w.originalTitle].filter(Boolean) as string[]
+    /*
+     * ★ 判定は「**変化ログが持っていない作品か**」。「下書きに無いか」ではない。
+     *
+     *   一度採用した作品は次の `--emit` から下書きに載る。そこで
+     *   `!wanted.has(id)` を条件にすると **2回目の実行で採用対象から外れ**、
+     *   `work` の付け直しも邦題の引き直しも起きなくなる（2026-09-07 に踏んだ）。
+     *   変化ログを見れば、その作品が「在庫からしか来ていない」ことが1件ずつ分かる。
+     */
+    const adoptable =
+      adopt && !inChangeLog.has(id) && subsAll.length > 0 && names.some((n) => adoptRe!.test(n))
+
+    /*
+     * 下書きがあるときは、その作品だけを台帳へ入れる。
+     * キーワード検索は無関係な作品も返すので、記事に関係ないものまで貯めない。
+     *
+     * ★ `--adopt` のときは**下書きが無くても絞る**。あちらは `--match` を
+     *   必ず持っているので、キーワードに引っかかっただけの作品を貯める理由が無い。
+     */
+    if (adopt ? !wanted.has(id) && !adoptable : wanted.size > 0 && !wanted.has(id)) continue
     hit++
+    /*
+     * ★ `work` を持たせるのは `--adopt` で拾ったものだけ。
+     *   下書きの作品は変化ログ側が素材を持っているので、二重に持たない。
+     *
+     * ★ **すでに持っている `work` は消さない**（2026-09-07 に踏んだ）。
+     *   一度採用した作品は、次の `--emit` 以降**下書きに載る**ので
+     *   `adoptable` が false になる。そこで `work` を落とすと、
+     *   **在庫由来の素材が2回目の実行で記事から消える。**
+     *   採用は台帳に残す判断であって、1回きりの拾い上げではない。
+     */
     const entry: WorkAvailability = { fetchedAt, services: row.services }
+    const keptWork = adoptable ? w : ledger.works[id]?.work
+    if (keptWork) entry.work = keptWork
+
+    /*
+     * 前回の在庫と突き合わせる。**見放題かどうかが変わった社だけ**を1行にする。
+     *
+     * ★ **前回が無いとき（初観測）は履歴に積まない。** 「無かったものが入った」と
+     *   「まだ見ていなかった」は違う。積むと初回の全件が「配信開始」に化ける。
+     */
+    const before = ledger.works[id]
+    if (before) {
+      const was = new Set(subscriptionServices(before))
+      const now = new Set(subscriptionServices(entry))
+      const label = w.localizedTitle ?? w.title
+      for (const sv of new Set([...was, ...now])) {
+        if (was.has(sv) === now.has(sv)) continue
+        history.push({
+          observedAt: fetchedAt,
+          service: sv,
+          workId: id,
+          title: label,
+          field: 'subscription',
+          from: was.has(sv) ? '見放題' : undefined,
+          to: now.has(sv) ? '見放題' : undefined,
+          via: viaLabel,
+        })
+      }
+    }
+    if (adoptable) {
+      adopted.push(`${w.localizedTitle ?? w.title}（${subsAll.join(' / ')}）`)
+      adoptedWorks.push(w)
+    }
     if (!has('dry-run')) ledger.works[id] = entry
     const subs = row.services.filter((s) => s.types.includes('subscription')).map((s) => s.service)
     const paid = row.services.filter((s) => s.types.includes('rent') || s.types.includes('buy'))
     const addon = row.services.filter((s) => s.types.includes('addon')).map((s) => s.service)
-    console.log(`  ${(wanted.get(id) || id).slice(0, 34).padEnd(34)}`)
+    const label = wanted.get(id) || w.localizedTitle || w.title || id
+    console.log(`  ${adoptable ? '＋' : '　'}${label.slice(0, 34).padEnd(34)}`)
     console.log(`     見放題: ${subs.join(' / ') || '（なし）'}`)
     if (paid.length) console.log(`     レンタル・購入: ${paid.map((s) => s.service).join(' / ')}`)
     // ★ addon は見放題ではない。**必ず別に出す**（core/availability.ts の「絶対に守ること」）
@@ -257,7 +420,53 @@ async function main(): Promise<void> {
     console.log('')
   }
 
+  /*
+   * ★ **邦題を Wikidata から引く**（2026-09-07）。
+   *
+   *   `withJapaneseWorkTitle` の補完は「原題にかなが含まれるとき」だけで、
+   *   **漢字だけの邦題は通らない**（中国語の題を邦題と誤認しないための判定）。
+   *   実測: `風都探偵` が `Fuuto PI` のまま素材に入り、
+   *   品質ゲートは「邦題が未確認」として**英題のまま**通してしまう。
+   *
+   *   変化ログ側は収集時に Wikidata で邦題を解決している（`cli/collect.ts`）。
+   *   **在庫から拾う経路にも同じ解決を通す。**片方だけ英題になるのを防ぐ。
+   *
+   * ★ Wikidata はキー不要・無料。配信APIの枠は消費しない。
+   * ★ 取れなければ英題のまま。**推測で邦題を作らない**（品質ゲートの前提）。
+   */
+  if (adoptedWorks.length > 0 && !has('dry-run')) {
+    const cache = await loadTitleCache()
+    // `meta` は `Record<string, unknown>`（テーマ固有の逃がし先）なので、
+    // 文字列であることだけ確かめて渡す。
+    const str = (v: unknown) => (typeof v === 'string' ? v : undefined)
+    const refs: TitleRef[] = adoptedWorks.map((w) => ({
+      imdbId: str(w.meta.imdbId),
+      tmdbId: str(w.meta.tmdbId),
+    }))
+    await resolveTitles(refs, theme.site_language, cache)
+    await saveTitleCache(cache)
+    let named = 0
+    for (const [i, w] of adoptedWorks.entries()) {
+      const key = titleCacheKey(refs[i]!)
+      const title = key ? cache[key] : undefined
+      if (title && title !== w.localizedTitle) {
+        w.localizedTitle = title
+        named++
+      }
+    }
+    if (named > 0) console.log(`邦題を Wikidata から補いました: ${named}件`)
+  }
+
   console.log('')
+  if (adopted.length > 0) {
+    console.log(`**在庫から素材にする作品: ${adopted.length}件**（変化ログに無く、在庫では見放題）`)
+    for (const line of adopted) console.log(`  ＋ ${line}`)
+    console.log('  ★ もう一度 --emit すると素材に入ります（終了日は分からないので「見放題配信中」）。')
+    console.log('')
+  } else if (adopt) {
+    console.log('在庫から素材にする作品はありませんでした（--match に当たる見放題の在庫が、変化ログの外に無い）。')
+    console.log('')
+  }
   if (wanted.size > 0) {
     /*
      * ★ **「取れなかった」に、すでに新しい在庫を持っている作品を数えないこと。**
@@ -266,9 +475,20 @@ async function main(): Promise<void> {
      *   **毎回7件の偽の警告**が出て、本当の取りこぼしが埋もれる。
      *   見るべきは「**この実行のあと台帳に無いもの**」。
      */
-    const missed = [...wanted.keys()].filter((id) => !isFresh(ledger.works[id]))
-    console.log(`台帳に入れた: ${hit}件 / 下書き ${wanted.size}件`)
-    const already = wanted.size - hit - missed.length
+    /*
+     * ★ **`--dry-run` では台帳に書いていない**ので、`ledger.works` を見ると
+     *   毎回「全件取れなかった」になる（2026-09-07 に踏んだ。10件中10件が
+     *   偽の警告で、すぐ上の一覧には7件が取れて表示されていた）。
+     *   取れたかどうかは**この実行の応答**（`found`）でも見る。
+     */
+    const missed = [...wanted.keys()].filter(
+      (id) => !isFresh(ledger.works[id]) && !found.has(id),
+    )
+    // ★ 下書きの充足は**下書きのIDだけ**で数える。`hit` には在庫から拾った
+    //   作品も入っていて、しかもその一部は下書きにも載っている（重なる）。
+    const forDraft = [...wanted.keys()].filter((id) => found.has(id)).length
+    console.log(`台帳に入れた: ${hit}件（うち下書きのぶん ${forDraft}件 / 下書き ${wanted.size}件）`)
+    const already = wanted.size - forDraft - missed.length
     if (already > 0) console.log(`（${already}件はすでに新しい在庫を持っていました）`)
     if (missed.length > 0) {
       console.log(`**取れなかった: ${missed.length}件** — ${missed.map((id) => wanted.get(id) || id).slice(0, 5).join(' / ')}`)
@@ -284,6 +504,10 @@ async function main(): Promise<void> {
   }
 
   await saveAvailability(ledger)
+  await appendHistory(history, theme.utc_offset_minutes)
+  if (history.length > 0) {
+    console.log(`在庫の履歴に ${history.length}件 追記しました（data/history/）。`)
+  }
   await addUsage(source.requestCount, theme.utc_offset_minutes)
   console.log(`→ ${AVAILABILITY_PATH}`)
 }
