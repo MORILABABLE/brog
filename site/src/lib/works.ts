@@ -550,7 +550,13 @@ function historyOf(svc: Map<string, RawEvent[]>): WorkHistoryEntry[] {
       }
     }
   }
-  // 古い順。上から下へ時間が進む向きにそろえる（常設ページの表と同じ）
+  /*
+   * 古い順。上から下へ時間が進む向きにそろえる。
+   * ★ **常設ページの表とは並びの規則が違う**（2026-09-07 以降）。
+   *   あちらは「きょうに近い順」（lib/events-data.ts の `loadLeaving`）。
+   *   ここは1作品の**経歴**なので、起きた順に読ませるのが正しい。
+   *   揃えるために引きずられないこと。
+   */
   return [...rows.values()].sort(
     (a, b) => a.at.getTime() - b.at.getTime() || a.service.localeCompare(b.service),
   )

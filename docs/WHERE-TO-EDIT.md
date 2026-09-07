@@ -70,10 +70,14 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
       ★ 狭い画面では枠ごと消えるので、フッターにも同じリンクがある
         （Footer.astro）。**片方だけ消さないこと**
 
-    左の枠（中段）＝ 常設枠（「新着配信・終了一覧」）
+    左の枠（中段）＝ 常設枠（「新着配信・終了一覧」・カード5枚）
       見た目・並び        → site/src/components/LeftRail.astro
       何を並べるか        → site/src/lib/evergreen.ts の EVERGREEN_PAGES
       カードの見出し・日付 → site/src/lib/evergreen.ts の evergreenTitle / evergreenStamp
+      ★ 2026-09-07 に一度3枚（配信カレンダー）へ畳んで**5枚に戻した**。
+        畳むとカードの外に小さいリンクがぶら下がって見た目が悪くなる
+        （リンクの中にリンクは置けないため）。
+        **日付から入る役目は、5ページの中に入れた升目が持っている**
 
     左の枠（下段）＝「監督・出演者から探す」
       枠と並び            → site/src/components/LeftRail.astro の RAIL_PEOPLE（出す人数）
@@ -129,6 +133,23 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
     記事ページ           → site/src/pages/posts/[...slug].astro
     常設ページ（終了予定） → site/src/pages/leaving/[service].astro
     常設ページ（新着）     → site/src/pages/arrivals/[service].astro
+                            ★ この5枚が主役。左の枠が指しているのもこちら
+                            ページ先頭の月の升目（2026-09-07 追加）
+                              部品        → site/src/components/EventCalendar.astro
+                              組み立て     → site/src/lib/calendar.ts
+                              色          → site/src/styles/global.css の --cal-*
+                                            （ライト・ダークの2か所。**必ず両方直す**）
+                              描く月の範囲 → lib/calendar.ts の buildCalendar()
+                                            **今月から先だけ。過去の月は描かない**
+                              飛び先      → WorkTable の日付見出しの id（既定は日付そのもの）
+    配信カレンダー         → site/src/pages/calendar/[service].astro
+                            終了予定と新着を1枚にまとめた補助ページ（3枚）。
+                            ★ **左の枠からは外してある。** サイト内の入口は
+                              上の2ページの末尾の関連リンクだけ。あれを消すと孤立する
+                            ★ 表を2つ置くので id が衝突する。WorkTable に idPrefix を渡し、
+                              升目側の leavingPrefix / arrivalsPrefix と同じ文字列にする。
+                              **片方だけ変えるとリンクが死ぬ**
+                            対象サービス   → site/src/lib/events-data.ts の CALENDAR_SERVICES
     サービス別まとめ       → site/src/pages/service/[service].astro
                             記事は frontmatter の tags で拾う。
                             ★ タグの文字列は config.ts の SERVICE_HUBS と完全一致が要る

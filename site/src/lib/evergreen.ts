@@ -9,7 +9,15 @@
  *   （2026-08-23 の判断）。ページ自体は残してあり、
  *   常設ページ下部の関連リンクから辿れる（＝孤立ページにはしない）。
  */
-import { ARRIVALS_SERVICES, LEAVING_SERVICES, loadArrivals, loadLeaving } from './events-data'
+import {
+  ARRIVALS_SERVICES,
+  CALENDAR_SERVICES,
+  LEAVING_SERVICES,
+  hasArrivals,
+  hasLeaving,
+  loadArrivals,
+  loadLeaving,
+} from './events-data'
 import { formatDate } from '../utils/date'
 import type { CategorySlug } from '../config'
 
@@ -86,6 +94,57 @@ export const EVERGREEN_PAGES: EvergreenPage[] = [
     shortLabel: shortOf(s.label),
   })),
 ]
+
+// --- 配信カレンダー -----------------------------------------------------------
+//
+// 2026-09-07 追加。**サービス1社につき1枚**の常設ページで、
+// 終了予定（`/leaving/…`）と新着（`/arrivals/…`）を1枚にまとめ、
+// 先頭に月の升目を置く（components/EventCalendar.astro）。
+//
+// ■ 左の枠が指すのはこちら（LeftRail.astro）
+// カード5枚（終了2＋新着3）を**3枚**に畳むための入れ替え。
+// 読者にとって「Netflix の終了予定」と「Netflix の新着」は
+// **同じ関心の裏表**で、別々のカードにする理由が無かった。
+//
+// ■ ★ 従来の5ページは**消していない**
+// `/leaving/netflix` は単体で表示115件（サイト最多）の面で、
+// タイトルの直し（docs/FUNNEL.md 7-2）を 2026-09-06 に入れたばかり。
+// **効果を測る前にURLを畳むと、測り直せなくなる。**
+// カレンダーは足すだけにして、5ページはそのまま残してある。
+// 畳むと決めたら public/_redirects に301を2行足せばよい（それだけで済む形にしてある）。
+
+export interface CalendarPage {
+  href: string
+  /** ★ 素で画面に出さない。`evergreenTitle()` を通して基準日を添える（上と同じ決まり） */
+  titleBase: string
+  thumbKey: string
+  label: string
+  shortLabel: string
+}
+
+/**
+ * 配信カレンダーの素のタイトル。**ここが唯一の定義。**
+ *
+ * ★ **`/leaving/<サービス>` のタイトルと言葉をずらしてある。**
+ *   あちらは `Netflixで見放題配信が終了する作品一覧` で、
+ *   狙っている検索語は「netflix 配信終了予定」。
+ *   同じ言葉で始めると自社の2ページが同じ語で競合する（共食い）ので、
+ *   こちらは「カレンダー」を主語にして別の探し方に当てる。
+ *
+ * ★ **「見放題」を落とさないこと。** レンタル・購入と区別する言葉がここにしかない
+ *   （常設ページと同じ理由。templates/naming.md）。
+ */
+export function calendarTitleBase(label: string): string {
+  return `${label}の見放題カレンダー`
+}
+
+export const CALENDAR_PAGES: CalendarPage[] = CALENDAR_SERVICES.map((s) => ({
+  href: `/calendar/${s.key}`,
+  titleBase: calendarTitleBase(s.label),
+  thumbKey: s.key,
+  label: s.label,
+  shortLabel: shortOf(s.label),
+}))
 
 /** 指定カテゴリの常設ページだけを返す */
 export function evergreenFor(category: CategorySlug): EvergreenPage[] {
@@ -172,5 +231,40 @@ export function evergreenSummary(page: EvergreenPage): { count: number; dataAsOf
   const data = page.category === 'leaving' ? loadLeaving(key) : loadArrivals(key)
   const summary = { count: data.works.length, dataAsOf: data.dataAsOf }
   summaries.set(page.href, summary)
+  return summary
+}
+
+/**
+ * 配信カレンダー1枚ぶんの件数と基準日。
+ *
+ * ★ **基準日は2つの一覧のうち新しいほう。** 片方だけを見ると、
+ *   終了予定が0件のサービス（Disney+）で日付が付かなくなる。
+ *
+ * 左の枠は全ページで描画されるので、上の `evergreenSummary` と同じく
+ * 集計をここで持っておく。
+ */
+const calendarSummaries = new Map<
+  string,
+  { leaving: number; arrivals: number; dataAsOf: Date | null }
+>()
+
+export function calendarSummary(page: CalendarPage): {
+  leaving: number
+  arrivals: number
+  dataAsOf: Date | null
+} {
+  const hit = calendarSummaries.get(page.href)
+  if (hit) return hit
+
+  const service = page.thumbKey
+  const lv = hasLeaving(service) ? loadLeaving(service) : { works: [], dataAsOf: null }
+  const ar = hasArrivals(service) ? loadArrivals(service) : { works: [], dataAsOf: null }
+  const dates = [lv.dataAsOf, ar.dataAsOf].filter((d): d is Date => d !== null)
+  const summary = {
+    leaving: lv.works.length,
+    arrivals: ar.works.length,
+    dataAsOf: dates.length > 0 ? new Date(Math.max(...dates.map((d) => d.getTime()))) : null,
+  }
+  calendarSummaries.set(page.href, summary)
   return summary
 }

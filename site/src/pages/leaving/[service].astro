@@ -4,11 +4,11 @@ import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import WorkTable from '../../components/WorkTable.astro'
 import WorkSearch from '../../components/WorkSearch.astro'
-import LeadImage from '../../components/LeadImage.astro'
+import EventCalendar from '../../components/EventCalendar.astro'
 import { ATTRIBUTION, CATEGORIES, EVERGREEN_BADGE, SITE } from '../../config'
 import { formatDate } from '../../utils/date'
-import { serviceImage } from '../../lib/images'
-import { LEAVING_SERVICES, groupByDate, loadLeaving } from '../../lib/events-data'
+import { buildCalendar } from '../../lib/calendar'
+import { ARRIVALS_SERVICES, LEAVING_SERVICES, groupByDate, loadLeaving } from '../../lib/events-data'
 import { evergreenTitle, evergreenTitleBase } from '../../lib/evergreen'
 import PrimeCta from '../../components/PrimeCta.astro'
 import { primeAd } from '../../lib/prime-ad'
@@ -36,12 +36,25 @@ const { service } = Astro.params
 const { label } = Astro.props
 
 const { works, dataAsOf } = loadLeaving(service!)
-// ★ `loadLeaving` は**終了日の遅い順**（lib/events-data.ts）。
-//   `groupByDate` は渡された順を保つので、束も遅い順に並ぶ。
-//   いちばん近い終了日は先頭ではなく**末尾**にある。
 const groups = groupByDate(works)
-const nearest = groups.at(-1)
-const lead = serviceImage(service!)
+/*
+ * ★ `loadLeaving` は**終了日の近い順**（2026-09-07 に遅い順から戻した）。
+ *   `groupByDate` は渡された順を保つので、束も近い順に並ぶ。
+ *   **いちばん近い終了日は先頭**（以前は末尾で `groups.at(-1)` だった）。
+ */
+const nearest = groups[0]
+
+/*
+ * ページ先頭の升目（2026-09-07 追加）。**このページの中身と同じ配列を渡す。**
+ * 別の絞り込みを掛けると、点いているのに飛び先が無い日ができる。
+ *
+ * ★ 新着には空配列を渡す。このページは終了予定だけの面なので、
+ *   青い印は1つも出ず、凡例も赤の1行だけになる（EventCalendar 側で出し分け）。
+ * ★ 行き先は `#`。表がこのページに1つしかないので、日付見出しの id は
+ *   `2026-09-30` のような日付そのもの（WorkTable の既定）。頭は要らない。
+ * ★ 描くのは**今月から先だけ**（lib/calendar.ts）。
+ */
+const calendar = buildCalendar(works, [])
 
 /*
  * タイトルの末尾に基準日を出す（`…作品一覧【9月1日更新】`）。
@@ -62,8 +75,8 @@ const title = evergreenTitle(evergreenTitleBase('leaving', label), dataAsOf)
 const primeSlot = primeAd({ service, category: 'leaving' })
 const description =
   works.length > 0
-    ? `${label}で見放題配信が終了する予定の作品${works.length}本を終了日順にまとめています。最も近い終了日は${formatDate(nearest!.date)}です。`
-    : `${label}で見放題配信が終了する予定の作品を終了日順にまとめています。現在、終了予定として取得できている作品はありません。`
+    ? `${label}で見放題配信が終了する予定の作品${works.length}本を、終了日の近い順にまとめています。最も近い終了日は${formatDate(nearest!.date)}です。`
+    : `${label}で見放題配信が終了する予定の作品を終了日の近い順にまとめています。現在、終了予定として取得できている作品はありません。`
 ---
 
 <BaseLayout title={title} description={description}>
@@ -72,9 +85,15 @@ const description =
     <a href="/category/leaving">配信終了予定</a>
   </nav>
 
-  {/* 見出しの直上。src/assets/services/<キー>.png を置くと出る */}
-  <LeadImage image={lead} alt="" />
-
+  {/*
+    ★ 見出しの直上に置いていたサービス画像（LeadImage）を**外した**（2026-09-07）。
+      あれは汎用の絵（再生記号）で、作品でもサービスのロゴでもない。
+      本文幅いっぱいの帯を占めるわりに読者に渡すものが無く、
+      **本命のカレンダーと表を画面の外へ押し下げていた。**
+      ★ カードのサムネイル（Thumb.astro）としては**残してある。**
+        一覧の中で行を見分ける手掛かりになっており、そちらは用がある。
+      戻すときは `LeadImage` を import して `<LeadImage image={serviceImage(service!)} alt="" />`。
+  */}
   <h1>{title}</h1>
 
   {/*
@@ -106,6 +125,15 @@ const description =
     {label}の都合により変更される場合があります。ご視聴前に公式サイトでご確認ください。
   </p>
 
+  {/*
+    配信カレンダー。**冒頭文より上**に置く（2026-09-07）。
+    このページに来た読者がまず知りたいのは「今月のいつ消えるのか」で、
+    それに1画面で答えるのが升目の役目。件数の文と検索窓はその下でよい。
+  */}
+  {calendar.hasEvents && (
+    <EventCalendar months={calendar.months} leavingPrefix="#" arrivalsPrefix="#" />
+  )}
+
   {
     works.length === 0 ? (
       <p class="empty">
@@ -123,7 +151,8 @@ const description =
         */}
         <div class="list-head">
           <p class="summary">
-            <strong>{works.length}本</strong>が終了予定です。終了日の遅い順（先の日付が上）に並べています。
+            <strong>{works.length}本</strong>が終了予定です。
+            <strong>終了日の近い順</strong>（きょうに近い日付が上）に並べています。
             最も近い終了日は{formatDate(nearest!.date)}です。
           </p>
           <WorkSearch label="終了予定の作品を探す" />
@@ -159,6 +188,14 @@ const description =
       ))
     }
     <a href={`/arrivals/${service}`}>{label}の新着配信</a>
+    {/*
+      ★ 終了と新着を1枚にまとめたページ（2026-09-07 追加）。
+        左の枠からは外してあるので、**サイト内でここが主な入口**。
+        消すと孤立ページになる。
+    */}
+    {ARRIVALS_SERVICES.some((s) => s.key === service) && (
+      <a href={`/calendar/${service}`}>{label}の終了・新着をまとめて見る</a>
+    )}
     <a href="/stats">見放題の増減</a>
   </p>
 

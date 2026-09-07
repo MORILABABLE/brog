@@ -81,9 +81,20 @@ export interface PrimeAd {
  * ★ **作品名を書かない。** 「この作品が観られます」と読ませないため。
  *   訴求しているのは会員特典であって、個別の作品の在庫ではない。
  */
-type Stance = 'upcoming' | 'arrivals' | 'leaving'
+type Stance = 'upcoming' | 'arrivals' | 'leaving' | 'calendar'
 
 const COPY: Record<Stance, { lead: string }> = {
+  /*
+   * 配信カレンダー（`/calendar/prime-video`）。**終了予定と新着が同じ面に並ぶ。**
+   *
+   * ★ `leaving` や `arrivals` の文言を流用してはいけない。
+   *   どちらも「このページの作品は〜です」と**面の全部**について名乗る書き方で、
+   *   2種類が混ざったページで使うと、片方について嘘になる。
+   *   ここは「並んでいます」と書いて、2種類あることを先に言う。
+   */
+  calendar: {
+    lead: 'このページには、Amazon Prime Video で見放題配信の終了予定日が公表されている作品と、見放題配信が始まった作品が並んでいます。見放題の作品は、Amazonプライム会員なら追加料金なしで観られます。',
+  },
   upcoming: {
     lead: 'このページの作品は、Amazon Prime Video で見放題配信が始まる予定のものです。見放題の作品は、Amazonプライム会員なら追加料金なしで観られます。',
   },
@@ -132,6 +143,19 @@ export interface PrimeAdInput {
   tags?: readonly string[]
   /** ページのカテゴリ */
   category?: CategorySlug
+  /**
+   * 配信カレンダー（`/calendar/<サービス>`）から呼ぶときだけ `true`。
+   *
+   * ★ カレンダーは**終了予定と新着が同居する面**で、カテゴリを1つに決められない。
+   *   `category` を渡すと、渡さなかったほうの作品について文言が嘘になる。
+   *   専用の文言（`COPY.calendar`）に切り替えるための印。
+   *
+   * ★ **`ended` は混ざらない。** カレンダーが読むのは
+   *   `loadLeaving()`（これから終了する＝まだ観られる）と
+   *   `loadArrivals()`（見放題に入った）の2つだけ（lib/events-data.ts）。
+   *   終了済みを足したくなったら、この枠を出す条件から見直すこと。
+   */
+  calendar?: boolean
 }
 
 /**
@@ -147,7 +171,8 @@ export function primeAd(input: PrimeAdInput): PrimeAd | null {
   if (!tag) return null
 
   const category = input.category
-  if (!category || !OK_CATEGORIES.includes(category)) return null
+  // カレンダーはカテゴリを持たない面。中身は leaving と arrivals だけなので条件を満たす
+  if (!input.calendar && (!category || !OK_CATEGORIES.includes(category))) return null
 
   // 主題が Prime Video であること。常設ページはキー、記事はタグで判定する。
   const isPrime = input.service === PRIME_KEY || (input.tags ?? []).includes(PRIME_LABEL)
@@ -162,8 +187,9 @@ export function primeAd(input: PrimeAdInput): PrimeAd | null {
 
   // ★ 配信開始「予定」は arrivals の中に混じっている（記事タイプが同じカテゴリを使う）。
   //   「始まった」と書くと予定日前の作品を観られると読ませるので、タグで分ける。
-  const stance: Stance =
-    category === 'leaving'
+  const stance: Stance = input.calendar
+    ? 'calendar'
+    : category === 'leaving'
       ? 'leaving'
       : (input.tags ?? []).includes(UPCOMING_TAG)
         ? 'upcoming'

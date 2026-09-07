@@ -21,9 +21,30 @@ interface Props {
    *   **Netflixの一覧から Apple TV の作品ページへ飛ぶ行**が混ざる。
    */
   service?: string
+  /**
+   * 日付見出しの `id` に付ける頭（`leaving-` など）。既定は無し。
+   *
+   * ★ **1ページに表を2つ以上置くときだけ渡す。**
+   *   id は `2026-09-30` のような日付そのものなので、
+   *   終了予定と新着を同じページに並べると**同じ id が2つできる**。
+   *   配信カレンダー（pages/calendar/[service].astro）の升目は
+   *   この id を目掛けて飛ぶので、重複するとリンクが先頭の表にしか当たらない。
+   *   ★ カレンダー側の `leavingPrefix` / `arrivalsPrefix` と必ず揃えること。
+   */
+  idPrefix?: string
+  /**
+   * 日付見出しの見出しレベル。既定は `h2`。
+   *
+   * ★ 上に「見放題配信が終了する予定」のような節見出し（h2）を置くページでは
+   *   `3` を渡す。同じ階層に h2 が2種類並ぶと、見出しの木が読み上げで崩れる。
+   */
+  headingLevel?: 2 | 3
 }
 
-const { groups, dateNoun, service } = Astro.props
+const { groups, dateNoun, service, idPrefix = '', headingLevel = 2 } = Astro.props
+
+/* 動的なタグ名は**大文字で始まる変数**にしないと Astro が要素として書き出さない */
+const Heading = headingLevel === 3 ? 'h3' : 'h2'
 
 /**
  * 作品一覧の表。常設ページ（配信終了予定 / 新着配信）で共有する。
@@ -98,12 +119,12 @@ function searchText(title: string, originalTitle?: string): string {
 {
   groups.map((g) => (
     <section class="day">
-      <h2 id={isoDate(g.date)}>
+      <Heading class="day-title" id={`${idPrefix}${isoDate(g.date)}`}>
         <time datetime={isoDate(g.date)}>{formatDate(g.date)}</time>
         <span class="count">
           {g.works.length}本{dateNoun}
         </span>
-      </h2>
+      </Heading>
       <div class="table-wrap">
         <table>
           <thead>
@@ -173,11 +194,20 @@ function searchText(title: string, originalTitle?: string): string {
 }
 
 <style>
-  .day h2 {
+  .day-title {
     display: flex;
     align-items: baseline;
     gap: 0.7rem;
     font-size: 1.05rem;
+    /*
+     * ★ カレンダーの升目から飛んできたときに、見出しが
+     *   **固定ヘッダーの下に潜らない**ようにする（components/Header.astro の
+     *   `position: sticky`）。ヘッダーは1行で約55px、狭い画面で折り返すと
+     *   2行になるので、そちらに合わせた 6rem を取ってある。
+     *   ★ これが無いと、押した日の見出しがヘッダーに隠れて
+     *     「1つ前の日に飛んだ」ように見える。
+     */
+    scroll-margin-top: 6rem;
   }
   .count {
     font-size: 0.8rem;

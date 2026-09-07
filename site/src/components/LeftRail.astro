@@ -76,6 +76,21 @@ const GuideTag = guideIsCurrent ? 'span' : 'a'
  */
 const RAIL_PEOPLE = 6
 
+/*
+ * ■ 一度3枚（サービス1社1枚の配信カレンダー）に畳んで、**5枚に戻した**（2026-09-07）
+ *
+ * 畳んだ形では、カードの外に「終了予定／新着」の小さいリンクを付け足す必要があった
+ * （リンクの中にリンクは置けないため）。**カードの下に文字がぶら下がる見た目が悪い。**
+ *
+ * 戻したうえで、**升目そのものは5ページの中に入れた**
+ * （pages/leaving/[service].astro と pages/arrivals/[service].astro の EventCalendar）。
+ * 読者が得たかったもの（日付から入る）は各ページが持っているので、
+ * この枠は従来どおり「どの一覧へ行くか」だけを担えばよい。
+ *
+ * ★ `/calendar/<サービス>`（終了と新着を1枚にまとめたページ）は**残してあるが、
+ *   この枠からは外した。** 行き先は各常設ページの末尾の関連リンクだけ。
+ */
+
 const railPeople = topPeople(RAIL_PEOPLE)
 const peopleTotal = publishablePeople().length
 ---
@@ -126,11 +141,12 @@ const peopleTotal = publishablePeople().length
   <nav class="block" aria-label="新着配信・終了一覧">
     <p class="block-title">新着配信・終了一覧</p>
     {/*
-      検索窓（WorkSearch.astro）があることを知らせて、使ってもらうための一文。
-      ★ 検索できるのは各カードの**リンク先**であって、この枠ではない。
-        文面を変えるときも「この枠で検索できる」と読める書き方にしないこと。
+      枠の中身ではなく、**リンク先で何ができるか**を伝える一文。
+      ★ 升目（EventCalendar.astro）も検索窓（WorkSearch.astro）も、
+        あるのは各カードの**リンク先**であって、この枠ではない。
+        文面を変えるときも「この枠で探せる」と読める書き方にしないこと。
     */}
-    <p class="block-note">更新タイトルを検索できます</p>
+    <p class="block-note">カレンダーと検索で探せます</p>
     <ul class="cards">
       {
         EVERGREEN_PAGES.map((p) => {

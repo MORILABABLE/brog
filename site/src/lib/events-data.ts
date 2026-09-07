@@ -262,19 +262,31 @@ export const LEAVING_SERVICES = [
 ] as const
 
 /**
- * 指定サービスで「これから終了する」作品を、**終了日の遅い順**に返す。
+ * 指定サービスで「これから終了する」作品を、**終了日が近い順**に返す。
  *
- * ★ 2026-08-31 に早い順（＝古い順）から入れ替えた。
- *   このサイトの終了予定は月末に集中する（U-NEXT は告知が4週間先までで、
- *   Prime Video は終了の約11日前にしか出ない）。早い順にすると、
- *   いちばん本数の多い月末の束が毎回いちばん下に落ちて、
- *   一覧を開いた読者が最初に見るのは**数本しかない直近の日**になっていた。
+ * ■ 並びの決まりは新着（`loadArrivals`）と共通で「**きょうに近い順**」
+ * 2つのページで向きが逆に見えるが、**規則は1つ**。
  *
- * ★ **新着配信（`loadArrivals`）とは向きが揃わなくなった。** 揃えるために
- *   どちらかを戻さないこと。並びの根拠が「上から時間が進む」ではなく
- *   「先に見せたい束を上に置く」に変わっており、
- *   何が先に来てほしいかは2つのページで違う。
- *   ページ側の説明文（pages/leaving/[service].astro）も**必ず一緒に直すこと。**
+ *     終了予定（未来）… 9/7 → 9/8 → … → 9/30   （日付は昇順）
+ *     新着（過去）    … 9/4 → 9/3 → … → 7/26   （日付は降順）
+ *
+ * どちらも**きょうから遠ざかる向き**に並ぶ。読者が先に知りたいのは
+ * 「次に何が起きるか」なので、時間の絶対的な向きではなく
+ * **きょうからの距離**で並べる（2026-09-07 の判断）。
+ * ★ 片方だけ変えないこと。**規則が2つに割れる。**
+ *
+ * ■ 2026-08-31 の判断（終了日の遅い順）を戻した
+ * あのときは「終了予定は月末に集中するので、早い順にすると
+ * いちばん本数の多い月末の束が毎回いちばん下に落ちる」ことを理由に遅い順にした。
+ * **その理由は 2026-09-07 のカレンダーで消えた** — 月末の束は
+ * 升目の `終14` として1画面目に出るので、表の先頭を月末に使う必要がない。
+ * 表の先頭は「いちばん急いで確かめるべき日」に戻せる。
+ *
+ * ★ ページ側の説明文（pages/leaving/[service].astro と
+ *   pages/calendar/[service].astro）も**必ず一緒に直すこと。**
+ *   並びと説明文が食い違うと、読者はどちらも信用しなくなる。
+ * ★ **`nearest`（最も近い終了日）は先頭**になった。
+ *   以前は末尾だったので `groups.at(-1)` を書いていた箇所がある。
  */
 export function loadLeaving(service: string): WorkListData {
   const now = Date.now()
@@ -287,8 +299,8 @@ export function loadLeaving(service: string): WorkListData {
   return {
     works: latest
       .map(toRow)
-      // 日付は遅い順、同じ日のなかは題名順（題名だけは昇順のまま）
-      .sort((a, b) => b.at.getTime() - a.at.getTime() || a.title.localeCompare(b.title, 'ja')),
+      // 日付は近い順（昇順）、同じ日のなかは題名順
+      .sort((a, b) => a.at.getTime() - b.at.getTime() || a.title.localeCompare(b.title, 'ja')),
     dataAsOf: asOf(latest),
   }
 }
@@ -312,16 +324,23 @@ export const ARRIVALS_SERVICES = [
 const ARRIVALS_WINDOW_DAYS = 60
 
 /**
- * 指定サービスで最近見放題に入った作品を、**配信開始日の古い順**に返す。
+ * 指定サービスで最近見放題に入った作品を、**配信開始日が新しい順**に返す。
  *
- * ★ 2026-08-27 に新しい順から入れ替えた。
- *   ページは「直近◯日間に入った作品」を頭から順に読ませる作りで、
- *   新しい順だと表が「今日 → さかのぼる」向きになり、
- *   説明文（配信開始日順にまとめています）と読み口が食い違っていた。
- *   ★ 2026-08-31 に終了予定ページ（`loadLeaving`）を遅い順へ変えたので、
- *   **2つのページで向きは揃っていない。** ここを揃えるために引きずられないこと。
- *   このページは「直近◯日間に入った作品」を頭から読ませる作りなので、
- *   古い順のままでよい（説明文とも合っている）。
+ * ■ 並びの決まりは終了予定（`loadLeaving`）と共通で「**きょうに近い順**」
+ * 規則の説明は `loadLeaving` の上に1つだけ置いてある。**両方を同時に読むこと。**
+ * ここでは「きょうに近い＝直近」なので、日付としては降順になる。
+ *
+ *     9/4 → 9/3 → 9/2 → 9/1 → 8/31 → … → 7/26
+ *
+ * ■ 2026-08-27 の判断（古い順）を戻した
+ * あのときは「上から下へ時間が進む向きにそろえる」ことを理由に古い順にした。
+ * **7月・8月に何が入ったかを確かめる用は薄い**（読者が来るのは
+ * 「今月のいつ入ったか」を見るため）ので、
+ * 古い順だと**いちばん要らない2か月前が毎回いちばん上**に来ていた。
+ * 升目を今月から先だけにした判断（lib/calendar.ts）と同じ理由（2026-09-07）。
+ *
+ * ★ ページ側の説明文（pages/arrivals/[service].astro と
+ *   pages/calendar/[service].astro）も**必ず一緒に直すこと。**
  */
 export function loadArrivals(service: string): WorkListData {
   const since = Date.now() - ARRIVALS_WINDOW_DAYS * 86400000
@@ -332,12 +351,46 @@ export function loadArrivals(service: string): WorkListData {
   return {
     works: latest
       .map(toRow)
-      .sort((a, b) => a.at.getTime() - b.at.getTime() || a.title.localeCompare(b.title, 'ja')),
+      // 日付は新しい順（降順）、同じ日のなかは題名順
+      .sort((a, b) => b.at.getTime() - a.at.getTime() || a.title.localeCompare(b.title, 'ja')),
     dataAsOf: asOf(latest),
   }
 }
 
 export { ARRIVALS_WINDOW_DAYS }
+
+// --- 配信カレンダー -----------------------------------------------------------
+
+/**
+ * 配信カレンダー（`/calendar/<サービス>`）を作るサービス。
+ *
+ * **終了予定か新着のどちらかを持つ社**を機械的に拾う。手で並べない。
+ * 実データでは Netflix / Amazon Prime Video / Disney+ の3社になる
+ * （Apple TV+ は `expiring` も `new` も出ないので落ちる）。
+ *
+ * ★ **並びは `API_SERVICES` の定義順。**
+ *   紹介料の高いサービスを上に置かないと決めてある（docs/AFFILIATE.md 7節・
+ *   プライバシーポリシーにも明記）。「Amazon を先頭に」と書いた時点で
+ *   その方針に反するので、**ここは収集対象の定義順のまま固定する。**
+ *
+ * ★ 上の2つ（LEAVING_SERVICES / ARRIVALS_SERVICES）より**後ろ**に置くこと。
+ *   const は上から評価されるので、前に出すと空配列になる。
+ */
+export const CALENDAR_SERVICES = API_SERVICES.filter(
+  (s) =>
+    LEAVING_SERVICES.some((l) => l.key === s.key) ||
+    ARRIVALS_SERVICES.some((a) => a.key === s.key),
+)
+
+/** そのサービスが終了予定の一覧を持っているか（カレンダーの節の出し分けに使う） */
+export function hasLeaving(service: string): boolean {
+  return LEAVING_SERVICES.some((s) => s.key === service)
+}
+
+/** そのサービスが新着の一覧を持っているか */
+export function hasArrivals(service: string): boolean {
+  return ARRIVALS_SERVICES.some((s) => s.key === service)
+}
 
 // --- 定点観測（月次の出入り） -------------------------------------------------
 

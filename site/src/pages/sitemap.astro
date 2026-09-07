@@ -10,7 +10,13 @@ import {
 } from '../config'
 import { archiveMonths, servicesIn } from '../lib/archive'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../lib/events-data'
-import { EVERGREEN_PAGES, evergreenSummary, evergreenTitle } from '../lib/evergreen'
+import {
+  CALENDAR_PAGES,
+  EVERGREEN_PAGES,
+  calendarSummary,
+  evergreenSummary,
+  evergreenTitle,
+} from '../lib/evergreen'
 import { serviceHasContent, serviceSection } from '../lib/service-pages'
 import { publishablePeople } from '../lib/people'
 import { STATE_CATEGORY, STATE_LABEL, STATE_ORDER_KEYS, publishableWorkPages } from '../lib/works'
@@ -59,6 +65,13 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
 // --- 常設ページ ---------------------------------------------------------------
 
 const evergreen = EVERGREEN_PAGES.map((page) => ({ page, ...evergreenSummary(page) }))
+
+/*
+ * 配信カレンダー（2026-09-07 追加）。サービス1社1枚。
+ * ★ **上の常設ページとは別に数える。** 中身は同じデータだが別のURLで、
+ *   左の枠（LeftRail.astro）が指しているのはこちら。
+ */
+const calendars = CALENDAR_PAGES.map((page) => ({ page, ...calendarSummary(page) }))
 
 // --- 一覧ページ（カテゴリ / サービス）------------------------------------------
 
@@ -156,6 +169,7 @@ const total =
   fixedPages.length +
   people.length +
   evergreen.length +
+  calendars.length +
   posts.length +
   categoryPages.length +
   categoryServicePages.length +
@@ -225,6 +239,28 @@ const description = `${SITE.name}の全ページ一覧です。作品ページ${
         </div>
       ))
     }
+  </section>
+
+  <section>
+    <h2>配信カレンダー<span class="count">{calendars.length}</span></h2>
+    <p class="lead">
+      サービス1社につき1枚。終了予定と新着を1枚にまとめ、
+      先頭に月の升目を置いている（2026-09-07 追加）。
+      <strong>左の枠が指しているのはこちら。</strong>
+      下の「常設の作品一覧」は種類ごとの一覧で、こちらとは別のURLとして残してある。
+    </p>
+    <ul>
+      {
+        calendars.map((c) => (
+          <li>
+            <a href={c.page.href}>{evergreenTitle(c.page.titleBase, c.dataAsOf)}</a>
+            <span class="meta">
+              終了{c.leaving}本・新着{c.arrivals}本
+            </span>
+          </li>
+        ))
+      }
+    </ul>
   </section>
 
   <section>

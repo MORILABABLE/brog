@@ -1,0 +1,407 @@
+---
+import type { CalendarMonth } from '../lib/calendar'
+
+interface Props {
+  months: CalendarMonth[]
+  /**
+   * 「終了」の升目を押したときの行き先の頭。`#leaving-` のような文字列。
+   * 後ろに `2026-09-30`（`isoDate()` の形）が付く。
+   *
+   * ★ **同じページの中に飛ばすなら `#` から始める。** 別ページへ送るなら
+   *   `/leaving/netflix#leaving-` のように書けば、この部品は何も変えずに使える。
+   */
+  leavingPrefix: string
+  /** 「新着」の升目を押したときの行き先の頭 */
+  arrivalsPrefix: string
+}
+
+const { months, leavingPrefix, arrivalsPrefix } = Astro.props
+
+/*
+ * どちらの種類が実際に点いているか。**凡例の出し分けに使う。**
+ *
+ * ★ 常設ページ（/leaving/… /arrivals/…）は片方しか渡さない。
+ *   そこで「見放題に入った日」の凡例まで出すと、**1つも無い印の説明**が並び、
+ *   読者は「青い日がどこかにあるはず」と探すことになる。
+ */
+const hasLeaving = months.some((m) => m.leaving > 0)
+const hasArrivals = months.some((m) => m.arrivals > 0)
+
+/**
+ * 月の升目。常設ページ（カレンダー）の先頭に置く。
+ *
+ * ■ 何のためにあるか
+ * 一覧は上から読ませる作りなので、「今月の終わりに何本消えるのか」を
+ * 知りたい読者は**スクロールしないと分からない**。
+ * 升目にすると、点いている日が一目で分かり、そこから本文へ直接飛べる。
+ *
+ * ■ 置いてあるところ（3種類）
+ *   /leaving/<サービス>  … 終了予定だけ（赤）。行き先は同じページの日付見出し
+ *   /arrivals/<サービス> … 新着だけ（青）。同上
+ *   /calendar/<サービス> … 両方。id が衝突するので行き先に頭を付ける
+ * **片方しか渡されない使い方が主**なので、凡例は中身を見て出し分ける（下の hasLeaving/hasArrivals）。
+ *
+ * ■ 描くのは今月から先だけ
+ * 過去の月は描かない（lib/calendar.ts の `buildCalendar`）。
+ * 読者の用は「今月のいつ始まって、いつ終わるのか」で、
+ * 過去2か月ぶんの升目は本文を押し下げるだけだった（2026-09-07）。
+ *
+ * ■ 押せるのは点いている日だけ
+ * 何も無い日をリンクにすると、押しても何も起きないマスが大半になる。
+ * 件数が 0 の日は文字だけにして、押せないことを見た目で示す。
+ *
+ * ■ 色だけに意味を持たせない（styles/global.css の :root と同じ決まり）
+ * 升目には**「終」「新」の1文字と本数**を必ず出す。
+ * 色覚特性のある読者・印刷・モノクロ表示では色が届かないため、
+ * 赤と青は「速く読むための補助」であって、意味の担い手ではない。
+ *
+ * ■ なぜ赤なのか（カテゴリバッジのアンバーではなく）
+ * バッジの色は「記事の種類」を表す分類の色で、こちらは**危険信号**。
+ * 軸が違うので同じ色にする理由が無く、同じ画面に並んでも競合しない
+ * （カレンダーの升目と記事カードのバッジが隣り合うことはない）。
+ * 色の定義は styles/global.css の `--cal-leaving` / `--cal-arrivals`。
+ *
+ * ■ JavaScript を使わない
+ * 升目はただのページ内リンク。作品検索（WorkSearch.astro）と違って
+ * 読者の入力に反応する必要が無いので、素の `<a href="#...">` で足りる。
+ * ★ 飛んだ先が固定ヘッダーに隠れないよう、見出し側に `scroll-margin-top` が要る
+ *   （components/WorkTable.astro の `.day h2`）。**片方だけ直さないこと。**
+ */
+
+/** 曜日の見出し。日曜始まり（日本の暦の並び）。 */
+const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'] as const
+
+/** `2026-09-30` → `9月30日`。読み上げ用の文言に使う。 */
+function spoken(iso: string): string {
+  return `${Number(iso.slice(5, 7))}月${Number(iso.slice(8, 10))}日`
+}
+---
+
+<section class="calendar" aria-labelledby="calendar-title">
+  <h2 id="calendar-title">配信カレンダー</h2>
+
+  {/*
+    凡例。**色の説明ではなく、升目に出る文字の説明**として書く。
+    「赤い日」と書くと、色が届かない読者に何も伝わらない。
+  */}
+  <p class="legend">
+    {hasLeaving && <span class="key lv"><span class="chip">終</span>見放題が終了する日</span>}
+    {hasArrivals && <span class="key ar"><span class="chip">新</span>見放題に入った日</span>}
+  </p>
+  <p class="how">数字は本数です。点いている日を押すと、その日の作品一覧まで移動します。</p>
+
+  <div class="months">
+    {
+      months.map((m) => (
+        <table class="month">
+          <caption>
+            <span class="month-name">{m.label}</span>
+            <span class="month-sum">
+              {m.leaving > 0 && <span class="sum lv">終了{m.leaving}本</span>}
+              {m.arrivals > 0 && <span class="sum ar">新着{m.arrivals}本</span>}
+              {m.leaving === 0 && m.arrivals === 0 && <span class="sum none">なし</span>}
+            </span>
+          </caption>
+          <thead>
+            <tr>
+              {WEEKDAYS.map((w) => (
+                <th scope="col">{w}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {m.weeks.map((week) => (
+              <tr>
+                {week.map((d) => {
+                  /* 前後の月の埋め草。日付を持たないので中身も入れない */
+                  if (!d) return <td class="pad" />
+
+                  const both = d.leaving > 0 && d.arrivals > 0
+                  const cls = ['cell', d.isToday && 'is-today']
+
+                  /*
+                   * 何も無い日。**押せない見た目にする。**
+                   * 「きょう」だけは印を残す（現在地が消えると暦が読めない）。
+                   */
+                  if (d.leaving === 0 && d.arrivals === 0) {
+                    return (
+                      <td>
+                        <span class:list={[...cls, 'is-empty']}>
+                          <span class="num">{d.day}</span>
+                          {d.isToday && <span class="visually-hidden">きょう</span>}
+                        </span>
+                      </td>
+                    )
+                  }
+
+                  /*
+                   * 片方だけの日（実データはほぼこれ。新着は過去・終了は未来にしか出ない）。
+                   * **升目まるごとをリンクにする。** 指で押す的が升目いっぱいになる。
+                   */
+                  if (!both) {
+                    const lv = d.leaving > 0
+                    const n = lv ? d.leaving : d.arrivals
+                    return (
+                      <td>
+                        <a
+                          class:list={[...cls, 'is-hit', lv ? 'lv' : 'ar']}
+                          href={`${lv ? leavingPrefix : arrivalsPrefix}${d.iso}`}
+                          aria-label={`${spoken(d.iso)} 見放題${lv ? '終了' : '開始'}${n}本の一覧へ移動`}
+                        >
+                          <span class="num">{d.day}</span>
+                          {d.isToday && <span class="visually-hidden">きょう</span>}
+                          <span class="mark" aria-hidden="true">
+                            <span class="chip">{lv ? '終' : '新'}</span>
+                            {n}
+                          </span>
+                        </a>
+                      </td>
+                    )
+                  }
+
+                  /*
+                   * 両方ある日。**行き先が2つあるので升目そのものはリンクにしない**
+                   * （リンクの中にリンクは置けない）。
+                   * 実データでは起きにくいが、収集の巡り合わせで起こりうる。
+                   */
+                  return (
+                    <td>
+                      <span class:list={[...cls, 'is-hit', 'is-both']}>
+                        <span class="num">{d.day}</span>
+                        {d.isToday && <span class="visually-hidden">きょう</span>}
+                        <a
+                          class="mark lv"
+                          href={`${leavingPrefix}${d.iso}`}
+                          aria-label={`${spoken(d.iso)} 見放題終了${d.leaving}本の一覧へ移動`}
+                        >
+                          <span class="chip" aria-hidden="true">終</span>
+                          <span aria-hidden="true">{d.leaving}</span>
+                        </a>
+                        <a
+                          class="mark ar"
+                          href={`${arrivalsPrefix}${d.iso}`}
+                          aria-label={`${spoken(d.iso)} 見放題開始${d.arrivals}本の一覧へ移動`}
+                        >
+                          <span class="chip" aria-hidden="true">新</span>
+                          <span aria-hidden="true">{d.arrivals}</span>
+                        </a>
+                      </span>
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .calendar {
+    margin: 1.4rem 0 0;
+  }
+  .calendar h2 {
+    margin-bottom: 0.3rem;
+    font-size: 1.05rem;
+  }
+
+  /* --- 凡例と使い方 --- */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+  .key {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .how {
+    margin: 0.2rem 0 0.7rem;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /*
+   * 「終」「新」の1文字。**升目の中と凡例で同じ形にする。**
+   * 凡例で見た印と升目の印が違って見えると、対応を読み取れない。
+   */
+  .chip {
+    display: inline-block;
+    min-width: 1.05em;
+    padding: 0 0.1em;
+    border-radius: 3px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+  }
+  .lv .chip {
+    background: var(--cal-leaving-bg);
+    color: var(--cal-leaving);
+  }
+  .ar .chip {
+    background: var(--cal-arrivals-bg);
+    color: var(--cal-arrivals);
+  }
+
+  /* --- 月の並び --- */
+  /*
+   * ★ `auto-fill`。`auto-fit` にすると、3か月目が1つだけ残った行で
+   *   本文幅いっぱい（736px）に伸び、**月ごとに升目の大きさが変わる。**
+   *   空の列を残す auto-fill なら、余った月も同じ幅のまま置かれる。
+   */
+  .months {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 1rem;
+  }
+
+  .month {
+    width: 100%;
+    border-collapse: collapse;
+    /* 7列を必ず等幅にする。中身の文字数で列幅が動くと暦に見えない */
+    table-layout: fixed;
+  }
+  caption {
+    /* 表の外に出る見出し。左寄せにして本文の流れに合わせる */
+    text-align: left;
+    padding: 0 0 0.25rem;
+  }
+  .month-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .month-sum {
+    margin-left: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 400;
+  }
+  .sum + .sum {
+    margin-left: 0.4rem;
+  }
+  .sum.lv {
+    color: var(--cal-leaving);
+  }
+  .sum.ar {
+    color: var(--cal-arrivals);
+  }
+  .sum.none {
+    color: var(--text-muted);
+  }
+
+  /*
+   * 曜日の見出し。**日曜を赤・土曜を青にしない。**
+   * 暦の慣習ではそうなっているが、このカレンダーでは
+   * 赤＝終了・青＝新着に意味を割り当てている。曜日にも同じ色を使うと、
+   * 「赤い日」が2つの意味を持つことになる。
+   */
+  thead th {
+    padding: 0.1rem 0;
+    font-size: 0.68rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+  td {
+    padding: 1px;
+    text-align: center;
+    vertical-align: top;
+  }
+
+  .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.1rem;
+    /*
+     * 升目の高さ。**数字1行＋印1行が入る最小**にしてある。
+     * 3か月ぶん並ぶので、1マスを大きくすると本文が画面2つぶん下へ落ちる。
+     */
+    min-height: 2.5rem;
+    padding: 0.15rem 0.1rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-muted);
+  }
+  .num {
+    font-size: 0.76rem;
+    font-weight: 400;
+    line-height: 1.25;
+  }
+  /* 押せる升目は数字も本文色にして、空の日との差を色以外でも出す */
+  .cell.is-hit {
+    background: var(--bg-subtle);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .cell.is-hit .num {
+    font-weight: 700;
+  }
+  a.cell:hover,
+  .is-both:hover {
+    border-color: var(--accent);
+  }
+  a.cell:focus-visible,
+  .mark:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  /* きょう。輪郭で示す（色は意味に使い切っているので使わない） */
+  .cell.is-today {
+    border-color: var(--text-muted);
+    border-style: dashed;
+  }
+  .cell.is-hit.is-today {
+    border-style: solid;
+    box-shadow: 0 0 0 1px var(--text-muted);
+  }
+
+  /* 升目の中の印。「終14」「新5」 */
+  .mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.4;
+    /* 「終」「1」「4」で折り返させない */
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .cell.lv .mark,
+  a.mark.lv {
+    color: var(--cal-leaving);
+  }
+  .cell.ar .mark,
+  a.mark.ar {
+    color: var(--cal-arrivals);
+  }
+  /* 両方ある日は印が2つ縦に並ぶ。升目が縦に伸びるのは許す（数が少ないため） */
+  .is-both {
+    gap: 0.05rem;
+  }
+
+  /*
+   * 幅の狭い画面。**升目は詰めるが、印の文字は小さくしない。**
+   * ここを縮めると「終14」が読めなくなり、カレンダーの用が消える。
+   */
+  @media (max-width: 24rem) {
+    .cell {
+      min-height: 2.3rem;
+      padding: 0.1rem 0;
+    }
+    .num {
+      font-size: 0.72rem;
+    }
+  }
+</style>

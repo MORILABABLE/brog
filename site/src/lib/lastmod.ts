@@ -146,6 +146,6 @@ export function lastmodFor(url: string): string | undefined {
     path === '/' ||
     path === '/stats' ||
     path === '/person' ||
-    /^\/(works|person|leaving|arrivals|category|service|genre)\//.test(path)
+    /^\/(works|person|leaving|arrivals|calendar|category|service|genre)\//.test(path)
   return dataDriven ? data : undefined
 }
