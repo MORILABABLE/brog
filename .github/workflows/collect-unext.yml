@@ -26,6 +26,9 @@ on:
       refresh_max:
         description: '取り直す作品ページの上限（0で取り直さない）'
         default: '150'
+      catalog_pages:
+        description: 'カタログ索引を進めるページ数（0で歩かない）'
+        default: '250'
 
 permissions:
   contents: write
@@ -73,6 +76,27 @@ jobs:
         env:
           REFRESH_MAX: ${{ inputs.refresh_max || '150' }}
         run: npm run unext:refresh -- --max "$REFRESH_MAX"
+
+      # カタログ索引を少しずつ広げる。
+      #
+      # ■ なぜ「少しずつ」なのか
+      # 全ジャンルの「すべての作品」は 2,114ページ・約88分ある（docs/UNEXT.md）。
+      # 1回で歩くのは相手のサーバーに対して乱暴で、ジョブも長くなる。
+      # **ジャンルごとに続きから再開する**ので、週2回×250ページで
+      # 1周あたり4〜5週間かけて回る。
+      #
+      # ■ 何のためか
+      # 「台帳に無い＝U-NEXTに無い」ではない、という穴を埋める
+      # （docs/CROSS-SERVICE.md 3-2 / docs/OWN-LEDGER.md）。
+      # 歩き終えたジャンルだけが「歩いた範囲」として使われる。
+      #
+      # 失敗しても収集ぶんは残したいので continue-on-error。
+      - name: カタログ索引を広げる
+        if: ${{ (inputs.catalog_pages || '250') != '0' }}
+        continue-on-error: true
+        env:
+          CATALOG_PAGES: ${{ inputs.catalog_pages || '250' }}
+        run: npm run unext:catalog -- --max-pages "$CATALOG_PAGES"
 
       - name: 収集結果を通知
         continue-on-error: true

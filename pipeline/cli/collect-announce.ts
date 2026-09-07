@@ -43,7 +43,13 @@ import {
   saveAnnouncedWorks,
 } from '../sources/announced-works.ts'
 import { appendEvents, dedupe, loadLedger, saveLedger, eventKey } from '../core/events.ts'
-import { addUsage } from '../core/api-usage.ts'
+import {
+  addUsage,
+  FREE_TIER_LIMIT,
+  readUsage,
+  scheduledRemaining,
+  warnIfLow,
+} from '../core/api-usage.ts'
 import { formatFullDate } from '../core/datetime.ts'
 import type { ChangeEvent } from '../sources/types.ts'
 import { appendFileSync } from 'node:fs'
@@ -96,7 +102,41 @@ async function main(): Promise<void> {
   const dryRun = process.argv.includes('--dry-run') || check
   const withImages = !process.argv.includes('--no-images') && !check
   const month = arg('month') ?? nextYearMonth(theme.utc_offset_minutes)
-  const maxLookups = Number(arg('max-lookups') ?? DEFAULT_MAX_LOOKUPS)
+  const askedLookups = Number(arg('max-lookups') ?? DEFAULT_MAX_LOOKUPS)
+
+  /*
+   * ★ **残り枠に収まる数まで自動で削る**（2026-09-07 追加）。
+   *
+   * ■ なぜ要るのか
+   * APIを使う定期実行は `collect.yml`（週2・1回あたり約20回）と、
+   * ここ（**告知が出た日だけ・1回あたり最大60回**）の2つだけ。
+   * `collect-unext.yml` は実ブラウザなので0回、`images.yml` は
+   * `make-sections.mjs` を呼ぶだけで0回。
+   *
+   * **枠を食い潰す可能性があるのはここ。** 告知は月末にまとまって出るので、
+   * 数日続けて60回ずつ引くと、月末の `collect` が落ちる。
+   *
+   * ■ どう決めるか
+   * **収集を優先する。** 記事の素材は `collect` が取るもので、
+   * こちらが取るのは**画像**（無くても記事は書ける）。
+   * 月末までの定期収集ぶんを先に確保して、余った範囲で引く。
+   *
+   * ★ 0件になっても**告知の取り込み自体は続ける**。画像が付かないだけで、
+   *   作品名と日付は記事に出せる（`images.yml` があとで拾う）。
+   */
+  const usageNow = await readUsage(theme.utc_offset_minutes)
+  // ★ 自分（announce）のぶんは外す。入れると自分の枠を自分に予約することになる。
+  const reserve = scheduledRemaining(new Date(), theme.utc_offset_minutes, {
+    excludeAnnounce: true,
+  })
+  const spare = Math.max(0, FREE_TIER_LIMIT - usageNow.used - reserve)
+  const maxLookups = Math.min(askedLookups, spare)
+  if (maxLookups < askedLookups) {
+    console.log(
+      `画像の取得を ${askedLookups} → ${maxLookups}件に減らします` +
+        `（今月の消費 ${usageNow.used}/${FREE_TIER_LIMIT}・月末までの collect ぶん ${reserve}回を確保）。`,
+    )
+  }
 
   const configured = theme.announcements ?? []
   if (configured.length === 0) {
@@ -222,6 +262,7 @@ async function main(): Promise<void> {
       if (!dryRun) await saveAnnouncedWorks(store)
       const usage = await addUsage(source.requestCount, theme.utc_offset_minutes)
       console.log(`${usage.month} の消費 ${usage.used}/${usage.limit}`)
+      warnIfLow(usage)
     }
   } else if (withImages) {
     console.log('STREAMING_API_KEY が無いので画像は取りません（記事は文字だけで書けます）')

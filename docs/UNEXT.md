@@ -18,6 +18,7 @@ U-NEXT だけは Streaming Availability API の外側にあるので、自前で
 | `npm run unext:menu` | ジャンルとカテゴリのIDを調べる（`theme.yaml` に貼る形で出る） |
 | `npm run collect:unext` | 新着・配信終了予定を収集して記録する |
 | `npm run unext:refresh` | 作品台帳の情報を取り直す（**終了日の変更を見つける**） |
+| `npm run unext:catalog` | **カタログ索引を広げる**（各ジャンルの「すべての作品」を1周。[OWN-LEDGER.md](./OWN-LEDGER.md)） |
 
 ```bash
 npm run collect:unext                                    # 新着と終了予定

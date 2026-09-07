@@ -328,6 +328,33 @@ export class UnextSource implements Source {
   }
 
   /**
+   * カタログ索引のために、一覧ページを**1ページだけ**読む。
+   *
+   * ■ `listCategoryTitles` と何が違うか
+   * あちらは掲載NGの判定用で、返すのは**IDと題名だけ**。
+   * こちらは索引に入れるので、見放題区分と評価まで込みの `Work` を返す。
+   *
+   * ■ なぜ1ページずつなのか
+   * カタログ全体は 2,114ページ・約88分ある（2026-09-07 実測）。
+   * **1回の実行で歩き切らない**前提なので、ページ単位で呼び出し側に返し、
+   * 予算が尽きたところで中断・再開できるようにする（`cli/unext-catalog.ts`）。
+   *
+   * ★ **作品ページは開かない。** 索引に日付は要らないし、
+   *   63,251件ぶん開くのは相手への負荷として論外。
+   */
+  async listWorksPage(
+    genre: UnextGenreConfig,
+    page: number,
+  ): Promise<{ works: Work[]; pages: number; results: number }> {
+    const { titles, pageInfo } = await this.#listPage(genre.id, genre.all, page, 'popular')
+    return {
+      works: titles.map((t) => this.#toWork(t, genre)),
+      pages: pageInfo?.pages ?? 0,
+      results: pageInfo?.results ?? 0,
+    }
+  }
+
+  /**
    * カテゴリ1つぶんの作品を、最後のページまで読む。
    *
    * ■ 何のためにあるか

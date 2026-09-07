@@ -69,7 +69,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { loadTheme } from '../theme.ts'
 import { StreamingAvailabilitySource } from '../sources/streaming-availability.ts'
-import { addUsage } from '../core/api-usage.ts'
+import { addUsage, warnIfLow } from '../core/api-usage.ts'
 import { readAllEventsSync, withJapaneseWorkTitle } from '../core/events.ts'
 import { appendHistory, type StockChange } from '../core/history.ts'
 import {
@@ -497,6 +497,17 @@ async function main(): Promise<void> {
     }
   }
 
+  /*
+   * ★ **消費は `--dry-run` でも必ず記録する**（2026-09-07 修正）。
+   *   それまでは「リクエストは消費しています」と表示しながら
+   *   `addUsage` を通らずに return していた。
+   *   **枠の台帳が実際より少なく出る**ので、残量を見て判断できなくなる。
+   *   2026-09-07 に実際にずれた（下見と点検で51回ぶんが記録から抜けていた）。
+   */
+  const usage = await addUsage(source.requestCount, theme.utc_offset_minutes)
+  console.log(`APIリクエスト ${source.requestCount}回  ${usage.month} の消費 ${usage.used}/${usage.limit}`)
+  warnIfLow(usage)
+
   if (has('dry-run')) {
     console.log('')
     console.log('--dry-run なので保存しませんでした（**リクエストは消費しています**）。')
@@ -508,7 +519,6 @@ async function main(): Promise<void> {
   if (history.length > 0) {
     console.log(`在庫の履歴に ${history.length}件 追記しました（data/history/）。`)
   }
-  await addUsage(source.requestCount, theme.utc_offset_minutes)
   console.log(`→ ${AVAILABILITY_PATH}`)
 }
 

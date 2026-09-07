@@ -12,7 +12,15 @@
 import { loadTheme } from '../theme.ts'
 import { StreamingAvailabilitySource } from '../sources/streaming-availability.ts'
 import type { ChangeEvent, ChangeKind } from '../sources/types.ts'
-import { appendEvents, dedupe, eventKey, loadLedger, saveLedger } from '../core/events.ts'
+import {
+  appendEvents,
+  dedupe,
+  eventKey,
+  loadLedger,
+  readAllEvents,
+  saveLedger,
+} from '../core/events.ts'
+import { appendHistory, type StockChange } from '../core/history.ts'
 import { addUsage } from '../core/api-usage.ts'
 import {
   loadCompanyCache,
@@ -72,6 +80,57 @@ async function main(): Promise<void> {
   }
 
   const ledger = await loadLedger()
+
+  /*
+   * ★ **重複として落とす前に、終了日が動いていないかを見る**（2026-09-07 追加）。
+   *
+   * 台帳は `service:kind:作品ID` で重複を落とす。同じ作品を二度記事にしないための
+   * 仕組みで、そこは正しい。だが**そのせいで、同じ作品の2回目の `expiring`
+   * （＝終了日が変わった、延長された）が丸ごと消えていた。**
+   *
+   *   実測（2026-09-07）: Netflix の expiring 190作のうち、
+   *   同じ作品で2回記録されたものは **0件**。構造上ありえない。
+   *
+   * U-NEXT には `unext:refresh` があって延長に気づけるが、
+   * **配信APIの4社には気づく手段が1つも無かった。**
+   * `expiring` が実際に返るのは Netflix と Prime Video の2社だけなので
+   * （theme.yaml の実測）、ここが**この2社で唯一「時間」を積める場所**。
+   *
+   * ★ **イベントは今までどおり落とす。** 記事の素材は増やさない
+   *   （同じ作品を二度記事にしない決まりは変えない）。
+   *   積むのは履歴だけ（`data/history/`）。
+   */
+  const dateShifts: StockChange[] = []
+  {
+    const known = new Map<string, string>()
+    for (const e of await readAllEvents()) {
+      if (!e.at) continue
+      known.set(eventKey(e), e.at)
+    }
+    const observedAt = new Date().toISOString()
+    for (const e of raw) {
+      if (e.kind !== 'expiring' || !e.at) continue
+      const was = known.get(eventKey(e))
+      if (!was || was === e.at) continue
+      dateShifts.push({
+        observedAt,
+        service: e.service,
+        workId: String(e.work.id),
+        title: e.work.localizedTitle ?? e.work.title,
+        field: 'endDate',
+        from: was,
+        to: e.at,
+        via: `collect --kinds ${kinds.join(',')}`,
+      })
+    }
+  }
+  if (dateShifts.length > 0) {
+    console.log(`終了日が動いた作品 ${dateShifts.length}件（履歴に積みます）`)
+    for (const c of dateShifts.slice(0, 10)) {
+      console.log(`  ${c.title}: ${c.from?.slice(0, 10)} → ${c.to?.slice(0, 10)}`)
+    }
+  }
+
   const fresh = dedupe(raw, ledger)
 
   // 邦題を解決する。APIが日本語を返さないため、Wikidata(CC0)から引く。
@@ -117,6 +176,7 @@ async function main(): Promise<void> {
   }
 
   await appendEvents(fresh, theme.utc_offset_minutes)
+  await appendHistory(dateShifts, theme.utc_offset_minutes)
   ledger.seen.push(...fresh.map(eventKey))
   await saveLedger(ledger)
 
