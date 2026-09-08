@@ -8,6 +8,7 @@ import { noindexPersonPaths } from './src/lib/people.ts'
 import { rehypeAffiliate } from './plugins/rehype-affiliate.ts'
 import { rehypeWorkLinks } from './plugins/rehype-work-links.ts'
 import { rehypeAvailability } from './plugins/rehype-availability.ts'
+import { rehypeCast } from './plugins/rehype-cast.ts'
 
 // astro.config は Astro が .env を読み込む前に評価されるため、
 // ここでは import.meta.env が使えない。Vite の loadEnv で明示的に読む。
@@ -108,6 +109,10 @@ export default defineConfig({
     //   その <a> に tag= と rel を付ける。逆順にすると、表のリンクだけ
     //   トラッキングIDも rel="sponsored" も付かないまま公開される。
     rehypePlugins: [
+      // ★ いちばん先。表の直後の「出演者」の箇条書きを小さな枠にたたむ。
+      //   他の3つは表の中しか触らないので依存は無いが、先に畳んでおけば
+      //   後段が余計なノードを歩かない。
+      rehypeCast,
       rehypeWorkLinks,
       // ★ workLinks のあと・affiliate の前。前段が作った作品名のリンクを読み、
       //   ここで作った ○ / △ のリンクに後段が tag= と rel="sponsored" を付ける。

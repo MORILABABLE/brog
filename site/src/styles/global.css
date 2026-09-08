@@ -897,3 +897,57 @@ tr.is-search-current > *:first-child {
   border: 2px solid var(--accent);
   border-radius: var(--radius);
 }
+
+/*
+ * 出演者の枠（plugins/rehype-cast.ts が組む）。
+ *
+ * ■ ねらい
+ * **表の直後に、主演を1行だけ置く。** 読者がいちばん知りたいのは
+ * 「誰が演じているシリーズなのか」の1点で、それ以上は表の「出演者」の列にある。
+ *
+ * ■ 見せ方（2026-09-08・運用者の指定）
+ * 素の箇条書きは本文と同じ大きさで縦に並び、**主張が強すぎた。**
+ *
+ *   > 「出演者」フィールドは文章として読ませる必要はなくて、
+ *   > 出来る限り文章量を少なく、領域も小さくて良いです。
+ *
+ * `/guide` の注記（`.notice`）と同じ「囲って沈める」形に寄せ、
+ * **表と1組に見える高さ**（1〜2行）に収める。
+ *   - 上の余白を詰めて、直前の表とくっつける
+ *   - 文字は本文より2段小さく、色は `--text-muted`
+ *   - 複数行になっても横に流す（区切りの ／ は CSS が入れる）
+ */
+.prose .cast-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.1rem 0.45rem;
+  /* ★ 上は詰める。直前の表（margin-bottom 1.4rem）と1組に見せるため */
+  margin: -1rem 0 1.5rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  line-height: 1.75;
+}
+.prose .cast-note-label {
+  flex: none;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+/*
+ * ★ 区切りはテキストではなく CSS で入れる。
+ *   本文をコピーしたときに記号だけが残らないようにするため。
+ */
+.prose .cast-note-item + .cast-note-item::before {
+  content: '／';
+  margin: 0 0.1rem;
+  opacity: 0.45;
+}

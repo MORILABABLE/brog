@@ -46,7 +46,19 @@
         "match": "ハリー・ポッターと|ファンタスティック・ビースト"
       },
       "category": "leaving",
-      "writtenAt": "2026-09-06"
+      "writtenAt": "2026-09-08"
+    },
+    {
+      "slug": "jurassic-park",
+      "typeId": "series",
+      "targetMonth": "2026-09",
+      "flags": {
+        "topic": "「ジュラシック・パーク」シリーズ",
+        "slug": "jurassic-park",
+        "match": "ジュラシック・パーク|ジュラシック・ワールド"
+      },
+      "category": "leaving",
+      "writtenAt": "2026-09-08"
     },
     {
       "slug": "kamen-rider",
@@ -85,6 +97,18 @@
       "writtenAt": "2026-09-06"
     },
     {
+      "slug": "rurouni-kenshin",
+      "typeId": "series",
+      "targetMonth": "2026-09",
+      "flags": {
+        "topic": "「るろうに剣心」シリーズ",
+        "slug": "rurouni-kenshin",
+        "match": "るろうに剣心"
+      },
+      "category": "leaving",
+      "writtenAt": "2026-09-08"
+    },
+    {
       "slug": "transformers",
       "typeId": "series",
       "targetMonth": "2026-09",
@@ -109,5 +133,5 @@
       "writtenAt": "2026-09-06"
     }
   ],
-  "updatedAt": "2026-09-07T07:09:42.334Z"
+  "updatedAt": "2026-09-08T14:24:04.523Z"
 }

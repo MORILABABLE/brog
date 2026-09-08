@@ -1,7 +1,29 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-07T07:12:36.789Z",
+  "updatedAt": "2026-09-08T14:21:09.572Z",
   "works": {
+    "194": {
+      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription",
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0MNKEFN19BFCUD9DZAFPF1NENJ?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60002360"
+        }
+      ]
+    },
     "218": {
       "fetchedAt": "2026-09-06T10:51:17.400Z",
       "services": [
@@ -55,6 +77,35 @@
             "subscription"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0JXM9K5QSXG0X1O6M4CHGIYACB?ref_=atv_dp"
+        }
+      ]
+    },
+    "420": {
+      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/jurassic-world/umc.cmc.6x263wzi05ds2h4oen54w8881?playableId=tvs.sbd.9001%3A1034060007"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0KEKSTSQLSZRHAQQDLF83OP4AO?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80029196"
         }
       ]
     },
@@ -126,6 +177,35 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-prisoner-of-azkaban/umc.cmc.1uwqg0s65yo3lzxz96krkieoq?playableId=tvs.sbd.9001%3A397683999"
+        }
+      ]
+    },
+    "446": {
+      "fetchedAt": "2026-09-08T14:21:08.862Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70021660"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0U8DDDTTE7YEBHTSN7OYXN0BWR?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-goblet-of-fire/umc.cmc.24y16k16f8dxl4o2e8ho0lc1t?playableId=tvs.sbd.9001%3A399549256"
         }
       ]
     },
@@ -238,7 +318,7 @@
       ]
     },
     "677": {
-      "fetchedAt": "2026-09-06T11:03:23.790Z",
+      "fetchedAt": "2026-09-08T14:21:08.862Z",
       "services": [
         {
           "service": "prime-video",
@@ -285,6 +365,26 @@
             "subscription"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0QRG35JYN7QW5RYGJB83XQ62E6?ref_=atv_dp"
+        }
+      ]
+    },
+    "821": {
+      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60003016"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-lost-world-jurassic-park/umc.cmc.5xslhktwkaz87xpal96im60ey?playableId=tvs.sbd.9001%3A573679659"
         }
       ]
     },
@@ -398,6 +498,55 @@
         }
       ]
     },
+    "1184": {
+      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/jurassic-park-iii/umc.cmc.5h9mj147pksg7ieqwoj09zsy2?playableId=tvs.sbd.9001%3A574224474"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60004473"
+        }
+      ]
+    },
+    "1205": {
+      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/jurassic-world-fallen-kingdom/umc.cmc.sj776g4xqbyo657eia70nkxx?playableId=tvs.sbd.9001%3A1438130739"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LH0A6Y5Y2QOHT8LUXA7PAK2VA?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80228280"
+        }
+      ]
+    },
     "1220": {
       "fetchedAt": "2026-09-06T12:43:50.477Z",
       "services": [
@@ -421,7 +570,7 @@
       ]
     },
     "1379": {
-      "fetchedAt": "2026-09-06T11:03:23.790Z",
+      "fetchedAt": "2026-09-08T14:21:08.862Z",
       "services": [
         {
           "service": "apple-tv",
@@ -562,7 +711,7 @@
       ]
     },
     "3217": {
-      "fetchedAt": "2026-09-06T11:03:23.790Z",
+      "fetchedAt": "2026-09-08T14:21:08.862Z",
       "services": [
         {
           "service": "apple-tv",
@@ -601,6 +750,62 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/resident-evil-the-final-chapter/umc.cmc.1wfphs7n3l19iodazs2goix6k?playableId=tvs.sbd.9001%3A1199731548"
+        }
+      ]
+    },
+    "15904": {
+      "fetchedAt": "2026-09-08T12:42:01.459Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/rurouni-kenshin---kyoto-inferno/umc.cmc.7ah9g83duxkcf9920x3mdief4?playableId=tvs.sbd.9001%3A904108116"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80013790"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0II7F9NWDBSL2UB8Z2F29X7J06?ref_=atv_dp"
+        }
+      ]
+    },
+    "18319": {
+      "fetchedAt": "2026-09-08T12:42:01.459Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0OO13FQWPDUCSYT9ZSKEEEAB0H?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80013891"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/rurouni-kenshin---the-legend-ends/umc.cmc.q4l81841oyp6g3mkwthlba8z?playableId=tvs.sbd.9001%3A913897143"
         }
       ]
     },
@@ -644,6 +849,62 @@
         },
         "localizedTitle": "仮面ライダーBLACK SUN"
       }
+    },
+    "23006": {
+      "fetchedAt": "2026-09-08T12:42:01.459Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/rurouni-kenshin-the-final/umc.cmc.3mhv8xehcab5uy05262a785zx?playableId=tvs.sbd.9001%3A1578251172"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LE2S1TSLAQVJTK2CZCKZKX8U0?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81313227"
+        }
+      ]
+    },
+    "23261": {
+      "fetchedAt": "2026-09-08T12:42:01.459Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81313229"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/rurouni-kenshin-the-beginning/umc.cmc.2tu64033ivrda27jvge2eyrjw?playableId=tvs.sbd.9001%3A1582775646"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0S248IWVEBIZIOR4HSK5KFWPIS?ref_=atv_dp"
+        }
+      ]
     },
     "37264": {
       "fetchedAt": "2026-09-06T12:44:05.674Z",
@@ -1090,6 +1351,47 @@
       "fetchedAt": "2026-09-06T14:20:57.152Z",
       "services": []
     },
+    "3533143": {
+      "fetchedAt": "2026-09-08T12:34:17.910Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81705252"
+        }
+      ],
+      "work": {
+        "id": "3533143",
+        "title": "Rurouni Kenshin",
+        "originalTitle": "るろうに剣心 －明治剣客浪漫譚－",
+        "type": "series",
+        "year": 2023,
+        "overview": "During the upheaval of the Bakumatsu Era, there was an Imperialist warrior feared as the \"Hitokiri Battosai.\" However, upon the arrival of the new era the Battosai disappeared from the public eye, leaving behind just his legend of the strongest Revolutionary warrior.Years later in downtown Tokyo, on the 11th year of Meiji.Kenshin Himura, a traveling swordsman who vowed to never kill again...",
+        "rating": 63,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "cast": [
+          "Soma Saito",
+          "Rie Takahashi",
+          "Taku Yashiro",
+          "Makoto Koichi",
+          "Saori Onishi"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/3533143/poster/vertical/en/480.jpg?Expires=1819386341&Signature=JfulBhZMV1FbTBhO8fewT-Q1hdYT78~qF3h6pYnUCQtDZhNYGxUcTuxgftXhujzNM2Ne2VltuhqzrzVcM8NJCo1uXjFkxKwJLZLTYuXkSwCNyv62fch4LfatIBLp46KsqbCoPK-FhKRPqgREKrd4h5jAsSpsBY5JhSxxgHWsjUr-AQGjHBJqb4vK3ulhgK-lTicIfWUXULTOHavLr06ADSprXIkb5yER-oE-ZaijqmVAKG7wDao9hPB5Od8bphjwY4xpAEsmfF5cPC2CRE57lErAIvQ8ylFhTNXRn94ATxpvpFpopoOgKqzRY~fAmZ-xOsbCEnkk8NEzb054dBjE7Q__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/3533143/backdrop/horizontal/1080.jpg?Expires=1819386338&Signature=YT1NLvQlTh8MwWKO2L7SzJT~2EhTzNBVjPOTijpw~8d6U0A1JJTDy7D61xehMXyiQmf6xgetDPea~PxE0MJpqMX1SGG7DodJYPq9JjLhkSppISizzHYYkh6vUopk5-83Rf5ccN5Upn8UPDWGKOfORdQvzZF0WQHS4Gi7yBnMlIOLXTgw~LZw-jikMleCfkMBjDLYU2i7oG5LLfHyCdwg6P1G4ro2rQbqa1Wo4IaOiLVoyIciKPnL9pACnkVdD7HC-V6MYsr1mqI2HLWQieuQFpSFYrTGi5zuBdQWcdSBSRZVnp482-9v9gGmbv51G1oAK9YSPCX~C8QICRtLi3YQdQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/81705252",
+        "meta": {
+          "imdbId": "tt22249034",
+          "tmdbId": "tv/210879"
+        },
+        "localizedTitle": "るろうに剣心 -明治剣客浪漫譚-"
+      }
+    },
     "7551786": {
       "fetchedAt": "2026-09-07T07:12:36.783Z",
       "services": [
@@ -1114,6 +1416,26 @@
             "subscription"
           ],
           "link": "https://www.disneyplus.com/browse/entity-baebd23a-1e8e-441f-b097-aef885558aaa"
+        }
+      ]
+    },
+    "18533337": {
+      "fetchedAt": "2026-09-08T12:42:01.459Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70293105"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0PNLENZX839I3PPUG388KCDMFM?ref_=atv_dp"
         }
       ]
     },

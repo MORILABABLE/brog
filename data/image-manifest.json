@@ -1,6 +1,6 @@
 {
   "note": "サイトが実際に使っている作品画像の署名付きURL。npm run refresh:images が失効の近いものだけを取り直す。手で編集しない。",
-  "updatedAt": "2026-09-07T12:42:24.429Z",
+  "updatedAt": "2026-09-08T14:29:12.592Z",
   "works": {
     "80": {
       "id": "80",
@@ -5570,6 +5570,12 @@
       "url": "https://cdn.movieofthenight.com/show/3518177/poster/vertical/en/480.jpg?Expires=1801883360&Signature=DCDvF4n3c~ulloagvKScOJgJjTEx4in6J87lKoUU3ydZVTPr0wW2otC7YChgw4E6RY0QAtPi6vWuP5lXD9f-QKOq0qSe1F~9KJpcZ8uxwok~aJql~IuEXlZP3iwjwaGpF28enm4owkmBpE~ADSGlGYEFCfMvNWAQWW7rYqG3~FMKfDAy0dD408g31-MQ9yQu4wMVN66RoJOJxWqoqsKDtIhEeVVOGLOsL9I8bDLNccxu7ZDjNKadHBFbdTwxMSYcZd8MV2DjjnHZgwqI98avSkkthfqPsqIytr9yF7dKjRtWfmG85aSwzNnz21Ucqh-2V2qqsLabvjIHGeVuNpWJpw__&Key-Pair-Id=KK4HN3OO4AT5R",
       "expiresAt": "2027-02-06T03:09:20.000Z"
     },
+    "3519505": {
+      "id": "3519505",
+      "title": "1秒先の彼",
+      "url": "https://cdn.movieofthenight.com/show/3519505/poster/vertical/en/480.jpg?Expires=1805530879&Signature=VLZyokw6aTh-WkoSF3DmekheqGqDrvhUC1SL51bhLvHHv3uM7hSs0RcD5XtcTdEFNSYasqxe61sxuRoqhK5vqCR3yngGDgKhXtRO9UTCNEPvq2f1MfWABdQuAJQC289uxWeAgGIJU1EXkh6FNEzQucstGhaurY2bA4ne3LT9wJs8PUPfBZE3framwWERPP-SzV7arGdy2yoUOQ00HkKRPUtQEyvXWr~R3nK1v2yReMMLiaKmG95QaCaUiCCKa2jadXQWwugP86OLoE8B19aLJExK4yVEAbi7a07s2Tp4syAXVNE3UyQdiQ3wirDp5b804fub4jNAuP9l~cIe74GLMA__&Key-Pair-Id=KK4HN3OO4AT5R",
+      "expiresAt": "2027-03-20T08:21:19.000Z"
+    },
     "3532495": {
       "id": "3532495",
       "title": "デキる猫は今日も憂鬱",
@@ -6013,6 +6019,12 @@
       "title": "Utsubora",
       "url": "https://cdn.movieofthenight.com/show/8953606/poster/vertical/en/480.jpg?Expires=1805569021&Signature=jS1ojvkdKn2kcgcppFckirLGU20d1ydsgduubEWzQaDZzIHs-v04UUVnobyfUIoW20auQmQ5eTlYKR8sLjUYloLwr1~5soQyk-d1Pjo1n67lmln2VKnpugz6CBn5QIjme3BEobXjScep3vBVRXXSIqE30S6tnWDM12T3waxYQN1bOiMpqNnP8In5Md8Fto5M8jbJSHtSnJe-9M1J~Ox65hh4srgE3NG1E3T~ix2gAWMTojmk-cI2nuFtlN1U711FrR6rFWgb1RRIxjzE1OEBM695pIfG3XDJwBKvutcUcN8z6bnb8xwUmr33LItWSzdZHTq7acEgPBNVHUaKe066HA__&Key-Pair-Id=KK4HN3OO4AT5R",
       "expiresAt": "2027-03-20T18:57:01.000Z"
+    },
+    "8954824": {
+      "id": "8954824",
+      "title": "アノーラ",
+      "url": "https://cdn.movieofthenight.com/show/8954824/poster/vertical/en/480.jpg?Expires=1805450764&Signature=Lq1tBiD0euccoGysYhT7alGxIyKdPvMU5Ryi3LGd-pM4UWUPJlv1a2vDRQWZvZDZXKey85nAcHUrJ6Oo6atyQMtKmSmt-SU49vhnL6H0w5b3if5I7tlr24K5iSHTV6HuxONZf15a0CC1YVyOYBVw2T2DHriNAbzyDegnPDF2jffjLq0mKScIYftCcnJY1jl5LCPNusRHfcow~OujwulZTQTOpdq0TfIzKGoyJaVWsjnHFF55WjNZrABJqLoOt-C3RVV0ps-SOm-VzSt5CJtKbTZtkwBU2o4P2dsdOkMj0lAHYYYBMCeWCktd~Cshc3rCnUxwdvEktDrYJOH0NjqIBw__&Key-Pair-Id=KK4HN3OO4AT5R",
+      "expiresAt": "2027-03-19T10:06:04.000Z"
     },
     "8954921": {
       "id": "8954921",
@@ -7832,6 +7844,18 @@
       "url": "https://cdn.movieofthenight.com/show/26518530/poster/vertical/en/480.jpg?Expires=1819394669&Signature=A0lRNwZPrGRyluYTeV7-neLQEIpTsqgB-yeEmK7LXsbTWonVGu2KI18Ew~KKsL-4FSycDBj3cMw4OFHTeP9W3wdeKDxqu7La6qQzVWO-6BSMnc2LI-TKoboUYhRwhVPFatq99pTNM71ebLHBjeIXBV8TXdxwhgB0Z9axXFAw7nRNadE7XXr5W~D2MOtOjYCCXdrzZwZ0OhhiV~5WqDgz8Ol67mq6lrwrUqMqoR4M1apM9UBu8X3d~22mg~MjWhHfknTKY4PKfZ41UXTLVIbh5mwtxLnrnoZcH-rUXAEe8-BxHOO8sJUed4aMynnnePjUQHwvuDkNlJ5vSinbQr2DsA__&Key-Pair-Id=KK4HN3OO4AT5R",
       "expiresAt": "2027-08-27T19:24:29.000Z"
     },
+    "ann-netflix-81788481": {
+      "id": "ann-netflix-81788481",
+      "title": "Untold: ミスター・T 「バカを哀れむ」",
+      "url": "https://cdn.movieofthenight.com/show/26342798/poster/vertical/en/480.jpg?Expires=1819231716&Signature=GmCI0P6ndLB1oa-uScW3cBCmj8R7-prjdtVHm0nXc0j~xro5zcq3CVrd9~VefZFQNCDy-Ul0TwO39NgOt5cfKOMYmLjdxcgujeyKmyMcYUNNjpnMo7NcctfGDbvGwdFeATVcFFZduZ~nWWi2G~iAhOtx8bMS4YGo2NW0Tz5nG4kCk8oZUnOhfcN9Co3B9tJXhraAXS2MaeV1KabeEG2hRtdHJZ2HggvfQSYkhA5VdWE4W2xSuT1d~HJXW3TecU~Ib14xewiGjOYnolqsXRxOq7L08kuH-UIFYn1QqwWil6~OIy0UOfwgyXlrIQqxwcNPg4ht0cEaAdkTKN03E~T6jA__&Key-Pair-Id=KK4HN3OO4AT5R",
+      "expiresAt": "2027-08-25T22:08:36.000Z"
+    },
+    "ann-netflix-81916255": {
+      "id": "ann-netflix-81916255",
+      "title": "フィト・パエス: ザ・ワールド・ウィズイン・ア・ソング",
+      "url": "https://cdn.movieofthenight.com/show/26123579/poster/vertical/en/480.jpg?Expires=1819950208&Signature=Il-Kqtt1lHQIWVR2EEYl9sC917LEugYLAX9bc2dpkstZSBwRjDwkEZr6FL0xEI6tMwtxZaRUWYr4GmekaU~e-1S9w6fVLd0HjcIBp7qkANKYwaT3L84ms4v1TYx-Z4Ir~SjJWiw1S8ad9~yn4Lo4kFuwa5qzkkKkOO06L1KtKL~rDd148rkvu1CgHg~~rIPYx5nBQsc0yOyd3dh3tHaXYpJLDhv2q6H7J11lrNpJbsDTmT2psMTrl-wXZXE2WKgpel-H0OGW7SLG3zl2LqRC~0aTkWh2E1jolLbhDcn2K2ATlk9EHeZDvNAhKmsByNJCLr1aCL6AflzdgpEdc4GGhA__&Key-Pair-Id=KK4HN3OO4AT5R",
+      "expiresAt": "2027-09-03T05:43:28.000Z"
+    },
     "ann-netflix-82048542": {
       "id": "ann-netflix-82048542",
       "title": "Untold: レイチェル・ガン 論争のブレイキン",
@@ -7843,6 +7867,12 @@
       "title": "ターニング・ポイント: 9・11が生んだ世代",
       "url": "https://cdn.movieofthenight.com/show/26517562/poster/vertical/en/480.jpg?Expires=1820011832&Signature=Y~JIb2Mg1sup8gIWcOlFxBjOXRnuxi1LenyHjy52VdWfXbJMXIgy7OrWl9iZIz0KFroiqLEt3ebNb6ml9KaFGJA95lx~BSRQTTTiyUgu8HuS~6ctZuaqCjTkpk-nZhTKa~C3VBzAu3d7~wkdGaM4gre0lK2937MQBa4wYh0~NNCS3tiGoQ6LrenkZClN0u6J00Z9BTzSRoY~t7NbkZTvcXnm-kEZAlPerflASaHp-jj3LQvNxNOfw710Lm3ZOVB~FtfEAaZduNqJ~y5FcpMVPHtbDJK88gYdzBxFbdDG8RqIsL12xPodO9~Qo3iPJV7UklRPbo4TcCVkLnZehFAx8A__&Key-Pair-Id=KK4HN3OO4AT5R",
       "expiresAt": "2027-09-03T22:50:32.000Z"
+    },
+    "ann-netflix-82130500": {
+      "id": "ann-netflix-82130500",
+      "title": "私たちが結婚を決めた理由 それから",
+      "url": "https://cdn.movieofthenight.com/show/25483381/poster/vertical/en/480.jpg?Expires=1815837297&Signature=RK4vbIR4SxIa5rS5TVb1abWa11yI7VeNKxj3sciKj5wcNxF40dtXiPlKPFOVdj~1xsdLgEW~3oT42GlUnG9Tf7t48q7V6is9vYLziTWjeV-C1aSDUVd05kbHztoWGFHFLIX7RHM-vVwkUtNv0LAESm1152VkwEoF~6RN1ltGZT2t3-Rjnxh0iDy6WzbWn9KL1Y5cVS4RaDFdKgQmPu10~nSfxbOVeSRGrb4q0rxt5dNsqBRVWOEpywPpVDi0ho2fUGSk-zIbYDj0tPeNMwDxo7Vbs3ORnAlY-1CG-JHMLvWjX24ICfcNSPv0ftk2FKAHflyEn3Z2X9qADik~1kuQ5A__&Key-Pair-Id=KK4HN3OO4AT5R",
+      "expiresAt": "2027-07-17T15:14:57.000Z"
     }
   }
 }
