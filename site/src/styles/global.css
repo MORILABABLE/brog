@@ -115,6 +115,37 @@
   --cal-arrivals: #1a5fd0;
   --cal-arrivals-bg: #e8f0fe;
 
+  /*
+   * 表の中の配信状況ラベル（plugins/rehype-availability.ts が出す枠）の色。
+   * **文字も色も、その行に並ぶ ○ △ × から自動で決まる。**
+   *
+   *   青    ○ が1つでもある      「配信中」      いま見放題で観られる先がある
+   *   黄    ○ が無く △ がある    「有料で配信中」 レンタル・購入なら観られる
+   *   赤    × だけ               「取り扱いなし」 この4サービスでは観られない
+   *   グレー 印が無い（—）        「配信状況」    調べていない
+   *
+   * ★ **既存の色を参照している。** 同じ意味には同じ色を使うためと、
+   *   ダーク側に書き足さなくても追従させるため（--header-bg と同じやり方）。
+   *   軸は別なので**名前は分けてある** — 片方の意味だけ変えたくなったら、
+   *   ここを直値に置き換えれば他へ波及しない。
+   *
+   * ★ 「黄色」は**文字にすると読めない**ので、終了予定バッジと同じアンバーを使う
+   *   （白地 5:1 以上を確認済みの色。純粋な黄は 2:1 も出ない）。
+   * ★ **色だけに意味を持たせないこと。** ラベルの文字（`LABEL_TEXT`）と
+   *   同じ行の ○ △ × が本体で、色はその言い換え。
+   *   **×だけの行を「赤い枠の『配信中』」にしない**ために文字も変えている
+   *   （rehype-availability.ts の `LABEL_TEXT`）。
+   *   枠の線は文字より薄く出す（下の .avail-label-box）。同じ濃さだと文字が沈む。
+   */
+  --avail-live-fg: var(--cat-arrivals-fg);
+  --avail-live-bg: var(--cat-arrivals-bg);
+  --avail-paid-fg: var(--cat-leaving-fg);
+  --avail-paid-bg: var(--cat-leaving-bg);
+  --avail-none-fg: var(--cal-leaving);
+  --avail-none-bg: var(--cal-leaving-bg);
+  --avail-unknown-fg: var(--cat-ended-fg);
+  --avail-unknown-bg: var(--cat-ended-bg);
+
   --max-width: 46rem;
   --radius: 10px;
 
@@ -535,13 +566,66 @@ h3 {
    */
   max-width: calc(100cqi - 1.6rem);
 }
+/*
+ * 行の頭のラベル（「配信中」「有料で配信中」「取り扱いなし」「配信状況」）。
+ * **枠で囲い、文字も色もその行の印に合わせて変える。**
+ *
+ * ★ **色を決めるのはプラグイン側**（rehype-availability.ts の `labelStateOf`）。
+ *   ここは `data-state` を受けて描くだけなので、**記事の作成でも書き直しでも
+ *   同じ色が出る**（どちらも同じビルドを通る）。記事側には何も書かない。
+ *
+ * ★ **入れ子が2枚あるのはスマホの都合。** 外側（.avail-label）は並びのための
+ *   入れ物で、狭い画面では `flex-basis: 100%` で1行を占める（下のメディアクエリ）。
+ *   箱を外側に描くと、そこが**画面幅いっぱいの色帯**になる。
+ *   内側（.avail-label-box）に描けば、箱は文字のぶんだけで済む。
+ */
 .prose .avail-label {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   margin-right: 0.6rem;
+  vertical-align: middle;
+}
+.prose .avail-label-box {
+  display: inline-block;
+  padding: 0.05rem 0.45rem;
+  /*
+   * ★ **枠は文字と同じ色にしない**（運用者の指定）。同じ濃さで囲うと
+   *   文字と線が一体の塊に見えて、肝心の文字が読みにくくなる。
+   *   線だけ 45% に薄めて、色みは揃えたまま文字を前に出す。
+   *   ★ 1行目の `currentColor` は color-mix を解さない環境用。消さないこと。
+   */
+  border: 1px solid currentColor;
+  border-color: color-mix(in srgb, currentColor 45%, transparent);
+  border-radius: 5px;
+  /* 既定（data-state が無いとき）は今までどおりの控えめな見た目 */
+  background: var(--bg-subtle);
   color: var(--text-muted);
   font-size: 0.74rem;
+  font-weight: 600;
   letter-spacing: 0.04em;
-  vertical-align: middle;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+/* ○ が1つでもある … 青。**読者がいちばん見たい状態**なので、いちばん強い色 */
+.prose .avail-label[data-state='live'] .avail-label-box {
+  background: var(--avail-live-bg);
+  color: var(--avail-live-fg);
+}
+/* ○ が無く △ がある … 黄（アンバー）。観られるが金が要る */
+.prose .avail-label[data-state='paid'] .avail-label-box {
+  background: var(--avail-paid-bg);
+  color: var(--avail-paid-fg);
+}
+/* × だけ … 赤。この4社では観られない */
+.prose .avail-label[data-state='none'] .avail-label-box {
+  background: var(--avail-none-bg);
+  color: var(--avail-none-fg);
+}
+/* — … グレー。**赤にしないこと。** 「調べたうえで無い」と混ぜない
+   （src/lib/availability.ts の「絶対に守ること」2） */
+.prose .avail-label[data-state='unknown'] .avail-label-box {
+  background: var(--avail-unknown-bg);
+  color: var(--avail-unknown-fg);
 }
 .prose .avail-item {
   display: inline-flex;

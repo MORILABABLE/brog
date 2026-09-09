@@ -186,30 +186,105 @@ function dropConstantColumn(headRow: Node, bodyRows: Node[], head: string): void
 }
 
 /**
+ * 行の頭のラベル（「配信中」）の状態。**その行に並ぶ印だけで機械的に決まる。**
+ *
+ *     live     ○ が1つでもある     いま見放題で観られる先がある
+ *     paid     ○ が無く △ がある   金を払えば観られる（見放題は無い）
+ *     none     × だけ              この4社では取り扱いが無い
+ *     unknown  印が無い（—）        調べていない
+ *
+ * ★ **色は言い換えでしかない。** 状態はラベルの文字（`LABEL_TEXT`）と
+ *   同じ行に並ぶ ○ △ × が言っているので、色が届かない読者
+ *   （色覚特性・印刷・モノクロ）でも意味は1つも落ちない。
+ *   これは global.css の「色だけに意味を持たせないこと」の決まりそのもの。
+ * ★ **判定をここ以外に置かないこと。** 記事は作成も書き直しも同じ
+ *   ビルド（この rehype プラグイン）を通るので、ここ1か所で全記事に効く。
+ */
+type LabelState = 'live' | 'paid' | 'none' | 'unknown'
+
+function labelStateOf(marks: Mark[]): LabelState {
+  if (marks.includes('subscription')) return 'live'
+  if (marks.includes('paid')) return 'paid'
+  if (marks.length > 0 && marks.every((m) => m === 'none')) return 'none'
+  return 'unknown'
+}
+
+/** 状態ごとの補足。**色は読み上げに乗らない**ので、言葉でも渡す。 */
+const LABEL_TITLE: Record<LabelState, string> = {
+  live: '見放題で観られるサービスがあります',
+  paid: 'レンタル・購入なら観られます（見放題はありません）',
+  none: 'この4サービスでは取り扱いがありません',
+  unknown: '配信状況を取得できていません',
+}
+
+/**
+ * ラベルの文字。**状態ごとに変える**（2026-09-09・運用者の判断）。
+ *
+ * ★ **全部を「配信中」にしてはいけない。** 一度そうしていて、
+ *   ×だけの行が**「赤い枠の『配信中』」**になった。色は正しくても、
+ *   **文字だけ読むと逆の意味に取れる。**
+ *   色は補助（下の `labelStateOf` の注意書き）なので、
+ *   **文字のほうが単体で正しくないといけない。**
+ *
+ * ★ 「配信中」と書けるのは**在庫レスポンスを根拠にしている面だけ**
+ *   （下の `availLabel` の説明）。ここを他の記事へ広げないこと。
+ */
+const LABEL_TEXT: Record<LabelState, string> = {
+  live: '配信中',
+  paid: '有料で配信中',
+  none: '取り扱いなし',
+  /*
+   * ★ 「未確認」にしない。**右隣のチップが既に「— 未確認」**なので、
+   *   同じ言葉が2つ並ぶ。ここは**その行が何の行か**を言うだけにする。
+   */
+  unknown: '配信状況',
+}
+
+/**
+ * 行の頭のラベル。**この行が何なのかを1語で言う。**
+ * 記号だけの行が表に紛れると、読者は何の行か分からないまま飛ばす。
+ *
+ * ★ **「配信中」と書いてよい面。** `works.ts` 冒頭の
+ *   「配信中と書かない」は**変化ログ（/changes）を根拠にするな**という意味で、
+ *   この行は**在庫レスポンス**を根拠にしている（docs/CROSS-SERVICE.md 4-2）。
+ *   根拠が違うので射程外。**ただし取得時点を凡例に必ず出すこと**が条件。
+ *
+ * ★ **枠と色は CSS が `data-state` を見て付ける**（global.css `.avail-label`）。
+ *   ここは状態を宣言するだけで、色の値は持たない。
+ *   色を足す・変えるときは global.css 側だけを直すこと。
+ */
+function availLabel(state: LabelState): Node {
+  return {
+    type: 'element',
+    tagName: 'span',
+    properties: {
+      className: ['avail-label'],
+      'data-state': state,
+      title: LABEL_TITLE[state],
+    },
+    /*
+     * ★ **箱は内側の `span` が描く。** 外側は並びのための入れ物。
+     *   スマホでは外側だけが1行を占める（global.css のメディアクエリ）ので、
+     *   1枚にすると**画面幅いっぱいの色帯**になってしまう。
+     */
+    children: [
+      {
+        type: 'element',
+        tagName: 'span',
+        properties: { className: ['avail-label-box'] },
+        children: [text(LABEL_TEXT[state])],
+      },
+    ],
+  }
+}
+
+/**
  * 1作品ぶんの「どこで観られるか」の行。**元の行の直下に足す。**
  *
  * ★ `colspan` は列を落としたあとの列数に合わせること。ずれると行が崩れる。
  * ★ **観られる先だけを出す。** ×（取り扱いなし）は並べない。
  */
 function availRow(marks: WorkMarks | undefined, colspan: number, own: string | undefined): Node {
-  /*
-   * 先頭のラベル。**この行が何なのかを1語で言う。**
-   * 記号だけの行が表に紛れると、読者は何の行か分からないまま飛ばす。
-   *
-   * ★ **「配信中」と書いてよい面。** `works.ts` 冒頭の
-   *   「配信中と書かない」は**変化ログ（/changes）を根拠にするな**という意味で、
-   *   この行は**在庫レスポンス**を根拠にしている（docs/CROSS-SERVICE.md 4-2）。
-   *   根拠が違うので射程外。**ただし取得時点を凡例に必ず出すこと**が条件。
-   */
-  const items: Node[] = [
-    {
-      type: 'element',
-      tagName: 'span',
-      properties: { className: ['avail-label'] },
-      children: [text('配信中')],
-    },
-  ]
-
   /*
    * ★ **台帳に無い作品は、印を4つ並べずに「— 未確認」1つで済ませる。**
    *
@@ -225,6 +300,7 @@ function availRow(marks: WorkMarks | undefined, colspan: number, own: string | u
    *     （src/lib/availability.ts の「絶対に守ること」2）。
    */
   if (!marks) {
+    const items: Node[] = [availLabel('unknown')]
     items.push({
       type: 'element',
       tagName: 'span',
@@ -274,6 +350,14 @@ function availRow(marks: WorkMarks | undefined, colspan: number, own: string | u
     .filter((svc) => !(own && svc.key === own))
     .map((svc, i) => ({ svc, i, mark: (marks.marks.get(svc.key) ?? 'none') as Mark }))
     .sort((a, b) => RANK[a.mark] - RANK[b.mark] || a.i - b.i)
+
+  /*
+   * ★ ラベルの色は**その行に実際に並ぶ印**から決める（`shown`）。
+   *   その行のサービスを外したあとの並びなので、**読者が見ているものと一致する**。
+   *   台帳の全サービスから決めると、外した1社のせいで色と印が食い違う
+   *   （「Netflixで終了」の行が、その Netflix の ○ を根拠に青くなる）。
+   */
+  const items: Node[] = [availLabel(labelStateOf(shown.map((s) => s.mark)))]
 
   for (const { svc, mark } of shown) {
     // ★ ×（取り扱いなし）も出す。**4社ぶんを揃えて見せる**ことで、
