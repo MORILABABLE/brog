@@ -72,6 +72,7 @@ import {
   paidServices,
   subscriptionServices,
 } from '../../../pipeline/core/availability.ts'
+import { titlesOf } from '../../../pipeline/core/availability-ng.ts'
 import { formatMonthDay } from '../../../pipeline/core/datetime.ts'
 import { themeFile } from '../../../pipeline/theme.ts'
 import type { VerifyIssue } from '../../../pipeline/core/verify.ts'
@@ -452,7 +453,7 @@ function stockEvents(
     //   （`withJapaneseWorkTitle` の判定がかな依存。cli/availability.ts の注記）。
     const names = [w.title, w.localizedTitle, w.originalTitle].filter(Boolean) as string[]
     if (!names.some((n) => match.test(n))) continue
-    for (const sv of subscriptionServices(a)) {
+    for (const sv of subscriptionServices(a, id, names)) {
       if (service && sv !== service) continue
       if (taken.has(`${sv}/${id}`)) continue
       const e: ChangeEvent = {
@@ -510,7 +511,10 @@ function stateOf(e: ChangeEvent, now: Date): State {
    *   （在庫を取っていない記事の挙動は変わらない）
    */
   const a = availabilityLedger.works[String(e.work.id)]
-  if (isFresh(a, now.getTime()) && subscriptionServices(a).includes(e.service)) {
+  if (
+    isFresh(a, now.getTime()) &&
+    subscriptionServices(a, String(e.work.id), titlesOf(e.work)).includes(e.service)
+  ) {
     return '見放題配信中'
   }
   return '終了済み'
@@ -830,7 +834,9 @@ export const seriesArticle: ArticleType = {
 
       // その作品がいま終わろうとしているサービスは、答えから外す。
       // 「Netflixで終わります。Netflixで見放題です」では答えにならない。
-      const subs = subscriptionServices(a).filter((sv) => sv !== e.service)
+      const subs = subscriptionServices(a, String(e.work.id), titlesOf(e.work)).filter(
+        (sv) => sv !== e.service,
+      )
       const paid = paidServices(a).filter((sv) => sv !== e.service)
       const name = (sv: string) => labelOf.get(sv) ?? sv
       const asOf = formatMonthDay(a!.fetchedAt, offset)
@@ -1380,7 +1386,9 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       for (const e of items) {
         const a = ledger.works[String(e.work.id)]
         if (!isFresh(a, ctx.now.getTime())) continue
-        for (const sv of subscriptionServices(a)) backed.add(labelOf.get(sv) ?? sv)
+        for (const sv of subscriptionServices(a, String(e.work.id), titlesOf(e.work))) {
+          backed.add(labelOf.get(sv) ?? sv)
+        }
       }
       /*
        * ★ **「まだそこにある」と素材が言っているサービスも裏付けに数える。**
@@ -1795,7 +1803,7 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
     for (const e of items) {
       const a = ledger.works[String(e.work.id)]
       if (!isFresh(a, now)) continue
-      for (const sv of subscriptionServices(a)) {
+      for (const sv of subscriptionServices(a, String(e.work.id), titlesOf(e.work))) {
         if (claimedAvailable.has(sv)) continue
         hit.add(sv)
         covered.add(workKey(e.work.localizedTitle ?? e.work.title))

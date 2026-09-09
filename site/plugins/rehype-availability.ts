@@ -109,7 +109,7 @@ function cellsOf(row: Node): Node[] {
  *   「Netflixで9月30日に終了」の行に「Netflix ●」と出すと、
  *   終わるのか観られるのか分からない。読者が知りたいのは**残りの3社**。
  */
-function workOf(row: Node): { ids: string[]; service?: string } | undefined {
+function workOf(row: Node): { ids: string[]; title: string; service?: string } | undefined {
   let service: string | undefined
   for (const cell of cellsOf(row)) {
     const hit = SERVICE_BY_LABEL.get(textOf(cell).trim())
@@ -130,7 +130,8 @@ function workOf(row: Node): { ids: string[]; service?: string } | undefined {
      *   読者からは「調べたうえで取り扱いなし（×）」と区別が付かず、不具合に見える。
      */
     const ids = workIdsForTitle(title)
-    return { ids: ids.includes(work.workId) ? ids : [work.workId, ...ids], service }
+    // ★ 題名も返す。**目視で否認した見放題を落とす**のに要る（`marksOf`）。
+    return { ids: ids.includes(work.workId) ? ids : [work.workId, ...ids], title, service }
   }
   return undefined
 }
@@ -143,11 +144,17 @@ function workOf(row: Node): { ids: string[]; service?: string } | undefined {
  *   ということなので、どちらかを選ばずに黙る（行が出ないだけ）。
  *   嘘の印を出すより、印が無いほうがましという判断。
  */
-function marksOf(ids: string[]): WorkMarks | undefined {
+function marksOf(ids: string[], title: string): WorkMarks | undefined {
   let chosen: WorkMarks | undefined
   let signature = ''
   for (const id of ids) {
-    const m = marksFor(id)
+    /*
+     * ★ **題名を渡す。** 否認の一覧（`data/availability-ng.json`）は
+     *   作品IDだけでなく題名の部分一致でも当たる。**シリーズまるごと**を
+     *   否認した場合、あとから台帳に入った別IDの作品もここで落ちる
+     *   （`src/lib/availability-ng.ts`）。
+     */
+    const m = marksFor(id, [title])
     if (!m) continue
     const sig = [...m.marks].sort().map(([k, v]) => `${k}:${v}`).join(',')
     if (!chosen) {
@@ -514,7 +521,7 @@ function planTable(table: Node): TablePlan | undefined {
   for (const row of rows.slice(1)) {
     const w = workOf(row)
     if (!w) continue
-    const m = marksOf(w.ids)
+    const m = marksOf(w.ids, w.title)
     found.set(row, { marks: m, own: w.service })
     if (!m) continue
     resolved++

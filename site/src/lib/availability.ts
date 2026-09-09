@@ -26,9 +26,14 @@
  *      無いものは「—」（分からない）で描く
  *   3. **U-NEXT / Hulu / DMM TV には印を付けない。** 在庫データを持っていない
  *      （docs/CROSS-SERVICE.md 9-3）。列そのものを作らない
+ *   4. **目視で否認した組み合わせを ○ にしない**（`availability-ng.ts`）。
+ *      APIが `subscription` を返していても、その社の画面に無い作品がある
+ *      （2026-09-09・コナンの劇場版8作）。**取り下げるのは ○ だけ**で、
+ *      レンタル・購入が残っていれば △、何も残らなければ **—（未確認）**
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { deniesSubscription } from './availability-ng.ts'
 
 /** 台帳の場所を探す。`work-links.ts` と同じ理由で実行時のカレントから上へ辿る。 */
 function findUp(...segments: string[]): string | null {
@@ -114,7 +119,11 @@ export interface WorkMarks {
  * ★ `undefined` を「取り扱いなし」に読み替えないこと。
  *   呼び出し側は列そのものを描かないか、「—」を描く。
  */
-export function marksFor(workId: string, now = Date.now()): WorkMarks | undefined {
+export function marksFor(
+  workId: string,
+  titles: readonly string[] = [],
+  now = Date.now(),
+): WorkMarks | undefined {
   const entry = load()[workId]
   if (!entry?.fetchedAt) return undefined
   const at = Date.parse(entry.fetchedAt)
@@ -123,14 +132,26 @@ export function marksFor(workId: string, now = Date.now()): WorkMarks | undefine
   const marks = new Map<string, Mark>()
   const links = new Map<string, string>()
   for (const s of entry.services) {
+    /*
+     * ★ **目視で否認した見放題を落とす**（上の「絶対に守ること」4）。
+     *   台帳（`data/availability.json`）はAPIの応答そのままで書き換えない。
+     *   落とすのはここ（読む側）。
+     */
+    const denied = deniesSubscription(s.service, workId, titles)
+    const paid = s.types.some((t) => t === 'rent' || t === 'buy' || t === 'addon')
     // ★ subscription だけが見放題。addon は別料金なので paid 側に落とす。
-    const mark: Mark = s.types.includes('subscription')
+    const mark: Mark = s.types.includes('subscription') && !denied
       ? 'subscription'
-      : s.types.some((t) => t === 'rent' || t === 'buy' || t === 'addon')
+      : paid
         ? 'paid'
-        : 'none'
+        : denied
+          ? // ★ 見放題を取り下げたら根拠が1つも残らない場合。
+            // **× にしない。**「調べたうえで取り扱いなし」とは言えない
+            'unknown'
+          : 'none'
     marks.set(s.service, mark)
-    if (s.link) links.set(s.service, s.link)
+    // ★ 「—（未確認）」にリンクは付けない（`rehype-availability.ts` も張らない）
+    if (s.link && mark !== 'unknown') links.set(s.service, s.link)
   }
   return { marks, links, fetchedAt: new Date(at) }
 }

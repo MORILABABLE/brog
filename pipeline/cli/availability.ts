@@ -80,6 +80,7 @@ import {
   type TitleRef,
 } from '../sources/wikidata.ts'
 import type { Work } from '../sources/types.ts'
+import type { ServiceAvailabilityRow } from '../sources/streaming-availability.ts'
 import {
   AVAILABILITY_PATH,
   loadAvailability,
@@ -88,6 +89,7 @@ import {
   subscriptionServices,
   type WorkAvailability,
 } from '../core/availability.ts'
+import { deniesSubscription, titlesOf } from '../core/availability-ng.ts'
 
 try {
   process.loadEnvFile('.env')
@@ -119,6 +121,31 @@ const has = (name: string) => process.argv.includes(`--${name}`)
  */
 function isUnextWork(id: string): boolean {
   return /^SID/i.test(id)
+}
+
+/**
+ * 画面に出す「見放題」の1行。**APIが返した見放題と、目視で否認した分を分けて出す。**
+ *
+ * ★ **否認したぶんを黙って消さない。** 消すと、
+ *   `data/availability-ng.json` が効いているのか、APIが返さなくなったのかが
+ *   画面から分からなくなる。**否認は取り消せる判断**なので、
+ *   「APIはまだこう言っている」ことが毎回見えている必要がある。
+ */
+function subscriptionLines(
+  services: ServiceAvailabilityRow[],
+  id: string,
+  titles: readonly string[],
+): string[] {
+  const claimed = services
+    .filter((s) => s.types.includes('subscription'))
+    .map((s) => s.service)
+  const live = claimed.filter((sv) => !deniesSubscription(sv, id, titles))
+  const denied = claimed.filter((sv) => deniesSubscription(sv, id, titles))
+  const out = [`     見放題: ${live.join(' / ') || '（なし）'}`]
+  if (denied.length) {
+    out.push(`     ★目視で否認ずみ（APIは見放題と言っている）: ${denied.join(' / ')}`)
+  }
+  return out
 }
 
 /**
@@ -196,8 +223,8 @@ async function main(): Promise<void> {
       }
       hit++
       if (!has('dry-run')) ledger.works[id] = { fetchedAt, services: row.services }
-      const subs = row.services.filter((s) => s.types.includes('subscription')).map((s) => s.service)
-      console.log(`  ${id} … 見放題: ${subs.join(' / ') || '（なし）'}`)
+      console.log(`  ${id}`)
+      for (const line of subscriptionLines(row.services, id, [])) console.log(line)
     }
     await addUsage(source.requestCount, theme.utc_offset_minutes)
     if (!has('dry-run') && hit > 0) await saveAvailability(ledger)
@@ -302,10 +329,6 @@ async function main(): Promise<void> {
      *   （品質ゲートは「邦題が未確認なら原題のまま」と通してしまう）。
      */
     const w = withJapaneseWorkTitle(row.work)
-    const subsAll = row.services
-      .filter((s) => s.types.includes('subscription'))
-      .map((s) => s.service)
-      .filter((sv) => catalogKeys.has(sv))
     /*
      * ★ **原題（`originalTitle`）にも当てる。**
      *   `localizedTitle` は「原題にかなが含まれるとき」だけ入る
@@ -314,7 +337,17 @@ async function main(): Promise<void> {
      *   実測: `風都探偵`（Prime Video の見放題）が
      *   `--match "仮面ライダー|風都探偵"` で拾えていなかった（2026-09-07）。
      */
-    const names = [w.title, w.localizedTitle, w.originalTitle].filter(Boolean) as string[]
+    const names = titlesOf(w)
+    /*
+     * ★ **目視で否認した組み合わせは素材にしない**（2026-09-09 追加）。
+     *   `data/availability-ng.json` に載っているものは、APIが `subscription` を
+     *   返していても**その社の画面に無い**と人が確かめたもの。
+     *   ここを通すと、否認した作品と**別のID**（同じシリーズの別作）が
+     *   次の書き直しで「見放題配信中」の素材として入り、**同じ嘘が戻る。**
+     */
+    const subsAll = subscriptionServices({ fetchedAt, services: row.services }, id, names).filter(
+      (sv) => catalogKeys.has(sv),
+    )
     /*
      * ★ 判定は「**変化ログが持っていない作品か**」。「下書きに無いか」ではない。
      *
@@ -357,8 +390,8 @@ async function main(): Promise<void> {
      */
     const before = ledger.works[id]
     if (before) {
-      const was = new Set(subscriptionServices(before))
-      const now = new Set(subscriptionServices(entry))
+      const was = new Set(subscriptionServices(before, id, titlesOf(w)))
+      const now = new Set(subscriptionServices(entry, id, titlesOf(w)))
       const label = w.localizedTitle ?? w.title
       for (const sv of new Set([...was, ...now])) {
         if (was.has(sv) === now.has(sv)) continue
@@ -379,12 +412,11 @@ async function main(): Promise<void> {
       adoptedWorks.push(w)
     }
     if (!has('dry-run')) ledger.works[id] = entry
-    const subs = row.services.filter((s) => s.types.includes('subscription')).map((s) => s.service)
     const paid = row.services.filter((s) => s.types.includes('rent') || s.types.includes('buy'))
     const addon = row.services.filter((s) => s.types.includes('addon')).map((s) => s.service)
     const label = wanted.get(id) || w.localizedTitle || w.title || id
     console.log(`  ${adoptable ? '＋' : '　'}${label.slice(0, 34).padEnd(34)}`)
-    console.log(`     見放題: ${subs.join(' / ') || '（なし）'}`)
+    for (const line of subscriptionLines(row.services, id, names)) console.log(line)
     if (paid.length) console.log(`     レンタル・購入: ${paid.map((s) => s.service).join(' / ')}`)
     // ★ addon は見放題ではない。**必ず別に出す**（core/availability.ts の「絶対に守ること」）
     if (addon.length) console.log(`     ★別料金チャンネル(addon): ${addon.join(' / ')}`)
@@ -413,9 +445,11 @@ async function main(): Promise<void> {
       if (!row) continue
       hit++
       if (!has('dry-run')) ledger.works[id] = { fetchedAt, services: row.services }
-      const subs = row.services.filter((s) => s.types.includes('subscription')).map((s) => s.service)
-      console.log(`  ${(wanted.get(id) || id).slice(0, 34).padEnd(34)}`)
-      console.log(`     見放題: ${subs.join(' / ') || '（なし）'}`)
+      const title = wanted.get(id) || ''
+      console.log(`  ${(title || id).slice(0, 34).padEnd(34)}`)
+      for (const line of subscriptionLines(row.services, id, title ? [title] : [])) {
+        console.log(line)
+      }
     }
     console.log('')
   }

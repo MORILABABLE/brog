@@ -1,0 +1,39 @@
+{
+  "note": "配信APIが『見放題（subscription）』と言っているのに、運営者が目視で確認したら実際には無かった組み合わせ。人が手で管理する。",
+  "why": [
+    "在庫台帳（data/availability.json）はAPIの応答そのままで、書き換えない。だが応答そのものが事実と違うことがある（docs/CROSS-SERVICE.md 9-3-C）。",
+    "★ 取り下げるのは見放題だけ。レンタル・購入の行はAPIのまま残る（表では△になる）。目視で確かめたのは『見放題に無い』ことだけなので、『取り扱いなし（×）』にはしない。",
+    "★ 目視で確かめたことしか書かない。『たぶん無い』で足さない。1件足すと、その作品のその社について記事は二度と見放題と書かなくなる。",
+    "★ 事実が変わったら消す。また見放題に入ったら、この行を消すだけで元に戻る。",
+    "★ 判定は pipeline/core/availability-ng.ts と site/src/lib/availability-ng.ts の2か所にある（site は pipeline を import しない決まりのため）。片方だけ直さないこと。",
+    "★ 効くのは在庫（data/availability.json）にだけ。変化ログ（/changes）がそのサービスの new を返し始めたら、それは新しい観測なので素材に入る（記事に出る）。そのときは画面を見て、本当に入っていれば否認を消す。"
+  ],
+  "howto": [
+    "1. Amazon・Disney+ などの作品ページを目視する（amazon.co.jp は自動取得できない。docs/CROSS-SERVICE.md 9-3）",
+    "2. 下の entries に1件足す。service は theme.yaml のサービスキー（netflix / prime-video / disney-plus / apple-tv）",
+    "3. 当てるものを ids（作品ID・完全一致）か match（題名・部分一致）で書く。両方書いたら、どちらかに当たれば取り下げる",
+    "4. checkedAt（目視した日）と evidence（画面に何が出ていたか）を必ず書く。書かないと、あとで消してよいか誰にも分からなくなる",
+    "5. 記事を作り直す（npm run write）／サイトをビルドし直す（cd site && npm run build:fresh）"
+  ],
+  "updatedAt": "2026-09-09",
+  "entries": [
+    {
+      "service": "prime-video",
+      "match": "名探偵コナン",
+      "ids": [
+        "45173",
+        "49997",
+        "50826",
+        "51558",
+        "60115",
+        "65879",
+        "69907",
+        "138947"
+      ],
+      "checkedAt": "2026-09-09",
+      "checkedBy": "運営者がAmazonの画面を目視",
+      "evidence": "Amazon Prime Video の画面に劇場版の見放題（プライム会員特典）が1本も出ていない。レンタル・購入はある。",
+      "note": "APIは /shows/{id} でも /shows/search/filters?catalogs=prime.subscription でも subscription を返す（2026-09-09 に再確認）。ただし subscription 側の availableSince が 2025-04-11／2025-04-30 と1年以上前で揃っている一方、rent は 2026-04〜05 に更新されている。さらに 51558（天国へのカウントダウン）と 65879（ゼロの執行人）は /shows/{id} が subscription を返すのに catalogs 絞り込みの検索には出てこず、APIの中でも食い違っている。変化ログ（/changes）は prime-video のコナンを new も removed も一度も返していない。"
+    }
+  ]
+}

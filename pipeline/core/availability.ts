@@ -28,11 +28,18 @@
  *
  *   3. **古い在庫を根拠にしない。** `MAX_AGE_DAYS` を過ぎたものは
  *      「分からない」として扱う。**黙って古い事実を出さない。**
+ *
+ *   4. **APIが間違っていることがある。** `subscription` が返っていても、
+ *      その社の画面に無い作品がある（2026-09-09・コナンの劇場版8作）。
+ *      目視で確かめた否認は `data/availability-ng.json` に置き、
+ *      `subscriptionServices()` が落とす（`core/availability-ng.ts`）。
+ *      **台帳そのものは直さない。** あれはAPIが何と言ったかの記録。
  */
 import { readFileSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import type { Work } from '../sources/types.ts'
+import { deniesSubscription } from './availability-ng.ts'
 
 export const AVAILABILITY_PATH = join('data', 'availability.json')
 
@@ -148,12 +155,23 @@ export function isFresh(a: WorkAvailability | undefined, now = Date.now()): bool
  *
  * ★ 呼び出し側が `types.includes('subscription')` を書かないこと。
  *   判定を散らすと、いつか誰かが `addon` を足す。
+ *
+ * ★ **作品IDと題名を必ず渡す**（2026-09-09 に引数を足した）。
+ *   目視で否認した組み合わせをここで落とすため（`core/availability-ng.ts`）。
+ *   **渡さないと呼べない形にしてある。** 省略できるようにすると、
+ *   APIが嘘をついている組み合わせが、どこか1か所から必ず漏れて記事に出る。
  */
-export function subscriptionServices(a: WorkAvailability | undefined): string[] {
+export function subscriptionServices(
+  a: WorkAvailability | undefined,
+  workId: string,
+  titles: readonly string[] = [],
+): string[] {
   if (!a) return []
   return a.services
     .filter((s) => s.types.some((t) => (SUBSCRIPTION_TYPES as readonly string[]).includes(t)))
     .map((s) => s.service)
+    // ★ 目視で「そこには無い」と確かめた組み合わせを落とす。**台帳は書き換えない。**
+    .filter((sv) => !deniesSubscription(sv, workId, titles))
 }
 
 /**
