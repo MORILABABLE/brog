@@ -1,4 +1,5 @@
 ---
+import WorkSearch from './WorkSearch.astro'
 import type { CalendarMonth } from '../lib/calendar'
 
 interface Props {
@@ -13,9 +14,23 @@ interface Props {
   leavingPrefix: string
   /** 「新着」の升目を押したときの行き先の頭 */
   arrivalsPrefix: string
+  /**
+   * 作品検索（WorkSearch.astro）の説明文。**渡したページだけ検索窓が出る。**
+   *
+   * 検索窓は「配信カレンダー」の見出しと同じ行の右端に置く（2026-09-09）。
+   * 以前は本文の冒頭文の右に居たが、その冒頭文を撤去したため、
+   * **見出しの行の空きが検索窓の置き場**になった。
+   *
+   * ★ 検索窓はページに1つだけ。WorkSearch のスクリプトは
+   *   `[data-work-search]` を1つしか見ないので、同じページで2回出さないこと。
+   * ★ 升目が出ない時期（新着が今月に1件も無い月後半など）は
+   *   この部品ごと描かれない。**そのときはページ側が単独で置く**
+   *   （styles/global.css の `.search-head`）。
+   */
+  searchLabel?: string
 }
 
-const { months, leavingPrefix, arrivalsPrefix } = Astro.props
+const { months, leavingPrefix, arrivalsPrefix, searchLabel } = Astro.props
 
 /*
  * どちらの種類が実際に点いているか。**凡例の出し分けに使う。**
@@ -61,9 +76,11 @@ const hasArrivals = months.some((m) => m.arrivals > 0)
  * （カレンダーの升目と記事カードのバッジが隣り合うことはない）。
  * 色の定義は styles/global.css の `--cal-leaving` / `--cal-arrivals`。
  *
- * ■ JavaScript を使わない
- * 升目はただのページ内リンク。作品検索（WorkSearch.astro）と違って
- * 読者の入力に反応する必要が無いので、素の `<a href="#...">` で足りる。
+ * ■ 升目そのものは JavaScript を使わない
+ * 升目はただのページ内リンク。読者の入力に反応する必要が無いので、
+ * 素の `<a href="#...">` で足りる。
+ * ★ 見出しの行に置く作品検索（WorkSearch.astro）だけはJSを使う。
+ *   あちらは読者の入力に反応する機能なので避けられない（部品側に閉じている）。
  * ★ 飛んだ先が固定ヘッダーに隠れないよう、見出し側に `scroll-margin-top` が要る
  *   （components/WorkTable.astro の `.day h2`）。**片方だけ直さないこと。**
  */
@@ -78,17 +95,27 @@ function spoken(iso: string): string {
 ---
 
 <section class="calendar" aria-labelledby="calendar-title">
-  <h2 id="calendar-title">配信カレンダー</h2>
+  {/*
+    見出しの行。**右端に作品検索を置く**（2026-09-09）。
+    見出しと検索窓で1行に見せる。幅が足りなければ検索窓が下へ落ちる（スマホ）。
+  */}
+  <div class="head">
+    <h2 id="calendar-title">配信カレンダー</h2>
+    {searchLabel && <WorkSearch label={searchLabel} />}
+  </div>
 
   {/*
-    凡例。**色の説明ではなく、升目に出る文字の説明**として書く。
-    「赤い日」と書くと、色が届かない読者に何も伝わらない。
+    凡例と使い方。**1行にまとめる**（2026-09-09）。
+    ★ 色の説明ではなく、升目に出る文字の説明として書く。
+      「赤い日」と書くと、色が届かない読者に何も伝わらない。
+    ★ 使い方の1文は凡例の**右に間を空けて**続ける。
+      別の段落に落とすと、升目の前に小さい文字の行が2本並んで読みにくかった。
   */}
   <p class="legend">
     {hasLeaving && <span class="key lv"><span class="chip">終</span>見放題が終了する日</span>}
     {hasArrivals && <span class="key ar"><span class="chip">新</span>見放題に入った日</span>}
+    <span class="how">日にちをクリックして作品を確認できます</span>
   </p>
-  <p class="how">数字は本数です。点いている日を押すと、その日の作品一覧まで移動します。</p>
 
   <div class="months">
     {
@@ -202,17 +229,33 @@ function spoken(iso: string): string {
   .calendar {
     margin: 1.4rem 0 0;
   }
+  /*
+   * 見出しと作品検索を1行に並べる。
+   * ★ `baseline`。検索窓は入力欄の下に件数の行（WorkSearch の `.status`）を
+   *   持つぶん背が高いので、`center` にすると**見出しの文字が入力欄より下がる。**
+   *   文字の下端どうしで揃えると、見出しと窓が1行に見える。
+   * ★ 幅が足りなければ検索窓が下へ落ちる（スマホ）。
+   */
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1.2rem;
+    margin: 0 0 0.35rem;
+  }
   .calendar h2 {
-    margin-bottom: 0.3rem;
+    margin: 0;
     font-size: 1.05rem;
   }
 
-  /* --- 凡例と使い方 --- */
+  /* --- 凡例と使い方（1行） --- */
   .legend {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 0.3rem 1rem;
-    margin: 0;
+    margin: 0 0 0.7rem;
     font-size: 0.8rem;
     line-height: 1.6;
     color: var(--text-muted);
@@ -222,11 +265,10 @@ function spoken(iso: string): string {
     align-items: center;
     gap: 0.3rem;
   }
+  /* 凡例との間を .legend の gap より広く取る（説明の役割が違うため） */
   .how {
-    margin: 0.2rem 0 0.7rem;
+    padding-left: 0.7rem;
     font-size: 0.78rem;
-    line-height: 1.6;
-    color: var(--text-muted);
   }
 
   /*

@@ -10,17 +10,42 @@ interface Props {
 const { label } = Astro.props
 
 /**
- * 常設ページの作品検索。冒頭文（「32本が終了予定です。…」）の右に置く。
+ * 常設ページの作品検索。**「配信カレンダー」の見出しと同じ行の右端に置く**
+ * （2026-09-09。それまでは冒頭文「32本が終了予定です。…」の右にあった）。
  *
- * ■ 何をするか
- * 読者が打った文字列を含む作品の行まで**自動でスクロールする**。
- * 絞り込み（該当しない行を隠す）はしない。前後の日付や作品数といった
- * ページの文脈が消えると、「いつ終わるのか」を読む用が果たせなくなるため。
+ * ★ 置き場は components/EventCalendar.astro の `.head`。ページ側から直接ではなく、
+ *   カレンダーに `searchLabel` を渡すと出る。**升目が描かれない時期だけ**、
+ *   ページ側が `.search-head`（styles/global.css）で単独に置く。
+ *   **同じページに2つ出さないこと**（下のスクリプトは `[data-work-search]` を1つしか見ない）。
+ *
+ * ■ 何をするか（★ 2026-09-09 に作り直した）
+ * 打った文字を含む作品を探し、**入力欄の下に候補を出す。**
+ * 本文へ移動するのは **Enter を押したとき（または候補を押したとき）だけ。**
+ *
+ *   打っている間 … 候補を出す。**ページは動かさない**
+ *   Enter        … いま選んでいる候補の行へ飛ぶ。閉じたあとの Enter は次の該当行へ
+ *   上下キー      … 候補を選び直す（閉じているときは↑↓ボタンで該当行を送る）
+ *   Esc          … 候補を閉じる。閉じているときは入力を空にする
+ *
+ * ★ **1文字打っただけで飛ばさない。** 以前は `input` のたびに
+ *   `scrollIntoView` していたので、「あ」と打った時点で無関係な作品まで
+ *   画面が飛んでいた（2026-09-09 の指摘）。読者が「これだ」と決めるまで
+ *   ページは動かさないこと。**この方針を崩す変更を入れないこと。**
+ *
+ * ★ 絞り込み（該当しない行を隠す）はしない。前後の日付や作品数といった
+ *   ページの文脈が消えると、「いつ終わるのか」を読む用が果たせなくなるため。
+ *   候補はあくまで**飛び先を選ぶための道具**で、一覧の代わりではない。
+ *
+ * ■ 消したときに検索窓へ戻す
+ * 一度飛ぶと、検索窓は画面の外（上）へ出る。そこで BackSpace で文字を消しても
+ * **打ち直す窓が画面に無い**という状態になっていた（2026-09-09 の指摘）。
+ * 入力が空になったら、窓が画面外なら連れ戻す（下の `revealBox`）。
  *
  * ■ 全角・半角を無視する仕組み
  * WorkTable が各行に `data-work-text`（ならし済みの作品名）を焼き込んでおり、
  * ここでは読者の入力を同じ関数でならして突き合わせるだけ。
  * ならし方の定義は src/lib/normalize.ts に1つだけある。**両側が同じ関数を使う。**
+ * 候補に出す文字（作品名・日付）は `data-work-title` / `data-work-when`。
  *
  * ■ このコンポーネントだけJSを使う
  * サイトは基本JSゼロで、記事ページ・トップにはスクリプトを置いていない。
@@ -34,11 +59,20 @@ const { label } = Astro.props
 <div class="work-search" data-work-search hidden>
   <label class="visually-hidden" for="work-search-input">{label}</label>
   <div class="row">
+    {/*
+      ★ `combobox` の作法にそろえる。候補の開閉は `aria-expanded`、
+        いま選んでいる候補は `aria-activedescendant` で伝える。
+        **フォーカスは入力欄から動かさない**（候補側へ移すと打ち続けられない）。
+    */}
     <input
       id="work-search-input"
       class="input"
       type="search"
+      role="combobox"
       autocomplete="off"
+      aria-autocomplete="list"
+      aria-expanded="false"
+      aria-controls="work-search-list"
       placeholder={label}
       data-work-search-input
     />
@@ -48,8 +82,24 @@ const { label } = Astro.props
       <button type="button" data-work-search-step="1" aria-label="次の該当作品へ">↓</button>
     </span>
   </div>
-  {/* 件数の読み上げ。role="status" で入力のたびに読み上げられる */}
+
+  {/*
+    件数と現在地。**「該当する作品がありません」もここに出す**
+    （role="status" なので読み上げにも乗る）。
+    候補の枠の中に出すと、枠ごと出ないときに何も伝わらない。
+  */}
   <p class="status" role="status" data-work-search-status></p>
+
+  {/*
+    検索候補。**入力欄の下に重ねて出す**（升目の上に乗る）。
+    ★ `.list` が listbox そのもの。件数の注記（「ほか◯件」）は
+      option ではないので **ul の外**に置く。
+  */}
+  <div class="panel" hidden data-work-search-panel>
+    <ul id="work-search-list" class="list" role="listbox" aria-label="検索候補" data-work-search-list>
+    </ul>
+    <p class="more" hidden data-work-search-more></p>
+  </div>
 </div>
 
 <script>
@@ -59,68 +109,221 @@ const { label } = Astro.props
   const input = box?.querySelector<HTMLInputElement>('[data-work-search-input]')
   const status = box?.querySelector<HTMLElement>('[data-work-search-status]')
   const steps = box?.querySelector<HTMLElement>('[data-work-search-steps]')
+  const panel = box?.querySelector<HTMLElement>('[data-work-search-panel]')
+  const list = box?.querySelector<HTMLElement>('[data-work-search-list]')
+  const more = box?.querySelector<HTMLElement>('[data-work-search-more]')
   const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-work-row]'))
 
   // 表が無いページ（該当0本の常設ページ）では枠ごと出さない
-  if (box && input && status && steps && rows.length > 0) {
+  if (box && input && status && steps && panel && list && more && rows.length > 0) {
     box.hidden = false
 
     /** 該当行すべてに付く印 */
     const HIT = 'is-search-hit'
     /** いま飛んでいる1行だけに付く印 */
     const CURRENT = 'is-search-current'
+    /**
+     * 一度に描く候補の数。
+     * 「あ」のような1文字だと100件を超える。全部描いても読めないので上から順に切り、
+     * 残りは件数だけ伝える（`more`）。**該当そのものは切っていない**ので、
+     * 飛んだあとの Enter や ↑↓ は最後の1件まで回る。
+     */
+    const MAX_OPTIONS = 20
 
     // 動きを減らす設定の読者には瞬間移動させる（酔いを防ぐ）
     const jump = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       ? ('auto' as const)
       : ('smooth' as const)
 
+    /** いまの入力に当たった行。**全部**入っている（描くときだけ MAX_OPTIONS で切る） */
     let hits: HTMLElement[] = []
-    let index = 0
-    /** 直前に飛んだ行。同じ行への連続スクロールを止めるために持つ */
-    let scrolled: HTMLElement | null = null
+    /** いま選んでいる該当。候補の中の位置であり、Enter で飛ぶ先でもある */
+    let active = 0
+    /** 候補を出しているか */
+    let open = false
+    /** この入力で一度でも本文へ飛んだか。↑↓ボタンと現在行の印はこのときだけ出す */
+    let moved = false
 
-    /** 印を付け直し、件数を出し、現在行へ飛ぶ */
-    function paint() {
-      for (const row of rows) row.classList.remove(HIT, CURRENT)
+    const optionId = (i: number) => `work-search-opt-${i}`
 
-      if (hits.length === 0) {
-        steps!.hidden = true
-        scrolled = null
-        status!.textContent = input!.value.trim() === '' ? '' : '該当する作品はありません'
+    /** 固定ヘッダーの下端。窓を戻すときに隠れていないかを見るために使う */
+    function headerBottom(): number {
+      const header = document.querySelector('header')
+      if (!header) return 0
+      if (getComputedStyle(header).position !== 'sticky') return 0
+      return Math.max(0, header.getBoundingClientRect().bottom)
+    }
+
+    /** 選んでいる候補が枠の外なら、**枠の中だけ**動かす（ページは動かさない） */
+    function revealOption() {
+      const el = list!.children[active]
+      if (!(el instanceof HTMLElement)) return
+      const top = el.offsetTop
+      const bottom = top + el.offsetHeight
+      if (top < list!.scrollTop) list!.scrollTop = top
+      else if (bottom > list!.scrollTop + list!.clientHeight) {
+        list!.scrollTop = bottom - list!.clientHeight
+      }
+    }
+
+    /** 候補を描き直す */
+    function paintPanel() {
+      list!.textContent = ''
+      if (!open) {
+        panel!.hidden = true
+        more!.hidden = true
+        input!.setAttribute('aria-expanded', 'false')
+        input!.removeAttribute('aria-activedescendant')
         return
       }
 
+      const shown = hits.slice(0, MAX_OPTIONS)
+      shown.forEach((row, i) => {
+        const li = document.createElement('li')
+        li.id = optionId(i)
+        li.className = i === active ? 'option is-active' : 'option'
+        li.setAttribute('role', 'option')
+        li.setAttribute('aria-selected', String(i === active))
+
+        const name = document.createElement('span')
+        name.className = 'opt-name'
+        name.textContent = row.dataset.workTitle ?? ''
+        li.append(name)
+
+        const when = row.dataset.workWhen
+        if (when) {
+          const tag = document.createElement('span')
+          tag.className = 'opt-when'
+          tag.textContent = when
+          li.append(tag)
+        }
+
+        /*
+         * ★ `mousedown` を止める。止めないと押した瞬間に入力欄からフォーカスが外れ、
+         *   下の focusout が候補を閉じてしまって click が届かない。
+         */
+        li.addEventListener('mousedown', (event) => event.preventDefault())
+        li.addEventListener('click', () => {
+          active = i
+          go()
+        })
+        list!.append(li)
+      })
+
+      const rest = hits.length - shown.length
+      more!.hidden = rest <= 0
+      more!.textContent = rest > 0 ? `ほか${rest}件（Enterで先頭の候補へ移動）` : ''
+
+      panel!.hidden = false
+      input!.setAttribute('aria-expanded', 'true')
+      input!.setAttribute('aria-activedescendant', optionId(active))
+      revealOption()
+    }
+
+    /** 該当行の印を付け直す。**現在行の印は飛んだあとだけ** */
+    function paintRows() {
+      for (const row of rows) row.classList.remove(HIT, CURRENT)
       for (const row of hits) row.classList.add(HIT)
-      const current = hits[index]!
-      current.classList.add(CURRENT)
+      if (moved) hits[active]?.classList.add(CURRENT)
+    }
 
-      steps!.hidden = hits.length < 2
-      status!.textContent =
-        hits.length === 1 ? '1件' : `${index + 1}件目 / ${hits.length}件（Enterで次へ）`
-
-      // 打つたびに同じ行へ飛び直すと画面が揺れる。行が変わったときだけ動かす
-      if (current !== scrolled) {
-        scrolled = current
-        current.scrollIntoView({ behavior: jump, block: 'center', inline: 'nearest' })
+    /** 入力欄の下の1行。件数・現在地・該当なしをここで言う */
+    function paintStatus() {
+      const typed = input!.value.trim() !== ''
+      status!.classList.remove('is-none')
+      if (!typed) {
+        status!.textContent = ''
+        return
       }
+      if (hits.length === 0) {
+        status!.classList.add('is-none')
+        status!.textContent = '該当する作品がありません'
+        return
+      }
+      status!.textContent = moved
+        ? `${active + 1}件目 / ${hits.length}件（Enterで次へ）`
+        : `${hits.length}件の候補（Enterで移動）`
+    }
+
+    /** ↑↓ボタンは**飛んだあと**にだけ出す。打っている間の送り先は候補のほう */
+    function paintSteps() {
+      steps!.hidden = !(moved && hits.length > 1)
+    }
+
+    function paint() {
+      paintPanel()
+      paintRows()
+      paintStatus()
+      paintSteps()
+    }
+
+    /** いま選んでいる該当の行へ飛ぶ。**ここだけがページを動かす** */
+    function go() {
+      const target = hits[active]
+      if (!target) return
+      moved = true
+      open = false
+      paint()
+      target.scrollIntoView({ behavior: jump, block: 'center', inline: 'nearest' })
+    }
+
+    /**
+     * 検索窓が画面の外に出ていたら連れ戻す（文字を消したときに打ち直せるように）。
+     *
+     * ★ **数フレーム見張る。1回置き直すだけでは足りない。**
+     *   ブラウザは入力欄の中身が変わると、フォーカスしている入力欄を**自前で**
+     *   画面へ引き寄せる。この動きはこちらの `input` 処理の前にも後にも来るうえ、
+     *   走っているスクロールを途中で打ち切る。実測では
+     *   **窓の上端が固定ヘッダーの裏で止まった**（`top=-7` / `top=42`）。
+     *   位置が落ち着くまで測り直して、外に出ていたら置き直す。
+     * ★ 動かし方は**瞬間移動**（`auto`）。滑らかに動かすと、動いている最中の位置を
+     *   次のフレームが「まだ外にいる」と読んで、自分で自分を打ち切ってしまう。
+     * ★ 見張るのは8フレーム（約130ms）だけ。ここを長くすると、
+     *   読者が自分でスクロールし始めたときに引き戻すことになる。
+     */
+    function revealBox() {
+      let frames = 8
+      const settle = () => {
+        const r = box!.getBoundingClientRect()
+        // 固定ヘッダーの裏に隠れているのも「画面の外」として扱う
+        if (r.top < headerBottom() || r.bottom > window.innerHeight) {
+          box!.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' })
+        }
+        if (--frames > 0) requestAnimationFrame(settle)
+      }
+      requestAnimationFrame(settle)
     }
 
     function search() {
       const query = normalizeForSearch(input!.value)
       hits =
-        query === ''
-          ? []
-          : rows.filter((row) => (row.dataset.workText ?? '').includes(query))
-      index = 0
+        query === '' ? [] : rows.filter((row) => (row.dataset.workText ?? '').includes(query))
+      active = 0
+      // 打ち直したら「まだ飛んでいない」状態に戻す
+      moved = false
+      open = hits.length > 0
       paint()
+      // ★ ここでページを動かさない。動かすのは Enter（go）だけ
+      if (query === '') revealBox()
     }
 
-    /** ↑↓ / Enter で該当行を送る。端まで行ったら反対側へ回す */
-    function step(delta: number) {
+    /**
+     * 選び先を送る。
+     *   候補が開いている … 候補の中を動くだけ（ページは動かさない）
+     *   閉じている       … 該当行を送って飛ぶ（従来の↑↓ボタンの動き）
+     */
+    function move(delta: number) {
       if (hits.length === 0) return
-      index = (index + delta + hits.length) % hits.length
-      paint()
+      if (open) {
+        const n = Math.min(hits.length, MAX_OPTIONS)
+        active = (active + delta + n) % n
+        paintPanel()
+        return
+      }
+      active = (active + delta + hits.length) % hits.length
+      paintRows()
+      paintStatus()
+      hits[active]!.scrollIntoView({ behavior: jump, block: 'center', inline: 'nearest' })
     }
 
     input.addEventListener('input', search)
@@ -131,18 +334,68 @@ const { label } = Astro.props
       if (event.key === 'Enter') {
         // フォームが無くても Enter で送信扱いにならないよう明示的に止める
         event.preventDefault()
-        step(event.shiftKey ? -1 : 1)
-      } else if (event.key === 'Escape') {
+        if (hits.length === 0) return
+        if (open) go()
+        else move(event.shiftKey ? -1 : 1)
+        return
+      }
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (hits.length === 0) return
+        event.preventDefault()
+        // 閉じているときは、まず開く（飛ばさずに選び直せるようにする）
+        if (!open) {
+          open = true
+          paintPanel()
+          return
+        }
+        move(event.key === 'ArrowDown' ? 1 : -1)
+        return
+      }
+
+      if (event.key === 'Escape') {
+        if (open) {
+          /*
+           * ★ 止めないと**入力ごと消える。** `type="search"` の入力欄は
+           *   ブラウザが Escape で中身を空にする決まりになっている。
+           *   1回目は候補を閉じるだけ、2回目で消す、の2段にそろえる。
+           */
+          event.preventDefault()
+          open = false
+          paintPanel()
+          return
+        }
         input.value = ''
         search()
       }
     })
 
+    // 枠の外を押したら候補を閉じる（入力は消さない）
+    document.addEventListener('click', (event) => {
+      if (!open) return
+      if (event.target instanceof Node && box.contains(event.target)) return
+      open = false
+      paintPanel()
+    })
+
+    // Tab などで枠から出たときも閉じる。候補の click は mousedown を止めてあるので届く
+    box.addEventListener('focusout', (event) => {
+      if (!open) return
+      const next = event.relatedTarget
+      if (next instanceof Node && box.contains(next)) return
+      open = false
+      paintPanel()
+    })
+
     for (const button of steps.querySelectorAll<HTMLButtonElement>('[data-work-search-step]')) {
       button.addEventListener('click', () => {
-        step(Number(button.dataset.workSearchStep))
-        // 続けて打てるように入力欄へ戻す
-        input.focus()
+        move(Number(button.dataset.workSearchStep))
+        /*
+         * 続けて打てるように入力欄へ戻す。
+         * ★ `preventScroll`。付けないとブラウザが入力欄まで画面を戻してしまい、
+         *   いま飛んだ行が見えなくなる。
+         */
+        input.focus({ preventScroll: true })
       })
     }
   }
@@ -150,9 +403,24 @@ const { label } = Astro.props
 
 <style>
   .work-search {
-    /* 冒頭文の右に置く。幅が足りなければページ側の flex が下に落とす */
+    /* 見出しの行の右端に置く。幅が足りなければ置き場の flex が下に落とす */
     flex: 0 1 16rem;
     min-width: 12rem;
+    /* 候補（.panel）の位置の基準 */
+    position: relative;
+  }
+  /*
+   * ★ 狭い画面では**行いっぱいに広げる。**
+   *   ここが 16rem のままだと、折り返した行の**左端**に窓が置かれる一方で
+   *   候補の枠は窓の**右端**を基準に左へ伸びるので、
+   *   枠の左側が画面の外へ出て作品名が切れる（body が `overflow-x: hidden` なので
+   *   横スクロールも出ず、**切れたことに気づけない**）。
+   *   窓を行幅いっぱいにすれば、枠の幅＝窓の幅になって必ず画面に収まる。
+   */
+  @media (max-width: 600px) {
+    .work-search {
+      flex: 1 1 100%;
+    }
   }
   .row {
     display: flex;
@@ -183,21 +451,14 @@ const { label } = Astro.props
     display: flex;
     gap: 0.2rem;
   }
-  .steps button {
-    width: 1.9rem;
-    height: 1.9rem;
-    padding: 0;
-    background: var(--bg-subtle);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    line-height: 1;
-    cursor: pointer;
-  }
-  .steps button:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+  /*
+   * ★ `display: flex` は `hidden` 属性より強い（作者スタイルはUAスタイルに勝つ）。
+   *   これが無いと、**打つ前から↑↓が出たまま**になり、入力欄の幅を奪って
+   *   説明文（「終了予定の作品を探す」）が途中で切れる。
+   *   スクリプトは `steps.hidden` を出し入れするので、必ず対で持つこと。
+   */
+  .steps[hidden] {
+    display: none;
   }
   .status {
     margin: 0.3rem 0 0;
@@ -206,5 +467,99 @@ const { label } = Astro.props
     font-size: 0.76rem;
     line-height: 1.2;
     color: var(--text-muted);
+  }
+  /* 「該当する作品がありません」だけは薄くしない（読者が次に打つ判断に使う） */
+  .status.is-none {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  /* --- 検索候補 --- */
+  /*
+   * ★ 升目の上に重ねる。`position: absolute` にしないと、
+   *   候補が出るたびにカレンダーが下へ押されて画面が跳ねる。
+   * ★ 右端そろえ。検索窓は見出しの行の**右端**にあるので、
+   *   左そろえにすると枠が本文の外へはみ出す。
+   */
+  .panel {
+    position: absolute;
+    z-index: 20;
+    top: 100%;
+    right: 0;
+    width: 24rem;
+    max-width: min(24rem, calc(100vw - 2rem));
+    /* 入力欄より狭い枠が出ると位置がずれて見える */
+    min-width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+    overflow: hidden;
+  }
+  .panel[hidden] {
+    display: none;
+  }
+  .list {
+    margin: 0;
+    padding: 0.25rem;
+    /* 候補が多いときは**枠の中だけ**をスクロールさせる（ページは動かさない） */
+    max-height: 17rem;
+    overflow-y: auto;
+    list-style: none;
+  }
+  /*
+   * ★ 候補の1行は**スクリプトが作る**ので `:global()` で書く。
+   *   Astro の scoped style は要素に `data-astro-cid-…` が付いている前提で
+   *   セレクタを書き換えるが、`createElement` で作った要素にはその印が無い。
+   *   素の `.option { … }` と書くと**1行も当たらず、日付が作品名に食い込む。**
+   *   `.list` の側は雛形にあるので印が付いており、これで枠の中だけに閉じる。
+   */
+  .list :global(.option) {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.8rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+  /*
+   * いま選んでいる候補。**色だけに意味を持たせない**規律があるので、
+   * 左端に縦棒を出す（表の現在行 `tr.is-search-current` と同じ形）。
+   */
+  .list :global(.option.is-active) {
+    background: var(--accent-soft);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .list :global(.option:hover) {
+    background: var(--bg-subtle);
+  }
+  .list :global(.opt-name) {
+    /* 長い作品名で日付を押し出さない。溢れたぶんは「…」で切る */
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  .list :global(.opt-when) {
+    flex: 0 0 auto;
+    font-size: 0.76rem;
+    white-space: nowrap;
+    color: var(--text-muted);
+  }
+  .more {
+    margin: 0;
+    padding: 0.35rem 0.75rem 0.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.76rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+  }
+  .more[hidden] {
+    display: none;
   }
 </style>

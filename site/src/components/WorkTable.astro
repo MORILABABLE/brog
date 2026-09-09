@@ -114,6 +114,22 @@ function searchText(title: string, originalTitle?: string): string {
     .map(normalizeForSearch)
     .join('|')
 }
+
+/**
+ * 検索候補の一覧に出す日付（2026-09-09 追加）。
+ *
+ * 作品検索は打った時点で**候補を出す**ようになったので、
+ * 候補の行に「その作品がいつなのか」が要る（このサイトの用は日付にある）。
+ *
+ * ★ **年を落として「9月30日終了」の形にする。**
+ *   候補は入力欄の下の狭い枠に出るので、年まで入れると作品名を押しのける。
+ *   升目が描くのは今月から先だけ（lib/calendar.ts）で、表もせいぜい2〜3か月ぶん。
+ *   年をまたいでも「12月」と「1月」で読み分けられる。
+ *   **正確な日付は飛んだ先の日付見出しが持っている。**
+ */
+function whenLabel(date: Date): string {
+  return `${formatDate(date).replace(/^\d+年/, '')}${dateNoun}`
+}
 ---
 
 {
@@ -137,8 +153,18 @@ function searchText(title: string, originalTitle?: string): string {
           </thead>
           <tbody>
             {g.works.map((w) => (
-              /* data-work-* は作品検索（WorkSearch.astro）が読む。消さないこと */
-              <tr data-work-row data-work-text={searchText(w.title, w.originalTitle)}>
+              /*
+                data-work-* は作品検索（WorkSearch.astro）が読む。消さないこと。
+                  text … 突き合わせ用のならし済み文字列（表に出す文字ではない）
+                  title / when … **候補の一覧に出す文字**。行のセルから拾うと
+                    「（原題: …）」やサムネイルまで混ざるので、別に焼き込む
+              */
+              <tr
+                data-work-row
+                data-work-text={searchText(w.title, w.originalTitle)}
+                data-work-title={w.title}
+                data-work-when={whenLabel(g.date)}
+              >
                 <th scope="row">
                   {(() => {
                     const p = primary(w)

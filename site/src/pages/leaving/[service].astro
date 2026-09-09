@@ -45,6 +45,12 @@ const groups = groupByDate(works)
 const nearest = groups[0]
 
 /*
+ * 作品検索の説明文。**カレンダーの見出しの右と、升目が出ないときの単独置きで同じ文字列を使う。**
+ * 2か所に書くと、同じページの中で検索窓の名前が食い違う。
+ */
+const SEARCH_LABEL = '終了予定の作品を探す'
+
+/*
  * ページ先頭の升目（2026-09-07 追加）。**このページの中身と同じ配列を渡す。**
  * 別の絞り込みを掛けると、点いているのに飛び先が無い日ができる。
  *
@@ -100,14 +106,14 @@ const description =
     ★ 記事ページ（pages/posts/[...slug].astro）の `.meta` と同じ位置・同じ形。
       **違いはバッジだけ**にしてある。記事は「公開 ◯月◯日」が並び、
       ここは「随時更新」が並ぶ。並べて比べれば種類の違いが一目で分かる。
-      説明の1行は**外から直接来た読者**のためのもの（config.ts の EVERGREEN_BADGE）。
+      ★ バッジの下に置いていた説明の1行（「配信データをサービスごとに…」）は
+        **撤去した**（2026-09-09）。読ませる文字を減らして本題の升目を上げる判断。
+        3枚（終了予定・新着・カレンダー）とも同じ扱いにすること。
   */}
   <div class="meta">
     <span class="badge" data-category={CATEGORIES.leaving.slug}>{CATEGORIES.leaving.label}</span>
     <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
   </div>
-
-  <p class="kind-note">{EVERGREEN_BADGE.note}</p>
 
   <AffiliateNotice />
 
@@ -131,7 +137,12 @@ const description =
     それに1画面で答えるのが升目の役目。件数の文と検索窓はその下でよい。
   */}
   {calendar.hasEvents && (
-    <EventCalendar months={calendar.months} leavingPrefix="#" arrivalsPrefix="#" />
+    <EventCalendar
+      months={calendar.months}
+      leavingPrefix="#"
+      arrivalsPrefix="#"
+      searchLabel={SEARCH_LABEL}
+    />
   )}
 
   {
@@ -145,18 +156,17 @@ const description =
     ) : (
       <>
         {/*
-          冒頭文の右の空きに作品検索を置く。
-          入力すると該当作品の行まで自動でスクロールする（絞り込みはしない）。
-          レイアウトは styles/global.css の .list-head。
+          ★ 件数と並び順の冒頭文（「32本が終了予定です。…」）は**撤去した**（2026-09-09）。
+            件数は升目の月見出し（「終了32本」）が、日付は表の見出しが持っている。
+          ★ 作品検索は**カレンダーの見出しの右**へ移した（EventCalendar の searchLabel）。
+            升目が出ない時期だけ、ここに単独で置く。**2つ出さないこと**
+            （WorkSearch のスクリプトはページに1つある前提）。
         */}
-        <div class="list-head">
-          <p class="summary">
-            <strong>{works.length}本</strong>が終了予定です。
-            <strong>終了日の近い順</strong>（きょうに近い日付が上）に並べています。
-            最も近い終了日は{formatDate(nearest!.date)}です。
-          </p>
-          <WorkSearch label="終了予定の作品を探す" />
-        </div>
+        {!calendar.hasEvents && (
+          <div class="search-head">
+            <WorkSearch label={SEARCH_LABEL} />
+          </div>
+        )}
         <WorkTable groups={groups} dateNoun="終了" service={service!} />
       </>
     )
@@ -222,14 +232,6 @@ const description =
     font-size: 0.84rem;
     color: var(--text-muted);
   }
-  /* バッジの意味を1行で補う。すぐ下の広告表記と続けて読める大きさにする */
-  .kind-note {
-    margin: 0.7rem 0 0;
-    font-size: 0.84rem;
-    line-height: 1.8;
-    color: var(--text-muted);
-  }
-  /* 冒頭文の位置は .list-head 側で決めている（styles/global.css） */
   .empty {
     margin: 1.5rem 0;
     color: var(--text-muted);

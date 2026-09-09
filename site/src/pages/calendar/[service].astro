@@ -96,8 +96,13 @@ const ARRIVALS_PREFIX = '#arrivals-'
 
 const leavingGroups = groupByDate(leavingWorks)
 const arrivalsGroups = groupByDate(arrivalsWorks)
-// `loadLeaving` は終了日の近い順（2026-09-07）。**いちばん近い終了日は先頭**
-const nearest = leavingGroups[0]
+
+/*
+ * 作品検索の説明文。**カレンダーの見出しの右と、升目が出ないときの単独置きで同じ文字列を使う。**
+ * ★ このページは表が2つあるが、検索窓は**1つで両方に当たる**
+ *   （WorkSearch は文書内の `[data-work-row]` を全部見る）。文言もまとめて言う。
+ */
+const SEARCH_LABEL = 'この一覧から作品を探す'
 
 /*
  * タイトル。**素の文言も基準日の付け方も lib/evergreen.ts の1か所。**
@@ -160,8 +165,6 @@ const description =
     <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
   </div>
 
-  <p class="kind-note">{EVERGREEN_BADGE.note}</p>
-
   <AffiliateNotice />
 
   {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
@@ -184,6 +187,7 @@ const description =
         months={calendar.months}
         leavingPrefix={LEAVING_PREFIX}
         arrivalsPrefix={ARRIVALS_PREFIX}
+        searchLabel={SEARCH_LABEL}
       />
     ) : (
       <p class="empty">
@@ -193,25 +197,17 @@ const description =
     )
   }
 
+  {/*
+    ★ 件数の冒頭文（「32本が終了予定です。…」）は**撤去した**（2026-09-09）。
+      件数は升目の月見出し（「終了32本／新着12本」）が、日付は表の見出しが持っている。
+    ★ 作品検索は**カレンダーの見出しの右**へ移した（EventCalendar の searchLabel）。
+      升目が出ない時期だけ、ここに単独で置く。**2つ出さないこと**
+      （WorkSearch のスクリプトはページに1つある前提）。
+  */}
   {
-    calendar.hasEvents && (
-      <div class="list-head">
-        <p class="summary">
-          {leavingWorks.length > 0 && (
-            <>
-              <strong>{leavingWorks.length}本</strong>が終了予定です（最も近い終了日は
-              {formatDate(nearest!.date)}）。
-            </>
-          )}
-          直近{ARRIVALS_WINDOW_DAYS}日間に<strong>{arrivalsWorks.length}本</strong>
-          が見放題に追加されました。
-        </p>
-        {/*
-          作品検索。**このページの表2つをまとめて引く。**
-          WorkSearch は文書内の `[data-work-row]` を全部見るので、
-          終了予定と新着のどちらに居る作品でも当たる（部品側の変更は不要）。
-        */}
-        <WorkSearch label="この一覧から作品を探す" />
+    !calendar.hasEvents && (leavingWorks.length > 0 || arrivalsWorks.length > 0) && (
+      <div class="search-head">
+        <WorkSearch label={SEARCH_LABEL} />
       </div>
     )
   }
@@ -321,14 +317,6 @@ const description =
     font-size: 0.84rem;
     color: var(--text-muted);
   }
-  /* バッジの意味を1行で補う。すぐ下の広告表記と続けて読める大きさにする */
-  .kind-note {
-    margin: 0.7rem 0 0;
-    font-size: 0.84rem;
-    line-height: 1.8;
-    color: var(--text-muted);
-  }
-  /* 冒頭文の位置は .list-head 側で決めている（styles/global.css） */
   .empty {
     margin: 1.5rem 0;
     color: var(--text-muted);
