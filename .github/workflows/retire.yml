@@ -31,10 +31,18 @@ name: retire
 
 on:
   schedule:
-    # 毎日 01:00 JST (= 前日 16:00 UTC)
+    # 毎日 01:19 JST (= 前日 16:19 UTC)
+    #
+    # ★ **分を :00 / :30 に置かないこと**（2026-09-10 変更）。
+    #   GitHub の schedule は毎時0分に実行が集中し、そこに置くと開始が遅れる。
+    #   実測（2026-09-09 まで）:
+    #     announce は 20:00 UTC の予定に対し、コミットが 21:47〜22:23 UTC。
+    #     このジョブは timeout-minutes: 20 なので**長引いたのではなく、
+    #     開始が 87〜123分遅れていた。**
+    #   JST 05:00 のつもりが 07:00 に着いていた。分をずらすのがGitHubの案内する回避策。
     # collect（火・金 04:00 JST）・announce（毎日 05:00 JST）・
     # queries（日 07:00 JST）のどれとも時刻をずらしてある。
-    - cron: '0 16 * * *'
+    - cron: '19 16 * * *'
   workflow_dispatch:
     inputs:
       dry_run:

@@ -4,7 +4,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'
 import PostCard from '../../../components/PostCard.astro'
 import EvergreenCard from '../../../components/EvergreenCard.astro'
 import { SERVICE_HUBS, SERVICE_MENU_HUBS, SITE } from '../../../config'
-import { serviceHasContent, serviceSection } from '../../../lib/service-pages'
+import { serviceHasContent, serviceIsIndexable, serviceSection } from '../../../lib/service-pages'
 
 /**
  * カテゴリ×サービスの一覧。**ヘッダーのメニューを開いて選んだ先**（2026-08-27 追加）。
@@ -23,6 +23,11 @@ import { serviceHasContent, serviceSection } from '../../../lib/service-pages'
  *
  * ★ 中身が0件のページも作る。メニューに並べた以上、押した先を404にしない。
  *   代わりに noindex を付ける（判定は lib/service-pages.ts）。
+ *
+ * ★ **noindex の閾値は「0件」ではなく「3件未満」**（2026-09-10 に引き上げた）。
+ *   記事26本に対して一覧が28枚あり、絞り込み一覧の本文が親のコピーに近づいていた
+ *   （実測で /service/<サービス> と最大96%重複）。根拠は
+ *   lib/service-pages.ts の `serviceIsIndexable()`。
  *
  * ★ 親の /category/<ハブ> は 1つ上の [category].astro が出している。
  *   URLの形（/category/leaving/netflix）を変えるときは、
@@ -53,6 +58,12 @@ const { hub, service, posts, hasServicePage } = Astro.props
 
 const section = serviceSection(posts, service, hub.includes)
 const hasContent = serviceHasContent(section)
+/*
+ * ★ `hasContent`（中身があるか）と `indexable`（索引に出すか）は別物。
+ *   本文の出し分けは前者、noindex は後者。**取り違えると、中身のあるページに
+ *   「記事はありません」と書くか、薄いページを索引に出すかのどちらかになる。**
+ */
+const indexable = serviceIsIndexable(section)
 
 const title = `${service.label}の${hub.heading}記事一覧`
 
@@ -70,7 +81,7 @@ const description =
       : `${service.label}の${hub.heading}の記事は現在ありません。${SITE.name}では主要サービスの配信終了と新着配信を追いかけています。`
 ---
 
-<BaseLayout title={title} description={description} noindex={!hasContent}>
+<BaseLayout title={title} description={description} noindex={!indexable}>
   <nav class="breadcrumb" aria-label="パンくず">
     <a href="/">ホーム</a> ›
     <a href={`/category/${hub.slug}`}>{hub.label}</a>

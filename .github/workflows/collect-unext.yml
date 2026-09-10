@@ -11,10 +11,18 @@ name: collect-unext
 # 詳細は docs/UNEXT.md。
 on:
   schedule:
-    # 毎週 火・金 の 06:00 JST (= 前日 21:00 UTC)
+    # 毎週 火・金 の 06:17 JST (= 前日 21:17 UTC)
+    #
+    # ★ **分を :00 / :30 に置かないこと**（2026-09-10 変更）。
+    #   GitHub の schedule は毎時0分に実行が集中し、そこに置くと開始が遅れる。
+    #   実測（2026-09-09 まで）:
+    #     announce は 20:00 UTC の予定に対し、コミットが 21:47〜22:23 UTC。
+    #     このジョブは timeout-minutes: 20 なので**長引いたのではなく、
+    #     開始が 87〜123分遅れていた。**
+    #   JST 05:00 のつもりが 07:00 に着いていた。分をずらすのがGitHubの案内する回避策。
     # collect.yml（04:00 JST）の2時間後。data/ への push がぶつからないよう
     # concurrency で直列化しているが、時間もずらしておく。
-    - cron: '0 21 * * 1,4'
+    - cron: '17 21 * * 1,4'
   workflow_dispatch:
     inputs:
       kinds:

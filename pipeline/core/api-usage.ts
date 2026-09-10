@@ -106,21 +106,46 @@ export function warnIfLow(u: UsageSnapshot): void {
   }
 }
 
+/** collect 1回ぶん。実測 11 / 11 / 11 / 14 / 16 に上振れを見た値 */
+const COLLECT_COST = 20
+
+/**
+ * 翌月ラインナップの取り込み1回ぶん。**1か月に一度しか起きない。**
+ * 上限は announce.yml の `max_lookups`（既定60）と同じ。実測は 36〜37回。
+ */
+const ANNOUNCE_BATCH = 60
+
+/** 告知が出ていない日の announce。実測 0〜1 に上振れを見た値 */
+const ANNOUNCE_DAILY = 2
+
 /**
  * 月末までに定期実行が使う見込み。**残量の判断はこれと突き合わせる。**
  *
- * ★ 実測にもとづく概算（2026-09-07）。
- *   `collect.yml`  週2回（月・木 19:00 UTC）× 1回あたり約20回
- *   `announce.yml` 毎日。ただし**新しい告知が出た日だけ**取り込みが走る。
- *                  上限は60回（`max_lookups`）だが、**実測は1周で37回**
- *                  （2026-08-28 に36回、以降は1〜2回ずつ）。
- *                  ここでは上限側（60×3）で見ておく。
- *   `collect-unext.yml` は実ブラウザなので **APIを1回も使わない**。
- *   `images.yml` も `make-sections.mjs` を呼ぶだけで **0回**。
+ * ■ 実測（2026-08-24〜2026-09-09。`data/api-usage.json` のコミット履歴から）
  *
- * ★ **`announce` 自身が呼ぶときは、`announce` のぶんを外すこと**
- *   （`opts.excludeAnnounce`）。入れたままだと**自分の枠を自分に予約する**ので、
- *   月末に近づくほど画像の取得が不必要に絞られる（2026-09-07 に気づいた）。
+ *     定期実行  64回（19%）  collect 5回ぶんが 11 / 11 / 11 / 14 / 16
+ *                            announce は記録上 1回だけ（告知が出た日以外は0）
+ *     手で叩く 269回（81%）  うち 2026-09-07 12:53 の1回で **120回**
+ *
+ * **枠を食っているのは定期実行ではない。** ここで見積もるのは、その定期実行ぶんを
+ * 手作業から守るための予約枠。
+ *
+ * ■ 内訳
+ *   collect   月末までに残っている UTC 月曜・木曜の回数 × 20
+ *   announce  ラインナップの取り込み1回（60）＋ 残り日数 × 2
+ *
+ * ★ **ラインナップぶんは月に1回だけ数える。** 前月末に出るものなので、
+ *   月の前半に走らせても「今月ぶんはもう済んでいる」ことが多いが、
+ *   **翌月ぶんが今月末に来る。** 数えないと月末に足りなくなる。
+ *
+ * ★ **2026-09-10 に較正した。** それまで announce を `60 × 3 = 180回` で
+ *   見ていた。実測の3倍以上で、**月半ばに「余り0回」になり手作業が全部止まる**
+ *   （9月10日時点で予約300回・残り-32回と出ていた）。
+ *
+ * ★ **`announce` 自身が呼ぶときは `excludeAnnounce`**（自分の枠を自分に予約しない。
+ *   2026-09-07 に気づいた。入れたままだと月末ほど画像の取得が不必要に絞られる）。
+ * ★ `collect-unext.yml` は実ブラウザなので **APIを1回も使わない。**
+ *   `images.yml` も `make-sections.mjs` を呼ぶだけで **0回。**
  */
 export function scheduledRemaining(
   now: Date,
@@ -131,15 +156,17 @@ export function scheduledRemaining(
   const year = local.getUTCFullYear()
   const month = local.getUTCMonth()
   const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
+  const today = local.getUTCDate()
 
   // collect.yml は UTC の月曜と木曜に走る
   let collects = 0
-  for (let d = local.getUTCDate(); d <= lastDay; d++) {
+  for (let d = today; d <= lastDay; d++) {
     const dow = new Date(Date.UTC(year, month, d)).getUTCDay()
     if (dow === 1 || dow === 4) collects++
   }
-  const COLLECT_COST = 20
-  // 告知の取り込みは月に3回ぶん見ておく（翌月ラインナップが出そろう時期）
-  const ANNOUNCE_COST = opts.excludeAnnounce ? 0 : 60 * 3
-  return collects * COLLECT_COST + ANNOUNCE_COST
+  const collectCost = collects * COLLECT_COST
+  if (opts.excludeAnnounce) return collectCost
+
+  const daysLeft = lastDay - today + 1
+  return collectCost + ANNOUNCE_BATCH + daysLeft * ANNOUNCE_DAILY
 }

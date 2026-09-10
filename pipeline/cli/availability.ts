@@ -69,7 +69,13 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { loadTheme } from '../theme.ts'
 import { StreamingAvailabilitySource } from '../sources/streaming-availability.ts'
-import { addUsage, warnIfLow } from '../core/api-usage.ts'
+import {
+  addUsage,
+  FREE_TIER_LIMIT,
+  readUsage,
+  scheduledRemaining,
+  warnIfLow,
+} from '../core/api-usage.ts'
 import { readAllEventsSync, withJapaneseWorkTitle } from '../core/events.ts'
 import { appendHistory, type StockChange } from '../core/history.ts'
 import {
@@ -190,6 +196,50 @@ async function main(): Promise<void> {
     process.exitCode = 1
     return
   }
+
+  /*
+   * ★ **投げる前に枠を見る**（2026-09-10 追加）。
+   *
+   * ■ なぜ要るか — 枠を食っているのは定期実行ではなく、この手のコマンド
+   * 2026年9月の消費を `data/api-usage.json` の履歴から割ると、こうなっていた。
+   *
+   *     定期実行（collect 3回・announce ぶん）     42回（18%）
+   *     手で叩いたぶん                            190回（82%）
+   *       うち 2026-09-07 12:53 の1回だけで       120回
+   *
+   * `warnIfLow()` は**消費したあと**に出る警告なので、120回を投げてしまってから
+   * 「70%消費しました」と言われることになる。**それでは判断に使えない。**
+   *
+   * ■ 何を守るか
+   * 月末までの定期実行ぶん（`scheduledRemaining`）を先に確保する。
+   * 定期収集はサイトの鮮度そのもので、**下見のために止めてよいものではない**
+   * （core/api-usage.ts の `warnIfLow` の注意書きと同じ考え方）。
+   *
+   * ★ **止めるのはここだけ。** 定期実行側（collect / announce）は止めない。
+   *   あちらが黙って落ちると、その月の観測が丸ごと欠ける。
+   * ★ どうしても投げたい回は `--force`。押し切れる形にしておかないと、
+   *   月末に本当に必要な取り直しができなくなる。
+   */
+  const usageNow = await readUsage(theme.utc_offset_minutes)
+  const reserve = scheduledRemaining(new Date(), theme.utc_offset_minutes)
+  const spare = FREE_TIER_LIMIT - usageNow.used - reserve
+  console.log(
+    `今月の消費 ${usageNow.used}/${FREE_TIER_LIMIT}` +
+      `  月末までの定期実行ぶん ${reserve}回を確保  → 下見に使えるのは ${Math.max(0, spare)}回`,
+  )
+  if (spare <= 0 && !has('force')) {
+    console.error('')
+    console.error('**投げずに止めます。** 定期実行ぶんを確保すると、今月の余りがありません。')
+    console.error('  ・月が変わるまで待つ（定期収集を優先する）')
+    console.error('  ・どうしても要るなら  --force  を付けて実行する')
+    console.error('  ・正確な残量は提供元のダッシュボードで確認すること（ここは概算）')
+    process.exitCode = 1
+    return
+  }
+  if (spare > 0 && spare < 30 && !has('force')) {
+    console.warn(`  ※ 余りが ${spare}回しかありません。キーワードを絞って投げること。`)
+  }
+  console.log('')
 
   let ctx: DraftContext = {}
   try {

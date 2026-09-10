@@ -77,7 +77,7 @@ export function dedupe(events: ChangeEvent[], ledger: Ledger): ChangeEvent[] {
  * 変化を月別の JSONL に追記する。記事生成はこのログを読む。
  *
  * 月の区切りはサイトの基準タイムゾーンで判定する。
- * UTC基準だと、収集が 04:00 JST（＝前日 19:00 UTC）に走るため、
+ * UTC基準だと、収集が 04:07 JST（＝前日 19:07 UTC）に走るため、
  * 月初の実行が前月のファイルに書き込まれてしまう。
  */
 export async function appendEvents(

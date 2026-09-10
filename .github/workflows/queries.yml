@@ -32,11 +32,19 @@ name: queries
 
 on:
   schedule:
-    # 毎週 日曜 07:00 JST (= 土曜 22:00 UTC)
+    # 毎週 日曜 07:29 JST (= 土曜 22:29 UTC)
+    #
+    # ★ **分を :00 / :30 に置かないこと**（2026-09-10 変更）。
+    #   GitHub の schedule は毎時0分に実行が集中し、そこに置くと開始が遅れる。
+    #   実測（2026-09-09 まで）:
+    #     announce は 20:00 UTC の予定に対し、コミットが 21:47〜22:23 UTC。
+    #     このジョブは timeout-minutes: 20 なので**長引いたのではなく、
+    #     開始が 87〜123分遅れていた。**
+    #   JST 05:00 のつもりが 07:00 に着いていた。分をずらすのがGitHubの案内する回避策。
     # collect（火・金 04:00 JST）とも announce（毎日 05:00 JST）とも
     # 曜日と時刻をずらしてある。data/ への push がぶつからないよう
     # concurrency でも直列化しているが、待たせないに越したことはない。
-    - cron: '0 22 * * 6'
+    - cron: '29 22 * * 6'
   workflow_dispatch:
     inputs:
       days:
@@ -60,6 +68,11 @@ concurrency:
 jobs:
   queries:
     runs-on: ubuntu-latest
+    # ★ **上限を必ず置くこと**（2026-09-10 追加。collect.yml と一緒に入れた）。
+    #   既定は6時間。このワークフローも `concurrency: group: collect` を握るので、
+    #   固まると collect / announce / images / collect-unext が全部待たされる。
+    #   実測の所要は1分未満（Search Console に数回問い合わせるだけ）。
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
 
@@ -126,5 +139,9 @@ jobs:
             echo "変化なし"
           else
             git commit -m "chore(queries): $(date -u +%Y-%m-%d)"
+            # ★ `git push` の前に必ず rebase する（2026-09-10 追加）。
+            #   無いと、他のワークフローが先に push した日に**この実行ぶんが丸ごと落ちる。**
+            #   announce / collect-unext / publish / retire は前からこの形。
+            git pull --rebase
             git push
           fi

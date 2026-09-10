@@ -982,7 +982,7 @@ npm run sections -- --write
 
 | 誰が | いつ | 何をするか |
 |---|---|---|
-| `.github/workflows/images.yml` | 毎日 05:30 JST | `npm run sections -- --write` を回して**記事の参照を新しい版に差し替え、コミットする** |
+| `.github/workflows/images.yml` | 毎日 05:43 JST | `npm run sections -- --write` を回して**記事の参照を新しい版に差し替え、コミットする** |
 | `make-sections.mjs`（`--write` なし＝ビルド） | ビルドのたび | **記事がいま指している画像も作り直す。** 差し替えが commit されるまで本番の絵が消えない |
 
 ビルドの出力にも状態が出る。**差し替え待ちがあれば必ず名前が出る**ので、

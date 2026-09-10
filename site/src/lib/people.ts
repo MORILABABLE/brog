@@ -77,8 +77,9 @@ const MIN_WORKS = 3
  *
  * ★ 索引から外したページは**XMLサイトマップからも外すこと。**
  *   載せたままだと Search Console に「noindex のURLを送信しました」が
- *   114件出続ける。除外は astro.config.mjs の sitemap filter
- *   （`noindexPersonPaths()` を読んでいる）。**片方だけ直さないこと。**
+ *   114件出続ける。**ここでは何もしなくてよい**（2026-09-10）。
+ *   ビルド後に noindex のページを HTML から拾ってサイトマップから落としている
+ *   （plugins/prune-sitemap.ts）。閾値を動かしても除外は自動で追随する。
  */
 const INDEX_MIN_WORKS = 5
 
@@ -204,16 +205,6 @@ export function publishablePeople(): Person[] {
  */
 export function personIsIndexable(person: Person): boolean {
   return person.works.length >= INDEX_MIN_WORKS
-}
-
-/**
- * 索引から外す人物ページのパス（`/person/<id>`）。
- * **XMLサイトマップの除外に使う**（astro.config.mjs）。
- */
-export function noindexPersonPaths(): string[] {
-  return publishablePeople()
-    .filter((p) => !personIsIndexable(p))
-    .map((p) => `/person/${p.id}`)
 }
 
 /** IDから引く。ページが無ければ undefined。 */

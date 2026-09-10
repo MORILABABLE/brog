@@ -12,14 +12,40 @@
  * だから**分かるものだけ書き、分からないものは書かない**。
  *
  *   記事           … frontmatter の `updatedDate` ／ 無ければ `pubDate`
- *   データ由来のページ … **収集データの最終更新日**（作品・人物・常設一覧・一覧ページ）
+ *   **作品ページ**     … **その作品の最終観測日**（下の `workDates()`）
+ *   データ由来のページ … **収集データの最終更新日**（人物・常設一覧・一覧ページ）
  *   固定ページ       … **書かない**（about / privacy / contact / guide）
+ *
+ * ■ 作品ページを1件ずつにした理由（2026-09-10）
+ * それまで作品ページ616枚すべてに**収集全体の最終更新日**を書いていた。
+ * 収集は毎日走るので、**中身が1文字も変わっていない616枚が毎日「更新」を名乗る**
+ * 状態になっていた（731件中691件が同じ日付）。上に書いてある
+ * 「全部いまの時刻にしない」を、ページ単位では守れていなかった。
+ *
+ * 作品ページは「配信情報は◯月◯日時点」を**作品ごとに**持っている
+ * （works.ts の `dataAsOf`＝その作品の最も新しい `collectedAt`）。
+ * 同じ値を lastmod にも使う。**画面に出ている日付と lastmod が一致する。**
+ *
+ * ★ Search Console の「検出 - インデックス未登録」に効かせるための変更。
+ *   毎日616枚が更新を名乗ると、クローラは再訪しても差分を見つけられず、
+ *   この値を当てにしなくなる。
  *
  * ★ ファイルの mtime を使わないこと。Cloudflare のビルドは毎回まっさらな
  *   チェックアウトなので、mtime は「ビルドした時刻」にしかならない。
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+
+/**
+ * 作品ページの対象になるサービス。
+ *
+ * ★ **lib/events-data.ts の `API_SERVICES` と同じ一覧**（U-NEXT は入らない）。
+ *   ここで import しないのは、このファイルが astro.config.mjs から
+ *   **Astro が立ち上がる前に**読まれるため。他の定義に依存させない
+ *   （postDates / monthDates が記事を直接読んでいるのと同じ事情）。
+ *   **向こうにサービスを足したら、ここにも足すこと。**
+ */
+const API_SERVICES = new Set(['netflix', 'prime-video', 'disney-plus', 'apple-tv'])
 
 /**
  * リポジトリの根を探す。**実行時のカレントから上へ辿る。**
@@ -51,6 +77,40 @@ function dataUpdatedAt(): string | undefined {
   } catch {
     return undefined
   }
+}
+
+/**
+ * 作品ID → その作品の最終観測日（`YYYY-MM-DD`）。
+ *
+ * ★ **works.ts の `build()` と同じ絞り込みにすること。**
+ *   API由来のサービスだけ・`upcoming`（配信開始の告知）は除く。
+ *   ここだけ広く取ると、作品ページが無いIDにも日付を作ってしまう
+ *   （害は無いが、画面の「◯月◯日時点」とずれる）。
+ *
+ * ★ 行ごとに JSON.parse しない。2,000行を超えるので、要る4つだけを拾う。
+ */
+function workDates(): Map<string, string> {
+  const out = new Map<string, string>()
+  try {
+    const dir = join(repoRoot(), 'data', 'events')
+    for (const f of readdirSync(dir).filter((n) => n.endsWith('.jsonl'))) {
+      for (const line of readFileSync(join(dir, f), 'utf8').split('\n')) {
+        if (!line) continue
+        const service = line.match(/"service":"([^"]+)"/)?.[1]
+        if (!service || !API_SERVICES.has(service)) continue
+        if (/"kind":"upcoming"/.test(line)) continue
+        // `"work":{"id":` が先頭。`meta` の中の id を拾わないよう位置で固定する
+        const id = line.match(/"work":\{"id":"?([^",}]+)"?/)?.[1]
+        const at = line.match(/"collectedAt":"([0-9T:.Z-]+)"/)?.[1]
+        if (!id || !at) continue
+        const day = at.slice(0, 10)
+        if (day > (out.get(id) ?? '')) out.set(id, day)
+      }
+    }
+  } catch {
+    // 収集前でも落とさない
+  }
+  return out
 }
 
 /** 記事のスラッグ → 日付（`YYYY-MM-DD`） */
@@ -109,10 +169,18 @@ let cache: {
   data?: string
   posts: Map<string, string>
   months: Map<string, string>
+  works: Map<string, string>
 } | null = null
 
-function load(): { data?: string; posts: Map<string, string>; months: Map<string, string> } {
-  if (!cache) cache = { data: dataUpdatedAt(), posts: postDates(), months: monthDates() }
+function load(): {
+  data?: string
+  posts: Map<string, string>
+  months: Map<string, string>
+  works: Map<string, string>
+} {
+  if (!cache) {
+    cache = { data: dataUpdatedAt(), posts: postDates(), months: monthDates(), works: workDates() }
+  }
   return cache
 }
 
@@ -122,11 +190,20 @@ function load(): { data?: string; posts: Map<string, string>; months: Map<string
  * @param url `sitemap({ serialize })` が渡す絶対URL
  */
 export function lastmodFor(url: string): string | undefined {
-  const { data, posts, months } = load()
+  const { data, posts, months, works } = load()
   const path = new URL(url).pathname.replace(/\/$/, '') || '/'
 
   const post = path.match(/^\/posts\/(.+)$/)
   if (post) return posts.get(post[1]!)
+
+  /*
+   * 作品ページ。**1件ずつ、その作品の最終観測日を書く**（上の workDates）。
+   * ★ 収集日（`data`）に落とさないこと。落とすと616枚が毎日そろって
+   *   「更新した」と名乗る、この変更で直したはずの状態に戻る。
+   *   観測が拾えない作品は**書かない**（undefined）。
+   */
+  const work = path.match(/^\/works\/(.+)$/)
+  if (work) return works.get(work[1]!)
 
   /*
    * 月別まとめ。**収集ではなく記事で決まる**（上の monthDates）。
@@ -146,6 +223,6 @@ export function lastmodFor(url: string): string | undefined {
     path === '/' ||
     path === '/stats' ||
     path === '/person' ||
-    /^\/(works|person|leaving|arrivals|calendar|category|service|genre)\//.test(path)
+    /^\/(person|leaving|arrivals|calendar|category|service|genre)\//.test(path)
   return dataDriven ? data : undefined
 }

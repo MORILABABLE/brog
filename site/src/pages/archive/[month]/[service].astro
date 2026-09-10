@@ -4,7 +4,11 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'
 import PostCard from '../../../components/PostCard.astro'
 import { ARCHIVE, SITE } from '../../../config'
 import { archiveGroups, archiveMonths, inService, servicesIn } from '../../../lib/archive'
-import { serviceHasContent, serviceSection } from '../../../lib/service-pages'
+import {
+  archiveMonthServiceIsIndexable,
+  serviceHasContent,
+  serviceSection,
+} from '../../../lib/service-pages'
 
 /**
  * 月 × サービス（`/archive/2026-09/netflix`）。
@@ -23,6 +27,12 @@ import { serviceHasContent, serviceSection } from '../../../lib/service-pages'
  *
  * ★ 常設ページ（/leaving/… /arrivals/…）はここに出さない。
  *   あれは月に属さない「いまの一覧」。行き先だけ末尾に1本置く。
+ *
+ * ★ **記事3本未満のページは noindex**（2026-09-10）。
+ *   このページは親の `/archive/<月>` の部分集合でしかなく、実測で本文が90%重なる。
+ *   記事1本のページ（/archive/2026-09/u-next）は本文247字で、
+ *   残りは全ページ共通の定型文だった。**ページは残す**（月の中のサービス切り替えの
+ *   行き先なので404にできない）。閾値は lib/service-pages.ts の1か所。
  */
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
@@ -51,13 +61,20 @@ const { month, service, services, hasServicePage } = Astro.props
 const mine = month.posts.filter((p) => inService(p, service))
 const groups = archiveGroups(mine)
 
+/*
+ * ★ 索引に出すかどうか。**中身があるかとは別**。
+ *   ページ自体は「その月にその サービスの記事が1本以上ある」ときに作られるので、
+ *   ここに来る時点で必ず1本以上ある。薄いものだけを索引から外す。
+ */
+const indexable = archiveMonthServiceIsIndexable(mine.length)
+
 const title = `${month.label}の${service.label}の見放題まとめ`
 const description =
   `${month.label}に${service.label}で見放題配信が始まった作品と終了する作品の記事${mine.length}本をまとめています。` +
   `${SITE.name}が追いかけている${service.label}の情報はこのページから辿れます。`
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} noindex={!indexable}>
   <nav class="breadcrumb" aria-label="パンくず">
     <a href="/">ホーム</a> ›
     <a href={ARCHIVE.base}>{ARCHIVE.label}</a> ›

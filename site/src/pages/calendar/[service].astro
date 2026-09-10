@@ -39,9 +39,19 @@ import { formatDate } from '../../utils/date'
  * ★ このページは**残してあるが、左の枠からは外した。**
  *   サイト内の入口は `/leaving/<サービス>` `/arrivals/<サービス>` の末尾の関連リンクだけ。
  *   **あの2本を消すと孤立ページになる。**
- * ★ 中身は5ページの和集合なので、**検索では自社の2ページと競合しうる。**
- *   索引から外すなら BaseLayout に `noindex` を渡すだけでよい（1行）。
- *   いまは入れていない（残置の判断は 2026-09-07）。
+ * ★ **索引から外した（2026-09-10）。** 上に書いてあった「自社の2ページと競合しうる」が
+ *   実測で裏付けられたため。`<main>` の本文を8-gramで比べた重なりは
+ *
+ *     /calendar/prime-video ↔ /arrivals/prime-video   98%
+ *     /calendar/netflix     ↔ /arrivals/netflix       98%
+ *     /calendar/netflix     ↔ /leaving/netflix        97%
+ *
+ *   同じ中身が3つのURLに出ている状態で、Search Console の未登録50件の
+ *   内訳は「クロール済み - インデックス未登録」と「検出 - インデックス未登録」だった。
+ *   **ページは残す**（読者が升目から入る導線としては生きている）。`noindex,follow` なので
+ *   ここから作品ページへのリンクは通る。
+ *   ★ 索引に戻すなら、先に**このページにしか無い中身**を作ること。
+ *     いまのままURLを3つに割るのは、どれも育たない形になる。
  *
  * ■ 表を2つ置くので id が衝突する
  * 日付見出しの id は `2026-09-30` のような日付そのもの（WorkTable.astro）。
@@ -126,7 +136,7 @@ const description =
     : `${label}で直近${ARRIVALS_WINDOW_DAYS}日間に見放題配信が始まった作品${arrivalsWorks.length}本をカレンダーで確認できます。`
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} noindex>
   {/* 上位のカテゴリを1つに決められない面なので、区切りの「›」は付けない */}
   <nav class="breadcrumb" aria-label="パンくず">
     <a href="/">ホーム</a>

@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap'
 import { loadEnv } from 'vite'
 import { SITE } from './src/config.ts'
 import { lastmodFor } from './src/lib/lastmod.ts'
-import { noindexPersonPaths } from './src/lib/people.ts'
+import { pruneSitemap } from './plugins/prune-sitemap.ts'
 import { rehypeAffiliate } from './plugins/rehype-affiliate.ts'
 import { rehypeWorkLinks } from './plugins/rehype-work-links.ts'
 import { rehypeAvailability } from './plugins/rehype-availability.ts'
@@ -14,12 +14,6 @@ import { rehypeCast } from './plugins/rehype-cast.ts'
 // ここでは import.meta.env が使えない。Vite の loadEnv で明示的に読む。
 // （コンポーネント側は従来どおり import.meta.env.PUBLIC_* でよい）
 const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '')
-
-/**
- * 索引から外したページのパス。**XMLサイトマップから落とす**（下の filter）。
- * 中身は src/lib/people.ts が決める（`INDEX_MIN_WORKS`）。
- */
-const NOINDEX_PATHS = new Set(noindexPersonPaths())
 
 /**
  * 枠別のAmazonトラッキングid（rehype プラグイン用）。
@@ -49,34 +43,17 @@ export default defineConfig({
   integrations: [
     sitemap({
       /*
-       * `/sitemap`（人が見るサイトマップ）と、**索引から外した人物ページ**を
-       * XMLサイトマップから外す。
+       * ★ **noindex のページはサイトマップに載せない。**
+       *   載せると Search Console に「送信されたURLに noindex タグが追加されています」が
+       *   出続ける（2026-09-03 に人物ページ114件で発生、2026-09-10 に `/category/ranking` で再発）。
        *
-       * ★ **noindex のページをサイトマップに載せないこと**（2026-09-03）。
-       *   載せると Search Console に「noindex のURLを送信しました」が
-       *   114件ぶん出続ける。閾値と理由は src/lib/people.ts の `INDEX_MIN_WORKS`。
-       *   **人物ページ側の noindex とここは必ず一緒に直すこと。**
-       *   （サービス別ページの noindex は少数なので従来どおり載せたままにしてある。
-       *     lib/service-pages.ts の `serviceHasContent()` の注意書き）
-       *
-       *
-       * あれは運営者が全ページを目視するためのページで、読者向けではない。
-       * 載せると2つ困る。
-       *   1. 検索エンジンにとっての発見経路になる（サイト内リンクを外した意味が消える）
-       *   2. ページ側が noindex なので、Search Console に
-       *      「noindex のURLを送信しました」の注意が出続ける
-       *
-       * ★ `/sitemap-index.xml` `/sitemap-0.xml` を巻き込まないこと。
-       *   `startsWith('/sitemap')` で書くと**XMLサイトマップ自身が消える**。
-       *   末尾一致（`/sitemap` で終わるURLだけ）で判定する。
-       *
-       * ★ 読者にも出すことにしたら、ここと components/Footer.astro の
-       *   リンク、pages/sitemap.astro の noindex を**3つまとめて**外すこと。
+       *   **その判定はここに書かない。** noindex を決めているページが多すぎて
+       *   （人物・サービス別・月×サービス・カテゴリ・カレンダー・`/sitemap`）、
+       *   ここで数え直すと必ず片方を直し忘れる。実際そうなった。
+       *   代わりに、ビルドし終えた HTML を読んで落とす
+       *   （下の `pruneSitemap()`。plugins/prune-sitemap.ts）。
+       *   **新しく noindex のページを増やしても、このファイルは直さなくてよい。**
        */
-      filter: (page) => {
-        if (/\/sitemap\/?$/.test(page)) return false
-        return !NOINDEX_PATHS.has(new URL(page).pathname.replace(/\/$/, ''))
-      },
       /*
        * `<lastmod>` を付ける（2026-08-30）。**分かるページにだけ。**
        *
@@ -92,6 +69,11 @@ export default defineConfig({
         return lastmod ? { ...item, lastmod } : item
       },
     }),
+    /*
+     * ★ **`sitemap()` より後ろに置くこと。** `astro:build:done` は配列順に走るので、
+     *   前に置くと、まだ書かれていない `sitemap-0.xml` を読んで何もしない。
+     */
+    pruneSitemap(),
   ],
 
   // 比較表の横スクロールは rehype プラグインではなく CSS で処理している

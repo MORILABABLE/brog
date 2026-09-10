@@ -40,11 +40,19 @@ name: announce
 
 on:
   schedule:
-    # 毎日 JST 05:00（= 前日 20:00 UTC）。
+    # 毎日 JST 05:11（= 前日 20:11 UTC）。
+    #
+    # ★ **分を :00 / :30 に置かないこと**（2026-09-10 変更）。
+    #   GitHub の schedule は毎時0分に実行が集中し、そこに置くと開始が遅れる。
+    #   実測（2026-09-09 まで）:
+    #     announce は 20:00 UTC の予定に対し、コミットが 21:47〜22:23 UTC。
+    #     このジョブは timeout-minutes: 20 なので**長引いたのではなく、
+    #     開始が 87〜123分遅れていた。**
+    #   JST 05:00 のつもりが 07:00 に着いていた。分をずらすのがGitHubの案内する回避策。
     # ★ 対象月の既定は「翌月」（collect-announce.ts の nextYearMonth）。
     #   月の途中に走る日は、Netflix のローリング窓から**翌月ぶん**だけが拾われる。
     #   当月ぶんも貯めたい場合は --month を渡して workflow_dispatch する。
-    - cron: '0 20 * * *'
+    - cron: '11 20 * * *'
   workflow_dispatch:
     inputs:
       month:

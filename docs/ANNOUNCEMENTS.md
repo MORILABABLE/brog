@@ -256,7 +256,7 @@ url に使える差し込みは `{year}` `{month_en}` `{month}` `{yymm}`。
 > 記事の本文には「どの版の画像を使ったか」が焼き込まれていて
 > （文字だけのカードと作品ポスターでは行の形が違う）、告知から書いた記事は
 > **画像が無い前提の版**で出ているため。差し替えるのは
-> `.github/workflows/images.yml`（毎日 05:30 JST。このステップの30分後）で、
+> `.github/workflows/images.yml`（毎日 05:43 JST。このステップの32分後）で、
 > 仕組みは [APPEARANCE.md 10節](./APPEARANCE.md)。
 > 手元でやるなら `cd site && npm run sections -- --write`。
 
@@ -380,7 +380,7 @@ cd site && npm run sections -- --write
 
 ## 6. 自動化（毎日）
 
-`.github/workflows/announce.yml` が **毎日** JST 05:00 に動く
+`.github/workflows/announce.yml` が **毎日** JST 05:11 に動く
 （2026-08-30 に「25〜31日だけ」から変えた。理由は3節の Netflix の項）。
 
 ```

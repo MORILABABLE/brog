@@ -112,16 +112,22 @@ npm run collect -- --kinds new,expiring
 2. Settings → Secrets and variables → Actions で `STREAMING_API_KEY` を登録
 3. Actions タブから `collect` を手動実行して疎通確認
 
-以降は毎週 火・金 の 04:00 JST に自動収集し、変化があれば自動コミットされる。
+以降は毎週 火・金 の 04:07 JST に自動収集し、変化があれば自動コミットされる。
 
 ワークフローは4本ある。**見に行く先と頻度が違うので分けてある。**
 
 | ワークフロー | いつ | 何をするか |
 |---|---|---|
-| `collect` | 毎週 火・金 04:00 JST | 配信APIから変化を収集 |
-| `collect-unext` | 毎週 火・金 06:00 JST | U-NEXT を実ブラウザで収集 |
-| **`announce`** | **毎日 05:00 JST** | **翌月ラインナップの告知が出たら取り込む**（→ [docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md)） |
-| **`images`** | **毎日 05:30 JST** | **公開済みの記事の画像を、あとから取れるようになった版に差し替える**（→ [docs/APPEARANCE.md 10節](./docs/APPEARANCE.md)） |
+| `collect` | 毎週 火・金 04:07 JST | 配信APIから変化を収集 |
+| `collect-unext` | 毎週 火・金 06:17 JST | U-NEXT を実ブラウザで収集 |
+| **`announce`** | **毎日 05:11 JST** | **翌月ラインナップの告知が出たら取り込む**（→ [docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md)） |
+| **`images`** | **毎日 05:43 JST** | **公開済みの記事の画像を、あとから取れるようになった版に差し替える**（→ [docs/APPEARANCE.md 10節](./docs/APPEARANCE.md)） |
+
+> ★ **時刻が半端な分になっているのは意図的**（2026-09-10）。**:00 や :30 に戻さないこと。**
+> GitHub の `schedule` は毎時0分に実行が集中し、そこに置くと開始が遅れる。
+> 実測では `announce`（当時 20:00 UTC・`timeout-minutes: 20`）のコミットが
+> 21:47〜22:23 UTC で、**開始が87〜123分遅れていた**（JST 05:00 のつもりが 07:00 着）。
+> 4本は `concurrency: group: collect` で直列に流れるので、遅れは後ろほど積み上がる。
 
 `announce` は「出ているか」を先に判定し、記事1本ぶんの本数が出た日にだけ
 取り込んで通知する。出ていない日（404）は静かに終わる。

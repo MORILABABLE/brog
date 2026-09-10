@@ -302,7 +302,7 @@ git pull
 
 これを忘れて両方で編集すると、後で統合作業が必要になる。
 
-収集は GitHub Actions で**毎週 火・金の 04:00 JST に自動実行**され、
+収集は GitHub Actions で**毎週 火・金の 04:07 JST に自動実行**され、
 `data/` の更新がそのままコミットされる。手元に無い変更が増えていることがあるので、
 作業前の `git pull` は習慣にしておく。
 
@@ -686,7 +686,7 @@ npm run retire            何が変わるかを出すだけ
 npm run retire -- --write 実際に書き換える（category と tags の2行）
 ```
 
-**毎日 01:00 JST に GitHub Actions が `--write` で回している**（`.github/workflows/retire.yml`）。
+**毎日 01:19 JST に GitHub Actions が `--write` で回している**（`.github/workflows/retire.yml`）。
 差分が無い日はコミットもサイトの再ビルドも起きない。
 
 ### なぜ人の確認を挟まないのか

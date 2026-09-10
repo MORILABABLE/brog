@@ -65,3 +65,41 @@ export function serviceSection(
 export function serviceHasContent(section: ServiceSection): boolean {
   return section.posts.length > 0 || section.evergreen.length > 0
 }
+
+/**
+ * 索引に出してよいだけの中身があるか。**`serviceHasContent()` より厳しい。**
+ *
+ * ■ なぜ「0件でない」では足りないのか（2026-09-10 の実測）
+ * 記事は26本しかないのに、記事を並べる一覧ページが28枚ある。
+ * **一覧のほうが記事より多い。** その結果、絞り込み一覧の中身は親のコピーに近づく。
+ * `<main>` の本文を8-gramで比べた重なりは
+ *
+ *   /category/arrivals/prime-video ↔ /service/prime-video   96%
+ *   /category/leaving/netflix      ↔ /service/netflix       93%
+ *   /category/arrivals             ↔ /category/arrivals/prime-video 94%
+ *
+ * 本文も薄い（記事2本で416字、3本で680字）。Search Console の
+ * 「クロール済み - インデックス未登録」に落ちるのはこの形。
+ *
+ * ■ 3件で切る根拠
+ * 2件以下のページは本文500字を割り、残りは全ページ共通の定型文になる。
+ * 3件を境に、そのページにしか無い記事カードが定型文を上回る。
+ *
+ * ★ **ページは消さない。** ヘッダーのメニューの行き先なので404にできない。
+ *   `noindex,follow` で残し、記事が増えれば自動的に索引対象へ戻る。
+ * ★ サイトマップからの除外は**何もしなくてよい**（plugins/prune-sitemap.ts が
+ *   ビルド後の HTML を見て落とす）。
+ */
+const INDEX_MIN_ITEMS = 3
+
+export function serviceIsIndexable(section: ServiceSection): boolean {
+  return section.posts.length + section.evergreen.length >= INDEX_MIN_ITEMS
+}
+
+/**
+ * 月×サービス（`/archive/<月>/<サービス>`）を索引に出してよいか。
+ * 判断の根拠は上の `serviceIsIndexable()` と同じ。**閾値を1か所にするためここに置く。**
+ */
+export function archiveMonthServiceIsIndexable(postCount: number): boolean {
+  return postCount >= INDEX_MIN_ITEMS
+}

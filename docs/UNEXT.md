@@ -510,7 +510,7 @@ U-NEXT で常設ページを作る場合も、判断すべきなのは検索窓�
 
 ### CI
 
-`.github/workflows/collect-unext.yml`。毎週 火・金 06:00 JST。
+`.github/workflows/collect-unext.yml`。毎週 火・金 06:17 JST。
 
 **`collect.yml` とは別のワークフローにしてある。** 所要時間の桁が違うため
 （片や数秒、こちらは数分〜数十分）。ただし `concurrency` のグループは

@@ -21,7 +21,7 @@ import {
   saveLedger,
 } from '../core/events.ts'
 import { appendHistory, type StockChange } from '../core/history.ts'
-import { addUsage } from '../core/api-usage.ts'
+import { addUsage, warnIfLow } from '../core/api-usage.ts'
 import {
   loadCompanyCache,
   loadOriginCache,
@@ -77,6 +77,12 @@ async function main(): Promise<void> {
       `\nAPIリクエスト ${source.requestCount}回  ` +
         `${usage.month} の消費 ${usage.used}/${usage.limit}\n`,
     )
+    // ★ 残量の警告はここでも出す（2026-09-10 追加。**ここだけ抜けていた**）。
+    //   availability / collect-announce / refresh-images は前から出していたが、
+    //   **定期収集のログにだけ残量が出ていなかった。**
+    //   9月の消費232回のうち定期実行は42回で、残りは手で叩いた分だった。
+    //   ブラウザで Actions のログを見たときに残量が分かることが大事。
+    warnIfLow(usage)
   }
 
   const ledger = await loadLedger()

@@ -33,7 +33,7 @@ import {
   type RawEvent,
   type RawWork,
 } from './events-data'
-import { resolveUrl } from './work-links'
+import { resolveUrl, workLinkByTitle } from './work-links'
 import { formatDate, isoDate } from '../utils/date'
 
 /** ポスターの公開パスの根。scripts/make-thumbs.mjs の出力先と揃える。 */
@@ -223,22 +223,60 @@ export function stateSentence(s: WorkServiceState): string {
  *   変更前は `passed` が「いつまで見られる？」のまま日付だけ過去になり、
  *   30枚が「答えが古い見出し」になっていた（docs/FUNNEL.md 3節）。
  */
+let ambiguous: Set<string> | null = null
+
+/**
+ * 同じ題名を持つ作品が2つ以上ある題名。**リメイクで起きる。**
+ *
+ * ■ なぜ要るか（2026-09-10 の実測）
+ * `<title>` と meta description が**完全に一致する作品ページが2組4枚**あった。
+ *
+ *   /works/1853（ゴーストバスターズ 2016年）↔ /works/18632523（同 1984年）
+ *   /works/3812（オーメン 1976年）        ↔ /works/6911（同 2006年）
+ *
+ * 見出しに製作年が入っていないので、別の作品なのに文字列が1文字も違わない。
+ * Google から見れば重複ページで、片方しか索引に残らない。
+ *
+ * ★ **年で分けるのは同名があるときだけ。** 全部に年を付けると、
+ *   見出しが5文字伸びてスマホの検索結果で問いの部分が切れる
+ *   （`headlineDate()` が今年の年を落としているのと同じ理由）。
+ */
+function ambiguousTitles(): Set<string> {
+  if (!ambiguous) {
+    const seen = new Map<string, number>()
+    for (const w of publishableWorkPages()) seen.set(w.title, (seen.get(w.title) ?? 0) + 1)
+    ambiguous = new Set([...seen].filter(([, n]) => n > 1).map(([title]) => title))
+  }
+  return ambiguous
+}
+
+/**
+ * 見出しと説明文に出す題名。**同名の別作品があるときだけ製作年を添える。**
+ *
+ * ★ 検索やリンクに渡す題名には使わないこと（`AmazonCta` の query、
+ *   `otherServiceLinks()`、JSON-LD の `name`）。あちらは**素の題名**でないと
+ *   各サービスの検索に当たらない。ここは人が読む文字列のためだけにある。
+ */
+export function workLabel(w: WorkPage): string {
+  return ambiguousTitles().has(w.title) && w.year ? `${w.title}（${w.year}年）` : w.title
+}
+
 export function workHeadline(w: WorkPage): string {
   const head = w.services[0]!
   const d = headlineDate(head.at)
   switch (head.state) {
     // まだ観られる。**締切を出すのがいちばん強い。**
     case 'leaving':
-      return `「${w.title}」はいつまで見られる？${head.label}は${d}に見放題終了`
+      return `「${workLabel(w)}」はいつまで見られる？${head.label}は${d}に見放題終了`
     // 予定日は過ぎたが、終了は観測していない。**断定しない問いにする。**
     case 'passed':
-      return `「${w.title}」はまだ見られる？${head.label}の見放題終了予定日は${d}`
+      return `「${workLabel(w)}」はまだ見られる？${head.label}の見放題終了予定日は${d}`
     // もう見放題では観られない。**読者の問いは「じゃあどこで」に移っている。**
     case 'ended':
-      return `「${w.title}」はどこで見れる？${head.label}の見放題は${d}に終了`
+      return `「${workLabel(w)}」はどこで見れる？${head.label}の見放題は${d}に終了`
     // 開始を観測しただけ。「配信中」とは言えないので、観測した事実だけを置く。
     case 'started':
-      return `「${w.title}」はどこで見れる？${head.label}が${d}に見放題配信を開始`
+      return `「${workLabel(w)}」はどこで見れる？${head.label}が${d}に見放題配信を開始`
   }
 }
 
@@ -249,7 +287,7 @@ export function workHeadline(w: WorkPage): string {
 export function workDescription(w: WorkPage): string {
   const head = w.services[0]!
   const rest = w.services.length > 1 ? `他${w.services.length - 1}サービスの状況と、` : ''
-  return `「${w.title}」は${head.label}で${stateSentence(head)}。${rest}他のサービスでの探し方と、レンタル・購入で観る方法をまとめています。`
+  return `「${workLabel(w)}」は${head.label}で${stateSentence(head)}。${rest}他のサービスでの探し方と、レンタル・購入で観る方法をまとめています。`
 }
 
 /**
@@ -666,6 +704,101 @@ function build(): Map<string, WorkPage> {
   return out
 }
 
+// --- シリーズ記事に載っている作品 ---------------------------------------------
+
+/** シリーズ記事の1本。作品ページから戻るリンクに使う。 */
+export interface SeriesArticle {
+  /** `/posts/<slug>` */
+  slug: string
+  /** frontmatter の title。リンクの文字列にそのまま出す */
+  title: string
+}
+
+let featured: Map<string, SeriesArticle> | null = null
+
+/**
+ * `site/src/content/posts` を探す。**実行時のカレントから上へ辿る**
+ * （`findUpPublic()` と同じ事情。ビルド時の位置がソースと変わる）。
+ */
+function findUpPosts(): string | null {
+  for (const segments of [
+    ['src', 'content', 'posts'],
+    ['site', 'src', 'content', 'posts'],
+  ]) {
+    let dir = process.cwd()
+    for (let i = 0; i < 4; i++) {
+      const candidate = join(dir, ...segments)
+      if (existsSync(candidate)) return candidate
+      const parent = resolve(dir, '..')
+      if (parent === dir) break
+      dir = parent
+    }
+  }
+  return null
+}
+
+/**
+ * **シリーズ記事の表に載っている作品ID。**
+ *
+ * ■ なぜ要るか（2026-09-10）
+ * 掲載判定の第1条件は「終了日を言える」だが、**全作が配信中のシリーズは
+ * 1作もそれを満たさない。** 結果、シリーズ記事は本文からの内部リンクが
+ * パンくずの2本しか無い状態になっていた（実測）。
+ *
+ *     resident-evil   本文の内部リンク 2本 / 外部リンク 33本 / 本文1,831字
+ *     2026-09-leaving-netflix  内部52本 / 外部74本
+ *
+ * 1,800字・外部アフィリエイト33本・内部0本は、検索エンジンから見て
+ * 「中身の薄いアフィリエイトページ」の形そのもので、Search Console の
+ * 未登録50件のうち「クロール済み - インデックス未登録」に当たる。
+ *
+ * ■ ★ なぜ「配信中は全部作る」にしないのか
+ * それをやると作品ページが **617枚 → 971枚**（+354）になる（実測）。
+ * 薄いページを一度に増やすと**まとめて未登録に落ちる**のは
+ * docs/GROWTH.md 3-1 で確認済みの罠で、いま起きている問題を悪化させる。
+ *
+ * シリーズ記事の表に限れば **+8枚**（バイオハザード6・仮面ライダー2）で済み、
+ * どのページも**記事から本文リンクが1本入る**。孤立点が増えない。
+ *
+ * ★ 題名からIDを引くのは `workLinkByTitle()`。**rehype-work-links.ts と同じ口を通すこと。**
+ *   別の引き方をすると、記事の表が張るリンク先と、ここで作るページのIDがずれて
+ *   **404 になる**（work-links.ts の `workIdsForTitle` の注意書き）。
+ */
+function seriesFeatured(): Map<string, SeriesArticle> {
+  if (featured) return featured
+  const ids = new Map<string, SeriesArticle>()
+  const dir = findUpPosts()
+  if (!dir) {
+    featured = ids
+    return ids
+  }
+  for (const file of readdirSync(dir).filter((n) => n.endsWith('.md'))) {
+    const raw = readFileSync(join(dir, file), 'utf8')
+    // 下書きはページに出ない（getCollection の絞り込みと合わせる）
+    if (/^draft:\s*true\s*$/m.test(raw)) continue
+    // シリーズ記事の目印。theme-packs の article-types が付けるタグ
+    if (!/^tags:.*['"]シリーズ['"]/m.test(raw)) continue
+    // frontmatter の title。クォートの有無どちらでも拾う
+    const title = raw.match(/^title:\s*['"]?(.+?)['"]?\s*$/m)?.[1]
+    if (!title) continue
+    const article: SeriesArticle = { slug: file.replace(/\.md$/, ''), title }
+    for (const line of raw.split('\n')) {
+      if (!line.startsWith('|')) continue
+      for (const cell of line.split('|').slice(1, -1)) {
+        const cellTitle = cell.trim()
+        // 区切り行（`| --- |`）と空セルを飛ばす
+        if (!cellTitle || /^[-\s:—]+$/.test(cellTitle)) continue
+        const id = workLinkByTitle(cellTitle)?.workId
+        // ★ 先に読んだ記事を優先する。同じ作品が2本のシリーズ記事に出ることは
+        //   いまは無いが、出たときに毎ビルドで行き先が入れ替わらないようにする。
+        if (id && !ids.has(id)) ids.set(id, article)
+      }
+    }
+  }
+  featured = ids
+  return ids
+}
+
 // --- 掲載判定 -----------------------------------------------------------------
 
 /**
@@ -678,6 +811,12 @@ function build(): Map<string, WorkPage> {
  * | 配信API由来（U-NEXT を除く） | build() が済ませている | 1,042 |
  * | **終了日を言える** | `started` 以外の状態を1つ以上持つ | **653** |
  * | **人の名前が出せる** | 監督 **または** 出演がいる | **508** |
+ *
+ * ■ 3つめの入口（2026-09-10 追加）
+ * 「終了日を言える」を**シリーズ記事の表に載っていること**でも通せるようにした。
+ * 全作が配信中のシリーズ（バイオハザード・仮面ライダー）は1作も第1条件を満たさず、
+ * 記事の本文から内部リンクが1本も出ていなかったため。**+8枚**。
+ * 理由と、なぜ「配信中は全部」にしないのかは `seriesFeatured()` の注意書き。
  *
  * ■ なぜ「終了日を言える」で切るのか
  * 配信中かどうかは JustWatch も Filmarks も出す。**終了日を出すサイトはほぼ無い。**
@@ -703,7 +842,8 @@ function build(): Map<string, WorkPage> {
 export function isWorkPagePublishable(w: WorkPage): boolean {
   const tellsEndDate = w.services.some((s) => s.state !== 'started')
   const namesPeople = w.directors.length > 0 || w.cast.length > 0
-  return tellsEndDate && namesPeople
+  // ★ 「人の名前」は緩めない。**どちらの入口でも要る**（上の表の2段目）。
+  return (tellsEndDate || seriesFeatured().has(w.id)) && namesPeople
 }
 
 // --- 公開する口 ---------------------------------------------------------------
@@ -731,9 +871,21 @@ export function hasWorkPage(id: string): boolean {
   return workPage(id) !== undefined
 }
 
+/**
+ * その作品を扱っているシリーズ記事。**作品ページから記事へ戻るリンクに使う。**
+ *
+ * ★ 記事→作品の一方通行にしないため（2026-09-10）。作品ページを増やしただけでは
+ *   記事側にリンクが返らず、読者もシリーズのまとめへ戻れない。
+ */
+export function seriesArticleFor(id: string): SeriesArticle | undefined {
+  return seriesFeatured().get(id)
+}
+
 /** テスト・再読込用 */
 export function resetWorkPages(): void {
   pages = null
+  ambiguous = null
+  featured = null
   posterFiles = null
   observedSince = null
   relatedIndex = null

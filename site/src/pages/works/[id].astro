@@ -16,6 +16,7 @@ import {
   relatedWorks,
   serviceCtaLabel,
   stateSentence,
+  seriesArticleFor,
   workDescription,
   workHeadline,
   workPage,
@@ -154,6 +155,16 @@ const observedSince = history.length > 0 ? observationStart() : null
  * ここで件数を足したり、別の条件で拾い直したりしないこと。
  */
 const relatedGroups = relatedWorks(w)
+
+/*
+ * この作品を扱っているシリーズ記事（あれば）。
+ *
+ * ★ **記事→作品の一方通行にしない**（2026-09-10）。シリーズ記事の表からは
+ *   plugins/rehype-work-links.ts がここへリンクを張るが、戻る道が無いと
+ *   読者はシリーズのまとめへ帰れず、クローラにも記事へ返る線が1本も無い。
+ *   判定は lib/works.ts の `seriesArticleFor()`（記事の表に載っているか）。
+ */
+const seriesArticle = seriesArticleFor(w.id)
 
 /*
  * U-NEXT（afb）の掲載NG判定に渡す文字列。
@@ -403,6 +414,14 @@ const jsonLd = {
   <AmazonCta category={STATE_CATEGORY[w.state]} query={w.title} />
 
   {
+    seriesArticle && (
+      <p class="series-article">
+        シリーズのまとめ: <a href={`/posts/${seriesArticle.slug}`}>{seriesArticle.title}</a>
+      </p>
+    )
+  }
+
+  {
     relatedGroups.length > 0 && (
       <section class="related-works">
         <h2>関連する作品</h2>
@@ -598,6 +617,17 @@ const jsonLd = {
     margin-left: 0.5rem;
     font-size: 0.78rem;
     color: var(--text-muted);
+  }
+
+  /* シリーズ記事へ戻る1本。関連リンクの列より目立たせる（読者の帰り道なので） */
+  .series-article {
+    margin-top: 2rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-subtle);
+    font-size: 0.9rem;
+    line-height: 1.7;
   }
 
   .related a {
