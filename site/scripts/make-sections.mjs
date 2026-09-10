@@ -441,6 +441,21 @@ function workTables(md) {
   return out
 }
 
+/**
+ * 節の画像を入れない見出し（2026-09-10 追加）。
+ *
+ * 日付見出しをやめた終了記事（`templates/ended.md`「時系列で節を割らない」）は、
+ * `##` が日付で始まらなくなるので**下の `anyHeading` の道に入る。**
+ * その道は見出しの形を問わないため、放っておくと
+ * **「全終了作品リスト」のような一覧の節にも絵が入る。**
+ * 直前の節と同じ作品の絵が記事の中でもう一度出るので、名前で外す。
+ *
+ * ★ 日付見出しを持つ記事では素通りする（あちらは日付の `##` しか節にしない）ので、
+ *   既存記事の見え方は変わらない。
+ * ★ 「その他の注目作」は外さない。作品の解説がある本文の節で、絵が付いてよい。
+ */
+const NO_IMAGE_HEADING = /^(全終了作品リスト|全配信終了作品リスト|全作品リスト|対象作品リスト|他のサービスで探す|まとめ)/
+
 function parseBlocks(md, { anyHeading = false } = {}) {
   const lines = md.split('\n')
   const out = []
@@ -454,7 +469,8 @@ function parseBlocks(md, { anyHeading = false } = {}) {
     if (h2) {
       const t = h2[1].trim()
       // `anyHeading` のときは日付で始まらない `##` も節の主題として採る（上の説明）
-      dateHeading = anyHeading || /^\d{1,2}月\d{1,2}日/.test(t) ? t : null
+      const eligible = anyHeading || /^\d{1,2}月\d{1,2}日/.test(t)
+      dateHeading = eligible && !NO_IMAGE_HEADING.test(t) ? t : null
       dateHeadingLine = i
       subHeading = null
       subHeadingLine = -1

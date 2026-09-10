@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-08T14:21:09.572Z",
+  "updatedAt": "2026-09-10T05:50:52.445Z",
   "works": {
     "194": {
       "fetchedAt": "2026-09-08T12:42:35.675Z",
@@ -77,6 +77,19 @@
             "subscription"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0JXM9K5QSXG0X1O6M4CHGIYACB?ref_=atv_dp"
+        }
+      ]
+    },
+    "417": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-curious-case-of-benjamin-button/umc.cmc.4jcjrdz0t7b6fqwp8qhkb2i9l?playableId=tvs.sbd.9001%3A398952625"
         }
       ]
     },
@@ -454,6 +467,26 @@
         }
       ]
     },
+    "995": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/man-on-fire/umc.cmc.2wem1n2410lpz2iichralb5er?playableId=tvs.sbd.9001%3A1278611424"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60034560"
+        }
+      ]
+    },
     "1023": {
       "fetchedAt": "2026-09-06T12:42:56.838Z",
       "services": [
@@ -473,6 +506,18 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/m-flo-tour-2005-beat-space-nine-at-%E6%97%A5%E6%9C%AC%E6%AD%A6%E9%81%93%E9%A4%A8/umc.cmc.6nf5cnxv7nrbz8fuf2tc79anc?playableId=tvs.sbd.9001%3A1161320480"
+        }
+      ]
+    },
+    "1070": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-000ffb83-6459-4d2b-9e11-2087a235c8f6"
         }
       ]
     },
@@ -612,6 +657,26 @@
         }
       ]
     },
+    "2105": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.e300ea72-2b97-492a-9e2f-6db78f252b5b"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/lara-croft-tomb-raider/umc.cmc.3z4vrnmksayrefshgeg2is1zt?playableId=tvs.sbd.9001%3A528600639"
+        }
+      ]
+    },
     "2232": {
       "fetchedAt": "2026-09-06T12:44:09.271Z",
       "services": [
@@ -627,6 +692,42 @@
         }
       ]
     },
+    "2249": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70103525"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/night-at-the-museum-battle-of-the-smithsonian/umc.cmc.2az4nmv5q8or3umfg6sb8hn1t?playableId=tvs.sbd.9001%3A922766759"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-96d0493f-df10-4e4a-b970-ff08fbc20f7f"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "subscription",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0Q7FZ83OY6SVQA51UVFTHYCMIV?ref_=atv_dp"
+        }
+      ]
+    },
     "2283": {
       "fetchedAt": "2026-09-06T12:44:09.271Z",
       "services": [
@@ -639,6 +740,34 @@
             "buy"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0HOJE0HM2DF8Y74QND5NRLDNFE?ref_=atv_dp"
+        }
+      ]
+    },
+    "2417": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-last-king-of-scotland/umc.cmc.3ngnwecyi443n7mugqw1pbunp?playableId=tvs.sbd.9001%3A1064772657"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-8d986c37-fa91-4205-a8ed-5e33bbb6df8b"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0KEKSU6I689WB3JSLK9G74S7XO?ref_=atv_dp"
         }
       ]
     },
@@ -662,6 +791,18 @@
             "subscription"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0KVMM0DCH1ONG81R0PLQ8H5Q8V?ref_=atv_dp"
+        }
+      ]
+    },
+    "2814": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/1049750"
         }
       ]
     },
@@ -730,6 +871,19 @@
         }
       ]
     },
+    "3976": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-florida-project/umc.cmc.xji65u9og5s2mij32svpn5wy?playableId=tvs.sbd.9001%3A1434643624"
+        }
+      ]
+    },
     "4786": {
       "fetchedAt": "2026-09-06T12:44:09.271Z",
       "services": [
@@ -750,6 +904,157 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/resident-evil-the-final-chapter/umc.cmc.1wfphs7n3l19iodazs2goix6k?playableId=tvs.sbd.9001%3A1199731548"
+        }
+      ]
+    },
+    "5639": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "curiosity",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://curiositystream.com/video/237"
+        }
+      ]
+    },
+    "7082": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-c01511b3-394a-4ebe-8373-808732c009c9"
+        }
+      ]
+    },
+    "7393": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80218108"
+        }
+      ]
+    },
+    "8109": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LBG6BBTL63JHOQPKGMZ2JTY3Y"
+        }
+      ]
+    },
+    "8936": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RSY1QNFRFZA1G743314IQ6XNG"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80132306"
+        }
+      ]
+    },
+    "9308": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/hot-tub-time-machine-2/umc.cmc.5773f397swgp9jnadzvrxs5x5?playableId=tvs.sbd.9001%3A1014624531"
+        }
+      ]
+    },
+    "9509": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-tale-of-despereaux/umc.cmc.3u6hkf5wtkj9oymlnngfoxayo?playableId=tvs.sbd.9001%3A727605632"
+        }
+      ]
+    },
+    "10383": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81161828"
+        }
+      ]
+    },
+    "10877": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80135750"
+        }
+      ]
+    },
+    "11675": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/big-mommas-like-father-like-son/umc.cmc.3p2swxivn855qz9bs926fu8ti?playableId=tvs.sbd.9001%3A452508833"
+        }
+      ]
+    },
+    "15224": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0HNKUYJVRV2WPQ5WW6W33G8F39?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/barb--star-go-to-vista-del-mar/umc.cmc.ba6wq5pnixymgcxch791xteb?playableId=tvs.sbd.9001%3A1548826488"
         }
       ]
     },
@@ -781,6 +1086,32 @@
         }
       ]
     },
+    "16983": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.f75afd3c-577d-4dcb-8c2d-a576d280a6e7"
+        }
+      ]
+    },
+    "17447": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "free",
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0Q11CUYYT21W7X3DCPJ7T9CCBE"
+        }
+      ]
+    },
     "18319": {
       "fetchedAt": "2026-09-08T12:42:01.459Z",
       "services": [
@@ -806,6 +1137,67 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/rurouni-kenshin---the-legend-ends/umc.cmc.q4l81841oyp6g3mkwthlba8z?playableId=tvs.sbd.9001%3A913897143"
+        }
+      ]
+    },
+    "18698": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "free",
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RVZBZ0YMWUV96VGED2XJ2G1QC"
+        }
+      ]
+    },
+    "19511": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0S3N81QB55G0IDB5UY15AB6ZA7?ref_=atv_dp"
+        }
+      ]
+    },
+    "20120": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/walking-with-dinosaurs/umc.cmc.56hzibnkupfjq6q1biud48igy?playableId=tvs.sbd.9001%3A834678021"
+        }
+      ]
+    },
+    "21464": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-little-mermaid-ariels-beginning/umc.cmc.484wby8w1domkocfgtgbtzqwm?playableId=tvs.sbd.9001%3A673057404"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-88d77ded-caef-4b86-9209-0967f4cb465d"
         }
       ]
     },
@@ -906,6 +1298,124 @@
         }
       ]
     },
+    "23656": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-scorpion-king-3-battle-for-redemption/umc.cmc.1ffw86pvn64nj5t40s3bum6fy?playableId=tvs.sbd.9001%3A524626803"
+        }
+      ]
+    },
+    "23708": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80081170"
+        }
+      ]
+    },
+    "23950": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81781638"
+        }
+      ]
+    },
+    "26667": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-06af8239-c98c-49ab-bfe0-bd955b928fec"
+        }
+      ]
+    },
+    "27467": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "free",
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0S39Y760MO1WBTMT3C6C6JNFAW"
+        }
+      ]
+    },
+    "29450": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.1bc44203-22e1-47c6-8eeb-9864d33c57fc"
+        }
+      ]
+    },
+    "29606": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": []
+    },
+    "31012": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0LVWASURAQN7B0VTM1XL3BMWZK?ref_=atv_dp"
+        }
+      ]
+    },
+    "32217": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-d0a51ddd-6c83-436c-b05e-2a1579f9042d"
+        }
+      ]
+    },
+    "35178": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/on-the-milky-road/umc.cmc.2usknkwmih8wmdrx1c51kzvwz?playableId=tvs.sbd.9001%3A1383389470"
+        }
+      ]
+    },
     "37264": {
       "fetchedAt": "2026-09-06T12:44:05.674Z",
       "services": [
@@ -916,6 +1426,77 @@
             "buy"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0N8W3ILIWPSAHPB579HLNS32EB"
+        }
+      ]
+    },
+    "37995": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-37e9a566-6e6e-4413-92c7-b1b83777c86a"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/beverly-hills-chihuahua-2/umc.cmc.7hnnrsgcfrzlz8b1v9pi56309?playableId=tvs.sbd.9001%3A422567270"
+        }
+      ]
+    },
+    "38146": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "free"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.d2b0a9a5-7f7d-374a-6fce-2dbe15979aa8"
+        }
+      ]
+    },
+    "38760": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81341765"
+        }
+      ]
+    },
+    "39027": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-virginity-hit/umc.cmc.iq1kx92kj8tpmoph26lyhh9u?playableId=tvs.sbd.9001%3A440106640"
+        }
+      ]
+    },
+    "40037": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0Q5VZE8AR8ZDTLXI7FPYNH1VG0"
         }
       ]
     },
@@ -1047,9 +1628,44 @@
         }
       ]
     },
+    "57052": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/monk-comes-down-the-mountain/umc.cmc.wy2ixa86mezn7mn8bk2dn986?playableId=tvs.sbd.9001%3A1170487047"
+        }
+      ]
+    },
     "58653": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
+    },
+    "58711": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/tour-de-force/umc.cmc.4z459opxt8yjy63ap9frdv1ut?playableId=tvs.sbd.9001%3A1166289987"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0NPLZAVLJCUR0MKD4NUFWBK3FN?ref_=atv_dp"
+        }
+      ]
     },
     "59545": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
@@ -1072,12 +1688,28 @@
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
+    "62203": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81105561"
+        }
+      ]
+    },
     "62802": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
     "64313": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
+      "services": []
+    },
+    "64424": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
       "services": []
     },
     "64541": {
@@ -1109,6 +1741,18 @@
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
+    "66649": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81091578"
+        }
+      ]
+    },
     "67928": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
@@ -1134,6 +1778,18 @@
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
+    "74160": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/adventures-of-zatoichi/umc.cmc.49kdnv456pl3jzd45l2732iii?playableId=tvs.sbd.9001%3A397082246"
+        }
+      ]
+    },
     "75561": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
@@ -1141,6 +1797,31 @@
     "75740": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
+    },
+    "76621": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70270758"
+        }
+      ]
+    },
+    "78585": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/lord-legend-of-ravaging-dynasties/umc.cmc.5wga4p8heyjpawmsrl3r36v3h?playableId=tvs.sbd.9001%3A1264422858"
+        }
+      ]
     },
     "78674": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
@@ -1154,9 +1835,122 @@
         }
       ]
     },
+    "79393": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/digimon-adventure-tri-determination/umc.cmc.3k33t5u7tbg319sjaj18hxqsy?playableId=tvs.sbd.9001%3A1088812782"
+        }
+      ]
+    },
+    "81631": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-e0405c04-fab6-497c-9482-63d08deeb881"
+        }
+      ]
+    },
     "90266": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
+    },
+    "95445": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-bra/umc.cmc.3hr5v9qsjyn669bi7tvw5x4w5?playableId=tvs.sbd.9001%3A1520267680"
+        }
+      ]
+    },
+    "97253": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/digimon-adventure-tri-6-future/umc.cmc.3tobd4td5mizvivom08a8uofh?playableId=tvs.sbd.9001%3A1364242248"
+        }
+      ]
+    },
+    "97808": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81416534"
+        }
+      ]
+    },
+    "108329": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-b23fa426-18ff-4f66-8d21-804abb494bd0"
+        }
+      ]
+    },
+    "110331": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/namiya/umc.cmc.1wkqaadq6n5yorrh6dhus2qk9?playableId=tvs.sbd.9001%3A1450504319"
+        }
+      ]
+    },
+    "117585": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81044927"
+        }
+      ]
+    },
+    "122069": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/%E5%A5%B3%E8%A1%92-zegen/umc.cmc.6udd9gn8qs0ajkozsrxg2bq8l"
+        }
+      ]
     },
     "138947": {
       "fetchedAt": "2026-09-06T14:20:57.152Z",
@@ -1171,6 +1965,149 @@
         }
       ]
     },
+    "156635": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-6975ddbd-4146-4fe0-b70a-972df9eb02d1"
+        }
+      ]
+    },
+    "158527": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/kingdom-of-swords/umc.cmc.1gxxc4qmvji2qs2zd9jj3dk2x?playableId=tvs.sbd.9001%3A1481621106"
+        }
+      ]
+    },
+    "162595": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/kisarazu-cats-eye-nihon-series/umc.cmc.6q1v05uqijt9dw36f06uwvdpn?playableId=tvs.sbd.9001%3A1584103042"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70107421"
+        }
+      ]
+    },
+    "167040": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/broken-side-of-time/umc.cmc.3rbll6f5a5azdz3qqubkizidv?playableId=tvs.sbd.9001%3A1059698650"
+        }
+      ]
+    },
+    "179215": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/monkey-business-the-adventures-of-curious-georges-creators/umc.cmc.1w945a8395yoq5m7o0n9f288z?playableId=tvs.sbd.9001%3A1465880582"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0P0JM1Q1DY3KH08FLL4ITMLF76?ref_=atv_dp"
+        }
+      ]
+    },
+    "181096": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/donna-summer---vh1-presents-live-and-more-encore/umc.cmc.4g9bmxbbgcs23ffcyslyh857q?playableId=tvs.sbd.9001%3A977290321"
+        }
+      ]
+    },
+    "182574": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/kamen-rider-den-o--kiva-climax-deka/umc.cmc.6ol812a8pbyic1rrlhux95v7a?playableId=tvs.sbd.9001%3A425127151"
+        }
+      ]
+    },
+    "207269": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/14-that-night/umc.cmc.4uv5cf455ca691k165cnbx0g5?playableId=tvs.sbd.9001%3A1335561906"
+        }
+      ]
+    },
+    "219581": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "crunchyroll",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.crunchyroll.com/series/GRQWH14QV/adventures-in-voice-acting"
+        }
+      ]
+    },
+    "227395": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0GH0FHH1KX2Z74OW6AA1GCVB60?ref_=atv_dp"
+        }
+      ]
+    },
     "228314": {
       "fetchedAt": "2026-09-07T07:12:36.783Z",
       "services": [
@@ -1180,6 +2117,77 @@
             "subscription"
           ],
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.d586c459-4c3d-4eb9-ae97-f388e9f75f03"
+        }
+      ]
+    },
+    "234478": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/truck-guys-2-the-wild-trucker/umc.cmc.2ztzleuof4fn600gqhttx03a8?playableId=tvs.sbd.9001%3A396271078"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0LU2T1JPA53SU2ACI23YEMPXF3?ref_=atv_dp"
+        }
+      ]
+    },
+    "242767": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-color-of-noise/umc.cmc.1oi6t63zshru80tkyh9ayolph?playableId=tvs.sbd.9001%3A1076396593"
+        }
+      ]
+    },
+    "246019": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/little-ghostly-adventures-of-tofu-boy/umc.cmc.67wyi7vs1prcd10d1wu38sx5i?playableId=tvs.sbd.9001%3A458552078"
+        }
+      ]
+    },
+    "254649": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "curiosity",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://curiositystream.com/video/2309"
+        }
+      ]
+    },
+    "254876": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81056068"
         }
       ]
     },
@@ -1203,6 +2211,18 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/kamen-rider-beyond-generations/umc.cmc.3qv5bsnnwks864c92fq5749ql?playableId=tvs.sbd.9001%3A1614846171"
+        }
+      ]
+    },
+    "268411": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/traveling-daru/umc.cmc.6omjkjhsvw38mqx31pamdxrci?playableId=tvs.sbd.9001%3A731351403"
         }
       ]
     },
@@ -1271,7 +2291,7 @@
       ]
     },
     "352889": {
-      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
         {
           "service": "prime-video",
@@ -1288,6 +2308,58 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/kamen-rider-den-o-pretty-den-o-appears/umc.cmc.6eez6auazuqhxceo3rr59zv5x?playableId=tvs.sbd.9001%3A1539884080"
+        }
+      ]
+    },
+    "354224": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82118667"
+        }
+      ]
+    },
+    "931455": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81717204"
+        }
+      ]
+    },
+    "943049": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0I7GBJJ38IUHRDH3P7BUC7MPY0?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81710853"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-a8f662ae-2d45-43e6-823a-299c571851f4"
         }
       ]
     },
@@ -1335,6 +2407,10 @@
         "localizedTitle": "シン・仮面ライダー"
       }
     },
+    "1868544": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": []
+    },
     "2093538": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": [
@@ -1347,8 +2423,38 @@
         }
       ]
     },
+    "2094535": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81473702"
+        }
+      ]
+    },
+    "2455153": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "free",
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0SKG0LWNNC1K8LG40URZ0DHZUT"
+        }
+      ]
+    },
     "2699508": {
       "fetchedAt": "2026-09-06T14:20:57.152Z",
+      "services": []
+    },
+    "3213585": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
       "services": []
     },
     "3533143": {
@@ -1392,6 +2498,86 @@
         "localizedTitle": "るろうに剣心 -明治剣客浪漫譚-"
       }
     },
+    "4795443": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0FA97ULF10WHLDNL7S5Z86CWXG?ref_=atv_dp"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-3d00a2de-821a-4844-ad90-2f9e7b685b95"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/poor-things/umc.cmc.3mshuc064vnbpvdq7rl6d3lpf?playableId=tvs.sbd.9001%3A1728782964"
+        }
+      ]
+    },
+    "5318881": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": []
+    },
+    "5459447": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0GBPQDAXL21PHBI9BYGFD0W3WG"
+        }
+      ]
+    },
+    "5460122": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-1c895653-358f-496d-9554-769cc8c2bf09"
+        }
+      ]
+    },
+    "5460143": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81435566"
+        }
+      ]
+    },
+    "5461237": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81322750"
+        }
+      ]
+    },
     "7551786": {
       "fetchedAt": "2026-09-07T07:12:36.783Z",
       "services": [
@@ -1407,6 +2593,18 @@
         }
       ]
     },
+    "7912565": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-7b163f0a-3ff9-4384-9785-53a005807bb0"
+        }
+      ]
+    },
     "8847319": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": [
@@ -1416,6 +2614,175 @@
             "subscription"
           ],
           "link": "https://www.disneyplus.com/browse/entity-baebd23a-1e8e-441f-b097-aef885558aaa"
+        }
+      ]
+    },
+    "8954854": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0H857WPJT234AJV3T9JTBYRZQL?ref_=atv_dp"
+        }
+      ]
+    },
+    "8955431": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://tv.apple.com/jp/show/time-bandits/umc.cmc.1oenx8mbap78we9b35c52s07s"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0Q1I18MCQWBGKDXMFSFJTN5T4F"
+        }
+      ]
+    },
+    "9299132": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81688773"
+        }
+      ]
+    },
+    "9883828": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0L4Z8WQ9O0ASZJP9I5PGQREY14"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81904829"
+        }
+      ]
+    },
+    "9883830": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "zee5",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.zee5.com/global/tv-shows/details/loop-11-47/0-6-4z5577119"
+        }
+      ]
+    },
+    "14625987": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0U7EOJRW6XAFXM8TO9DGB895TJ"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81988348"
+        }
+      ]
+    },
+    "14625993": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": []
+    },
+    "14626041": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "subscription",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LU5Q28TGH597SJA7OPSNNW1L1"
+        }
+      ]
+    },
+    "14626065": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0NSNCR002RIAJWBV9G7HL5Y1NL"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82058584"
+        }
+      ]
+    },
+    "14626096": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "free",
+            "subscription",
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0TMVX70CWMVG01O6PUFPNDF8AH"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82082897"
+        }
+      ]
+    },
+    "16697716": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "free",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0SYS13DCF4MIC98B0B8E4RXR5G"
         }
       ]
     },
@@ -1456,6 +2823,55 @@
         }
       ]
     },
+    "19844175": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-15bf811a-809c-4c25-966e-b599abfe0f59"
+        }
+      ]
+    },
+    "19854984": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82145299"
+        }
+      ]
+    },
+    "19867368": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81648571"
+        }
+      ]
+    },
+    "19956324": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "free",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0U466A3XXXA3O5YVK7QL27ZNFP"
+        }
+      ]
+    },
     "20109539": {
       "fetchedAt": "2026-09-07T07:12:36.783Z",
       "services": [
@@ -1468,6 +2884,43 @@
             "buy"
           ],
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.ed9e9d99-c485-4bd3-b2a1-f4b1764861b3"
+        }
+      ]
+    },
+    "20142978": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-bone-collector/umc.cmc.cxysfv94bfc1nbjq8nl3q78t?playableId=tvs.sbd.9001%3A533939095"
+        }
+      ]
+    },
+    "20191083": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": []
+    },
+    "20618623": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.9f47a2c1-59c9-4fe2-8ce2-21ed2a2ca96d"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82079402"
         }
       ]
     },
@@ -1511,6 +2964,39 @@
         },
         "localizedTitle": "東島丹三郎は仮面ライダーになりたい"
       }
+    },
+    "23902093": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0U512I7W0JVD3SQ6O9NCSWO9AS?ref_=atv_dp"
+        }
+      ]
+    },
+    "24973699": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": []
+    },
+    "24975881": {
+      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "services": [
+        {
+          "service": "curiosity",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://curiositystream.com/video/5330"
+        }
+      ]
+    },
+    "25370420": {
+      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "services": []
     }
   }
 }

@@ -174,6 +174,12 @@ const KINDS: Record<string, KindTraits> = {
     closerKey: 'leaving-lead-closer',
     // まだ終わっていないものだけ。過ぎた作品を「これから終わる」と書かせない
     future: true,
+    /*
+     * ★ **問いは入れない。** 2026-09-10 に一度 `questionClause` を入れて、同じ日に戻した。
+     *   この記事の作品は**まだ観られる**うえ、行き先は表の在庫の行が答えている。
+     *   タイトルでも同じことを聞くと過剰になる（運用者の判断）。
+     *   経緯は `templates/naming.md`「終わった記事は問いから入る」。
+     */
   },
   /*
    * ★ **4つのうちこれだけタイトルに問いが入る**（`questionClause`）。
@@ -564,7 +570,11 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       expiring: '配信終了',
       removed: '配信終了済み',
     }[kindOf(ctx).kind]
-    return [...services, kindTag, '特報', `${y}年${Number(m)}月`].filter(Boolean)
+    // ★ 「特報」はタグに出さない。記事タイプを呼び分けるための内側の名前で、
+    //   タグは記事ページに出る＝読者が読む（`site/src/pages/posts/[...slug].astro`）。
+    //   読者が探しているのは「◯◯が終わる」であって「特報」ではない（2026-09-10・運用者の指定）。
+    //   本文側の同じ決まりは `templates/special.md`「絶対に守ること」にある。
+    return [...services, kindTag, `${y}年${Number(m)}月`].filter(Boolean)
   },
 
   slug(ctx) {

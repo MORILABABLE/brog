@@ -17,12 +17,33 @@
       "writtenAt": "2026-09-05"
     },
     {
+      "slug": "2026-09-ended-disney-plus",
+      "typeId": "ended",
+      "variantKey": "disney-plus",
+      "targetMonth": "2026-09",
+      "category": "ended",
+      "writtenAt": "2026-09-10"
+    },
+    {
       "slug": "2026-09-leaving-prime-video",
       "typeId": "leaving",
       "variantKey": "prime-video",
       "targetMonth": "2026-09",
       "category": "leaving",
       "writtenAt": "2026-09-05"
+    },
+    {
+      "slug": "2026-09-special-warner-anime-u-next",
+      "typeId": "special",
+      "targetMonth": "2026-09",
+      "flags": {
+        "kind": "expiring",
+        "topic": "ワーナー系アニメ",
+        "slug": "warner-anime-u-next",
+        "match": "アドベンチャー・タイム|リック・アンド・モーティ|ハーレイ・クイン|スティーブン・ユニバース|ぼくらベアベアーズ|おかしなガムボール"
+      },
+      "category": "leaving",
+      "writtenAt": "2026-09-10"
     },
     {
       "slug": "conan-movies",
@@ -133,5 +154,5 @@
       "writtenAt": "2026-09-06"
     }
   ],
-  "updatedAt": "2026-09-08T14:24:04.523Z"
+  "updatedAt": "2026-09-10T06:28:45.044Z"
 }

@@ -19,7 +19,7 @@ heroImage: '/heroes/resident-evil.webp'
 
 ## Amazon Prime Videoで見放題配信中の8本
 
-[![バイオハザード（2002年）](/sections/posters/resident-evil-7a422008-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89&i=instant-video) [![バイオハザードII アポカリプス（2004年）](/sections/posters/resident-evil-7a422008-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89II%20%E3%82%A2%E3%83%9D%E3%82%AB%E3%83%AA%E3%83%97%E3%82%B9&i=instant-video)
+[![バイオハザード（2002年）](/sections/posters/resident-evil-cfc9bdaa-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89&i=instant-video) [![バイオハザード: ザ・ファイナル（2016年）](/sections/posters/resident-evil-cfc9bdaa-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%3A%20%E3%82%B6%E3%83%BB%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB&i=instant-video)
 
 | 終了日 | 作品 | 状態 | 出演者 | サービス |
 | --- | --- | --- | --- | --- |
