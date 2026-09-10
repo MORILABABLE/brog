@@ -752,6 +752,60 @@ const ARTICLE_STRUCTURE_TALK = [
 ] as const
 
 /**
+ * 並び順の宣言と、素材の塊の報告（`templates/writing.md` 1節・2026-09-10 追加）。
+ *
+ * > 公開順に並べている、という当たり前の事を宣言する必要ありません。
+ * > 「サイトの構造として自然とそうなっているべき＝違反で読者が離れる」
+ * > …「まとまって外れました」「この日が山です」など、
+ * >   データの構造に触れる表現はNG
+ * （2026-09-10 の添削・Disney+ 終了済み）
+ *
+ * ★ 「9月2日に7本が終了しました」のような**事実の記述は当たらない。**
+ *   ここに並べたのは、事実を**データの塊として語り直す**決まり文句だけ。
+ */
+const ORDERING_TALK = [
+  '順に並べています',
+  '順に並べました',
+  '順に並べてあります',
+  'まとまって外れ',
+  'が山です',
+] as const
+
+/**
+ * 素材の偏りを読者に見せる言い回し（`templates/writing.md` 1節）。
+ *
+ * 何本が同じ日に集まったか、どの日に多いかは**こちらの観測**であって作品の話ではない。
+ * ただし「主人公の一日に集中しています」のように**作品の話で使う余地がある**ので、
+ * 上の決まり文句と違って warn に留める（誤検出したら無視してよい）。
+ */
+const DATA_SHAPE_TALK = ['偏りました', '偏っています', '集中しています', '集中しました'] as const
+
+/**
+ * 2作を代名詞で対にした書き方（`templates/writing.md` 8節・2026-09-10 追加）。
+ *
+ * > あらすじを読んでも意味が通じない典型です。前者は・後者はで区切っていますが、、
+ * （2026-09-10 の添削・「るろうに剣心」）
+ *
+ * 読者は前の文に戻って数え直すことになる。題名で始めて1作1文にする。
+ */
+const PRONOUN_PAIR = ['前者は', '後者は', 'もう1本は', 'もう一方は'] as const
+
+/**
+ * 作品ごとに数字を並べた記事（`templates/writing.md` 7節）。
+ *
+ * > 上映時間・興行収入を作品ごとに解説する必要なし
+ * > （読者にとって不要な情報。文脈に必要ならばアクセントとして）
+ * （2026-09-10 の添削・Disney+ 終了済み「名探偵コナン」22作）
+ *
+ * **転機を説明する1〜2回まで**は書いてよいので、回数で見る。
+ * 表の行（`|` で始まる）は数えない。
+ */
+const NUMBER_DUMP = [
+  { word: '興行収入', limit: 2 },
+  { word: '上映時間', limit: 1 },
+] as const
+
+/**
  * 配信の裏側（ライセンス・権利・契約）への踏み込み（`templates/writing.md` 2節）。
  *
  * ★ 「独占配信」は各社の告知に書かれた**事実**なので当たらない。
@@ -789,6 +843,55 @@ export function styleIssues(md: string): VerifyIssue[] {
       message:
         `「${word}」に触れています（templates/writing.md 2節）。` +
         '配信の裏側は素材に無く、推測になります。その分は作品の説明に使ってください。',
+    })
+  }
+
+  for (const phrase of ORDERING_TALK) {
+    if (!text.includes(phrase)) continue
+    issues.push({
+      level: 'error',
+      message:
+        `「${phrase}」は並び順・素材の塊の話です（templates/writing.md 1節）。` +
+        '並び順は表が持っているので宣言せず、何が終わる（始まる）のかを書いてください。' +
+        '例:「「評決のとき」など7本が9月2日に見放題配信を終了しました。」',
+    })
+  }
+
+  for (const phrase of PRONOUN_PAIR) {
+    if (!text.includes(phrase)) continue
+    issues.push({
+      level: 'warn',
+      message:
+        `「${phrase}」で2作を対にしています（templates/writing.md 8節）。` +
+        '読者が前の文へ戻ることになるので、題名で始めて1作につき1文で書いてください。',
+    })
+  }
+
+  for (const phrase of DATA_SHAPE_TALK) {
+    if (!text.includes(phrase)) continue
+    issues.push({
+      level: 'warn',
+      message:
+        `「${phrase}」は素材の偏りの話に見えます（templates/writing.md 1節）。` +
+        '何本が同じ日に集まったかは書き手の観測なので、作品の話に置き換えてください。' +
+        '作品そのものを説明している文なら、この指摘は無視してよい。',
+    })
+  }
+
+  // 作品ごとの数字の羅列（地の文だけを数える）
+  const prose = text
+    .split('\n')
+    .filter((l) => !l.trim().startsWith('|'))
+    .join('\n')
+  for (const { word, limit } of NUMBER_DUMP) {
+    const count = prose.split(word).length - 1
+    if (count <= limit) continue
+    issues.push({
+      level: 'warn',
+      message:
+        `「${word}」が${count}回出ています（templates/writing.md 7節・上限${limit}回）。` +
+        '作品ごとに数字を並べると、読者が新しく得るものの無い段落になります。' +
+        '転機を説明する1つだけ残して、あとは作品そのものの説明に使ってください。',
     })
   }
 

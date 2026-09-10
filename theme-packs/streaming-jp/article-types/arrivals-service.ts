@@ -93,6 +93,7 @@ const MAX_DETAILED = 40
 const REQUIRED_PHRASES = [
   'arrivals-service-lead-first-sentence',
   'arrivals-service-update-lead-first-sentence',
+  'arrivals-service-update-lead-first-sentence-nochange',
   'arrivals-lead-closer',
   'arrivals-upcoming-intro',
   'other-services-intro',
@@ -149,10 +150,13 @@ function resolvePhrases(
   })
 
   return {
+    // ★ 追加0本の回は別の文言（2026-09-10。「今回新たに0本が加わり」を出さない）
     leadFirstSentence: read(
-      isUpdate
-        ? 'arrivals-service-update-lead-first-sentence'
-        : 'arrivals-service-lead-first-sentence',
+      !isUpdate
+        ? 'arrivals-service-lead-first-sentence'
+        : addedCount > 0
+          ? 'arrivals-service-update-lead-first-sentence'
+          : 'arrivals-service-update-lead-first-sentence-nochange',
     ),
     leadCloser: read('arrivals-lead-closer'),
     upcomingIntro: read('arrivals-upcoming-intro'),

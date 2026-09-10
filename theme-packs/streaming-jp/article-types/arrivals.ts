@@ -75,6 +75,7 @@ const MAX_UPCOMING = 12
 const REQUIRED_PHRASES = [
   'arrivals-lead-first-sentence',
   'arrivals-update-lead-first-sentence',
+  'arrivals-update-lead-first-sentence-nochange',
   'arrivals-lead-closer',
   'arrivals-upcoming-intro',
   'other-services-intro',
@@ -620,8 +621,13 @@ function resolvePhrases(
 
   return {
     leadPrefix: isUpdate ? `【${vars.基準日}更新】` : `【${vars.月}月配信開始】`,
+    // ★ 追加0本の回は別の文言（2026-09-10。「今回新たに0本が加わり」を出さない）
     leadFirstSentence: get(
-      isUpdate ? 'arrivals-update-lead-first-sentence' : 'arrivals-lead-first-sentence',
+      !isUpdate
+        ? 'arrivals-lead-first-sentence'
+        : added.length > 0
+          ? 'arrivals-update-lead-first-sentence'
+          : 'arrivals-update-lead-first-sentence-nochange',
     ),
     leadCloser: get('arrivals-lead-closer'),
     upcomingIntro: get('arrivals-upcoming-intro'),

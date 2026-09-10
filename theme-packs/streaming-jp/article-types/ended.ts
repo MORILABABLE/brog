@@ -97,6 +97,7 @@ const REQUIRED_PHRASES = [
   'ended-lead-first-sentence',
   // 月内に同じ記事を書き直したとき用（2026-08-27 追加）
   'ended-update-lead-first-sentence',
+  'ended-update-lead-first-sentence-nochange',
   'ended-lead-closer',
   'other-services-intro',
   'attribution',
@@ -488,8 +489,17 @@ function resolvePhrases(
 
   return {
     leadPrefix: version.isUpdate ? `【${vars.基準日}更新】` : `【${vars.月}月終了済み】`,
+    /*
+     * ★ **追加が0本の回は、別の文言にする**（2026-09-10）。
+     *   書き直しは素材が増えたときだけ起きるわけではない（文章の質を上げる書き直しがある）。
+     *   そのとき「今回新たに0本の終了を確認し」が読者の見る1文目に出る。
+     */
     leadFirstSentence: get(
-      version.isUpdate ? 'ended-update-lead-first-sentence' : 'ended-lead-first-sentence',
+      !version.isUpdate
+        ? 'ended-lead-first-sentence'
+        : version.added.length > 0
+          ? 'ended-update-lead-first-sentence'
+          : 'ended-update-lead-first-sentence-nochange',
     ),
     leadCloser: get('ended-lead-closer'),
     otherServicesIntro: get('other-services-intro'),

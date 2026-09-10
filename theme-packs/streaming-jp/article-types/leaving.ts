@@ -160,6 +160,7 @@ const REQUIRED_PHRASES = [
   'leaving-lead-first-sentence',
   // 月内に同じ記事を書き直したとき用（2026-08-27 追加）
   'leaving-update-lead-first-sentence',
+  'leaving-update-lead-first-sentence-nochange',
   'leaving-lead-closer',
   'other-services-intro',
   'attribution',
@@ -672,7 +673,12 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext, version: Vers
   return {
     leadPrefix: version.isUpdate ? `【${vars.基準日}更新】` : `【${vars.月}月終了】`,
     leadFirstSentence: get(
-      version.isUpdate ? 'leaving-update-lead-first-sentence' : 'leaving-lead-first-sentence',
+      // ★ 追加0本の回は別の文言（2026-09-10。ended.ts と同じ理由）
+      !version.isUpdate
+        ? 'leaving-lead-first-sentence'
+        : version.added.length > 0
+          ? 'leaving-update-lead-first-sentence'
+          : 'leaving-update-lead-first-sentence-nochange',
     ),
     leadCloser: get('leaving-lead-closer'),
     otherServicesIntro: get('other-services-intro'),

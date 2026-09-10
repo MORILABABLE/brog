@@ -134,7 +134,6 @@ const REQUIRED_PHRASES = [
   'series-ended-lead-first-sentence',
   'series-unext-note',
   'series-lead-elsewhere',
-  'series-lead-updating',
   'other-services-intro',
   'series-coverage-note',
   'attribution',
@@ -1902,14 +1901,23 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
    *   繋ぐのはこちら側の仕事にしてある（固定文言に「が、」を持たせると、
    *   前の文の終わり方に依存する文言になって読めなくなる）。
    *
-   * ★ 他社を挙げられないときは繋がない。あちらは逆接ではないので、
-   *   文を切ったほうが読みやすい。
+   * ★ **他社を挙げられないときは、何も足さない**（2026-09-10）。
+   *   以前は `series-lead-updating`（「この記事は各サービスの配信状況を随時更新して
+   *   います。他のサービスでの取り扱いは、各作品の検索リンクから確かめてください。」）
+   *   を機械的に足していたが、**どの記事にも同じ形で入る1文は読者にとって情報量ゼロ**
+   *   だとして廃止した（2026-09-10 の添削・「るろうに剣心」）。
+   *
+   *       冒頭文として汎用的。この文章を機械的に挿入するルールをなくします。
+   *       → 表からリンクを辿れるサイトの機能は、表までスクロールされれば自然と気づきます
+   *
+   *   検索リンクへの導線は**表の在庫の行と、記事末尾の「他のサービスで探す」**が
+   *   持っている。リードで名乗らせない。
    */
   const base = get(leadKey)
   const leadFirstSentence =
     elsewhere.length > 0
       ? `${base.replace(/。$/u, 'が、')}${get('series-lead-elsewhere')}`
-      : `${base}${get('series-lead-updating')}`
+      : base
 
   return {
     topic,
