@@ -7,12 +7,13 @@ import { publishablePeople, topPeople } from '../lib/people'
 
 /**
  * 本文の**左**の余白に置く枠。上から順に3つ。
- *   1. 当サイトの運営方針および活用について（1枚だけ。行き先は pages/guide.astro）
- *   2. 新着配信・終了一覧（常設ページの一覧。2026-08-27 に
+ *   1. 新着配信・終了一覧（常設ページの一覧。2026-08-27 に
  *      「最新の配信終了・配信開始一覧」から改称）
- *   3. 監督・出演者から探す（人物ページへの導線。2026-08-30 追加）
- * **この順を入れ替えないこと。** 1 は「画像が汎用画像のことがある理由」と
- * 「2 に検索欄があること」を先に伝えるための枠で、読む順がそのまま並び順（2026-08-29）。
+ *   2. 監督・出演者から探す（人物ページへの導線。2026-08-30 追加）
+ *   3. 当サイトの運営方針および活用について（1枚だけ。行き先は pages/guide.astro）
+ * ★ **3 は最下段へ移した**（2026-09-10）。それまでは最上段に置いて
+ *   「画像が汎用画像のことがある理由」と「一覧に検索欄があること」を
+ *   先に伝えていたが、探すための枠（1・2）を上に寄せる並びに変えた。
  *
  * ■ なぜ左に分けたか（2026-08-24）
  * 以前は右の追従枠（FollowRail.astro）の1ブロック目に入れていたが、
@@ -42,7 +43,8 @@ import { publishablePeople, topPeople } from '../lib/people'
 const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
 
 /**
- * 一覧の**上**に置く固定ページ（2026-08-29 追加）。行き先は pages/guide.astro。
+ * 一覧の**下**に置く固定ページ（2026-08-29 追加。2026-09-10 に最下段へ移動）。
+ * 行き先は pages/guide.astro。
  *
  * 常設ページ（EVERGREEN_PAGES）と違って中身が入れ替わらないので、
  * lib/evergreen.ts には入れていない。**カードの体裁だけをそろえてある。**
@@ -57,7 +59,7 @@ const GUIDE = {
 
 const guideIsCurrent = GUIDE.href === current
 /*
- * 現在地はリンクだけ外す（下の一覧と同じ扱い）。カードが1枚しかないので、
+ * 現在地はリンクだけ外す（上の一覧と同じ扱い）。カードが1枚しかないので、
  * **外側のタグだけを差し替えて中身は1つに保つ。**
  * 分岐でカードごと書き分けると、片方だけ直したときに見た目がずれる。
  */
@@ -96,48 +98,6 @@ const peopleTotal = publishablePeople().length
 ---
 
 <aside class="left-rail">
-  {/*
-    ★ 「新着配信・終了一覧」より**上**に置く枠（2026-08-29 追加）。中身は1枚だけ。
-
-    ■ なぜ一覧より上なのか
-      1. 作品の画像が汎用画像になることがある理由（権利者が許可しない画像は載せない）
-      2. 下の一覧に**作品を探す入力欄がある**こと
-      この2つは、読者が一覧を触る前に知っているほうが役に立つ。読む順がそのまま並び順。
-
-    ■ 画像は後から差し替わる
-      いまは仮の汎用画像（public/guide-thumb.svg）。
-      **src/assets/services/guide.png などを置けば、そちらが自動で優先される**
-      （Thumb は image → src の順に見る）。コードは直さなくてよい。
-
-    ■ 狭い画面では枠ごと消える
-      1200px 未満ではこの枠も出ないので、**フッターにも同じリンクを置いてある**
-      （components/Footer.astro）。片方だけ消さないこと。
-  */}
-  {/*
-    ★ 見出し（.block-title）は**わざと出していない**（2026-08-31）。
-      カードの太い行「運営方針と活用法」と同じことを二度言うだけで、
-      枠の内側203pxでは2行に折り返して下の一覧を押し下げていた。
-      **aria-label は残す。** 見出しが無いので、この枠の名前はこれだけになる。
-  */}
-  <nav class="block" aria-label="当サイトの運営方針および活用について">
-    <ul class="cards">
-      <li>
-        <GuideTag
-          class:list={['rail-card', guideIsCurrent && 'is-current']}
-          href={guideIsCurrent ? undefined : GUIDE.href}
-          aria-current={guideIsCurrent ? 'page' : undefined}
-        >
-          {/* サムネイルの扱いは下の一覧と同じ。48px・角丸8で並びをそろえる */}
-          <Thumb image={serviceImage('guide')} src="/guide-thumb.svg" size={48} radius={8} />
-          <span class="body">
-            <span class="stamp">{GUIDE.lead}</span>
-            <span class="name">{GUIDE.name}</span>
-          </span>
-        </GuideTag>
-      </li>
-    </ul>
-  </nav>
-
   <nav class="block" aria-label="新着配信・終了一覧">
     <p class="block-title">新着配信・終了一覧</p>
     {/*
@@ -249,6 +209,51 @@ const peopleTotal = publishablePeople().length
       </nav>
     )
   }
+
+  {/*
+    ★ 左の列の**最下段**に置く枠（2026-08-29 追加。2026-09-10 に最上段からここへ移動）。
+      中身は1枚だけ。
+
+    ■ なぜ最下段なのか
+      この枠が伝えるのは
+        1. 作品の画像が汎用画像になることがある理由（権利者が許可しない画像は載せない）
+        2. 上の一覧に**作品を探す入力欄がある**こと
+      の2つ。**探すための枠（一覧・人物）を先に見せる**並びにしたので、
+      補足にあたるこの枠は上の2枠のあとに置く。
+
+    ■ 画像は後から差し替わる
+      いまは仮の汎用画像（public/guide-thumb.svg）。
+      **src/assets/services/guide.png などを置けば、そちらが自動で優先される**
+      （Thumb は image → src の順に見る）。コードは直さなくてよい。
+
+    ■ 狭い画面では枠ごと消える
+      1200px 未満ではこの枠も出ないので、**フッターにも同じリンクを置いてある**
+      （components/Footer.astro）。片方だけ消さないこと。
+  */}
+  {/*
+    ★ 見出し（.block-title）は**わざと出していない**（2026-08-31）。
+      カードの太い行「運営方針と活用法」と同じことを二度言うだけで、
+      枠の内側203pxでは2行に折り返して枠を無駄に伸ばしていた。
+      **aria-label は残す。** 見出しが無いので、この枠の名前はこれだけになる。
+  */}
+  <nav class="block" aria-label="当サイトの運営方針および活用について">
+    <ul class="cards">
+      <li>
+        <GuideTag
+          class:list={['rail-card', guideIsCurrent && 'is-current']}
+          href={guideIsCurrent ? undefined : GUIDE.href}
+          aria-current={guideIsCurrent ? 'page' : undefined}
+        >
+          {/* サムネイルの扱いは上の一覧と同じ。48px・角丸8で並びをそろえる */}
+          <Thumb image={serviceImage('guide')} src="/guide-thumb.svg" size={48} radius={8} />
+          <span class="body">
+            <span class="stamp">{GUIDE.lead}</span>
+            <span class="name">{GUIDE.name}</span>
+          </span>
+        </GuideTag>
+      </li>
+    </ul>
+  </nav>
 </aside>
 
 <style>
