@@ -125,6 +125,42 @@ export function loadWorkImages(repoDir) {
       }
     }
   }
+
+  /*
+   * ★ **在庫から採用した作品の絵も拾う**（2026-09-10 追加）。
+   *
+   *   ここまでは変化ログ（`data/events`）しか見ていなかった。
+   *   だが `npm run availability -- --adopt` で拾った作品は変化ログに現れないので、
+   *   **その作品だけ絵が引けず、節がまるごと「文字だけ」に落ちていた**
+   *   （ポスターは節の全員ぶん揃ったときだけ使う決まりのため。make-sections.mjs）。
+   *
+   *     実測（2026-09-10・クレヨンしんちゃん）
+   *       Netflixの節27作はすべて在庫から採用したもので、絵が1枚も引けなかった
+   *
+   *   台帳の `work` は在庫APIが返した Work そのままで、`posterUrl` を持っている。
+   *   出どころが同じ（Movie of the Night）なので、絵の質も期限の形も変わらない。
+   *
+   * ★ **変化ログを優先する。** 上と同じく「期限が先のほう」を採るだけにしてある。
+   * ★ **`work` を持つ行だけ。** 注釈のために取っただけの行は変化ログ側が絵を持つ。
+   */
+  try {
+    const led = JSON.parse(readFileSync(join(repoDir, 'data', 'availability.json'), 'utf8'))
+    for (const [id, entry] of Object.entries(led.works ?? {})) {
+      const work = entry?.work
+      const url = work?.posterUrl
+      if (!url || isPlaceholder(url)) continue
+      const title = work.localizedTitle ?? work.title
+      if (!title) continue
+      const cur = map.get(title)
+      const at = expiryOf(url)
+      if (!cur || (at ?? '') > (cur.expiresAt ?? '')) {
+        map.set(title, { id: String(work.id ?? id), title, url, expiresAt: at })
+      }
+    }
+  } catch {
+    // 台帳が無くても絵は出る。**変化ログのぶんだけになる。**
+  }
+
   return map
 }
 

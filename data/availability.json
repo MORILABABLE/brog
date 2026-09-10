@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-10T05:50:52.445Z",
+  "updatedAt": "2026-09-10T13:17:52.767Z",
   "works": {
     "194": {
       "fetchedAt": "2026-09-08T12:42:35.675Z",
@@ -919,6 +919,20 @@
         }
       ]
     },
+    "5981": {
+      "fetchedAt": "2026-09-10T12:48:47.918Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "free"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0FFG94RRT21GNNUH9HQPO53T5X"
+        }
+      ]
+    },
     "7082": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1083,6 +1097,18 @@
             "rent"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0II7F9NWDBSL2UB8Z2F29X7J06?ref_=atv_dp"
+        }
+      ]
+    },
+    "16493": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80152850"
         }
       ]
     },
@@ -1864,6 +1890,54 @@
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
+    "92377": {
+      "fetchedAt": "2026-09-10T12:48:47.918Z",
+      "services": []
+    },
+    "94729": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242860"
+        }
+      ],
+      "work": {
+        "id": "94729",
+        "title": "Crayon Shin-chan: The Storm Called: The Adult Empire Strikes Back",
+        "originalTitle": "クレヨンしんちゃん 嵐を呼ぶ モーレツ！オトナ帝国の逆襲",
+        "type": "movie",
+        "year": 2001,
+        "overview": "",
+        "rating": 67,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Keiichi Hara"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Yuko Mita",
+          "Satomi Korogi"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/94729/poster/vertical/en/480.jpg?Expires=1805810404&Signature=HcOeuxp12Tqr2UFm2Faz6JwVirCa-5a45TYgU3vMpNvhVOKHs3ZCzi3StxTm6UnEBKU~q6~5sDUb~dnRkI-YBZZopYewQOzSpEmCw0UCOMhnc94QUwwkkIQtKSQyAn80gj3lzePaFe91271fF3F9p7-bImZlQgQ0iLehnOdZyB-0y0Fe1y-Q23eUfBzFNrdDZXDdeSiIbvk5uLX1UWkoIO7Ah1akgBqr-kN4fqpXahmOTXh5axkPRavPSGTzP95GPlr5CZOTEbmFlAOMfgZnQzpgngDDHfq-i5zaeeJhRdtgF5i5s1ot~SSNeRBabUaT9m8~JjbVY6WYjweZc-kcag__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/94729/backdrop/horizontal/1080.jpg?Expires=1803871161&Signature=Bg77TgZukZrRjzB0-kl~LdaXRPcc2WT-0tLP7Ek88LBsfYPJbhqsXyDeBKyqUgY8Zayw5mevMr8LhVfFhJAher6ui2TrEaDh6hKIyfEefBN5UPc36ldUWc3WwgpGJZ6QoWTSWm0whyx~X629Ly-~CewVexBmQ1ywA0esLF6BKhXcH7ZMCN-nR6z0-7QnZxqGBUDtr2utgcSr9-OPx4pORWmBYmqIbSiaWi2tBVob~excq3hzlXwE7sOvdUgIf0zQthw5tbw9XKERVGwfbRsatfdZCVwtQdgdIVstkYe0xr3wmQHj83EqfOFe8fBUlMvKAZHq5UXyvyGa4W75sfNXvQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80242860",
+        "meta": {
+          "imdbId": "tt0831848",
+          "tmdbId": "movie/37280"
+        },
+        "localizedTitle": "クレヨンしんちゃん 嵐を呼ぶ モーレツ!オトナ帝国の逆襲"
+      }
+    },
     "95445": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1902,6 +1976,50 @@
         }
       ]
     },
+    "108163": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243205"
+        }
+      ],
+      "work": {
+        "id": "108163",
+        "title": "Crayon Shin-chan: Pursuit of the Balls of Darkness",
+        "originalTitle": "クレヨンしんちゃん 暗黒タマタマ大追跡",
+        "type": "movie",
+        "year": 1997,
+        "overview": "",
+        "rating": 55,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Keiichi Hara"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Ako Mayama"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/108163/poster/vertical/en/480.jpg?Expires=1805592825&Signature=YF7JvtL0WzJSe~3cKF3M8pnxZ4jdCMjwQ3KSI50FAs3-LDmoa36st-o69P6JiT~pVHXRQQuI1GTcjQEdrmrZBQVoejDIBLm4XZmoO-DAte5slLxSy3y3YR3XzsBex91N~4UAWs3xS3JsnzGDMWOetOCBATd7MQbR4abRdCZ3nwAm1LNPKewxOE3XiVEwlLLwt~Pox4ZXM21UICZ6mitMgdUS91Hu1QkUAiBQ3YmSD1VFaMzcD2NdRlc~icrGpRm2a26BbRckDO36efA5nu~dDfPsfE1u2-7L8nxIBwXxWAE4zG31pfEruqDFpwsMF2U0G7ybUeHGpinQJxRnZb1FRg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/108163/backdrop/horizontal/1080.jpg?Expires=1803687401&Signature=OCUrgdEKU66Mmn7vcSrxBr4tsYGmKGunHedNvbyNcNVKKPJkGRaqQ~zoCh7sEzu1g7V7DR1M3e-mP4qeMFrO~xpBNoJlqYtNmZldVd3dlKdPs7-K5uJFMSar6liaQnwOFnbFvI7uPrDzT1aLUZW2jswXphtoSj1M3rBEsWLuQpTXOdECmdsJnwIae-1n8iLtifMVVDXcAjHREggslLdOlPyXCM0RZI4cO7cIJsaL61gVAh1cmPMjqYNSQnxfop3FU-bCsDl4p6htq6Hno~SWCTz9BQMuK~Ei1CTTRap8Yiw6F4FCHmAu5XvMUtT7x8JfCW7x7umRFJdji1ATfd0RdQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80243205",
+        "meta": {
+          "imdbId": "tt0406672",
+          "tmdbId": "movie/89458"
+        },
+        "localizedTitle": "クレヨンしんちゃん 暗黒タマタマ大追跡"
+      }
+    },
     "108329": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1924,6 +2042,70 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/namiya/umc.cmc.1wkqaadq6n5yorrh6dhus2qk9?playableId=tvs.sbd.9001%3A1450504319"
+        }
+      ]
+    },
+    "112899": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242949"
+        }
+      ],
+      "work": {
+        "id": "112899",
+        "title": "Crayon Shin-chan: Action Mask vs. Leotard Devil",
+        "originalTitle": "クレヨンしんちゃん アクション仮面VSハイグレ魔王",
+        "type": "movie",
+        "year": 1993,
+        "overview": "",
+        "rating": 64,
+        "genres": [
+          "Adventure",
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Mitsuru Hongo"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Mari Mashiba",
+          "Tamao Hayashi"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/112899/poster/vertical/en/480.jpg?Expires=1805830499&Signature=WvY-7P9I-WMvYGo3ei~BHRfEF3i8rJMtVjUEaKobXI~Zcx1t2oadjtY6EMS~DTPJpiEDamSejrKGgyFPiEg4Y381~E8ju4dArh95PLrIIPhecQ02Fa6urBi5C00kaWG-6SFIUmHTwsC8JdirOFsgKyH7ebwHOoI6hp54VXfSEbM9rABh40LVLW9HZRuIfZWjUuDYJfS5sQdrweR7CB2873MDlnTO~9mNFxJlArqLDa8WhVU08PCM4H5Xp3iDKXWUee-CI2tJH903hiwqyet7HT--4C3~8LsozY-sqcQyqbYV~Ephoipagr3Z-P9pbJCkkmqEAI8ILWkFjxxrp8U05g__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/112899/backdrop/horizontal/1080.jpg?Expires=1803947086&Signature=Fg57odAX5Bfw3-B35KrzTeR5pI80qhQqBqHOvXBPl9~iyOodhrzAXKfx3ZXzZYFjiSza9OgC4Hmq~03mbQ~SDJp5gaCbT8K-tf0qfCDnTbO31iNX4pjjFQWzrKEzLxH~PXUtOn~G1tOZ-BCVzk6hpfk2uybZ-NLqgX2LUk-iOJ8Mm06gc3DfVZ1C8WBe23Z2tEjKSYw9ylWxaobIumjLdeEvk~gwceaiWZCAvnU90u8NR08I9wgjv9uBJ~NC3GvnczTYvWzTsb5XvDA6taJBkP3M6vPTG4ajMARZaGoQqK-rqnwEqt3gLgSgInU~OeIkBmorGIsnmkAKqd7nD6AdiQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80242949",
+        "meta": {
+          "imdbId": "tt0409848",
+          "tmdbId": "movie/128868"
+        },
+        "localizedTitle": "クレヨンしんちゃん アクション仮面VSハイグレ魔王"
+      }
+    },
+    "114104": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242791"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0MXA0A60V9P9GWFUEW16MBMHY6?ref_=atv_dp"
         }
       ]
     },
@@ -1952,6 +2134,213 @@
         }
       ]
     },
+    "126046": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.91946906-1474-444e-a17c-046e86fe1659"
+        }
+      ]
+    },
+    "127442": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242794"
+        }
+      ],
+      "work": {
+        "id": "127442",
+        "title": "Crayon Shin-chan: Intense Battle! Robo Dad Strikes Back",
+        "originalTitle": "クレヨンしんちゃん ガチンコ!逆襲のロボとーちゃん",
+        "type": "movie",
+        "year": 2014,
+        "overview": "",
+        "rating": 65,
+        "genres": [
+          "Adventure",
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Wataru Takahashi"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Emi Takei"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/127442/poster/vertical/en/480.jpg?Expires=1805838482&Signature=PaZm50cV47Pq~RcO3XTu1vuwzjpSKBzl~SAjhNtLsIpgs6PDMR5nNsTClZEFSiUseZqSkGhwqBYY33vRFeT1gTqDecxMomcG1ZAIo-s6E~N4kJqaYR6P7zR-eg8OwTIff~t~vC95HLOoj24MYO7OqAa7k5SJUwYg2wE5k-SZfszuEEzmsHM32dbJIEnDff3GN9dL7tGAe0vw69gcAn2CLCZjgvpsryfZbd27oi7n1Z1z8FvSPDXPTKHRZhr87DkRuOpi~4w-6LSF2Qcat9jbzgSU3ZR8kzAZ-vCI7QzonHrLfc5kOTrJ0TvGyXpy9pi5FCXJGIoELtphx4ulTKwNKA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/127442/backdrop/horizontal/1080.jpg?Expires=1801970219&Signature=GRyIiO6PH1pOeahlhrEq8s3R1Mt2TMgK3lt0bXhSWIC7wdKmhIaQB0I61edyWvasGXpGt3~2N0HCiZqNhgZbRNgcu4vS8lqlKFzBz9S-eJXO00q9J5IAb-~AEQHtEilVFa6Jy-F50s88sr~IHq0c~acyjPExJcju1SqlIcBYFkISU5JJ3D-KrOhnJn6DmmyBHE6A8ajDgr9UsxTPgzl7bA17nuefQAFeZY6a5gk8v2TOelsrvxn0SpkJ5m9NQjBjtt2Dribz2BMlZtCAreSjlk3HFvGa7OHbiOfm3Pr~SdWe9oyUj5-L-9WazXhp~18REiYvNoTphOvvvLlhiNX5ow__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80242794",
+        "meta": {
+          "imdbId": "tt3871940",
+          "tmdbId": "movie/305143"
+        },
+        "localizedTitle": "クレヨンしんちゃん ガチンコ!逆襲のロボとーちゃん"
+      }
+    },
+    "130372": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243304"
+        }
+      ],
+      "work": {
+        "id": "130372",
+        "title": "Crayon Shin-chan: Jungle That Invites Storm",
+        "originalTitle": "クレヨンしんちゃん 嵐を呼ぶジャングル",
+        "type": "movie",
+        "year": 2000,
+        "overview": "",
+        "rating": 63,
+        "genres": [
+          "Adventure",
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Keiichi Hara"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/130372/poster/vertical/en/480.jpg?Expires=1805840639&Signature=WzJRakVUuA2nEkmxOrRAZxYnbZ0d1Rdu4LQ1j1cVJuun6961zicEPoocUYSz3vIy5GL-9Co3rRwzFzbsZYxnDGr-xeMc2Tyl9eGLr8g31UHsgAJQlAd9cDdz5Hr8W6UL6j~5TS~~bNyOfHrJNHfAGKrWe9Dt8okpHN5t2kICm~o1T6aLNGC2JWg8en7lkn7N2Mnu~SpnOvp7gpGPpyH8JCG9vsN8AETQrmYGgji9ZQdN4GmxeDHah3M6XFRZvCPXTTnKlS2AGEb9SGifalEE2PqoUWUZ6x8aMUMmwmhfELacytpST~A14WidgPYsIaCjuv8pT~Wuq4qB6kGsjsomvA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/130372/backdrop/horizontal/1080.jpg?Expires=1801971885&Signature=jQXc-YGTuFzPEoBcege1aWEXz~~yDsOhwWN1~ILmlHeOfuZ0glK6TioFpB-2RqZRTq-Sc7-L2zY1NPrAft3tZ3Fll9tnAH5fI0TLYmnWnNyc1yJY0iQLWRBUdEM08OPWI9wA6k7A7rsDiMsAjio1SKeZRTn~TqzmHyBnm-vsLKiliyilYuCYDltY0lm6HqFg-TpJ4D05lUsznn2zKIRLLi0CZ7ehVyv9dzzGuA0XgnDvmo3L5xYCGK8F2kNPjggrehBLzBxeHid4Zh0Ft93UUc8GF7DlTMaJg5RTH491ltP8FWYhdK6JSgS02yEEKz14JexFdcI7ZROPE-9MWUq0dA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80243304",
+        "meta": {
+          "imdbId": "tt2180441",
+          "tmdbId": "movie/117087"
+        },
+        "localizedTitle": "クレヨンしんちゃん 嵐を呼ぶジャングル"
+      }
+    },
+    "130548": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0FNG2P399C6O3L8EQ5LIUUZNVU?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243302"
+        }
+      ],
+      "work": {
+        "id": "130548",
+        "title": "Crayon Shin-chan: Great Adventure In Henderland",
+        "originalTitle": "クレヨンしんちゃん ヘンダーランドの大冒険",
+        "type": "movie",
+        "year": 1996,
+        "overview": "",
+        "rating": 63,
+        "genres": [
+          "Adventure",
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Mitsuru Hongo"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Yuriko Fuchizaki"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/130548/poster/vertical/en/480.jpg?Expires=1805840780&Signature=S2WA0zlywqj21RvwPmbQFCyFuuu6di7~v2NhXGoqBMtzE8ce7EUwABMN3ztnaiPN2vUPIFqvO4TMDF84XErN1zJGKaE1yFUsJ7VKFFVyzbTd1SmHZKADdd6Yt8DB6~g7tBolMsOq0nlGvXC23OJ05sv1Jzwdt5GdW2V1sdhp~LeG-lWPGVHVpP5Ule~qzvM5bFnA76otM2O1Mz47YWBZ2I9CFkwC7z6jMXuz4N9wuQRBhe0AZaXAlsTyA6-4KZJXpuBQp-ncA9VhvNERexZX7yaGowudNtGd41~JizPqEp1~Y4-z~AKtwPksN~dBXWzTB~YzGEJZIDMdD-aZUadSxw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/130548/backdrop/horizontal/1080.jpg?Expires=1803973053&Signature=JPnzZEjM878e4uoCIXz6Vbl8lCyVlfn0YmZQzQL3jDsN4RokUUKtPSxTRp0bOusgA6hLLhWP4eWX92DjMrr~XpcmicCK1~Ausz5CRV98Fp5Q71-FZhLh31P6L4X~Ac0cX1wCUqllbv1k7KtPBs5UgMz-2eSqPRdtLNzrTJ8xzBFR~kX5DLe4bkHImzjjpo5tfWMEnhrYy4E18sCMFjILUgrOYhIJ0X6qGQuhSI-IpiP6WhuzAn-NfHPsfpQhW2-l6tIb-bfP1nIX1gIuIazUmzLt~uuIZtMWSAiwtfbwDJ5tCml0f77Im7jFUDg9zTPFEROwAxptBw~xZLNapCFFyQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.amazon.co.jp/gp/video/detail/0FNG2P399C6O3L8EQ5LIUUZNVU?ref_=atv_dp",
+        "meta": {
+          "imdbId": "tt2643796",
+          "tmdbId": "movie/128871"
+        },
+        "localizedTitle": "クレヨンしんちゃん ヘンダーランドの大冒険"
+      }
+    },
+    "133296": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RWOHBQIAWK9Q3Y7WBQZFGILU9?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81590011"
+        }
+      ],
+      "work": {
+        "id": "133296",
+        "title": "Crayon Shin-chan: Shrouded in Mystery! The Flowers of Tenkazu Academy",
+        "originalTitle": "クレヨンしんちゃん 謎メキ！花の天カス学園",
+        "type": "movie",
+        "year": 2021,
+        "overview": "",
+        "rating": 57,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Michio Mihara",
+          "Yo Miura",
+          "Daiji Suzuki"
+        ],
+        "cast": [
+          "Yumiko Kobayashi",
+          "Tamao Hayashi",
+          "Teiyu Ichiryusai",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/133296/poster/vertical/en/480.jpg?Expires=1805501461&Signature=AWqfhvICd~fb8GakCGyVtin7GFvFN~oeXV8XYEEjejnfZe-EWAffbWmBMfnoVkQi45KQ0pFD29Dbt~1UEGKKMeUlxnqneD9k5NHM~LV3QY-ojnZ2ZXav9L01cd4hhVIz2Za9eHnmJxWzM0MQ3lj6J4c1bzI2sHn9HN2QfBR1t9b1RjQIyY0X125--DT5WE6B75UaECJ9YEBCgA8y~Kkzj7gH8dwzaFMwJKHeIvfOKTHaaAXEojmBI7AUfp~6Be-85P2VrchZDCSTQuHqsw4IuWlkciCiKo8EJ2ZBUUlaMH3Hw8Mlgwm22-~fyUa~0-K~iw1GhTax1f9gLSp-fvynQQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/133296/backdrop/horizontal/1080.jpg?Expires=1818576864&Signature=FFbpcvLWWOU4iqfa6~B7xGw~uPJI2HfxzIWRbIv~KANNDzUoRTL4isizuXcnGkWYqgilrQtHF-BmzMalwPomU2E2I6YeBGkX9KLBsn27jFXyL0wFJdHnpIRuQGVT2R5ZiXwZN-SZey3Cnux0-qki2xOLgIb14mPW4ghDNaWlxfCqOqnRuNZgrdpqkiWV1UiwGgcQbje3Za1hvipq0mpCL7C9UzmA1kkrXqIPnGCS0m8dXgbVodMsG2Eu4-sgZhRDc3X28n6xHCbk9L~3rrGTbVNC4I3ov9l~Lp7TY~7uNzeM8Nx0rVAlF221Er10z4oSFuE~LHSIpRjDlT7HrRs9xw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.amazon.co.jp/gp/video/detail/0RWOHBQIAWK9Q3Y7WBQZFGILU9?ref_=atv_dp",
+        "meta": {
+          "imdbId": "tt13642590",
+          "tmdbId": "movie/795564"
+        },
+        "localizedTitle": "クレヨンしんちゃん 謎メキ!花の天カス学園"
+      }
+    },
     "138947": {
       "fetchedAt": "2026-09-06T14:20:57.152Z",
       "services": [
@@ -1964,6 +2353,428 @@
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.0d16b2c0-8da5-489b-b0f6-d2487f9cba1e"
         }
       ]
+    },
+    "139283": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81414744"
+        }
+      ],
+      "work": {
+        "id": "139283",
+        "title": "Crayon Shin-chan: Burst Serving! Kung Fu Boys ~Ramen Rebellion~",
+        "originalTitle": "クレヨンしんちゃん 爆盛！カンフーボーイズ～拉麺大乱～",
+        "type": "movie",
+        "year": 2018,
+        "overview": "",
+        "rating": 54,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Wataru Takahashi"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Satomi Korogi",
+          "Toshiyuki Morikawa",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/139283/poster/vertical/en/480.jpg?Expires=1805499200&Signature=arfczTZOPMgc7CBLQiO0pxPIn~qeLFxdHhQH-zxf60o6qKAXWJO9O6g4d0iAH~zFLUsc2a9W1UnH8J7yM9bXqrASLwM~x-5vidVZ558fYkKSsj6q4m-mOHy-aJkbnkfbd~rixPnh0nDDPDu2~gk~X6UBaAYbL8YCYfi7YrJJj-CzKZlZ-P6rAavFIvwg-VUkOaeN6Ks0FteLXsUpaI7Z-2U-aKkkBgW9NmQKsvwMkyEhpgCTFc5COrqlbbWCs-GUXQQk5zJKrK-ysjcUwYwkjT~N6udpVlNe5NlrHnWKTQcyCu9yMzuOFTCSUYZ7LjkrFZaFJHiJ4zcFyTxNUez76Q__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/139283/backdrop/horizontal/1080.jpg?Expires=1819951998&Signature=PKafGHMAj3Ufp0iYwKtgJK07aJk8-p1g1p5Xe3KSgHJ-WGNhpCB0rC5sFQ1xgNU1CnYJeuby-H6iys7hOxafajm3~7ecMmJV~bC4Mq6-JMOJWxt0jpOJTEx8wEzqr~tBTgoUF6vNsgCRZowuLBo0zOtaFtrC4~xdni44TrsykBHNfG5jdasRpDr3dwk7trqSh27PuWYNkIAuoTFCvdc7D5GxhmVpnJdtymTTGK3-fHoBblCliWMCwjcZmxWkDYy81DM1ocl9Ugc9C88PnfTmv-XbIYJcWM3RQJ0PMrRDL-wrkkqyI5OPqJ11-LSsnASj5dTZ2kQu8efCS-klqVprBw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/81414744",
+        "meta": {
+          "imdbId": "tt7994070",
+          "tmdbId": "movie/507562"
+        },
+        "localizedTitle": "クレヨンしんちゃん 爆盛!カンフーボーイズ〜拉麺大乱〜"
+      }
+    },
+    "140363": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242953"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0TAENFWHXT36QQ9BWHXO07MHSD?ref_=atv_dp"
+        }
+      ],
+      "work": {
+        "id": "140363",
+        "title": "Crayon Shin-chan: Fast Asleep! The Great Assault on Dreamy World!",
+        "originalTitle": "クレヨンしんちゃん 爆睡！ユメミーワールド大突撃",
+        "type": "movie",
+        "year": 2016,
+        "overview": "",
+        "rating": 53,
+        "genres": [
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Wataru Takahashi"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/140363/poster/vertical/en/480.jpg?Expires=1805534975&Signature=D3NHjDMi3RW-crXztbVzS8Tz0TCHfAgozjnr~7jg1y80SSSeJWZWBIwBUAk~9iKGlsz5VYyJQ4s4tE6YeE6Sly4bzOL0S-htQFgwIO0MFPkMwQKpRwjsrwCbl8AN85OywUMz3e0gTBc9muLJQ8bXP23FWRMmH~Q7vB6h6KyI5blsa7KRdspUJOwyovaFatsK8lJIzMWAQthv2mKOkSy~ZTqEz0KoJ4~WkOpwNKuXpSLjSXnsSH-ghbAAgXA02O-JMLo7QiNjSWQZ9KtxZ8j1ytNu82zo6HI4KnakPb3-zCHpFwwxH5evrDfLX0MHgukqOAE9tSNg3cHmAN8N3UR9UQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/140363/backdrop/horizontal/1080.jpg?Expires=1800324472&Signature=PmFu9G42OJa-ecfe8zspEJAR2lSvftKnr~TRBIUizR3tp2NYmIaBgmCOwFAAX1l1DnIhnr~AaZtonTPKU1fSWICWbPQqQA5adjQDwC4-Tr01uZv~eFXR7tt~Pz5B5PCMY2tgPSZFrfz7eGS8rF5i9b~1mSgUIpwP1gz4MQwp~nHX5iRA4KApFnKRSTpfa-AE-N7UhxOPgrZL18GcNE9zjxkkU-XWN6VxXlsbGgxw~XIvCtpWNkpkW7Nlosmp3TVZxaE~DYfh1VuOHlHYxf2oESpTTEgSiZpQiAHeDAH8kDI0Mxcwpz1WAZ4DQ9B-~04gUt3lftUNmIr4nduzI2UFlQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80242953",
+        "meta": {
+          "imdbId": "tt5526456",
+          "tmdbId": "movie/424656"
+        },
+        "localizedTitle": "クレヨンしんちゃん 爆睡!ユメミーワールド大突撃"
+      }
+    },
+    "142554": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243204"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.7d6d8ace-f86f-4e49-8068-cd767cd2e357"
+        }
+      ]
+    },
+    "143290": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81414745"
+        }
+      ],
+      "work": {
+        "id": "143290",
+        "title": "Crayon Shin-chan: Honeymoon Hurricane ~The Lost Hiroshi~",
+        "originalTitle": "クレヨンしんちゃん 新婚旅行ハリケーン～失われたひろし～",
+        "type": "movie",
+        "year": 2019,
+        "overview": "",
+        "rating": 54,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Masakazu Hashimoto"
+        ],
+        "cast": [
+          "Yumiko Kobayashi",
+          "Miki Narahashi",
+          "Toshiyuki Morikawa",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/143290/poster/vertical/en/480.jpg?Expires=1805626632&Signature=RYiuSmd8Zf9Bm64OGUXBYErmtH~AQOzC8ut2nDcm~0YxpSSrLOvxMID-Hp9YMre~QKx4Epyv8dVmbeDf-JGNhO2jJpaKXLswAvqXXXkKOZxVdTFQlts6BaOLQqK6cX9mSB2U5z14zwf~dLIegqIOmmZ4OPE3LQZQo0q1ErtpHUCEa-481wS7MIPxUvy-JSraWx1OSgR8lI6UQ1N~3-ikf0VLk871~423MPrZ4meBvkiyD31LVYKjXQ3UBrGyRj2DjHmp5gVbqHKudbB-jewZXTJPQASuM8fyC2P4zrJpzCsGLhWFS9ETT9x9I1l7emd6I4bFF6-m6dHP0wWWRmB~LA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/143290/backdrop/horizontal/1080.jpg?Expires=1800507233&Signature=DT3VrXy~HRQn9AFcPqIK2OPrhysg1omjWco8~2RYeStwy21t8LLwE9NrcWfoWt6IHdEJ6oN2zOJ1PuLSAjKy~~L0VFt20PRxDrai99Y3le0hA1JEHgIfBHvlL-Oh4aYIzbyDfsGYlhT3jnD~tkYEFZ0MM71TH2XjoJPXkdJiCgdePWZqx2ErBN6CZ4SuSC~9HOMDI8P~Ha11ceNbu95ima2WWEm1e6TMP9pWGIZR-nRMYvdDLISIGCjg2YgSidVQ8cJQdHUezoRYInUdR8t7I-G~z6AcwT5blNWGTcM-obMp544yIjO0HdgsVFj7OfBvVYZ-Kb~7UwwLstTgEsseRg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/81414745",
+        "meta": {
+          "imdbId": "tt10208548",
+          "tmdbId": "movie/596302"
+        },
+        "localizedTitle": "クレヨンしんちゃん 新婚旅行ハリケーン 〜失われたひろし〜"
+      }
+    },
+    "144487": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242952"
+        }
+      ],
+      "work": {
+        "id": "144487",
+        "title": "Crayon Shin-chan: The Legend Called: Dance! Amigo!",
+        "originalTitle": "クレヨンしんちゃん 伝説を呼ぶ 踊れ！アミーゴ！",
+        "type": "movie",
+        "year": 2006,
+        "overview": "",
+        "rating": 53,
+        "genres": [
+          "Animation",
+          "Comedy",
+          "Horror"
+        ],
+        "directors": [
+          "Yuji Muto"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/144487/poster/vertical/en/480.jpg?Expires=1805602381&Signature=FW1rjUTuSQnK2-dGn5wjvcleTSLEknTkWKha8XAWL93cLHvHyxclmHMngTpZBZFWEvOlWxT7cK6REc4JWKM6IKIz~Er-qTgxBdzvwObUfWUh73kW0uibxhElykLuFdOQYrsdZ44LiKlXCAYe2~HHOP7Y0m7gIrfQyyxkSnEJGx73RsAAKIzgTzITR234~uz2DJc~NeMxnJkFycHu0bBBaouKtkawKyk8cp91v6g3yk31681o6fTe5Kh7i2RhYwoD~eoSBEh70373xBBV1Bhxf5fma0~wGMpjlAthmluw8MjjMMER9b1R5AP4fHYnWU4pcD~R8vcDw~DA6K1zRsEsIw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/144487/backdrop/horizontal/1080.jpg?Expires=1803695771&Signature=KNTQUJT~4ZGWx870fu03zW58wpHZ6-LjxullPmaiSJ01oC7hKYX6NVhOoiSBWB-Nh3ACQFwmT~zRBeutJCBGxVDAQ5nJQLoSxUA9kHzx~SIjdOKyg1oAuD2FQ8882ntYv3SrOuePmkxjwVh2O6tXPA9r6xnA2tE7k-Iv2~Klip41xq0E5XAXZm67mwEl2sMvWWz3f5g9PbioBTqGr6HsR-9RCyhGVKuo1u2Ks6OViAoC~2dE3Gx98zSz0rDdN3r54G~mtsonzXzjZyWO-N58si8kLLCSv-g8bVJ~-xdX6OPc4nGDBGm4WyKvaq61vpumxC~qTxIw7cewOuJTgideJQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80242952",
+        "meta": {
+          "imdbId": "tt1033485",
+          "tmdbId": "movie/128883"
+        },
+        "localizedTitle": "クレヨンしんちゃん 伝説を呼ぶ 踊れ!アミーゴ!"
+      }
+    },
+    "145350": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242862"
+        }
+      ],
+      "work": {
+        "id": "145350",
+        "title": "Crayon Shin-chan: Invasion!! Alien Shiriri",
+        "originalTitle": "クレヨンしんちゃん 襲来！！宇宙人シリリ",
+        "type": "movie",
+        "year": 2017,
+        "overview": "",
+        "rating": 53,
+        "genres": [
+          "Adventure",
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Masakazu Hashimoto"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Toshiyuki Morikawa",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/145350/poster/vertical/en/480.jpg?Expires=1805502647&Signature=brLA3y7CMGn567dj19HtcppaI4TwgySe0Tf5IOYdJELVVFuLwptZCBej8B0wCPPaEGLbDEFx-vBjZCsubVpPUMmtZjbVJuTCgAEHiSxPs49ftex3BAzJp7gJOaf5tujd2REe2-URgs8KezkOi01xdE3-kTMKy1UOZeksxgVdEC~uMTOJj57FGQ5pu58nlsD4N0n7Xete7~O~HYAM4ziH2pejp~t1Mik4DvIEP4gSRqy876sww1pp6jkuuMDkv9O6qamwgF-ICD~1bWHozNVzUm~n4~INVtfeUAUEsKnbPgbZZ1AWnFKiauc7VGbeQ-LVqeaF4XsLe2Wz~QoagntgIQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/145350/backdrop/horizontal/1080.jpg?Expires=1820212405&Signature=FwNPt-n4sFSwnxYvIXuqs07IA3AKIH-L-bA55vpgV1ecowBZIhB73FHU0W17Dgfhwt-ezHvLjGTMIVxuRZ7gqEetubULD~8KykCjmUzOylJH9hg2EOlwJTnWIdVjt6x1shcy300HOkrXR-woU2mEX18MdM75mWRWua9YBD9GreGF2qnC294EjbFuy39XIh1Iu9sOBSas9qDOt0K1aF7xSUvV1e9gGKLPNERQ~tW~SEFY6YnLUaQcEl~7CPDQYjpBTPuMFMIcdvCrG5O4UgWKjEowblf-wm6NO8AN8FkeuKElQNjKyXyaHSlvQINLLyXEANlWgEJgOIjUskuBh~wDog__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80242862",
+        "meta": {
+          "imdbId": "tt6809936",
+          "tmdbId": "movie/453575"
+        },
+        "localizedTitle": "クレヨンしんちゃん 襲来!! 宇宙人シリリ"
+      }
+    },
+    "145387": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243206"
+        }
+      ],
+      "work": {
+        "id": "145387",
+        "title": "Crayon Shin-chan: Fierceness That Invites Storm! The Kasukabe Boys of the Evening Sun",
+        "originalTitle": "クレヨンしんちゃん 嵐を呼ぶ！夕陽のカスカベボーイズ",
+        "type": "movie",
+        "year": 2004,
+        "overview": "",
+        "rating": 62,
+        "genres": [
+          "Adventure",
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Tsutomu Mizushima"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/145387/poster/vertical/en/480.jpg?Expires=1805650441&Signature=WXTEPolkD5g7ZQs77FB15BW6VPG~L1Fwp1c6th0OChmv7cx7ghU23VE25I5B0W1DhHKLeEmz8DJJT6LqJnWws2iSJWR-RiFC~O9CM0qL6Awjr-kI7REkIvPY93au~~30Z9KHEBmDuDs52GW3YjuVNYzL8KfB8DAkmqBWEn0YK1MyhIQ2xU0mibdMTCifI-2qks-5xlEVAXP3L3u53S~1arD24O0E0JIN~2HUAjeSa36MPtyPTMl4w18ewSC~eYhmzJxqWKMPElhcnn~2~vJHDdHuDkX0J9KNeFg9waG9BUiySJ7W73bbwgUA7TmnsNF-ka7eySqbSaDlFZncVUhufg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/145387/backdrop/horizontal/1080.jpg?Expires=1803722397&Signature=FFs8QyoSyhWtedCeNd8JHuzx0~EIrlm5e6h3Dv0HA75xkONjeCSG5cMJdhck8cRV93oew4YF8jLlH1VB6Wz0YD4AkFsnX0gCJN0v0y~hvaSCHVsxDjx4E2t0QhaeluqKkTOdao8e4V620GBgFJs~mDA4ttRt~Vl~WjhnFFtsWivP4ZWWHvUK~LNP3JAnaSae0wgnvan-H00Cp7ITLUDsaG4Zw7LHdEgeKVUDMYgs-jPEtkPoRfhu5OgZsl932kK~ImYuJTj5eSoO8GgSRH~M0P0vMG7AIJbU9eYjK2F8OIVv7TCy9buUr~7abK8gciX-VZ4e15EWeesXMpaGSwGLzw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80243206",
+        "meta": {
+          "imdbId": "tt0769760",
+          "tmdbId": "movie/160446"
+        },
+        "localizedTitle": "クレヨンしんちゃん 嵐を呼ぶ!夕陽のカスカベボーイズ"
+      }
+    },
+    "145880": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81495996"
+        }
+      ],
+      "work": {
+        "id": "145880",
+        "title": "Crayon Shin-chan: Crash! Scribble Kingdom and Almost Four Heroes",
+        "originalTitle": "クレヨンしんちゃん 激突！ラクガキングダムとほぼ四人の勇者",
+        "type": "movie",
+        "year": 2020,
+        "overview": "",
+        "rating": 54,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Takahiko Kyougoku"
+        ],
+        "cast": [
+          "Yumiko Kobayashi",
+          "Miki Narahashi",
+          "Toshiyuki Morikawa",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/145880/poster/vertical/en/480.jpg?Expires=1805515568&Signature=dYzf3TeABbCfUdsaKQCDP~3vt6Q2~pgdWnxQacsW0R7kSgP3fhZbmKskrlq6vX3RbY~ZM0vheguE2PmRQa9dbqVU1sdJZ9p26UHmRiUGUf1ZEmd49Q6-bEmPX8MzKEo5hXkrbb2v1qWq5DtY9fgXxSTNyF2~OnUh1XT5tmN7-ljpF6zewI9fl0aehGgdGJS0pNIKUPazn8vpsKwQuVqND6IdEZcGN395Gz4hQ4-RpnO~vLAtJqFHvZpM3GUp6DlFpbWNDs3hCHzc2-8P9CtTYaxfkgczcKODMKT43G8~HIr0sl~4ojzGdqjFaDCXv-3DS6s7sOFUmqRKC4HrtCOj8g__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/145880/backdrop/horizontal/1080.jpg?Expires=1819405691&Signature=V6eX~lp9jrtZYEOuBz53f~3uf4qy~2EOY2molsfa-RaqOmnWnnDLf1c06BtaQtgb3j7k47QBaVHsCMpEkETXvoOvWkKosekZCzy-u3PysrCREdVx4N4DH7nnY4GTLBfEejBsusMqi6DRLfA3CMKgFPQMfdxoVvaBjWEqEj~GzV4DhfH3uZGru4L-HajE8dSpYgIn8RTcY86oCDNDoyvntYYlYGMXKgm08CU-GKAKMs3vASYNriEI3cqkYOCkBmNLKkHEJ3rZ-FUhepcXYwRKbmYf862WzBFUqU6zOI0nwgoVaFGnZHuEtfJOHvmu5xZlweH4-hJZnuXcv0wl6SvfJQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/81495996",
+        "meta": {
+          "imdbId": "tt12850062",
+          "tmdbId": "movie/731249"
+        },
+        "localizedTitle": "クレヨンしんちゃん 激突! ラクガキングダムとほぼ四人の勇者"
+      }
+    },
+    "149463": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243039"
+        }
+      ],
+      "work": {
+        "id": "149463",
+        "title": "Crayon Shin-chan: Blitzkrieg! Pig's Hoof's Secret Mission",
+        "originalTitle": "クレヨンしんちゃん 電撃！ブタのヒヅメ大作戦",
+        "type": "movie",
+        "year": 1998,
+        "overview": "",
+        "rating": 51,
+        "genres": [
+          "Adventure",
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Keiichi Hara"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Tessyo Genda"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/149463/poster/vertical/en/480.jpg?Expires=1805599774&Signature=i1PwOXxya-Few025tq0v26K63~aS~mQGFxxcbzSXsUlt3ntyGAjk6v25V5EyZgQr7NHZjrmyfPRzKynHtrSYf9eX4nHi~3vRbHklJKm41LjFpRXzmAAftj~qXYJcgrDTv9dgvgTol4019jXp4Z4TpGDgUJMlEm0QLA8LrOi6~Lp~lcawI5gzfoS~J2gCPxX65Gs1mi-0nyNyQY9W5YPgBJFQdfVwux9SqsAbw8j8Q88BzsPku2HESFJ8AQWXuJKEs5MvyaJJFB80Z7a65XQfN0I33Udiiy0RNJ6t4~zU5ixK8SHDehC-BrqMxmoS51YvjJq1TCCK7WjC~JKvb6DLVQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/149463/backdrop/horizontal/1080.jpg?Expires=1820666129&Signature=IuccDwvVQbwGmQ0CAl302sAffl5KgAetthaaR4ecwYbw~FAtL~8ajApZpZ~Slrxb~HY89TJ~ZyHCdjcWOe1z5pSyy2PjhrDacJyNvDs1lhIs-HF4zDcG2L9GBjZOnwcu~NN2FfFkJWl8ctg1rDBGl~rvDYEduOTOMSzeFjRHYejmGBhohjSwORCEjiipcdUpvkrPsMfFqBJLV9DgNRU7f87wLqHs-JVrEV-CnmH2nRjDzmQm0tSel5OV7vFwXQcodAZ4JbKNfvrGCE9OI0j7E2oqW54~uk5VBrYQOZwfoS2MApK3nsLC2fCnw0hgRJpCgNKLB~rfBnvZLK3zk8QRKg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80243039",
+        "meta": {
+          "imdbId": "tt2643808",
+          "tmdbId": "movie/128875"
+        },
+        "localizedTitle": "クレヨンしんちゃん 電撃!ブタのヒヅメ大作戦"
+      }
+    },
+    "153238": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243209"
+        }
+      ],
+      "work": {
+        "id": "153238",
+        "title": "Crayon Shin-chan: Very Tasty! B-class Gourmet Survival!!",
+        "originalTitle": "クレヨンしんちゃん バカうまっ！Ｂ級グルメサバイバル！！",
+        "type": "movie",
+        "year": 2013,
+        "overview": "",
+        "rating": 54,
+        "genres": [
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Masakazu Hashimoto"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Shinpachi Tsuji"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/153238/poster/vertical/en/480.jpg?Expires=1805590231&Signature=ZjwIh-~J0RgBi-53KmZ~LFdBWok13aDvG6rT8HTNvU2iMpf0oMy9AjNsWgGV7odn1X9gIJ2v9cRfZnoZb6pMBxB4WoM22i~I2taVTLjdipP0gXHMWHIXHZ~--Ra69-Q3RyMQlHyUjPenueNuN2ul3pLK0mge9qO-xboJ7XSMmfCmFxQ64klevSVHm7VKLXMmODqjiLkqDiyeF7kFxvpFAPTHYz4rQ3kv-g5CPTcLpiYPJO8cBiSF7-xlSQ-IziiEwzzFgYEq5K9qEBthSoROCf5j5RVzliBCajf-IeeaRNVcAHEMDepHKTAlCTQ6yFmLnocfnZGSwbPZ~XvSeIPoEg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/153238/backdrop/horizontal/1080.jpg?Expires=1803705740&Signature=g23UVHzJfHDpl1xRmGOeWc53ntc-vNDLcInMytAKtpBY4wmVqDNAsYJwqwMqW90TD~4aGDG4q0gqB8uuBX-fpIAwpyJZz0V0MUYAUFGrXI~~PSgqSKBqnna6WqX~ZCViaxYlnav-rLtVp7-EZbyvro3QblV5rqILKDwk~i4YkSU1qD8EmnWAy7LwUNyty7tBgEu3hpfB~YB7FSRO879YYZ5D~Z2hsBzBQ7OXPnRrqtks9kjp-iSLQ21EhKrmQ7RA8e3J6zUwq7Xry5yT-ZjvVUbOYVEseP2h7V9DJQJbdguZzZ1iA4-TNVuDoZSoVeJbzkFOYY-eNeWY5Uee~ta-cQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80243209",
+        "meta": {
+          "imdbId": "tt2876906",
+          "tmdbId": "movie/163786"
+        },
+        "localizedTitle": "クレヨンしんちゃん バカうまっ!B級グルメサバイバル!!"
+      }
     },
     "156635": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -2010,6 +2821,102 @@
         }
       ]
     },
+    "164580": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243040"
+        }
+      ],
+      "work": {
+        "id": "164580",
+        "title": "Crayon Shin-chan: Fierceness That Invites Storm! The Hero of Kinpoko",
+        "originalTitle": "クレヨンしんちゃん ちょー嵐を呼ぶ金矛の勇者",
+        "type": "movie",
+        "year": 2008,
+        "overview": "",
+        "rating": 51,
+        "genres": [
+          "Adventure",
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Mitsuru Hongo"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/164580/poster/vertical/en/480.jpg?Expires=1805704204&Signature=AY~FUVL9XHlIxL1F5oh1COaUFv7ST2AMz1okAc1rz6fOx~xnN8Gd6BH16OCIkOX6yLdVsXTSlsZoyuMPDdQZqFwBHaiNL9NDH0LVfiYn7dbzBPhDnsCnZ3IYy6CnRoHB-lnBaWwlS9KFFoWaqLOCp0dJT-LyQDjEgyP5R2Zzg5bWkHjIhVFid6arFprr8IvutOnrgBOXsczjfMLCPAjQdYQ-dHnAx0t9~CEnjJDbocby8CWDqA4AshRsd7eEsQT5I-y9Ef4qxXt~rIi1FTgrzK5V0hrYjWJUZu8krzhHS31bmXNqcuOQGx1ELY7q7g9OFvzT1tlwlxpOMlUQLwT~eA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/164580/backdrop/horizontal/1080.jpg?Expires=1803822030&Signature=JaNE1iST-PlqMeGFRUYaOEe3jOwUyuEPoJkCYRoul39zbdmRHFm3EP966346onBzXrXtke4Zan71ime5j40g-QVrz2lefJv0Bo22n5IRp455uADou9ZmvWF4yt3nSqnGYaQX8euv9grLSJhYy18eYkXb12PB8nmfzLPGE4wqhoUqh3XAA~Oy-BdT4J-kZsLIFDjidD46qyQjtuVd1syJ3upZ79qB-CPehm9QIzdK0WLwZeciNzslKPIJhzgO6VdrdIahX-7dK0mnLBU28Q92Ifli9CCjrw-zkqb9v5z78Pxexj8FIEEoo5hIDpmJJLWDoRDFzRFxizpl0nWzJzgrKQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80243040",
+        "meta": {
+          "imdbId": "tt1220673",
+          "tmdbId": "movie/128867"
+        },
+        "localizedTitle": "クレヨンしんちゃん ちょー嵐を呼ぶ 金矛の勇者"
+      }
+    },
+    "164992": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.9374bac2-8e76-444c-9d78-e5f2c92e169b"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243041"
+        }
+      ],
+      "work": {
+        "id": "164992",
+        "title": "Crayon Shin-chan: Fierceness That Invites Storm! Operation Golden Spy",
+        "originalTitle": "クレヨンしんちゃん 嵐を呼ぶ黄金のスパイ大作戦",
+        "type": "movie",
+        "year": 2011,
+        "overview": "",
+        "rating": 62,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Soichi Masui"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/164992/poster/vertical/en/480.jpg?Expires=1805600416&Signature=UYCluj13C4M0AkKZxaKao4SyrbsBXYY7S~zVrtlpHQ9344t6g4SngGHHBLsxXFcAsAHgaCT0bjkZPChsdZzXAIM2~RH72ExcmdTq4MTc13SdVdJHAF3AgR2kRG73mK6N392O~pGvAIbmOd4YbbgG4a68Rp4KQPfzPxa4DmOEWD0ebRFscgQWqlDh4t9oedSpsFnSNhYdxupGt~pe~BSf1gOdCdZ1wqpJI-gja45VXVU~8ollx1vL-PaO2XeOa13ekCwlOshGbFjxLkPIAqO9rE~JLAC7VHe2lCrRp8GmMO3zhGGKRBsoemry3Ef4oD9mAWbyLCru0QGPgY2z1w0hhg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/164992/backdrop/horizontal/1080.jpg?Expires=1820634122&Signature=hnJwxQrhykBMrtOORnm7EUFEHZ34JlAh7iK7YCtLWfFg6-okqM-kR0hFgKwFBZX7OMH5widoapCzu2ZETFbJ3KRIgdLWc4aYF3QF4KIOMAvd9pOoNP6tESmcRp4uK1zEx4S9c0qcTpmsnciKTtZqkFtJe2ysqdz6f~MPq-~rfHCevI2oReZxmH3mv83YXuptmfm3korHDK1DGXZ-lsHetHfEIWQ-KTP3RgKg7X~3w4YqMjTAZxYRI~Ldso5Zd-tRpL~7lXFu-nEYxTamgZlMn6NMI4SqR4KZc-8I8xuhIx~1lrQ7JMgpWYtLLXog2BgtvSrCyo3Ip0fDjoktMWCJrQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.9374bac2-8e76-444c-9d78-e5f2c92e169b",
+        "meta": {
+          "imdbId": "tt1887784",
+          "tmdbId": "movie/163754"
+        },
+        "localizedTitle": "クレヨンしんちゃん 嵐を呼ぶ黄金のスパイ大作戦"
+      }
+    },
     "167040": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -2022,6 +2929,94 @@
           "link": "https://tv.apple.com/jp/movie/broken-side-of-time/umc.cmc.3rbll6f5a5azdz3qqubkizidv?playableId=tvs.sbd.9001%3A1059698650"
         }
       ]
+    },
+    "174750": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243303"
+        }
+      ],
+      "work": {
+        "id": "174750",
+        "title": "Crayon Shin-chan: Explosion! The Hot Spring's Feel Good Final Battle",
+        "originalTitle": "クレヨンしんちゃん 爆発！温泉わくわく大決戦",
+        "type": "movie",
+        "year": 1999,
+        "overview": "",
+        "rating": 60,
+        "genres": [
+          "Adventure",
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Keiichi Hara"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Shinji Ogawa"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/174750/poster/vertical/en/480.jpg?Expires=1805694480&Signature=I0ADv88noH6zl--jXzSWB4xJpMxTVVLHWWnAcLSBJD1U7I3ZKwZN8N1UK2odDFCgOCkdsqf1l0-YE~yOS5nLYPdtwV5aHIJspzizbYXhrAVj7wvjCxdXKZyMCeDegX9YvlQ4T3Y3GOmKj~tjTbXwYo1u0XYbANlR~rEwbaCmyaCbbK68MUSOcAQUqeRERY5MB2N4EJBZ2FhgkAkvoHCcZqpzahSwk3hRDItV7RvycqPTFelDzZFQ6U13ZnSkWf5S9cfaN9FyuKJFI2L8Mmb3zE3X-BhwxQ3VFHm1UiB-~--uOYPr5NnWKKgnbkORoOti1Gvw3EMWGH9QebtmKU5-3Q__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/174750/backdrop/horizontal/1080.jpg?Expires=1803745253&Signature=E8adcoqvp2f-GO7PEpVC4eid5-JY2rxGJrLpKM0lutnEtWn9NCH4aznNwruRMizbaQrDuRUt5yo9czO~vTjD7~wouwFGNMt1UMWmVicSfli~HVlTIWYba5B54weX5C-xUGViitdDYP~JVi9RpiMwt9toGW9bNM2ob8b5RlXwMwTAugN6Q3dCxKh4yGWZruyw2ATPKz0e04fMcGtTQquggN1x4GY7FWeGqaUOQK7ieNTFJeBqHAjjHJLVN0v2cdSOG3Y9RNe~KASEwrGwmO2CMiwkNeLSE-vG7aMUnK6iSYJygQGNOPE40COq1JpddVXUC2nJtqTS-mfw4B8rdrHNfg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80243303",
+        "meta": {
+          "imdbId": "tt2643818",
+          "tmdbId": "movie/128878"
+        },
+        "localizedTitle": "クレヨンしんちゃん 爆発!温泉わくわく大決戦"
+      }
+    },
+    "176519": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243208"
+        }
+      ],
+      "work": {
+        "id": "176519",
+        "title": "Crayon Shin-chan: Fierceness That Invites Storm! Me and the Space Princess",
+        "originalTitle": "クレヨンしんちゃん 嵐を呼ぶ!オラと宇宙のプリンセス",
+        "type": "movie",
+        "year": 2012,
+        "overview": "",
+        "rating": 61,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Soichi Masui"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/176519/poster/vertical/en/480.jpg?Expires=1805678607&Signature=jr~60Latx9LG8-kwszlkyYSYNlb6KnjtnnGnuZVsUyG339hJDrtN2lpyC79DZY~cTkkFeoqN1RtagtQ~fhgfCAyLP~GdP33IJaq1fqctgcF7kcGhHGJLxRZY3ln1TE1KuQffqK9fHFWMyvsDTS2fmPi3gy7ROsRjH-ac7VngrrLtkjd8gUW-u8gaoI2GhXlFPwrzT8jbYHKXiR-W8yotrwkeEm4vJL~JKS37XyeC6X471zP5H4cwIJendvH1Svm20a4rxbnVRhmtG7PZ9eYarvKp5dVMZCa~G7xjyFFXELtHC4lXyYG615qPCw-B82QgpNv~pElUsoTWMlEgMhospg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/176519/backdrop/horizontal/1080.jpg?Expires=1803723059&Signature=Qnt4Qpt-eql7NihUSzyC3MQ6gIsyxITDBj~J--6bcIJWHITGDEBma2MZXb8Le6j-Vgj9~bybMktfhAF7eGafqtRJHq17jTljGnmdHejhiOXi5KqWNXurhtwgchailZi5pkAJCCTn7qQpoUW5C1NxNR1~J6~2qop5ns5yjwKNBEeMr0Lk-d-Eg1K8~fZuGWpaXlvudIBTksmXXbB6jx2TwWINSuBtlZ3w65asF9OVU0CokAUHQt~cGwJVg35ldvIHbj89qVKzwcg~L4EKGvxDHJzAJhGrF4tkS07mZKyC36FP3He3WEcacE3WHqK5~CooK6sPhPc4KlmyBJvhHyIvig__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80243208",
+        "meta": {
+          "imdbId": "tt2368717",
+          "tmdbId": "movie/163772"
+        },
+        "localizedTitle": "クレヨンしんちゃん 嵐を呼ぶ!オラと宇宙のプリンセス"
+      }
     },
     "179215": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -2069,6 +3064,144 @@
           "link": "https://tv.apple.com/jp/movie/kamen-rider-den-o--kiva-climax-deka/umc.cmc.6ol812a8pbyic1rrlhux95v7a?playableId=tvs.sbd.9001%3A425127151"
         }
       ]
+    },
+    "183322": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80243207"
+        }
+      ],
+      "work": {
+        "id": "183322",
+        "title": "Crayon Shin-chan: Roar! Kasukabe Animal Kingdom",
+        "originalTitle": "クレヨンしんちゃん オタケべ！カスカベ野生王国",
+        "type": "movie",
+        "year": 2009,
+        "overview": "",
+        "rating": 60,
+        "genres": [
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Akira Shigino"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/183322/poster/vertical/en/480.jpg?Expires=1805691810&Signature=cCm7ixwdcFR41iT-EQ1Egm~0GUvgTgpQxihaHQXGZ-cMoF8pdzmLyvmuawMXKE1fPOrYTOzDWuNG97FQeUhTxu3r8E5UcWbZh5Ce5ATf8BYOKdG4rYOr8I6Gmhn8Gku0elyQ7TlfHsAVFFX2zN2bOmOJ~7R-gmqGXOb4ilmjGvGSDM9KoHpTlbBA3mmoSGXgfwUlVlwGdOzUkkVa73PK03XNH5E0gAr9Vo9trnFS2xgkkylUdeWJIm6bGFZbhVhAYubFC7aTEIv4M-NFv-fd9cUa~Mk6fPLVazX1odiMV0wLntl25roENLVmOIZVkbCll9UOt5QoaHiPysg-uyCF~g__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/183322/backdrop/horizontal/1080.jpg?Expires=1803692773&Signature=HTV6CXhhmsyJqBicB0guTcJGQKx84Cdts1MnWi4pHNk5tH4yEZllGtmp5ZFdXxJiqKhc4FWSiykhIRXKUbbQnv5-X1wfzBb2JbX8GUArJc9hidLwNLiGbCZd0odTz0SqQ5aAvkCrrTSyBxAYcRNmVoROF-aLftc7W2ZNsGg5b71KxN4vOr8DkdqQLOdKcWn7PApIgSl-JWYti5eDbHSXIyPG5sfXPVo3FE10ztlqUdCFgTRVgAfLWrhDQX-UP11Pa~CtK~cQLzExwH8eil7ITLBMbX4yByoZxfR0~7g5cNCFrsi1x6UddvHokunHMTVyrUzgB7onZDJF6dc4zc2ntQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80243207",
+        "meta": {
+          "imdbId": "tt1388333",
+          "tmdbId": "movie/128887"
+        },
+        "localizedTitle": "クレヨンしんちゃん オタケベ!カスカベ野生王国"
+      }
+    },
+    "192837": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81677549"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0SNPVHML3CUA03WVW0FFGZHCJN?ref_=atv_dp"
+        }
+      ],
+      "work": {
+        "id": "192837",
+        "title": "Crayon Shin-chan: The Tornado Legend of Ninja Mononoke",
+        "originalTitle": "クレヨンしんちゃん もののけニンジャ珍風伝",
+        "type": "movie",
+        "year": 2022,
+        "overview": "",
+        "rating": 54,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Masakazu Hashimoto"
+        ],
+        "cast": [
+          "Yumiko Kobayashi",
+          "Miki Narahashi",
+          "Toshiyuki Morikawa",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/192837/poster/vertical/en/480.jpg?Expires=1805536317&Signature=Uex~z6Umkw8wJZANi9htUX08FS9g0-0jeds-F~EKciLDXOdwxwKyZq8nlLX7hEJ84apzsct5Z~YkScb3Ro6Q~ilWsD4BGxFbvVn3L~89y~OdXc-9w3vO8R6hzUWnbU-JoJroTvgX08DoBtIK-H1yhiAWi~gzMzFsrSxRVl07VKc4Z9AK9wMJq3PBrUmU-GzyMrleq9uhIl5AVSoM5dH5BQVHS7Ceo5L3IIdVP1LPWcVoxkiLqEe5Hhmlh2r4lvqG1r3BBxnV6GKdsPLd98KWSbZ0qhf5xA5y1aZTwmi37jTpQgr~i7rS~TJPK04oNTiTY7A8v7z38XBQ3BrCngONrg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/192837/backdrop/horizontal/1080.jpg?Expires=1820186469&Signature=AMp5QBWFpEoM2nsuJ81f6n2mQ0QYzvaQbv5TfM1WGPn6lbmLtAt~jVbe~Qy8zeWCLiCVQ~UsopFv0Mk2BfWIzDv5Sl9eiN2H101HqeRpw5bkCSa24hP4ynPRvhzR8Ef3-QDtEjLB3Y9-ElPRNq4qrURYYsQPxkrokmyY7m8MfmPAAkZKqTvKuriRqDYUCZ1RZHRPDjN8jmSKim1Rd7gWxXXpF7zeIxgj0mdzYLiIIK5QFJa8TY-two9ryarySCzWUAl2M6O6qh-oKAJ2zfsFoQptlkSejPVe-xjK9B4c8e94U~5XxmTkL9KyJC-RcO-BC3GqplQF0XU2xF6w9yoCQg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/81677549",
+        "meta": {
+          "imdbId": "tt16410438",
+          "tmdbId": "movie/955666"
+        },
+        "localizedTitle": "クレヨンしんちゃん もののけニンジャ珍風伝"
+      }
+    },
+    "197475": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242951"
+        }
+      ],
+      "work": {
+        "id": "197475",
+        "title": "Crayon Shin-chan: The Legend Called Buri Buri: 3 Minutes Charge",
+        "originalTitle": "クレヨンしんちゃん 伝説を呼ぶ ブリブリ 3分ポッキリ大進撃",
+        "type": "movie",
+        "year": 2005,
+        "overview": "",
+        "rating": 49,
+        "genres": [
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Yuji Muto"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/197475/poster/vertical/en/480.jpg?Expires=1805666964&Signature=eeaJszOHq--4yN03g9E5Ns86EqRxcDloICZLLCrTI~thcAQMp~GqHT8GwfEPal9G5LOdDpvho0KbAge3C8~W40y8SdhIeHwnSCrnW-EWtnDjjcHXnGuy4VzT-dblZjZUiYIV-NVRJZuTVslVctB4MHavXIUUjx7KOJcPsRz4sbZkqPDYxUz00234~MDuuNUHnYQ0lMB7y-5xJRs4fXOAnpLdjl~HqKIQ8lajfGFDh8O-gsBCh4xfrWGzwwJrh8V3EpV9KOz7lAAOmDJl-e9BWetLl~h-zpw9N3RBfsjpP3rGmjnzNOraV3p7uKtRdKWKAodxyABxMHSfYRFUeEkTag__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/197475/backdrop/horizontal/1080.jpg?Expires=1820661208&Signature=eshOdGDPOmnuzY8okmBQmtgSjpBdv79SbHt8j1jVmkvF-WAFdLese875l785O49mBWmzfVpfARjr4XEU9vnXf1pykDzDoFNXCKFeAt4whZDPhVBuW3tBb8tgF5ffKutQ-nPOVo1-LK-9v1fjZzdrNgf2Z8SHtFpSeh4P-gTqyrYjITIkXwU0PqP9JaUvQDEyk34RBJDzX6~0mLQpHQ4aQZI1uHwUJ4MKYxed7a~EoyqDvncceJ-O42WxU26jPYogfXMhg9n6em8lW08SDFR7avqt7YhWxwf3IImemtbAIVik3XPL-zkZlpQ-5fYOlSMer08iJKERgyzXZh34Gnc-kQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80242951",
+        "meta": {
+          "imdbId": "tt2643846",
+          "tmdbId": "movie/128881"
+        },
+        "localizedTitle": "クレヨンしんちゃん 伝説を呼ぶブリブリ 3分ポッキリ大進撃"
+      }
     },
     "207269": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -2498,6 +3631,58 @@
         "localizedTitle": "るろうに剣心 -明治剣客浪漫譚-"
       }
     },
+    "4398675": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.a6c7fd09-158d-4816-a86c-2e79e89fbf79"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81729645"
+        }
+      ],
+      "work": {
+        "id": "4398675",
+        "title": "New Dimension! Crayon Shin-chan the Movie: Battle of Supernatural Powers ~Flying Sushi~",
+        "originalTitle": "しん次元！クレヨンしんちゃんTHE MOVIE 超能力大決戦 ～とべとべ手巻き寿司～",
+        "type": "movie",
+        "year": 2023,
+        "overview": "",
+        "rating": 57,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Hitoshi One"
+        ],
+        "cast": [
+          "Yumiko Kobayashi",
+          "Miki Narahashi",
+          "Toshiyuki Morikawa",
+          "Satomi Korogi",
+          "Suzuki Mogura"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/4398675/poster/vertical/en/480.jpg?Expires=1805525503&Signature=CVBwzpiwS6zCrloyNML8XAqznubH7OnY~34h7plUKNzZZm4WEcuTAXs7aZor60CFmJ2iD4Mm~0y7iicwmpRaqN0tO3igtc-WHske7WLSNdFxnyaWyzlbxbZUiO88bCqrSs3LzKcQ9gbYn6wA2njgX1aE0YRBpGJQX5uSq6RUlLR6CkxvGlow5xgoLYvtsCJElQA4dyQlUIHNMzUdUfYZGFRB-Jo3kTteZ9Mx~7F8IIrWn-zUWjxw0wDVncja0Ynmkwp0cDI-BbGkq7Anp-30Sgj3oNhr3OI5uE4m9hQNjanpZgVnF2-gf2ImFQld~bZV9InyLdiPquVIkh3F7eHCwA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/4398675/backdrop/horizontal/1080.jpg?Expires=1808562825&Signature=JMmbKwX77LQ2SebgLmsjADIJmdpFyYmb6PORvfnBQNRMnUEnElAtN76b1dKo2NcJYQFcchhUo-s2Rl1IfGpOyFwHRuU-JWi4Exrtb2QG5Zh2V96KeDyGdhyajFB-t9zsgYZGG4KaN0-qX7N1PMj6rT1uabgzDypHDBiOVpFFlqnlmaFo3ZLEdWlKVIRSIPizwGFXgEmuPmGNbfyJeUEl2rw7S~X7zBdt1KOKmkjZOwwbUbfB~UR2CJHYBzdeviOCVPDL8Qldiuob2YX0tZ0JDFtbkibD6uMFbhlo-cqz5-OoSWJw7a5KcXSIN65oaxa-QIaE5IK4vs33xMEmOIUTbA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.a6c7fd09-158d-4816-a86c-2e79e89fbf79",
+        "meta": {
+          "imdbId": "tt26862791",
+          "tmdbId": "movie/1059572"
+        },
+        "localizedTitle": "しん次元! クレヨンしんちゃん THE MOVIE 超能力大決戦 〜とべとべ手巻き寿司〜"
+      }
+    },
     "4795443": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -2524,6 +3709,49 @@
           "link": "https://tv.apple.com/jp/movie/poor-things/umc.cmc.3mshuc064vnbpvdq7rl6d3lpf?playableId=tvs.sbd.9001%3A1728782964"
         }
       ]
+    },
+    "4985409": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242793"
+        }
+      ],
+      "work": {
+        "id": "4985409",
+        "title": "Crayon Shin-chan: Super-Dimension! The Storm Called My Bride",
+        "originalTitle": "クレヨンしんちゃん 超時空！嵐を呼ぶオラの花嫁",
+        "type": "movie",
+        "year": 2010,
+        "overview": "",
+        "rating": 54,
+        "genres": [
+          "Animation",
+          "Comedy"
+        ],
+        "directors": [
+          "Akira Shigino"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Rie Kugimiya"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/4985409/poster/vertical/en/480.jpg?Expires=1805669513&Signature=jp2YO0NdPdzJrF6c9nLE2jJvIcwCeV1i8xh40uF0CCYHNbQeIbvYEYqgxNlXlfpvhakU9LSsnnXFyFlXE3sc~~imMUEwry~7uWkGr9n2SUbhiPsNAnLtwctQsNiUcz2yjNgow0ppVMvCKKh81p9KZh7FVJ4M5hRKvCUpIg3yD~XTgaZc3XYd7SQ1j1nCkriRed123UtpG1xF4rwDnQgfRj5G3ChYb6voHqflNW15IXbrk5Tuj7BeQivBS1fsIsE0aCY2YuJrv3Z8TPYyNHZAyPdU5i-K~wjPakKVrl3bEdmXTmoD6D9mPXB9mKm1eNQk4JnSc5JI4IHT5IWTmXa0xg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/4985409/backdrop/horizontal/1080.jpg?Expires=1803719589&Signature=U1m7iWeNxklPXZF93uIovBJFfNVC8H-pv5t0nyqMOR-IO5Dl9aZX6~Zh9~cWrjDoVxs39jnSkJXGXCdCR7kG500m-9DA6NgkR3pPCqdx5zEsQHCNzK6we9hg4Yzj-3hjg373SeBobRQD0vX~dfSkb3L31o8Wid8xSe~MXFwXiLqNzeWLpRldPMpozrlE2Ub7eX9U4a8ndhwerQgolUXCvLUc1qhYN8~IIGnWw5QjnvZdigvwtQWYcxKwP~PNvR4~A1S-oyB~ojfHZ67QkhaVDYzcDD9LF-FZnSeiQtFQlzqofGtVvwLMxZQgKCxpDtWErBGLF9i55TXoVFIg0PgcvA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80242793",
+        "meta": {
+          "imdbId": "tt1623674",
+          "tmdbId": "movie/117352"
+        },
+        "localizedTitle": "クレヨンしんちゃん 超時空!嵐を呼ぶオラの花嫁"
+      }
     },
     "5318881": {
       "fetchedAt": "2026-09-10T05:45:02.097Z",
@@ -2614,6 +3842,26 @@
             "subscription"
           ],
           "link": "https://www.disneyplus.com/browse/entity-baebd23a-1e8e-441f-b097-aef885558aaa"
+        }
+      ]
+    },
+    "8867548": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.1b408dee-8801-4a0a-a90f-992e1b34cb5c"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82026163"
         }
       ]
     },
@@ -2806,9 +4054,63 @@
         }
       ]
     },
+    "18621725": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82743411"
+        }
+      ]
+    },
     "18863480": {
       "fetchedAt": "2026-09-06T14:20:57.152Z",
       "services": []
+    },
+    "19259366": {
+      "fetchedAt": "2026-09-10T13:17:50.732Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80242861"
+        }
+      ],
+      "work": {
+        "id": "19259366",
+        "title": "Crayon Shin-chan: Fierceness That Invites Storm! The Singing Buttocks Bomb",
+        "originalTitle": "クレヨンしんちゃん 嵐を呼ぶ 歌うケツだけ爆弾！",
+        "type": "movie",
+        "year": 2007,
+        "overview": "",
+        "rating": 48,
+        "genres": [
+          "Animation"
+        ],
+        "directors": [
+          "Yuji Muto"
+        ],
+        "cast": [
+          "Akiko Yajima",
+          "Miki Narahashi",
+          "Keiji Fujiwara",
+          "Satomi Korogi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/19259366/poster/vertical/en/480.jpg?Expires=1805713180&Signature=Fj86fGXqTlj9w8K6eaHOz9BArYOfafFougR89Sk6kX2Ulle9CIJj6uoJdIufo1YYAyffoBoVjRwBjJmF3H0XZZe1OuXYNB7XSshjWDLQVIC8uRiH2ujErY3Q6ROqqxWtjdJQ7AKN04bQwTLsiCtYl3D~T6KcIjbhFrwAs1v-76EqgelHPAaVFFn71eEgf1lZQZ-tZ5vZhFHHyxguQPnlrZ0YPbA4KDEg6dF4Sr-F77vsgoiXxb-DEF~mbfpXXRnURGtzT02YLPA~5IoI4EYOG2x8oAr1tB0Z~AH67dti6dx4C-EiPGq7hg1uVOh~5-vs-5qqwZuMdL6W-ZFE4V5tIQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/19259366/backdrop/horizontal/1080.jpg?Expires=1800310412&Signature=T2tH~kPAXWsainBVC3z5nxoSUtajK1UGoy6UWv2atSls6ygvhzI5jR09i97idSvSnypYscicwlw7RoBPM9nIKYAk6akdSjCSf6q9-stE2Jbbd1pG2aqxO~6dhEoEuJGMoM4LB3prep2XKm7NW9uC7Zc~OTcVOkiW7qyLuzRYj0iNCFX~MzXP~qqAt~97cYvj~9pbk648lGEyN9FWNObVliN0wMST9-Cxkwd8tuu9bhc4YFbrmBbB3~bMdrKd9sRTUCFfSZfYVlOSScpNLoWR9P2nfAAA~ba58INkApevZTRLAR8QDKDaoBrkFc7J~r5se8WYpXpnmGsooKxF9KBIiw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80242861",
+        "meta": {
+          "imdbId": "tt2643866",
+          "tmdbId": "movie/128884"
+        },
+        "localizedTitle": "クレヨンしんちゃん 嵐を呼ぶ 歌うケツだけ爆弾!"
+      }
     },
     "19555339": {
       "fetchedAt": "2026-09-07T07:12:36.783Z",

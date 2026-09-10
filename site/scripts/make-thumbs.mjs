@@ -94,6 +94,38 @@ function readEvents() {
       }
     }
   }
+
+  /*
+   * ★ **在庫から採用した作品も足す**（2026-09-10 追加）。
+   *
+   *   記事の表は変化ログの作品と在庫から採用した作品が混ざる。
+   *   ここが変化ログしか見ていなかったので、**採用ぶんの行だけ絵が無かった**
+   *   （実測: クレヨンしんちゃん30行中26行）。
+   *   判定の本体は src/lib/availability.ts の `adoptedStockWorks()` だが、
+   *   **スクリプトから .ts は読めない**ので、ここでは
+   *   「`work` を持つ行＝人が採用した作品」だけを見る**ゆるい条件**にしてある
+   *   （`workPageIds()` の注意書きと同じ考え方。ゆるい側に倒せば絵が欠けない）。
+   *
+   * ★ **変化ログにある作品は足さない。** あちらの `work` のほうが観測として新しく、
+   *   ここで上書きすると絵の出どころが静かに入れ替わる。
+   */
+  const known = new Set(out.map((e) => String(e.work?.id)))
+  try {
+    const led = JSON.parse(readFileSync(join(repo, 'data', 'availability.json'), 'utf8'))
+    for (const [id, entry] of Object.entries(led.works ?? {})) {
+      const work = entry?.work
+      if (!work || known.has(String(work.id ?? id))) continue
+      out.push({
+        collectedAt: entry.fetchedAt,
+        service: entry.services?.[0]?.service ?? 'prime-video',
+        kind: 'new',
+        work,
+      })
+    }
+  } catch {
+    // 台帳が無くても絵は出る。**変化ログのぶんだけになる。**
+  }
+
   return out
 }
 

@@ -58,6 +58,18 @@
       "writtenAt": "2026-09-06"
     },
     {
+      "slug": "crayon-shin-chan",
+      "typeId": "series",
+      "targetMonth": "2026-09",
+      "flags": {
+        "topic": "「クレヨンしんちゃん」シリーズ",
+        "slug": "crayon-shin-chan",
+        "match": "^(?!クレヨンしんちゃん$)(?!クレヨンしんちゃん オラたちの恐竜日記$).*クレヨンしんちゃん"
+      },
+      "category": "arrivals",
+      "writtenAt": "2026-09-10"
+    },
+    {
       "slug": "harry-potter",
       "typeId": "series",
       "targetMonth": "2026-09",
@@ -154,5 +166,5 @@
       "writtenAt": "2026-09-06"
     }
   ],
-  "updatedAt": "2026-09-10T11:59:59.654Z"
+  "updatedAt": "2026-09-10T14:07:35.968Z"
 }

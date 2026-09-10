@@ -28,6 +28,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { genreKeyOf, genreThumbName } from '../../scripts/genre-art.mjs'
 import { isPublishable } from './excluded'
+import { adoptedStockWorks } from './availability'
 
 /** サムネイルの公開パスの根。scripts/make-thumbs.mjs の出力先と揃える。 */
 const THUMB_BASE = '/thumbs'
@@ -299,6 +300,45 @@ function buildIndex(): Index {
       const cur = latest.get(key)
       if (!cur || e.collectedAt > cur.collectedAt) latest.set(key, e)
     }
+  }
+
+  /*
+   * ★ **在庫から採用した作品も台帳に入れる**（2026-09-10 追加）。
+   *
+   *   ここまでは変化ログしか見ていなかったので、
+   *   `npm run availability -- --adopt` で拾った作品は**題名から引けず、
+   *   記事の表でリンクにもサムネイルにもならなかった**
+   *   （実測: クレヨンしんちゃんは30行中4行しか付いていなかった）。
+   *
+   * ★ **変化ログを優先する。** 同じ作品・同じサービスの組が両方にあるときは
+   *   変化ログを残す。あちらは `kind`（終了済みかどうか）を持っていて、
+   *   `resolveUrl()` の判断が変わる（終了した作品をサービスの作品ページへ送らない）。
+   * ★ 在庫の観測は `kind: 'new'`。**在庫は「いまある」としか言わない**ので、
+   *   終了済みとして扱う理由が無い（`article-types/series.ts` の `stockEvents` と同じ）。
+   */
+  /*
+   * ★ **題名でも重複を見る。** IDだけで弾くと、同じ映画が
+   *   配信元ごとに別のIDで入っている場合（U-NEXT の SID… と配信APIの数値ID）に
+   *   **後から入れた在庫のほうが `byTitle` を上書きして、送り先が入れ替わる。**
+   *   在庫の観測は変化ログより必ず新しいので、放っておくと必ず勝つ。
+   */
+  const seen = new Set<string>()
+  for (const e of latest.values()) {
+    for (const t of [e.work.localizedTitle, e.work.title]) {
+      if (t) seen.add(`${t} ${e.service}`)
+    }
+  }
+  for (const s of adoptedStockWorks()) {
+    if (!isPublishable(s.work.id)) continue
+    if (latest.has(`${s.id} ${s.service}`)) continue
+    const names = [s.work.localizedTitle, s.work.title].filter(Boolean) as string[]
+    if (names.some((t) => seen.has(`${t} ${s.service}`))) continue
+    latest.set(`${s.id} ${s.service}`, {
+      collectedAt: s.fetchedAt,
+      service: s.service,
+      kind: 'new',
+      work: s.work,
+    })
   }
 
   // 観測の古い順に流し込む。後から来たものが latestService を上書きする。

@@ -37,7 +37,7 @@ U-NEXTで終了予定なのは最新作『仮面ライダーゼッツ』の1本�
 
 ## Amazon Prime Videoで見放題配信中の13本
 
-![Amazon Prime Videoで見放題配信中の13本。シン・仮面ライダー、仮面ライダーBLACK SUNほか11作](/sections/kamen-rider-4359e0c2.jpg)
+[![シン・仮面ライダー（2023年）](/sections/posters/kamen-rider-4359e0c2-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%B7%E3%83%B3%E3%83%BB%E4%BB%AE%E9%9D%A2%E3%83%A9%E3%82%A4%E3%83%80%E3%83%BC&i=instant-video) [![仮面ライダーBLACK SUN（2022年）](/sections/posters/kamen-rider-4359e0c2-2.webp)](https://www.amazon.co.jp/s?k=%E4%BB%AE%E9%9D%A2%E3%83%A9%E3%82%A4%E3%83%80%E3%83%BCBLACK%20SUN&i=instant-video)
 
 
 | 終了日 | 作品 | 状態 | 評価 | サービス |
@@ -68,7 +68,7 @@ U-NEXTで終了予定なのは最新作『仮面ライダーゼッツ』の1本�
 
 ## Netflixで見放題配信中の1本
 
-![Netflixで見放題配信中の1本。東島丹三郎は仮面ライダーになりたい](/sections/kamen-rider-03446f05.jpg)
+[![東島丹三郎は仮面ライダーになりたい（2025年）](/sections/posters/kamen-rider-03446f05-1.webp)](https://www.amazon.co.jp/s?k=%E6%9D%B1%E5%B3%B6%E4%B8%B9%E4%B8%89%E9%83%8E%E3%81%AF%E4%BB%AE%E9%9D%A2%E3%83%A9%E3%82%A4%E3%83%80%E3%83%BC%E3%81%AB%E3%81%AA%E3%82%8A%E3%81%9F%E3%81%84&i=instant-video)
 
 
 | 終了日 | 作品 | 状態 | 評価 | サービス |

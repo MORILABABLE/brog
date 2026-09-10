@@ -349,6 +349,26 @@ function loadWorkMeta() {
       if (e.work.genres?.length && !genres.has(title)) genres.set(title, e.work.genres)
     }
   }
+  /*
+   * ★ **在庫から採用した作品ぶんも入れる**（2026-09-10 追加）。
+   *   変化ログに無い作品は年もジャンルも引けず、**生成ポスターにも落ちない**
+   *   （節の全員ぶんジャンルが引けるときだけ使う決まりのため）。
+   *   台帳の `work` は在庫APIが返した Work そのままなので、同じものが入っている。
+   */
+  try {
+    const led = JSON.parse(readFileSync(join(repo, 'data', 'availability.json'), 'utf8'))
+    for (const entry of Object.values(led.works ?? {})) {
+      const w = entry?.work
+      if (!w) continue
+      const title = w.localizedTitle ?? w.title
+      if (!title) continue
+      if (w.year && !years.has(title)) years.set(title, w.year)
+      if (w.genres?.length && !genres.has(title)) genres.set(title, w.genres)
+    }
+  } catch {
+    // 台帳が無くても節は作れる。**文字だけの版に落ちるだけ。**
+  }
+
   return { years, genres }
 }
 

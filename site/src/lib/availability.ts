@@ -59,9 +59,21 @@ interface RawService {
   types: string[]
   link?: string
 }
+/** 在庫台帳が持つ作品の姿。`--adopt` で採用したものだけが `work` を持つ。 */
+export interface StockWorkRecord {
+  id: number | string
+  title: string
+  localizedTitle?: string
+  genres?: string[]
+  link?: string
+  posterUrl?: string
+}
+
 interface RawWork {
   fetchedAt: string
   services: RawService[]
+  /** `npm run availability -- --adopt` が入れた作品。**採用の印**（無い行は注釈だけ） */
+  work?: StockWorkRecord
 }
 
 let ledger: Record<string, RawWork> | null = null
@@ -154,4 +166,105 @@ export function marksFor(
     if (s.link && mark !== 'unknown') links.set(s.service, s.link)
   }
   return { marks, links, fetchedAt: new Date(at) }
+}
+
+/**
+ * 題名から在庫台帳の作品IDを引く。**完全一致だけ。**
+ *
+ * ■ なぜ要るか（2026-09-10 追加）
+ * `work-links.ts` の索引は **`data/events`（変化ログ）だけ**から作られている。
+ * 在庫から採用した作品（`npm run availability -- --adopt`）は変化ログに無いので
+ * 題名からIDが引けず、**表に印の行がまるごと出ない。**
+ *
+ *   実測（2026-09-10・「クレヨンしんちゃん」シリーズ）
+ *     表32行のうち印が出たのは6行。残る26本はすべて在庫から採用した作品
+ *     kamen-rider も15行中5行しか出ていなかった
+ *
+ * 読者から見れば「この行だけサービス先が出ていない」＝不具合で、
+ * `rehype-availability.ts` の `planTable` が
+ * 「作品として引けた行には必ず行を足す」と決めているのと同じ趣旨の穴。
+ *
+ * ★ **完全一致だけにする。** `work-links.ts` の `workKey` のような正規化はかけない。
+ *   あちらは変化ログの中の表記ゆれを吸収するためのもので、ここで効かせると
+ *   別作品を巻き込む。台帳の題名は在庫APIが返したものそのままで、
+ *   記事の表の題名も同じ素材から書かれるので、完全一致で足りる。
+ * ★ **`work` を持つ行だけ**を見る。それは `--adopt` が入れた
+ *   「素材にしてよいと人が決めた作品」の印（`pipeline/cli/availability.ts`）。
+ *   注釈のために取っただけの行は、変化ログ側が題名からIDを引ける。
+ * ★ **新しさはここで見ない。** `marksFor()` が `MAX_AGE_DAYS` で落とす。
+ *   ここで二重に判定すると、片方だけ直したときに食い違う。
+ */
+let titleIndex: Map<string, string[]> | null = null
+
+export function ledgerIdsForTitle(title: string): string[] {
+  if (!titleIndex) {
+    titleIndex = new Map()
+    for (const [id, entry] of Object.entries(load())) {
+      const work = entry.work
+      if (!work) continue
+      for (const name of [work.localizedTitle, work.title]) {
+        if (!name) continue
+        const list = titleIndex.get(name)
+        if (list) {
+          if (!list.includes(id)) list.push(id)
+        } else {
+          titleIndex.set(name, [id])
+        }
+      }
+    }
+  }
+  return titleIndex.get(title) ?? []
+}
+
+/**
+ * 在庫から採用した作品を、**観測1件ずつの形**で返す。
+ *
+ * ■ なぜ要るか（2026-09-10 追加）
+ * `work-links.ts` も `make-thumbs.mjs` も **`data/events`（変化ログ）だけ**を見ている。
+ * 在庫から採用した作品はそこに無いので、**表の題名がリンクにならず、
+ * 行のサムネイルも出ない。**
+ *
+ *   実測（2026-09-10・「クレヨンしんちゃん」シリーズ）
+ *     表30行のうちリンクと絵が付いたのは4行だけ（残り26本は在庫から採用した作品）
+ *
+ * ★ **`work` を持つ行だけ。** それは `--adopt` が入れた
+ *   「素材にしてよいと人が決めた作品」の印（`pipeline/cli/availability.ts`）。
+ * ★ **見放題（`subscription`）のサービスだけを1件ずつ返す。**
+ *   `addon` は別料金なので送り先にしない（このファイル冒頭の「絶対に守ること」1）。
+ *   目視で否認した組み合わせも落とす（同4）。
+ * ★ **リンクはサービスごとの行のものを優先する。** `work.link` は1本しか無く、
+ *   Netflix の行から Amazon へ送るような取り違えが起きる。
+ * ★ **新しさ（`MAX_AGE_DAYS`）はここでは見ない。** 印（`marksFor`）は
+ *   古い在庫を「分からない」に落とすが、**リンクと絵は古くても正しい**
+ *   （その作品がその題であることは変わらない）。落とすと表から絵が消える。
+ */
+export interface StockWorkObservation {
+  id: string
+  service: string
+  fetchedAt: string
+  work: StockWorkRecord
+}
+
+let stockWorks: StockWorkObservation[] | null = null
+
+export function adoptedStockWorks(): StockWorkObservation[] {
+  if (stockWorks) return stockWorks
+  const out: StockWorkObservation[] = []
+  for (const [id, entry] of Object.entries(load())) {
+    const work = entry.work
+    if (!work) continue
+    const titles = [work.localizedTitle, work.title].filter(Boolean) as string[]
+    for (const s of entry.services) {
+      if (!s.types.includes('subscription')) continue
+      if (deniesSubscription(s.service, id, titles)) continue
+      out.push({
+        id,
+        service: s.service,
+        fetchedAt: entry.fetchedAt,
+        work: { ...work, link: s.link ?? work.link },
+      })
+    }
+  }
+  stockWorks = out
+  return out
 }

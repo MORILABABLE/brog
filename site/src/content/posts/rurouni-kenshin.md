@@ -55,7 +55,7 @@ heroImage: '/heroes/rurouni-kenshin.webp'
 
 ## Netflixで見放題配信中の1本
 
-![Netflixで見放題配信中の1本。るろうに剣心 -明治剣客浪漫譚-](/sections/rurouni-kenshin-6493bf30.jpg)
+[![るろうに剣心 -明治剣客浪漫譚-（2023年）](/sections/posters/rurouni-kenshin-6493bf30-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%8B%E3%82%8D%E3%81%86%E3%81%AB%E5%89%A3%E5%BF%83%20-%E6%98%8E%E6%B2%BB%E5%89%A3%E5%AE%A2%E6%B5%AA%E6%BC%AB%E8%AD%9A-&i=instant-video)
 
 | 終了日 | 作品 | 状態 | 出演者 | サービス |
 | --- | --- | --- | --- | --- |

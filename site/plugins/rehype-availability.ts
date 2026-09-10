@@ -65,6 +65,7 @@
 import { workLinkByTitle, workIdsForTitle, SERVICE_BY_LABEL } from '../src/lib/work-links.ts'
 import {
   marksFor,
+  ledgerIdsForTitle,
   MARK_SYMBOL,
   MARK_LABEL,
   type Mark,
@@ -122,7 +123,25 @@ function workOf(row: Node): { ids: string[]; title: string; service?: string } |
     const title = textOf(cell).trim()
     if (!title || SERVICE_BY_LABEL.has(title)) continue
     const work = workLinkByTitle(title, service)
-    if (!work) continue
+    if (!work) {
+      /*
+       * ★ **変化ログに無い作品は、在庫台帳から引く**（2026-09-10 追加）。
+       *
+       *   `work-links.ts` の索引は `data/events` だけから作られているので、
+       *   **在庫から採用した作品（`availability -- --adopt`）は1件も引けない。**
+       *   そこで諦めると、その行だけ印が出ずに**不具合に見える**
+       *   （実測: クレヨンしんちゃんは32行中26行、仮面ライダーは15行中10行）。
+       *
+       * ★ 引き当ては**題名の完全一致だけ**（`ledgerIdsForTitle`）。
+       *   当たらなければ今までどおり次のセルへ送る。
+       * ★ ここで返すのは**印のためのID**であって、送り先ではない。
+       *   作品ページへのリンクは `rehype-work-links.ts` の担当で、
+       *   あちらは変化ログしか見ない（作品ページが無い作品へ飛ばさないため）。
+       */
+      const fromLedger = ledgerIdsForTitle(title)
+      if (fromLedger.length === 0) continue
+      return { ids: fromLedger, title, service }
+    }
     /*
      * ★ **IDを1つに決めない。**
      *   同じ映画が配信元ごとに別のIDで台帳に入っている（`workIdsForTitle` の説明）。
