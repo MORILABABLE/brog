@@ -127,7 +127,7 @@ const jsonLd = jsonLdOverride ?? (publishedAt
       測定IDは config.ts の GA_MEASUREMENT_ID。
     */}
     {/*
-      ローカル開発とプレビュー環境を計測から外す。
+      ローカル開発・プレビュー環境・運営者の端末を計測から外す。
 
       `window['ga-disable-<測定ID>'] = true` は GA 公式のオプトアウト用フラグで、
       立っているとタグは読み込まれても計測データを送らない。
@@ -140,19 +140,83 @@ const jsonLd = jsonLdOverride ?? (publishedAt
       ★ ここで正規表現リテラルを使わないこと。
         set:html の中身はテンプレートリテラルなので、`\[` のような
         バックスラッシュはHTMLに出る前に潰れる（`\[::1\]` が `[::1]` になり、
-        IPv6アドレスのつもりが文字クラスになる）。配列の includes なら
+        IPv6アドレスのつもりが文字クラスになる）。配列の includes と split なら
         バックスラッシュが要らないので、この罠を踏まない。
 
-      除外するホスト:
-        localhost / 127.0.0.1 / [::1] … npm run dev, astro preview
+      ■ 外すもの（1）ホスト名で分かるもの
+
+        localhost / 127.0.0.1 / [::1]  … npm run dev, astro preview
         *.pages.dev                    … Cloudflare Pages のプレビュー配信
-      本番は mihoudairader.com（config.ts の SITE.url）だけが計測対象になる。
+        *.local                        … mDNS（Macなどで hostname.local として開いた場合）
+        192.168.* / 10.* / 172.16〜31.* … **astro dev --host** をLAN越しに開いた場合
+
+      ★ プライベートIPを 2026-09-10 に足した。`--host` で開くと hostname が
+        `192.168.1.5` になり、それまでの localhost だけの判定を素通りしていた
+        （実測: 2026-09-06 の90日窓に localhost が 10セッション・42PV 残っていた）。
+
+      ■ 外すもの（2）運営者が本番を確認しに来たとき（2026-09-10 追加）
+
+        https://mihoudairader.com/?ga=off  を一度開くと、**その端末では以後ずっと送らない**。
+        https://mihoudairader.com/?ga=on   で戻す。
+
+        記事を公開したあと本番を開いて確かめる、という行為そのものが
+        セッションとしてカウントされていた。ホスト名は本番と同じなので、
+        上の（1）では外せない。**端末側に印を置くしかない。**
+
+      ★ localStorage は例外を投げることがある（プライベートウィンドウ、
+        サイトデータをブロックする設定）。**try/catch で囲むこと。**
+        投げた場合は「外さない」＝これまでどおり計測する側に倒す。
+
+      ★ 効いているかは DevTools のコンソールで分かる（外したときだけ1行出る）。
+        GA4 の「リアルタイム」に自分が出てこないことでも確かめられる。
+
+      ★ 下のスクリプト内の注釈はブロックコメントで書くこと。`//` の行コメントだと、
+        将来 HTML の圧縮が1行に潰したときに
+        **それ以降が全部コメントになって黙って壊れる。**
+        （この {} コメントの中にブロックコメントの閉じ記号を書くと、
+        そこで注釈が終わってしまうので記号そのものは書けない。2026-09-10 に踏んだ）
+
+      ★ **この仕組みで消せないヒットがある。** 測定IDはHTMLに書いてあるので、
+        サイトを開かずに計測エンドポイントへ直接送ることが誰でもできる
+        （実測で `mitokou.com` から8セッション）。それは ga-disable も
+        GA4 のデータフィルタも効かないので、**レポート側で外している**
+        （pipeline/cli/analytics.ts の productionHosts）。
     */}
     <script
       is:inline
-      set:html={`window['ga-disable-${GA_MEASUREMENT_ID}'] =
-        ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) ||
-        location.hostname.endsWith('.pages.dev');`}
+      set:html={`(function () {
+        var h = location.hostname;
+        var p = h.split('.');
+        var lan =
+          (p[0] === '192' && p[1] === '168') ||
+          p[0] === '10' ||
+          (p[0] === '172' && +p[1] >= 16 && +p[1] <= 31);
+        var dev =
+          ['localhost', '127.0.0.1', '[::1]'].includes(h) ||
+          h.endsWith('.pages.dev') ||
+          h.endsWith('.local') ||
+          lan;
+
+        /* 運営者の端末を外す印。?ga=off で立て、?ga=on で降ろす。 */
+        var opted = false;
+        try {
+          var q = new URLSearchParams(location.search).get('ga');
+          if (q === 'off') localStorage.setItem('ga-off', '1');
+          else if (q === 'on') localStorage.removeItem('ga-off');
+          opted = localStorage.getItem('ga-off') === '1';
+        } catch (e) {
+          /* プライベートウィンドウなど。**計測する側に倒す**（読者を捨てない） */
+        }
+
+        var off = dev || opted;
+        window['ga-disable-${GA_MEASUREMENT_ID}'] = off;
+        if (off && window.console) {
+          console.info(
+            '[GA] この端末では計測データを送信しません' +
+              (opted && !dev ? '（?ga=on で戻せます）' : '（開発・プレビュー環境）'),
+          );
+        }
+      })();`}
     />
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
     ></script>
