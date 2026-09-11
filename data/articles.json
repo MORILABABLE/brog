@@ -103,7 +103,7 @@
         "match": "仮面ライダー|風都探偵"
       },
       "category": "arrivals",
-      "writtenAt": "2026-09-07"
+      "writtenAt": "2026-09-11"
     },
     {
       "slug": "mission-impossible",
@@ -166,5 +166,5 @@
       "writtenAt": "2026-09-06"
     }
   ],
-  "updatedAt": "2026-09-10T14:07:35.968Z"
+  "updatedAt": "2026-09-11T13:32:29.361Z"
 }

@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-10T13:17:52.767Z",
+  "updatedAt": "2026-09-11T12:49:02.195Z",
   "works": {
     "194": {
       "fetchedAt": "2026-09-08T12:42:35.675Z",
@@ -1228,7 +1228,7 @@
       ]
     },
     "22464": {
-      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "fetchedAt": "2026-09-11T12:49:01.122Z",
       "services": [
         {
           "service": "prime-video",
@@ -1259,7 +1259,7 @@
           "Takahiro Miura"
         ],
         "posterUrl": "https://cdn.movieofthenight.com/show/22464/poster/vertical/en/480.jpg?Expires=1805558764&Signature=cSupO0UF5oliJYGMradFa11SzuFrZSV4iQFrBqQGgA1vbQMQ8m0l72NqmIDVuKEy4rN~U9FqAfBLQfLb2kkZzVcujF2VSoXakj7yrL0j1P63DctgaElSTxQKEU5ljr7G~lCfQHL1YY17LyKIsdHSN34~E0dYffFpKUr0CLDqzT7eNcqaZdIaGwC7wapkMztGHogdP5xA1XhBYkvFTdyqRdzkgmRcSM0gfXCC5qYan2GZTXPcKTvVQIUlc3VUs64j0ZEwnmnjczs~uZrB03TxkBSXUEXtN4-nbGnmBj0wCb1BtfKQ56bwIHFi97h-ROFiuZlInT-CvGZ4fNhc1ACo9g__&Key-Pair-Id=KK4HN3OO4AT5R",
-        "backdropUrl": "https://cdn.movieofthenight.com/show/22464/backdrop/horizontal/1080.jpg?Expires=1803266081&Signature=Jsbo~3aG55GloLKRzOGbzObnMKgkzwBF3OAg5d2ztjdAPnthIcSxE6RGW6CzXFeu-7NzWTuYPN-lPdHzKbEoBKUZQ7~Yb-c4PVXN3BrbOzQs6qrIcDRRxSuYjY12fe-WW~TmvqouZVnYatVMRVTmRiOJugO2ZBnTBEIUprg4vSM1v4SsiXmNXzQGNaJgBudp68742t499YXUfa~eJFLv7U74bI61SmmRX14MSqPRiCrYeqzjwl5ZHe-dB5Y6Zu1ebkDC4x~vpHFq7o3BElCHMMYgwdStKBx9K2Jb37n8YxPvvdTznj4gO5I3JPBqmWVvXg0H2xyE25ruNxmn88rY0Q__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/22464/backdrop/horizontal/1080.jpg?Expires=1820596817&Signature=YVxQJM0futVdxctEUh5Te~A8gZPCEQqVyJ10stHDa0OCPn37gAk-MgKc6N5zYcPV01Gj5Fj0JsnoZMd1GvSi1lEQLdwfrQoEZtX0aUrSCLBIF7cDrMdZ11L3ImTEJCnI8xNq2iohji6LZEq5JaJzF-aRCcdathGkk5-o9ZtPC-UIgqyVjtA3RD~Fqohhbm6OFmtsaT3J6luYKZqIPZ6nsWYmikTQppkHXLKcEpUx7SSrAdC2RyOzNFF7re27CgsYCR2uPrW4PwiEeKVmY~-WrpQ2W0XX3OYeQn72E01QdncVGYPByBKdsMIOJSGufaHjjcYUmtbBOYwd-Epv7fPnMA__&Key-Pair-Id=KK4HN3OO4AT5R",
         "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.bd1681f9-dff8-424f-bce0-c645dfad90ce",
         "meta": {
           "imdbId": "tt14377480",
@@ -1527,7 +1527,7 @@
       ]
     },
     "41831": {
-      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "fetchedAt": "2026-09-11T12:49:01.122Z",
       "services": [
         {
           "service": "prime-video",
@@ -3497,7 +3497,7 @@
       ]
     },
     "1693196": {
-      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "fetchedAt": "2026-09-11T12:49:01.122Z",
       "services": [
         {
           "service": "prime-video",
@@ -3530,8 +3530,8 @@
           "Mirai Moriyama",
           "Nanase Nishino"
         ],
-        "posterUrl": "https://cdn.movieofthenight.com/show/1693196/poster/vertical/en/480.jpg?Expires=1803270465&Signature=VInpcDYeuEjacNKXr1lLVr9XkKTVeWKHA5bqEVqY5ZbFhJNxTUvxpZj7D8Gi19cUEsRvrrxDw88GahnjclO6AOvxDrxGoKSA9krrdmntKGrOWqv5x4RYwUuk5A1bi-Y6HJJiY7gfkbRxX15RNUw5sY6OG0NnJPOr4yto0UOFshZcqQxXFBwQmUGwU90g-BukHyVI~EnUqhysMIXT5aD3NSHCs3gxDD5L~wmqaeMCmFXP3vifnsbhuiZRwLXlkr4~qyukAYKeqiFGnPgDsD0OXp1UpVYdR8WfFZsOxqv3pBUmwBRuVTaUha8PqotFrZfvISBATRkXaKCbVXcdaZrSlg__&Key-Pair-Id=KK4HN3OO4AT5R",
-        "backdropUrl": "https://cdn.movieofthenight.com/show/1693196/backdrop/horizontal/1080.jpg?Expires=1803270463&Signature=ks8I-8pvM-s8NezDipSb1PTbVt~qYV3qW0lSVBSBrif6HOCEPCApCL6VYOSawoqLAdskVlY3sggKTvxiC1G8ps959Tztqwp57a1g5TFUdUtR9lm1lNBbDLK-trn0aaHE70oZ6Bviidg9XZaXGc~4M1XUsrP0LqlJUIS6x0-DEPy810z8QHM5cbGGd3v5mxfrKOStKh7S-oXHthA154Hjdo7RQAUhiBycjmYjTUMYr3iaZeEauxjaJumflU7cY9GmHFp9rYWuEbqJQXa~0QbI0ArtK9uLulpGR98POe~k-hT4eC4V71y8IKHHcZ5FFldhgdHvTUxyKEIaGOn7-eOmPw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "posterUrl": "https://cdn.movieofthenight.com/show/1693196/poster/vertical/en/480.jpg?Expires=1820670028&Signature=Gn6Djp5fdrTvZ3mY6U1CEO-2l~zkWmG8SabKyj7d6NGquIBjg~-PsKzx8fklaYC14E2MF2vr0~99uCOB5ycm5CD5QzTsrr8ENF4dgMCbksHidNi4BuQNVT6SxO2SfMffvUiLA7xsMSQeTVjxe1YEluCwSEaEA9gaYA53QE8SqHZfHcbMEUdZdCKtXhFBXsmeU1V2LvRxmitQBJ0UOt9dV2dyIjsbT~2kssg55mnPfoVaySQJeFiX-J~NuwxUjhQJCK-XsnZeHTFfL1xhB2XmH9FSN2M1HhV6pZrwDFwy72e9yvR6zaCkYHBdJTTZacbMM5aB65nGNlMfAgR9rdoRuA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/1693196/backdrop/horizontal/1080.jpg?Expires=1820670017&Signature=liPwEjU2QugosMwfywileKWieY51V5tGDyox5boJuHSMyE1WK5zT7hfvenNR4t8g6ynygzw4K3Fhoz6T9IF29vCq08625nFzx3ItmRvK~v6YFHJdx2~-od7F4cwXDAIgb5krLBWu5vZ6BqhrYbshwBHdQM7t40bFBAiOrxVUREd7s5cYlPzIgx8TYz8Cl0WC85nwgQ3huQwFg5SsXEZI5jSa40xbPHL1TB7CUAApQEnAEO-6G5RFA-3BOWoqjTjSBrnyAQgFskGXWaAu6ykbuTOyyyk2uDsCdhaMUQMPJB2uHXaK37hjx9A2axRKpnmZQA8MI4DWSqEp8vcoyPFf0A__&Key-Pair-Id=KK4HN3OO4AT5R",
         "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.e7e9d4fc-bd02-4e58-aa0c-0aee44134df5",
         "meta": {
           "imdbId": "tt14379088",
@@ -4174,6 +4174,47 @@
         }
       ]
     },
+    "19967674": {
+      "fetchedAt": "2026-09-11T12:49:01.122Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.117ebc9c-0c39-4e3a-83c8-56c2df9bc41d"
+        }
+      ],
+      "work": {
+        "id": "19967674",
+        "title": "Kamen Rider Build",
+        "originalTitle": "仮面ライダービルド",
+        "type": "series",
+        "year": 2017,
+        "overview": "",
+        "rating": 57,
+        "genres": [
+          "Action",
+          "Adventure"
+        ],
+        "cast": [
+          "Atsuhiro Inukai",
+          "Eiji Akaso",
+          "Kensei Mikami",
+          "Kaho Takada",
+          "Kouhei Takeda"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/19967674/poster/vertical/en/480.jpg?Expires=1805633808&Signature=VfG8641kdutKxFj1vXJJXmCXewHp8YjiY4JGHGAZ5AAsOIVE5Svm0jLpPCsQbQ8NSrFMc2-mLQ3Zgot6c4orW5dE8FWwIbND7s8KpYW3Vej1HPFfqAVVifs4bNG1vvWxUQ01-9CpRQgUOhXzrhtb~z6-9ORrGmKecUzUZ8rfAiWFhVYGKcBoRzHB64iBtD88ijTsUTsBjz7Ro6GUywSb8AAPCr3z~cn8JH-3JJgO6nXI0EAYJJcY5ibianJpcp~lLakFRTbZ94uxWerAuXEeiyl9EUTaojvofcslWCUqEA7YHnMixymKvcjfYWAv4l~rQkau84kdUoKrrgRrdrp6hg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/19967674/backdrop/horizontal/1080.jpg?Expires=1796602200&Signature=XCGMM6qWATppjdeAAs7eSZZNIFWGM5q0wqBlMhZCgrlTrXN6N4nN6uBiZiCRuJ8DM0-xMH9t5hRqBEcploYz9zL9hxhm~SyGoupIKpIrfA9mAUo-iGcWsEG1c3uu~SjokcPewyD9knMkAO8~G0Prepsg6NL~zw4YF3BUryYw~QQwHAyQK7Lw2-JW9eIY74X8OTvXJkwH8FG-JTJ0ZuBaO5zSwVXioHFVQHtJyU38ulJYnmoe5AYkyCu6fC~g-CpIEBGhoxVoGDunpzEoJEuyJZSsDFEQKev~cJ4BKmKjHWonz3s0nMPWGrdUvSa0SaDkyj1X3m8NRwHWheUiRJpAGw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.117ebc9c-0c39-4e3a-83c8-56c2df9bc41d",
+        "meta": {
+          "imdbId": "tt6982472",
+          "tmdbId": "tv/139653"
+        },
+        "localizedTitle": "仮面ライダービルド"
+      }
+    },
     "20109539": {
       "fetchedAt": "2026-09-07T07:12:36.783Z",
       "services": [
@@ -4227,7 +4268,7 @@
       ]
     },
     "23401662": {
-      "fetchedAt": "2026-09-07T07:12:36.783Z",
+      "fetchedAt": "2026-09-11T12:49:01.122Z",
       "services": [
         {
           "service": "netflix",
