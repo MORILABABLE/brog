@@ -318,12 +318,32 @@ function whenLabel(date: Date): string {
   .links-inner {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.1rem 0.6rem;
-    max-width: 12rem;
+    gap: 0.25rem 0.3rem;
+    max-width: 13rem;
   }
+  /*
+   * ★ **記事の表の「他で探す」と同じ形にする**（2026-09-12）。
+   *   出しているリンクは**同じ `search-links.ts` の同じ4本**なので、
+   *   片方だけ素のリンクだと、記事と常設ページで段差が出る
+   *   （`global.css` の `.work-link` と同じ決まり）。
+   *   値を変えるときは `global.css` の `.avail-find-link` と揃えること。
+   */
   .links a {
-    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.12rem 0.55rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--accent);
+    font-size: 0.76rem;
+    line-height: 1.7;
+    text-decoration: none;
     /* 折り返してよいのは**リンクとリンクの間だけ**。「U-」「NEXT」で切らせない。 */
     white-space: nowrap;
+  }
+  .links a:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
   }
 </style>

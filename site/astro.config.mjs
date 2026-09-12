@@ -24,9 +24,11 @@ const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '')
  *   **変数名を変えるときは両方直すこと。** 片方だけだと、
  *   記事本文のリンクだけ古い枠のIDのまま公開される。
  *
- * 記事本文から出るのは3種類だけなので、ここで要るのもその3つと既定。
+ * 記事本文から出るのは5種類。
  *   poster … 節ごとの作品ポスター（`<a>` の中身が /sections/ の画像）
  *   table  … 表の作品名（rehypeWorkLinks が付ける .work-link）
+ *   avail  … 表の在庫行の ○ / △（rehypeAvailability が付ける .avail-link）
+ *   find   … 表の×だけの行の「他で探す」（同 .avail-find-link）
  *   body   … それ以外の本文中のリンク
  */
 const amazonTags = {
@@ -34,6 +36,12 @@ const amazonTags = {
   poster: env.PUBLIC_AMAZON_TAG_POSTER ?? '',
   table: env.PUBLIC_AMAZON_TAG_TABLE ?? '',
   body: env.PUBLIC_AMAZON_TAG_BODY ?? '',
+  // 表の在庫行から出る2種類（plugins/rehype-availability.ts）。
+  //   avail … ○ / △ のリンク＝「ここで観られる」という答え
+  //   find  … ×だけの行の「他で探す」＝答えが出せなかった行の逃げ先
+  // **未設定なら既定IDに落ちる**ので、IDを作ってから .env に足せばよい。
+  avail: env.PUBLIC_AMAZON_TAG_AVAIL ?? '',
+  find: env.PUBLIC_AMAZON_TAG_FIND ?? '',
 }
 
 export default defineConfig({

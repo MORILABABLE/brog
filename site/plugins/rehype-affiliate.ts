@@ -75,6 +75,13 @@ function slotOf(node: Node): AmazonSlot {
    *   （docs/FUNNEL.md 7-5）。
    */
   if (Array.isArray(cls) && cls.includes('avail-link')) return 'avail'
+  /*
+   * ★ ×だけの行に出す「他で探す」（同じプラグインの `findChips`）。
+   *   **`avail` と混ぜないこと。** あちらは「この作品はここで観られる」という答えで、
+   *   こちらは**答えが出せなかった行の逃げ先**。押された意味がまったく違う。
+   *   枠名は作品ページの「他のサービスで探す」と揃えてある（docs/FUNNEL.md 7-5）。
+   */
+  if (Array.isArray(cls) && cls.includes('avail-find-link')) return 'find'
 
   for (const child of node.children ?? []) {
     if (child.tagName !== 'img') continue

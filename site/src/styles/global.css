@@ -692,6 +692,66 @@ h3 {
   text-decoration: underline;
 }
 
+/*
+ * 「他で探す」。**×だけの行と「— 未確認」の行にだけ**出る
+ * （plugins/rehype-availability.ts の `findChips`）。
+ *
+ * ★ **○ の答えより目立たせない。** 出るのは「4社では観られない」と分かった行で、
+ *   これは答えそのものではなく**確かめに行くための逃げ先**。
+ *   ×のチップ（opacity .55）より前に出し、○のチップより下げる、という順序を守る。
+ * ★ 印のチップと**形を変える**（枠なし・下線）。同じピル型で並べると
+ *   「U-NEXT ×」のような**印の付いたチップに見える**。ここは印ではない。
+ */
+.prose .avail-find {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.3rem;
+  /*
+   * ★ **必ず1行を占める**（`flex-basis: 100%`）。
+   *   チップの隣に置くと、幅しだいで**同じ行に入ったり折り返したり**して、
+   *   区切りの線が行頭に取り残される（実測: 375px では折り返し、1280px でも
+   *   ×が4枚並ぶと折り返した。2026-09-12）。
+   *   **どの幅でも同じ形にする**ほうが、行の意味が読者に安定して伝わる。
+   * ★ 区切りは上の線1本。「ここから先は印ではなく、探しに行く先」を出す。
+   */
+  flex-basis: 100%;
+  margin: 0.3rem 0 0;
+  padding: 0.25rem 0 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+.prose .avail-find-label {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+/*
+ * ★ **印のチップと同じ形（枠つきのピル）に揃える**（2026-09-12・運用者の指定）。
+ *   バラの文字リンクだと、同じ行に並ぶ ○ △ × のチップと**別の部品に見えていた**。
+ *
+ * ★ **印と見分けが付くこと**が条件。見分けは2つで付けている。
+ *     - 記号（○ △ ×）を持たない
+ *     - **塗りではなく輪郭＋青字**（印のチップは `--bg-subtle` の塗り）
+ *   ★ ここに ○ △ × を足さないこと。足した瞬間に「印」になり、
+ *     **調べていない先を調べたことにしてしまう**（在庫が取れない3社だから検索に渡している）。
+ */
+.prose .avail-find-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.prose .avail-find-link:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
 /* 表の直後の凡例。記号の意味を、記号を見た流れで読ませる */
 .prose .avail-legend {
   margin: -1rem 0 1.4rem;

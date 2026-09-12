@@ -657,7 +657,7 @@ Amazon の5件に次いでサイトで2番目に踏まれている導線で、
 | 枠 | どこ | 出している場所 |
 |---|---|---|
 | `work` | 作品ページの状態行のボタン | `pages/works/[id].astro` |
-| **`find`** | **作品ページ「他のサービスで探す」** | 同上。**U-NEXT の検索リンクがここ** |
+| **`find`** | **作品ページ「他のサービスで探す」**／**記事の表の×だけの行**（2026-09-12 追加） | 同上 ／ `plugins/rehype-availability.ts` の `findChips()`。**U-NEXT の検索リンクがここ** |
 | `cta` | 本文のCTA | `components/AmazonCta.astro` |
 | `prime` | プライム無料体験 | `components/PrimeCta.astro` |
 | `unext` | U-NEXT の afb 枠 | `components/UnextCta.astro` |
@@ -667,6 +667,13 @@ Amazon の5件に次いでサイトで2番目に踏まれている導線で、
 
 実測（ビルド後の全725ページ）: `find` 1,551 / `rail` 725 / `bar` 691 / `cta` 682 /
 `work` 557 / `table` 557 / `prime` 9。
+
+再実測（2026-09-12・全960ページ）: `table` 3,205 / `find` **2,318**（うち記事の表 344）/
+`rail` 960 / `bar` 922 / `cta` 914 / `work` 705 / `body` 698 / `poster` 204 /
+`avail` 90 / `prime` 11。
+
+★ **`find` は記事の表からも出るようになった。** 作品ページの分と混ざるので、
+  記事側だけを見たいときは GA4 の `page_location` で `/posts/` に絞ること。
 
 ★ **`data-slot` であって `slot` ではない。** Astro では `slot` が予約語で、
 props に `slot` を渡すと**そのコンポーネントごと出力から消える**

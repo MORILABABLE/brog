@@ -28,6 +28,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { genreKeyOf, genreThumbName } from '../../scripts/genre-art.mjs'
 import { isPublishable } from './excluded'
+import { fillJapaneseTitle } from './work-title'
 import { adoptedStockWorks } from './availability'
 
 /** サムネイルの公開パスの根。scripts/make-thumbs.mjs の出力先と揃える。 */
@@ -49,6 +50,11 @@ interface RawWork {
   id: number | string
   title: string
   localizedTitle?: string
+  /**
+   * 原語表記。**日本の作品は日本語表記のまま返る。**
+   * 邦題が空のときの受け皿で、`fillJapaneseTitle()` が邦題に充てる（`work-title.ts`）。
+   */
+  originalTitle?: string
   genres?: string[]
   link?: string
   posterUrl?: string
@@ -293,6 +299,18 @@ function buildIndex(): Index {
       } catch {
         continue // 壊れた行があっても台帳全体を捨てない
       }
+      /*
+       * ★ **邦題が取れていない作品に原語表記を充てる**（2026-09-12 追加）。
+       *
+       *   `events-data.ts` は読み込みのたびにこれを通しているのに、
+       *   **この索引だけが通していなかった。** 記事の表には補完後の日本語題が出るのに
+       *   索引には英題しか入らず、**完全一致で外れて、その行だけリンクも
+       *   ポスターも付かない**（実測: 公開中の30記事・1,892行のうち12行）。
+       *   読者には「この行だけ何も無い」としか見えず、送り先が1つも無い。
+       *
+       * ★ 規則は `lib/work-title.ts` の1か所。**ここに写さないこと。**
+       */
+      fillJapaneseTitle(e.work)
       // ★ 出さないと決めた作品は台帳に入れない（data/excluded-works.json）。
       //   入れておくと、記事の表に残っていた場合にリンクだけ付いてしまう。
       if (!isPublishable(e.work.id)) continue
@@ -367,6 +385,26 @@ function buildIndex(): Index {
   for (const e of ordered) {
     const original = e.work.title
     if (original && !byTitle.has(original)) put(byTitle, original, e)
+  }
+
+  /*
+   * ★ **Markdown が消してしまう記号ぶんの別名**（2026-09-12 追加）。
+   *
+   *   `~…~` は GFM で**取り消し線**になり、表のセルからは `~` が消える。
+   *   題名にそれを含む作品は、台帳にあっても完全一致で外れて
+   *   **その行だけリンクもポスターも付かない**
+   *   （実測: `KKCP 90's ~KYOKO KOIZUMI CLUB PARTY 2023~`。U-NEXT の音楽もの）。
+   *
+   * ★ 別名は**空いている文字列にだけ**足す（原題と同じ扱い）。
+   *   詰めて入れると、別作品の題を上書きして行がまったく別の場所へ飛ぶ。
+   * ★ 表示に使う題名（`entry.title`）は台帳のまま。ここで作るのは**引き当ての鍵だけ**。
+   */
+  for (const e of ordered) {
+    for (const t of [e.work.localizedTitle, e.work.title]) {
+      if (!t) continue
+      const stripped = t.replace(/~([^~]+)~/g, '$1')
+      if (stripped !== t && !byTitle.has(stripped)) put(byTitle, stripped, e)
+    }
   }
 
   /*
@@ -460,6 +498,13 @@ function plainPunctuation(s: string): string {
     .replace(/[“”]/g, '"')
     .replace(/[‘’]/g, "'")
     .replace(/[–—]/g, '--')
+    /*
+     * ★ 三点リーダ。smartypants が `...` を `…` に変える。
+     *   実測: `Martin Matte : La vie, la mort... eh la la..!`（2026-09-12）。
+     *   台帳側が `…` を持つ題名は**完全一致のほうで当たる**ので、
+     *   この置き換えで取りこぼすことはない。
+     */
+    .replace(/…/g, '...')
 }
 
 export function workLinkByTitle(title: string, service?: string): WorkLink | undefined {

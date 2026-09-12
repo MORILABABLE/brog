@@ -464,6 +464,9 @@ export const AMAZON_TAGS: AmazonTags = {
    *   分けておかないと、表に答えを入れた施策の効果が読めない。
    */
   avail: import.meta.env.PUBLIC_AMAZON_TAG_AVAIL ?? '',
+
+  /** 「他のサービスで探す」。作品ページと、記事の表の×だけの行 */
+  find: import.meta.env.PUBLIC_AMAZON_TAG_FIND ?? '',
   /**
    * 画面下の追従枠（FollowBar.astro）。**1200px 未満でしか出ない。**
    * rail と対になる枠で、**同じページの同じ主題を狭い画面に出したもの。**

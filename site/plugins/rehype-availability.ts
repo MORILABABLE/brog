@@ -71,6 +71,7 @@ import {
   type Mark,
   type WorkMarks,
 } from '../src/lib/availability.ts'
+import { amazonVideoLink, otherServiceLinks } from '../src/lib/search-links.ts'
 
 /** HAST のノード。必要な形だけ（rehype-work-links と同じ方針）。 */
 interface Node {
@@ -244,6 +245,16 @@ const LABEL_TITLE: Record<LabelState, string> = {
 }
 
 /**
+ * ★ **その行のサービスを外しているときは「4サービス」と言わない**（2026-09-12）。
+ *
+ *   行に並んでいるのは**残りの3社**で、外した1社はその作品を配信していることがある
+ *   （「Prime Videoで見放題配信中」の行に「取り扱いなし ×Netflix ×Disney+ ×Apple TV+」）。
+ *   そこで「この4サービスでは取り扱いがありません」と出すと、**事実と違う。**
+ *   閾値を 1/3 に緩めて仮面ライダーの表が出るようになり、**12行で表に出た。**
+ */
+const LABEL_TITLE_NONE_OTHERS = 'この行のサービス以外では取り扱いがありません'
+
+/**
  * ラベルの文字。**状態ごとに変える**（2026-09-09・運用者の判断）。
  *
  * ★ **全部を「配信中」にしてはいけない。** 一度そうしていて、
@@ -279,14 +290,15 @@ const LABEL_TEXT: Record<LabelState, string> = {
  *   ここは状態を宣言するだけで、色の値は持たない。
  *   色を足す・変えるときは global.css 側だけを直すこと。
  */
-function availLabel(state: LabelState): Node {
+function availLabel(state: LabelState, own?: string): Node {
   return {
     type: 'element',
     tagName: 'span',
     properties: {
       className: ['avail-label'],
       'data-state': state,
-      title: LABEL_TITLE[state],
+      // ★ 「取り扱いなし」だけ、その行のサービスを外しているかで文言が変わる
+      title: state === 'none' && own ? LABEL_TITLE_NONE_OTHERS : LABEL_TITLE[state],
     },
     /*
      * ★ **箱は内側の `span` が描く。** 外側は並びのための入れ物。
@@ -305,12 +317,89 @@ function availLabel(state: LabelState): Node {
 }
 
 /**
+ * 「他で探す」。**その行に押せる先が1つも無いときだけ**足す（2026-09-12 追加）。
+ *
+ * ■ なぜ足すのか
+ * ×だけの行（「取り扱いなし」）と「— 未確認」の行は、
+ * **行の中にリンクが1本も無い。** 実測で公開中の記事の在庫行 260行のうち
+ * **100行がこれ**で、読者はそこで行き止まりになる。
+ * 在庫を持つ4社に無いことは分かっているのに、**次の一手を渡していない。**
+ *
+ * ■ なぜ検索リンクなのか（「配信中」と書かない）
+ * U-NEXT / Hulu / DMM TV の在庫は取れない（docs/CROSS-SERVICE.md 9-3）。
+ * **だから断定せず、検索へ渡すだけにする。** 誤情報にならず、読者は1クリックで確かめられる。
+ * 送り先の組み立ては `src/lib/search-links.ts` の1か所
+ * （常設ページの表 `components/WorkTable.astro` と**同じ関数・同じ並び**）。
+ *
+ * ■ 守っていること
+ *   - **並びは紹介料の順にしない**（docs/AFFILIATE.md 7節）。`search-links.ts` の定義順のまま
+ *   - **その行のサービスは出さない。** 「U-NEXTで終了予定」の行に
+ *     「U-NEXTで探す」を出すと、行の主題と矛盾する（4社の印と同じ決まり）
+ *   - **Amazon は行のサービスが Prime Video でも残す。** あちらは見放題の話で、
+ *     こちらは**レンタル・購入**という別の答えだから（`search-links.ts` の説明）
+ *   - `tag=` と rel は後段（`rehype-affiliate.ts`）が付ける。ここでは組まない
+ *
+ * ★ 枠名は `find`。**作品ページの「他のサービスで探す」と同じ枠**にしてある
+ *   （docs/FUNNEL.md 7-5）。○ / △ の `avail` 枠とは混ぜない —
+ *   あちらは「表に答えを入れた施策が効いたか」の唯一の証拠なので。
+ *
+ * ★ 見た目は**印のチップと同じ枠つきのピル**（`global.css` の `.avail-find-link`）。
+ *   **記号（○ △ ×）は付けない。** 付けると「印」になり、
+ *   **調べていない先を調べたことにしてしまう。**
+ */
+function findChips(title: string, own: string | undefined): Node[] {
+  const links = [...otherServiceLinks(title), amazonVideoLink(title)].filter(
+    (l) => !(own === 'u-next' && l.label === 'U-NEXT'),
+  )
+  const items: Node[] = [
+    {
+      type: 'element',
+      tagName: 'span',
+      properties: { className: ['avail-find-label'] },
+      children: [text('他で探す')],
+    },
+  ]
+  for (const l of links) {
+    /*
+     * ★ **「Amazon（レンタル・購入）」を「Amazon」に縮めない**（2026-09-12）。
+     *   同じ行には **`× Amazon Prime Video`** が並んでいる。そこへ青い「Amazon」を
+     *   出すと、**取り扱いなしと言いながら押せる**という矛盾に読める。
+     *   「レンタル・購入」まで書いて初めて、**見放題ではない別の答え**だと分かる。
+     *   常設ページの表（`WorkTable.astro`）も同じ文字で出している。
+     */
+    items.push({
+      type: 'element',
+      tagName: 'a',
+      properties: {
+        href: l.url,
+        className: ['avail-find-link'],
+        title: `${l.label}で「${title}」を検索する（配信の有無は確かめていません）`,
+      },
+      children: [text(l.label)],
+    })
+  }
+  return [
+    {
+      type: 'element',
+      tagName: 'span',
+      properties: { className: ['avail-find'] },
+      children: items,
+    },
+  ]
+}
+
+/**
  * 1作品ぶんの「どこで観られるか」の行。**元の行の直下に足す。**
  *
  * ★ `colspan` は列を落としたあとの列数に合わせること。ずれると行が崩れる。
  * ★ **観られる先だけを出す。** ×（取り扱いなし）は並べない。
  */
-function availRow(marks: WorkMarks | undefined, colspan: number, own: string | undefined): Node {
+function availRow(
+  marks: WorkMarks | undefined,
+  colspan: number,
+  own: string | undefined,
+  title: string,
+): Node {
   /*
    * ★ **台帳に無い作品は、印を4つ並べずに「— 未確認」1つで済ませる。**
    *
@@ -352,6 +441,11 @@ function availRow(marks: WorkMarks | undefined, colspan: number, own: string | u
         },
       ],
     })
+    /*
+     * ★ **「分からない」で終わらせない。** 印が1つも無い行は、
+     *   読者にとって行き止まりそのものなので、探せる先を渡す。
+     */
+    items.push(...findChips(title, own))
     return availCell(items, colspan)
   }
 
@@ -383,7 +477,8 @@ function availRow(marks: WorkMarks | undefined, colspan: number, own: string | u
    *   台帳の全サービスから決めると、外した1社のせいで色と印が食い違う
    *   （「Netflixで終了」の行が、その Netflix の ○ を根拠に青くなる）。
    */
-  const items: Node[] = [availLabel(labelStateOf(shown.map((s) => s.mark)))]
+  const state = labelStateOf(shown.map((s) => s.mark))
+  const items: Node[] = [availLabel(state, own)]
 
   for (const { svc, mark } of shown) {
     // ★ ×（取り扱いなし）も出す。**4社ぶんを揃えて見せる**ことで、
@@ -419,6 +514,13 @@ function availRow(marks: WorkMarks | undefined, colspan: number, own: string | u
       ],
     })
   }
+
+  /*
+   * ★ **×だけの行にも行き先を渡す**（2026-09-12 追加。`findChips` の説明）。
+   *   ○ や △ が1つでもあるなら、答えはもう行の中にある。**そこには足さない。**
+   *   足すと「では、どこで観るのか」の答えが他社検索に埋もれる。
+   */
+  if (state === 'none') items.push(...findChips(title, own))
 
   return availCell(items, colspan)
 }
@@ -497,7 +599,7 @@ function findParent(root: Node, target: Node): Node | undefined {
 interface TablePlan {
   table: Node
   /** 元の行 → 足す内容。`marks` が無い行は「未確認（—）」になる */
-  found: Map<Node, { marks?: WorkMarks; own?: string }>
+  found: Map<Node, { marks?: WorkMarks; own?: string; title: string }>
   /** そのうち台帳から印を引けた行の数 */
   resolved: number
   /** 引けた在庫のうち、いちばん古い取得日（凡例に出す） */
@@ -534,14 +636,15 @@ function planTable(table: Node): TablePlan | undefined {
    *   **書き直しの表は前の版の行を落とさない**ので、素材から外れた作品が残る
    *   （そこが — になる。pipeline/cli/availability.ts の `--ids` の説明）。
    */
-  const found = new Map<Node, { marks?: WorkMarks; own?: string }>()
+  const found = new Map<Node, { marks?: WorkMarks; own?: string; title: string }>()
   let oldest: Date | undefined
   let resolved = 0
   for (const row of rows.slice(1)) {
     const w = workOf(row)
     if (!w) continue
     const m = marksOf(w.ids, w.title)
-    found.set(row, { marks: m, own: w.service })
+    // ★ 題名も持たせる。**「他で探す」の検索リンクを組むのに要る**（`findChips`）
+    found.set(row, { marks: m, own: w.service, title: w.title })
     if (!m) continue
     resolved++
     if (!oldest || m.fetchedAt < oldest) oldest = m.fetchedAt
@@ -581,7 +684,7 @@ function applyPlan(plan: TablePlan, count: { tables: number; rows: number }): vo
     if (!parent?.children) continue
     const idx = parent.children.indexOf(row)
     if (idx < 0) continue
-    parent.children.splice(idx + 1, 0, availRow(hit.marks, colspan, hit.own))
+    parent.children.splice(idx + 1, 0, availRow(hit.marks, colspan, hit.own, hit.title))
     // 元の行に印。CSSで下の罫線を消して2行を1組に見せる
     const props = (row.properties ??= {})
     const prev = Array.isArray(props.className) ? (props.className as string[]) : []
@@ -644,26 +747,39 @@ export function rehypeAvailability() {
         .filter((p): p is TablePlan => p !== undefined)
 
       /*
-       * ★ **答えられるのが半分に満たない記事では、行を1つも足さない。**
+       * ★ **未確認が、印のある行の2倍を超える記事では、行を1つも足さない。**
+       *   （＝答えられるのが全体の 1/3 に満たない記事。**2026-09-12 に 1/2 から緩めた**）
        *
-       *   この行が成り立つのは「表のどの作品にも答えが並ぶ」ときだけ。
-       *   一部にしか出せないなら、**出ている行と出ていない行の差**のほうが
-       *   目に付いて、読者には壊れて見える（2026-09-06・運用者の指摘）。
-       *
-       *   実測（2026-09-06）:
-       *     コナン        34行中29行に答えあり（85%） → 出す。残り5行は「— 未確認」
-       *     8月の新着記事 201行中2行（1%）           → **出さない**
        *   月次記事は在庫を取っていない（`npm run availability` は
-       *   シリーズ記事のために回している）ので、
-       *   ここを閾値なしにすると **199行の「未確認」**が並ぶ。実際にそうなって直した。
+       *   シリーズ記事のために回している）ので、閾値なしにすると
+       *   **199行の「未確認」**が並ぶ。実際にそうなって入れた歯止め（2026-09-06）。
+       *
+       *   ★ **なぜ 1/2 から 1/3 へ緩めたか**（2026-09-12・運用者の指摘）
+       *     「仮面ライダー」が **38行中15行（39%）** で、**在庫行がまるごと消えていた。**
+       *     読者から見れば、**在庫の答えを持っている15行ぶんも道連れ**になっている。
+       *     加えて、未確認の行にも「他で探す」が付くようになった（`findChips`）ので、
+       *     **未確認の行は「何も言っていない行」ではなくなった。**
+       *
+       *   ★ **比率で持つ意味。** 1/3 にすると「未確認は印のある行の2倍まで」と
+       *     同じことになり、**記事が大きくなるほど必要な印の数も増える**。
+       *     231行の新着記事が通るには77行ぶんの在庫が要る。
+       *     そこまで揃っていれば、もう「壊れて見える表」ではない。
+       *
+       *   実測（2026-09-12・公開中の30記事）:
+       *     コナン           34行中31行（91%） → 出す
+       *     **仮面ライダー   38行中15行（39%） → 出す**（前は出なかった）
+       *     9月のNetflix終了 108行中36行（33%）→ 出す
+       *     ウルトラマン     12行中3行（25%） → **出さない**
+       *     8月の新着記事    201行中7行（3%） → **出さない**
        *
        *   ★ **判断は記事単位。表ごとにしない。** 表ごとにすると、同じ記事の中に
        *     答えのある表と無い表が並ぶ（`planTable` の注意書き）。
        *   ★ 在庫が増えれば自動で出るようになる。**記事側を直す必要はない。**
+       *     取りこぼしは `npm run availability -- --ids <作品ID>` で埋める。
        */
       const resolved = plans.reduce((n, p) => n + p.resolved, 0)
       const rows = plans.reduce((n, p) => n + p.found.size, 0)
-      if (resolved * 2 < rows) return
+      if (resolved * 3 < rows) return
 
       const count = { tables: 0, rows: 0 }
       for (const plan of plans) applyPlan(plan, count)
