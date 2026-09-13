@@ -10,6 +10,23 @@ import { SITE } from '../config'
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 )
+
+/**
+ * トップに出す記事の数（2026-09-13 追加）。
+ *
+ * ★ **それまで上限が無く、公開記事を全部出していた。** 29本の時点で
+ *   トップだけで 87KB・h2 が29個あり、記事が増えるほど青天井だった。
+ *   「最新記事」と名乗る以上、**全部載せるのは名前と合わない。**
+ *
+ * ★ 12本にした理由。いまの公開ペースだと**直近1か月半ぶん**にあたる。
+ *   月次記事（サービス×終了/新着）が1か月に7〜8本出るので、
+ *   **10本だと同じ月の記事が切れる。** 少し余裕を持たせた。
+ *
+ * ★ **溢れたぶんは `/archive`（月別まとめ）が受ける。** 下の「すべての記事」。
+ *   記事は全部そこから辿れるので、トップを切ってもサイトから消えない。
+ */
+const LATEST = 12
+const latest = posts.slice(0, LATEST)
 ---
 
 <BaseLayout title={SITE.name} description={SITE.description}>
@@ -47,9 +64,35 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
       <p class="muted">まだ記事がありません。</p>
     ) : (
       <div>
-        {posts.map((post) => (
-          <PostCard post={post} />
-        ))}
+        {/*
+          ★ 一覧の名札（2026-09-13 追加）。それまで**記事カードがいきなり始まっていた。**
+            広い画面では上が説明文とPR表記だけ、狭い画面ではシリーズの棚の直後で、
+            どこから記事一覧なのかが画面上に1文字も出ていなかった。
+
+          ★ **<h2> にしない。** トップの見出し階層は h1（タグライン）→ 各記事の h2 で、
+            ここに h2 を挟むと「最新記事」という記事が1本あるように読まれる
+            （SeriesShelf.astro の .title と同じ扱い。枠の名前は aria-label が持つ）。
+
+          ★ 記事が0本のときは出さない（この分岐の中にあるのはそのため）。
+            名札だけが残ると壊れて見える。
+        */}
+        <p class="list-title" aria-hidden="true">最新記事</p>
+        <div role="feed" aria-label="最新記事">
+          {latest.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+        {/*
+          ★ 溢れたときだけ出す。12本ちょうどなら「すべて」も同じ中身になる。
+          ★ 行き先は `/archive`（月別まとめ）。**記事を全部並べたページはそこだけ。**
+            `/category/*` は分類ごと、`/series` はシリーズ記事だけで、
+            「全部」に当たるのは月別まとめしかない（config.ts の ARCHIVE）。
+        */}
+        {posts.length > LATEST && (
+          <p class="more">
+            <a href="/archive">すべての記事を見る（{posts.length}本）</a>
+          </p>
+        )}
       </div>
     )
   }
@@ -70,6 +113,57 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
     margin: 0;
     color: var(--text-muted);
     font-size: 0.95rem;
+  }
+
+  /*
+   * 記事一覧の名札。**中央に置いて左右に細い罫**（2026-09-13・運用者の指定）。
+   *
+   * ★ 罫は擬似要素で、文字の長さに関わらず左右が埋まる。
+   *   `<hr>` を2本置く形にしないのは、読み上げに意味の無い区切りを増やさないため
+   *   （文字は aria-hidden。並びの名前は下の role="feed" の aria-label が持つ）。
+   * ★ 記事カードの見出し（h2・太字の大きい字）より**弱く**出す。
+   *   ここが強いと、名札が記事より目立つ。
+   */
+  .list-title {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin: 1.2rem 0 1.1rem;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+  .list-title::before,
+  .list-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /*
+   * 「すべての記事」。**カードと同じ幅の枠**にして、一覧の続きだと分かる形にする。
+   * 文字だけのリンクだと、カードの列の下でフッターの一部に見えた。
+   */
+  .more {
+    margin: 1.2rem 0 0;
+    text-align: center;
+  }
+  .more a {
+    display: inline-block;
+    padding: 0.55rem 1.4rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-subtle);
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .more a:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
   }
 
   /*

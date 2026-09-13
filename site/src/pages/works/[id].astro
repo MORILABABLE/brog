@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
@@ -7,6 +8,7 @@ import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
 import { otherServiceLinks } from '../../lib/search-links'
+import { seriesRefFor } from '../../lib/series-for-work'
 import {
   HISTORY_LABEL,
   STATE_CATEGORY,
@@ -77,6 +79,25 @@ const description = workDescription(w)
 
 // パンくずの親。作品ページは公開日を持たないので、状態で親を決める。
 const hub = hubFor(w.state === 'started' ? 'arrivals' : 'leaving')
+
+/*
+ * この作品を扱っているシリーズ記事（2026-09-13 追加）。
+ *
+ * ■ なぜ出すか
+ * **シリーズ級の検索語で、作品ページ同士が食い合っている。**
+ * 実測（GSC 2026-08-25〜09-12）で「ハリーポッター ネトフリ いつまで」に
+ * 作品ページ4枚が9〜10.6位で並び、**表示13・クリック0**。
+ * 記事（CTR 10.2%・7.5位）はその検索語に出ていない。
+ * 判定の根拠と、canonical/noindex を採らなかった理由は `lib/series-for-work.ts`。
+ *
+ * ★ **公開されている記事だけ。** 台帳（`data/articles.json`）には
+ *   下書きや退役した記事も残りうるので、コレクション側で必ず突き合わせる。
+ *   ここを省くと 404 への常設リンクができる。
+ */
+const seriesRef = seriesRefFor(w.title)
+const seriesPost = seriesRef
+  ? (await getCollection('posts', ({ id, data }) => id === seriesRef.slug && !data.draft))[0]
+  : undefined
 
 // --- 外部リンク ----------------------------------------------------------------
 
@@ -259,6 +280,23 @@ const jsonLd = {
     配信情報は<strong>{formatDate(w.dataAsOf)}時点</strong>のものです。
     その後の配信状況は各サービスの都合で変わることがあります。ご視聴前に公式サイトでご確認ください。
   </p>
+
+  {
+    /*
+     * ★ **この作品の答えより下、作品の詳細より上。** 読者はまずこの1作の
+     *   配信状況を知りに来ているので、そこを先に返す。そのうえで
+     *   「シリーズ全体を知りたかった人」を記事へ送る。
+     * ★ リンクの文字は**記事のタイトルそのもの。** 「こちら」にしない —
+     *   押す前に何が待っているか分かる形にするのと、
+     *   内部リンクの文字はそのまま記事の主題の手がかりになるため。
+     */
+    seriesPost && (
+      <aside class="series-ref">
+        <p class="series-ref-label">このシリーズをまとめた記事があります</p>
+        <a href={`/posts/${seriesPost.id}`}>{seriesPost.data.title}</a>
+      </aside>
+    )
+  }
 
   <section class="detail">
     <h2>作品の情報</h2>
@@ -476,6 +514,33 @@ const jsonLd = {
     margin: 1.4rem 0 1rem;
     font-size: 0.82rem;
     color: var(--text-muted);
+  }
+
+  /*
+   * --- シリーズ記事への導線 ---
+   *
+   * ★ **広告の枠（.status の `.go` や AmazonCta）と見た目を分ける。**
+   *   これはサイト内の記事へのリンクで、PR ではない。同じ塗りのボタンにすると
+   *   読者には広告に見え、押されないうえに枠が1つ増えたようにしか映らない。
+   *   左の縦線だけで「補足」だと分かる形にしてある。
+   */
+  .series-ref {
+    margin: 1.2rem 0 0;
+    padding: 0.7rem 0 0.7rem 0.9rem;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .series-ref-label {
+    margin: 0 0 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .series-ref a {
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.6;
   }
 
   /* --- 配信状況 --- */
