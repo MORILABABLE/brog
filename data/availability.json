@@ -1,7 +1,21 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-11T12:49:02.195Z",
+  "updatedAt": "2026-09-13T14:26:41.599Z",
   "works": {
+    "102": {
+      "fetchedAt": "2026-09-13T14:23:26.113Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "buy"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.42d5f63d-ceb0-4a3d-b9c2-17c9914e3cae"
+        }
+      ]
+    },
     "194": {
       "fetchedAt": "2026-09-08T12:42:35.675Z",
       "services": [
@@ -77,6 +91,62 @@
             "subscription"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0JXM9K5QSXG0X1O6M4CHGIYACB?ref_=atv_dp"
+        }
+      ]
+    },
+    "350": {
+      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/skyfall/umc.cmc.1q3urmkb5n2c7hgwp4gcteg6l?playableId=tvs.sbd.9001%3A598856950"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70243459"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0MIM5BCJEH2XM0W11YPY5RKMGS?ref_=atv_dp"
+        }
+      ]
+    },
+    "404": {
+      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LAX0XFANPXMFOTVAFV5H0LD1H?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/casino-royale/umc.cmc.1atgrgw4dcsk9mel3zi94yv8d?playableId=tvs.sbd.9001%3A561902712"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70044604"
         }
       ]
     },
@@ -308,6 +378,50 @@
         }
       ]
     },
+    "596": {
+      "fetchedAt": "2026-09-13T14:23:26.113Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/rain-man/umc.cmc.60tlefmlnwzxo1epq9ropxi1w?playableId=tvs.sbd.9001%3A303821283"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RSPHQ5VEIS31CF947J8TRZ0AC?ref_=atv_dp"
+        }
+      ]
+    },
+    "609": {
+      "fetchedAt": "2026-09-13T14:23:26.113Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0SXMIJPJ25O9LQBBHV0Y11PV0B?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/tenet/umc.cmc.198i48vdau0mtd8gtsdxjtz9w?playableId=tvs.sbd.9001%3A1538251548"
+        }
+      ]
+    },
     "648": {
       "fetchedAt": "2026-09-06T12:42:56.838Z",
       "services": [
@@ -356,6 +470,62 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/80111501"
+        }
+      ]
+    },
+    "746": {
+      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0NY9UJMM22PYKSASHTCI2WTNUO?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/quantum-of-solace/umc.cmc.4u3r6twwctjybrrelts1fi5if?playableId=tvs.sbd.9001%3A564109614"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70099117"
+        }
+      ]
+    },
+    "761": {
+      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/spectre/umc.cmc.3scnh3k3z06o0vx014hpy68r1?playableId=tvs.sbd.9001%3A1042425776"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80056799"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0G0V1RXKP6LMXVWBGR6IZPUGER?ref_=atv_dp"
         }
       ]
     },
@@ -445,6 +615,34 @@
         }
       ]
     },
+    "873": {
+      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/no-time-to-die/umc.cmc.1sk81aco37s8f5grnjp6ydqad?playableId=tvs.sbd.9001%3A1589483727"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81198234"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0QIKPBXTU7QFHEHLT4BMU1N47O?ref_=atv_dp"
+        }
+      ]
+    },
     "965": {
       "fetchedAt": "2026-09-06T12:42:56.838Z",
       "services": [
@@ -506,6 +704,20 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/m-flo-tour-2005-beat-space-nine-at-%E6%97%A5%E6%9C%AC%E6%AD%A6%E9%81%93%E9%A4%A8/umc.cmc.6nf5cnxv7nrbz8fuf2tc79anc?playableId=tvs.sbd.9001%3A1161320480"
+        }
+      ]
+    },
+    "1039": {
+      "fetchedAt": "2026-09-13T14:23:26.113Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0JGHHFC3SIJCUJASUWRKABWPSE?ref_=atv_dp"
         }
       ]
     },
@@ -657,6 +869,18 @@
         }
       ]
     },
+    "1711": {
+      "fetchedAt": "2026-09-13T14:23:26.113Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.bd3bb3ec-1f99-4558-ad2e-95d6c3350db3"
+        }
+      ]
+    },
     "2105": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -740,6 +964,18 @@
             "buy"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0HOJE0HM2DF8Y74QND5NRLDNFE?ref_=atv_dp"
+        }
+      ]
+    },
+    "2365": {
+      "fetchedAt": "2026-09-13T14:23:26.113Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.8f307ce3-ad92-4a89-a873-50c81766c649"
         }
       ]
     },
@@ -954,6 +1190,28 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/80218108"
+        }
+      ]
+    },
+    "7790": {
+      "fetchedAt": "2026-09-13T14:23:26.113Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/riders-of-justice/umc.cmc.33ey6th9l5ijmdfaxib5q91rf?playableId=tvs.sbd.9001%3A1623371079"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.379944fb-1fdf-42c6-8c94-3e542ad04e75"
         }
       ]
     },
@@ -2131,6 +2389,28 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/%E5%A5%B3%E8%A1%92-zegen/umc.cmc.6udd9gn8qs0ajkozsrxg2bq8l"
+        }
+      ]
+    },
+    "124598": {
+      "fetchedAt": "2026-09-13T14:23:26.113Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0QSR8QS41ALWD7QPNGTU5WXUZ4?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/trick/umc.cmc.3hq466hlyejdtcgrw54y04rqh?playableId=tvs.sbd.9001%3A889576405"
         }
       ]
     },

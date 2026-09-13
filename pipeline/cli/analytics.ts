@@ -458,6 +458,24 @@ async function main(): Promise<void> {
       15
     )
     /*
+     * 回遊（2026-09-13 追加）。**PV/セッション 1.31 の中身を開くためのもの。**
+     *
+     * ■ なぜ pageReferrer で測るのか
+     * GA4 の管理画面に「どのページからどのページへ」を出す口は無い（経路データ探索は
+     * イベント単位で、ページ遷移の対を直接は返さない）。**`pageReferrer` は
+     * そのPVを開いたときの参照元URL**なので、それが自サイトのホストなら
+     * **1つ前に読んでいたページ**が分かる。内部リンクの効果はここにしか出ない。
+     *
+     * ★ **参照元が空のPVは「入口」**（検索・直接・アプリ内ブラウザ）。
+     *   回遊率＝内部参照のPV ÷ 全PV で、PV/セッションが1を超えるぶんがこれ。
+     *
+     * ★ 対の数だけ行が返るので上限を大きめに取る。足りなければ末尾が切れるだけで、
+     *   合計は下の「回遊PV」と突き合わせれば分かる（切れていれば内訳の和が合わない）。
+     */
+    const flow = await g(['pagePath', 'pageReferrer'], ['screenPageViews'], 1000, {
+      orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
+    })
+    /*
      * 枠別のアフィリエイトクリック（2026-09-06 追加）。
      *
      * ★ **イベント名に枠名が入っている**（`aff_cta` `aff_work` …）。
@@ -590,7 +608,79 @@ async function main(): Promise<void> {
       )
     }
 
-    out.ga4 = { hostList, overall, allHosts, channels, clickDomains, landing, bySlot }
+    /*
+     * ■ 回遊（2026-09-13 追加）
+     *
+     * 読者は `/works` 658枚・`/person` 229枚あるのにほぼ1ページで帰る（PV/セッション 1.31）。
+     * **どこからどこへ移っているかを出すのがこの節。** 出す順は
+     *   ① どれだけ回遊しているか（率）
+     *   ② 種類から種類へ（どの面が次を出せているか）
+     *   ③ 実際の対（上位）
+     * ★ **率が低いこと自体は失敗ではない。** 検索で来て答えを得て帰るのは正常な形で、
+     *   問題になるのは「答えを出せていない面から次へも行けない」場合だけ。
+     */
+    console.log('')
+    console.log('■ 回遊（どこからどこへ移っているか）')
+    const inPath = (ref: string): string | null => {
+      if (!ref) return null
+      try {
+        const u = new URL(ref)
+        return hostList.includes(u.hostname) ? pathOf(ref) : null
+      } catch {
+        return null
+      }
+    }
+    const totalPv = flow.reduce((acc, r) => acc + met(r, 0), 0)
+    const inner = flow.filter((r) => inPath(dim(r, 1)) !== null)
+    const innerPv = inner.reduce((acc, r) => acc + met(r, 0), 0)
+    if (totalPv === 0) {
+      console.log('  行が返りませんでした。')
+    } else {
+      console.log(
+        `  回遊PV ${innerPv} ／ 全PV ${totalPv} = ${pct(innerPv / totalPv)}` +
+          `（残り ${pct(1 - innerPv / totalPv)} は検索・直接などの入口PV）`
+      )
+      const pairs = new Map<string, number>()
+      const kinds = new Map<string, number>()
+      for (const r of inner) {
+        const from = inPath(dim(r, 1)) ?? ''
+        const to = pathOf(dim(r, 0))
+        const v = met(r, 0)
+        pairs.set(`${from} → ${to}`, (pairs.get(`${from} → ${to}`) ?? 0) + v)
+        const k = `${kindOf(from)} → ${kindOf(to)}`
+        kinds.set(k, (kinds.get(k) ?? 0) + v)
+      }
+      console.log('')
+      console.log('  種類から種類へ（PVの多い順）')
+      for (const [k, v] of [...kinds].sort((a, b) => b[1] - a[1]).slice(0, 15)) {
+        console.log(`  ${n(v, 5)}PV ${pct(v / innerPv).padStart(6)}  ${k}`)
+      }
+      console.log('')
+      console.log('  実際の対（上位15）')
+      for (const [k, v] of [...pairs].sort((a, b) => b[1] - a[1]).slice(0, 15)) {
+        console.log(`  ${n(v, 5)}PV  ${k}`)
+      }
+      /*
+       * ★ **次の一手が出せていない面**を名指しする。
+       *   「入口になったのに、そこから内部リンクを踏まれていないページ」が
+       *   いちばん直しやすい（読者は来ているので、面の中身だけの問題）。
+       */
+      const outFrom = new Map<string, number>()
+      for (const r of inner) outFrom.set(inPath(dim(r, 1)) ?? '', (outFrom.get(inPath(dim(r, 1)) ?? '') ?? 0) + met(r, 0))
+      const arrived = new Map<string, number>()
+      for (const r of flow) arrived.set(pathOf(dim(r, 0)), (arrived.get(pathOf(dim(r, 0))) ?? 0) + met(r, 0))
+      const dead = [...arrived]
+        .filter(([path, pv]) => pv >= 3 && !outFrom.has(path))
+        .sort((a, b) => b[1] - a[1])
+      if (dead.length > 0) {
+        console.log('')
+        console.log('  読まれたのに次へ1本も出ていないページ（3PV以上・上位15）')
+        for (const [path, pv] of dead.slice(0, 15)) console.log(`  ${n(pv, 5)}PV  ${path}`)
+        console.log(`  → 該当 ${dead.length}ページ。内部リンクを足す優先順はこの順`)
+      }
+    }
+
+    out.ga4 = { hostList, overall, allHosts, channels, clickDomains, landing, bySlot, flow }
   }
 
   if (has('write')) {
