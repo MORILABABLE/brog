@@ -1,0 +1,215 @@
+/**
+ * 「他のサービスで探す」の節を、**記事の表に出ている作品から機械的に組み直す。**
+ *
+ * ■ 何を直すためのものか（2026-09-13）
+ * この節は本文の一部としてLLMが書いていて、**中身が記事ごとにばらばらだった。**
+ *
+ *     ハリー・ポッター          11作品ぜんぶ
+ *     9月のNetflix終了          63作品のうち12だけ
+ *     **9月のU-NEXT終了         0。サービスの検索トップへのリンク2本だけ**
+ *
+ * いちばん困るのは最後で、**サイトで最もCTRの高い記事（22%・2026-09 実測）に、
+ * 作品単位の行き先が1つも無い。** 読者は「U-NEXTで終わったあとどこで観るのか」を
+ * 知りたくて来ているのに、答えの手前で終わっている。
+ *
+ * ■ なぜ記事側ではなく build 時に組むのか
+ * 記事を作り直すとLLMの実行が要り、**書き直すたびに揃ったり揃わなかったりする。**
+ * 表の作品は `rehype-work-links.ts` が既に `<a class="work-link">` にしているので、
+ * **その節に出すべき作品は、ビルド時に表から確定できる。**
+ * リンクを記事に焼き込まない方針（docs/AFFILIATE.md）とも揃う。
+ *
+ * ■ Amazon を足す
+ * それまでこの節に並ぶのは U-NEXT / Hulu / DMM TV の3社だけで、
+ * **1本も成果にならなかった**（U-NEXT・Hulu は未提携、DMM TV は対象外）。
+ * 表の中の「他で探す」チップ（`rehype-availability.ts` の `findChips`）は
+ * 最初から Amazon を含んでいるので、**同じ構成に揃える**。
+ *
+ * ★ **並びは `search-links.ts` の定義順のまま、Amazon は最後。**
+ *   `findChips` と同じ順で、**紹介料の順に並べ替えない**
+ *   （docs/AFFILIATE.md 7節。プライバシーポリシーにも明記してある）。
+ * ★ **その作品の行のサービスは出さない。** 「U-NEXTで終了」の行に
+ *   U-NEXT の検索を出しても読者の役に立たない（`findChips` と同じ判断）。
+ * ★ **「配信中」と言わない。** 出すのは検索リンクだけで、在庫は断定しない
+ *   （`search-links.ts` 冒頭。記事側の※注記がその前提を読者に伝えている）。
+ *
+ * ■ 並び順（astro.config.mjs）
+ * `rehypeWorkLinks` のあと（表の作品名が `<a class="work-link">` になっている必要がある）、
+ * `rehypeAffiliate` の前（ここで作った `<a>` に tag= と rel= を付けてもらう）。
+ */
+import { SERVICE_BY_LABEL } from '../src/lib/work-links.ts'
+import { amazonVideoLink, otherServiceLinks } from '../src/lib/search-links.ts'
+
+/** HAST のノード。必要な形だけ（他のプラグインと同じ方針）。 */
+interface Node {
+  type: string
+  tagName?: string
+  value?: string
+  properties?: Record<string, unknown>
+  children?: Node[]
+}
+
+/** この節の見出し。**記事テンプレートの固定文言**（templates/fixed-phrases.md）。 */
+const HEADING = '他のサービスで探す'
+
+/**
+ * この節に並べる作品の上限。
+ *
+ * ★ **転送量が理由ではない。** URLの並びはよく圧縮され、実測で
+ *   9月のU-NEXT記事は gzip 20KB → 28KB にしかならなかった（2026-09-13）。
+ *   止めたいのは**DOMの量**で、199作品だと `<a>` が1ページに1,092本になる。
+ *   スマホでその全部を組み立てさせる価値がこの節には無い。
+ *
+ * ★ **80 にした理由。** 超えるのは新着記事3本だけ（199 / 166 / 115件）で、
+ *   終了系の月次記事は最大でも80件（＝この上限で全作品が載る）。
+ *   **終了記事は期限がある**ので1作ずつ次の一手が要るが、
+ *   新着記事は「そのサービスに今入った」話で、他社を探す動機がそもそも薄い。
+ *   どこで切っても恣意的になるが、**切って困るのが新着記事だけ**になる線を選んだ。
+ *
+ * ★ 表の総覧は全作品を載せたままなので、**作品が消えるわけではない。**
+ */
+const MAX_WORKS = 80
+
+const text = (v: string): Node => ({ type: 'text', value: v })
+
+function textOf(node: Node): string {
+  if (node.type === 'text') return node.value ?? ''
+  return (node.children ?? []).map(textOf).join('')
+}
+
+function hasClass(node: Node, name: string): boolean {
+  const cls = node.properties?.className
+  return Array.isArray(cls) && cls.includes(name)
+}
+
+function find(node: Node, ok: (n: Node) => boolean, out: Node[] = []): Node[] {
+  if (ok(node)) out.push(node)
+  for (const c of node.children ?? []) find(c, ok, out)
+  return out
+}
+
+/** 表の1行ぶんの作品。**題名は `work-name`、サービスは「サービス」列の文字から。** */
+interface RowWork {
+  title: string
+  /** その行が扱っているサービスの表示ラベル（`U-NEXT` など）。無いこともある */
+  ownLabel?: string
+}
+
+/**
+ * 記事の表に出ている作品を、**出てきた順**に重複なく集める。
+ *
+ * ★ 題名は `rehype-work-links.ts` が付けた `<span class="work-name">` から取る。
+ *   セルの文字を総当たりで台帳に当てる（`rehype-availability.ts` の `workOf`）
+ *   必要はここでは無い。**リンクになっている＝作品だと確定している行**だけを見る。
+ *
+ * ★ **同じ作品が複数の表に出る。** 月次記事は節ごとの表と全作品の総覧を持つので、
+ *   9月のU-NEXT記事では80作品が160行になる。ここで潰さないと同じ行が2本並ぶ。
+ */
+function worksIn(tree: Node): RowWork[] {
+  const seen = new Set<string>()
+  const out: RowWork[] = []
+  for (const row of find(tree, (n) => n.tagName === 'tr')) {
+    const nameNode = find(row, (n) => hasClass(n, 'work-name'))[0]
+    if (!nameNode) continue
+    const title = textOf(nameNode).trim()
+    if (!title || seen.has(title)) continue
+
+    let ownLabel: string | undefined
+    for (const cell of row.children ?? []) {
+      if (cell.tagName !== 'td' && cell.tagName !== 'th') continue
+      const label = textOf(cell).trim()
+      if (SERVICE_BY_LABEL.has(label)) {
+        ownLabel = label
+        break
+      }
+    }
+    seen.add(title)
+    out.push({ title, ownLabel })
+  }
+  return out
+}
+
+/** 作品1本ぶんの `<li>`。 */
+function lineFor(work: RowWork): Node {
+  /*
+   * ★ **Amazon は最後**（`findChips` と同じ）。紹介料の順に並べない。
+   * ★ その行のサービスは落とす。ラベルで突き合わせるのは、
+   *   `search-links.ts` も表の「サービス」列も同じ表示名を使うため。
+   */
+  const links = [...otherServiceLinks(work.title), amazonVideoLink(work.title)].filter(
+    (l) => l.label !== work.ownLabel,
+  )
+  if (links.length === 0) return { type: 'element', tagName: 'li', children: [] }
+
+  const children: Node[] = [
+    { type: 'element', tagName: 'strong', children: [text(work.title)] },
+    text(' '),
+  ]
+  links.forEach((l, i) => {
+    if (i > 0) children.push(text(' / '))
+    children.push({
+      type: 'element',
+      tagName: 'a',
+      /*
+       * ★ 枠名は `find`（`rehype-affiliate.ts` の `slotOf`）。
+       *   表の中の「他で探す」チップと**同じ枠に数える**。押された意味が同じで、
+       *   どちらも「答えが出せなかったときの逃げ先」だから
+       *   （docs/FUNNEL.md 7-5 の枠分けの考え方）。
+       */
+      properties: { href: l.url, className: ['find-link'] },
+      children: [text(l.label)],
+    })
+  })
+  return { type: 'element', tagName: 'li', children }
+}
+
+export function rehypeFindLinks() {
+  return (tree: Node): void => {
+    try {
+      const body = tree.children ?? []
+      const at = body.findIndex(
+        (n) => n.tagName === 'h2' && textOf(n).trim() === HEADING,
+      )
+      if (at < 0) return
+
+      // 次の見出しまでがこの節。無ければ本文の終わりまで。
+      let end = body.findIndex((n, i) => i > at && n.tagName === 'h2')
+      if (end < 0) end = body.length
+
+      /*
+       * ★ **表の中で既に「他で探す」を渡した作品は、ここで繰り返さない**（2026-09-13）。
+       *   `rehype-availability.ts` が行の下にチップを出した作品は、
+       *   読者はもうその場で次の一手を受け取っている。ここにも並べると
+       *   **同じ作品への同じリンクが1ページに2組**でき、リンクだけが増える。
+       *
+       *   ★ 突き合わせは**URLそのもの**でやる。どちらも `search-links.ts` の
+       *     同じ関数で組んでいて、`tag=` が付くのは後段（`rehype-affiliate.ts`）なので、
+       *     この時点では文字列が完全に一致する。題名の書式に依存しない。
+       */
+      const already = new Set(
+        find(tree, (n) => hasClass(n, 'avail-find-link')).map((n) =>
+          String(n.properties?.href ?? ''),
+        ),
+      )
+      const works = worksIn(tree).filter((w) => !already.has(amazonVideoLink(w.title).url))
+      if (works.length === 0) return
+
+      /*
+       * ★ **節の中の箇条書きは作り直す**（残して足さない）。
+       *   LLM が書いた分を残すと、同じ作品が2回並ぶか、
+       *   作品単位の行とサービス検索トップへの行が混ざる（実際にそうなっていた）。
+       *   ※で始まる注記の段落には触らない — あれが「断定していない」ことの
+       *   前提を読者に伝えている部分で、ここで消してはいけない。
+       */
+      const kept = body.slice(at, end).filter((n) => n.tagName !== 'ul' && n.tagName !== 'ol')
+      const list: Node = {
+        type: 'element',
+        tagName: 'ul',
+        properties: { className: ['find-list'] },
+        children: works.slice(0, MAX_WORKS).map(lineFor),
+      }
+      tree.children = [...body.slice(0, at), ...kept, list, ...body.slice(end)]
+    } catch {
+      // 節の形が想定と違っても記事は出す。**リンクが増えないだけ。**
+    }
+  }
+}

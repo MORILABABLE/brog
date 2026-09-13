@@ -153,10 +153,22 @@ function workOf(row: Node): { ids: string[]; title: string; service?: string } |
      *   同じ映画が配信元ごとに別のIDで台帳に入っている（`workIdsForTitle` の説明）。
      *   U-NEXT の題で引くと SID… が返り、在庫台帳には無いので**印が出ない。**
      *   読者からは「調べたうえで取り扱いなし（×）」と区別が付かず、不具合に見える。
+     *
+     * ★ **在庫台帳のIDも必ず混ぜる**（2026-09-13）。
+     *   上の `if (!work)` は「変化ログに1件も無い作品」の受け皿で、
+     *   **変化ログに当たった作品は台帳を見ないまま返していた。**
+     *   U-NEXT の記事はここに入る — 変化ログには SID… があるので `work` は取れるが、
+     *   台帳（在庫API側）にあるのは同じ作品の**数値ID**で、混ぜないと永久に届かない。
+     *   すぐ上の注意書きが言っている穴が、まさにこの経路で開いたままだった。
+     *
+     *   ★ **候補を増やすだけで、印を選ぶのは `marksOf`。**
+     *     題名が同じ別作品を巻き込んだ場合は印が割れて `undefined` になり、
+     *     **嘘の印を出すのではなく黙る**（`marksOf` の注意書き）。
      */
-    const ids = workIdsForTitle(title)
+    const ids = [...workIdsForTitle(title), ...ledgerIdsForTitle(title)]
+    const uniq = [...new Set(ids.includes(work.workId) ? ids : [work.workId, ...ids])]
     // ★ 題名も返す。**目視で否認した見放題を落とす**のに要る（`marksOf`）。
-    return { ids: ids.includes(work.workId) ? ids : [work.workId, ...ids], title, service }
+    return { ids: uniq, title, service }
   }
   return undefined
 }
@@ -667,8 +679,17 @@ function planTable(table: Node): TablePlan | undefined {
   return { table, found, resolved, oldest }
 }
 
-/** 決めたとおりに行を差し込む。 */
-function applyPlan(plan: TablePlan, count: { tables: number; rows: number }): void {
+/**
+ * 決めたとおりに行を差し込む。
+ *
+ * @param chipsOnly 印を1つも出せない記事のとき。**「他で探す」だけの行**にする
+ *   （`findOnlyRow`）。凡例も出さない — 照らし合わせる記号が表に無いため。
+ */
+function applyPlan(
+  plan: TablePlan,
+  count: { tables: number; rows: number },
+  chipsOnly = false,
+): void {
   const { table, found } = plan
   const headRow: Node | undefined = (() => {
     const rows: Node[] = []
@@ -698,7 +719,18 @@ function applyPlan(plan: TablePlan, count: { tables: number; rows: number }): vo
     if (!parent?.children) continue
     const idx = parent.children.indexOf(row)
     if (idx < 0) continue
-    parent.children.splice(idx + 1, 0, availRow(hit.marks, colspan, hit.own, hit.title))
+    /*
+     * ★ `chipsOnly` でも、**印を引けた行はちゃんと印を出す。**
+     *   落とすのは「— 未確認」だけ。答えを持っている行まで
+     *   「他で探す」に落とすと、○ の直リンク（成果の出る唯一のリンク）が消える。
+     */
+    parent.children.splice(
+      idx + 1,
+      0,
+      chipsOnly && !hit.marks
+        ? findOnlyRow(hit.title, hit.own, colspan)
+        : availRow(hit.marks, colspan, hit.own, hit.title),
+    )
     // 元の行に印。CSSで下の罫線を消して2行を1組に見せる
     const props = (row.properties ??= {})
     const prev = Array.isArray(props.className) ? (props.className as string[]) : []
@@ -713,9 +745,42 @@ function applyPlan(plan: TablePlan, count: { tables: number; rows: number }): vo
    *   **どの記号も表に無い**ので読者は照らし合わせられない。
    *   その表に出ているのは「— 未確認」だけで、それは記号だけで意味が通る。
    */
+  /*
+   * ★ `chipsOnly` でも、印が1つでも出ている表には凡例を出す。
+   *   出ている記号を説明しないほうが不親切で、条件（`resolved > 0`）は同じでよい。
+   * ★ ただし「— 未確認」は**この表に無い**（未確認の行は「他で探す」になっている）ので、
+   *   凡例からも落とす。無い記号を説明すると読者が探しに行く。
+   */
   if (plan.resolved > 0) {
-    pendingLegends.set(table, legendNode(plan.oldest, plan.resolved < found.size))
+    pendingLegends.set(table, legendNode(plan.oldest, !chipsOnly && plan.resolved < found.size))
   }
+}
+
+/**
+ * **印を1つも出せない記事の表**に足す、「他で探す」だけの行（2026-09-13）。
+ *
+ * ■ なぜ要るか
+ * 在庫が1件も引けない記事では、下の歯止め（`resolved * 3 < rows`）が働いて
+ * **行を1本も足さない。** そこは正しいのだが、結果として
+ * **表の中に次の一手が1つも無い記事**ができる。
+ *
+ *   実測（2026-09-13・9月のU-NEXT終了記事）
+ *     160行すべてに答えが無く、行き先は U-NEXT の作品ページ（未提携＝0円）だけ
+ *     サイトで最もCTRの高い記事（22%）で、読者はそこで行き止まりになっていた
+ *
+ * ■ 「— 未確認」は出さない
+ * 歯止めが止めていたのは**「分からない」が延々と並ぶこと**で、それは今も出さない。
+ * 出すのは**答えの代わりになるもの**（`findChips`）だけ。
+ * 2026-09-12 に閾値を 1/2 → 1/3 に緩めたときの理屈
+ * （「未確認の行は『何も言っていない行』ではなくなった」）を、
+ * **印が0件の記事にも通した**形になる。
+ *
+ * ★ **記号（○ △ ×）は付けない。** 調べていない先を調べたことにしないため
+ *   （`findChips` の注意書きと同じ）。ラベルの枠も出さない —
+ *   あれは「この行の答えは何色か」を言うもので、答えが無いここでは嘘になる。
+ */
+function findOnlyRow(title: string, own: string | undefined, colspan: number): Node {
+  return availCell(findChips(title, own), colspan)
 }
 
 /** 記事の中の `<table>` を出てくる順に集める。 */
@@ -751,8 +816,28 @@ function insertLegends(node: Node): void {
   node.children = out
 }
 
+/**
+ * 「他で探す」だけの行を出してよい記事の種類。
+ *
+ * ★ **期限がある記事にだけ出す。** `leaving`（終了予定）と `ended`（終了済み）は
+ *   「ここでは観られなくなる／観られない」が主題なので、
+ *   **1作ずつ次の一手が要る。**
+ *
+ * ★ **`arrivals` には出さない。** 「そのサービスに今入った」話で、
+ *   読者が他社を探す動機がそもそも薄い。出すと実測で
+ *   **1ページに229行・Amazonリンク406本**まで膨らみ（2026-09-13・8月の新着記事）、
+ *   読者の役に立たないまま「主目的がアフィリエイトリンク」に近づく
+ *   （docs/AFFILIATE.md の審査の項）。
+ */
+const CHIPS_ONLY_CATEGORIES = ['leaving', 'ended']
+
+/** Astro が渡す vfile。frontmatter だけ使う。 */
+interface VFile {
+  data?: { astro?: { frontmatter?: Record<string, unknown> } }
+}
+
 export function rehypeAvailability() {
-  return (tree: Node): void => {
+  return (tree: Node, file?: VFile): void => {
     try {
       const tables: Node[] = []
       collectTables(tree, tables)
@@ -791,12 +876,26 @@ export function rehypeAvailability() {
        *   ★ 在庫が増えれば自動で出るようになる。**記事側を直す必要はない。**
        *     取りこぼしは `npm run availability -- --ids <作品ID>` で埋める。
        */
+      /*
+       * ★ **閾値を割った記事は、「他で探す」だけを出す**（2026-09-13 変更）。
+       *   それまでは `return` して**行を1本も足さなかった**。止めたかったのは
+       *   「— 未確認」が延々と並ぶことで、それは今も出さない
+       *   （`chipsOnly` の行は `findOnlyRow`）。
+       *
+       *   ★ **印を引けた行はそのまま印を出す。** 落ちるのは未確認の行だけ。
+       *
+       *   実測（2026-09-13・9月のU-NEXT終了記事）
+       *     160行すべてが行き止まりで、外に出る道は U-NEXT（未提携＝0円）だけだった
+       */
       const resolved = plans.reduce((n, p) => n + p.resolved, 0)
       const rows = plans.reduce((n, p) => n + p.found.size, 0)
-      if (resolved * 3 < rows) return
+      const category = file?.data?.astro?.frontmatter?.category
+      const chipsOnly = resolved * 3 < rows
+      // ★ 出してよい種類でなければ、今までどおり**行を1本も足さない。**
+      if (chipsOnly && !CHIPS_ONLY_CATEGORIES.includes(String(category))) return
 
       const count = { tables: 0, rows: 0 }
-      for (const plan of plans) applyPlan(plan, count)
+      for (const plan of plans) applyPlan(plan, count, chipsOnly)
       insertLegends(tree)
     } catch {
       // 表の形が想定と違っても記事は出す。**行が足りないだけ。**

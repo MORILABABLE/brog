@@ -82,6 +82,13 @@ function slotOf(node: Node): AmazonSlot {
    *   枠名は作品ページの「他のサービスで探す」と揃えてある（docs/FUNNEL.md 7-5）。
    */
   if (Array.isArray(cls) && cls.includes('avail-find-link')) return 'find'
+  /*
+   * ★ 本文の「他のサービスで探す」の節（`plugins/rehype-find-links.ts`）。
+   *   **上のチップと同じ `find` に数える。** 場所は違うが押された意味は同じで、
+   *   どちらも「この作品をどこで観るか、当サイトでは答えが出せなかった」の逃げ先。
+   *   分けると、同じ問いへの導線が2つの枠に割れてどちらも読めなくなる。
+   */
+  if (Array.isArray(cls) && cls.includes('find-link')) return 'find'
 
   for (const child of node.children ?? []) {
     if (child.tagName !== 'img') continue

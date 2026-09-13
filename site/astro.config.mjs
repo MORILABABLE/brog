@@ -9,6 +9,7 @@ import { rehypeAffiliate } from './plugins/rehype-affiliate.ts'
 import { rehypeWorkLinks } from './plugins/rehype-work-links.ts'
 import { rehypeAvailability } from './plugins/rehype-availability.ts'
 import { rehypeCast } from './plugins/rehype-cast.ts'
+import { rehypeFindLinks } from './plugins/rehype-find-links.ts'
 
 // astro.config は Astro が .env を読み込む前に評価されるため、
 // ここでは import.meta.env が使えない。Vite の loadEnv で明示的に読む。
@@ -107,6 +108,10 @@ export default defineConfig({
       // ★ workLinks のあと・affiliate の前。前段が作った作品名のリンクを読み、
       //   ここで作った ○ / △ のリンクに後段が tag= と rel="sponsored" を付ける。
       rehypeAvailability,
+      // ★ workLinks のあと・affiliate の前。表の作品名（.work-link）を読んで
+      //   「他のサービスで探す」の節を組み直し、ここで作った <a> に
+      //   後段が tag= と rel="sponsored" を付ける。
+      rehypeFindLinks,
       [rehypeAffiliate, { tags: amazonTags }],
     ],
   },
