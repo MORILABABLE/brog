@@ -62,7 +62,12 @@
  *
  * Cloudflare のビルドは毎回まっさらなので、**公開されるものは常に最新**。
  */
-import { workLinkByTitle, workIdsForTitle, SERVICE_BY_LABEL } from '../src/lib/work-links.ts'
+import {
+  workLinkByTitle,
+  workIdsForTitle,
+  availabilityUrl,
+  SERVICE_BY_LABEL,
+} from '../src/lib/work-links.ts'
 import {
   marksFor,
   ledgerIdsForTitle,
@@ -483,7 +488,16 @@ function availRow(
   for (const { svc, mark } of shown) {
     // ★ ×（取り扱いなし）も出す。**4社ぶんを揃えて見せる**ことで、
     //   「調べたうえで無い」と「調べていない」の区別が読者に付く。
-    const url = mark === 'subscription' || mark === 'paid' ? marks.links.get(svc.key) : undefined
+    /*
+     * ★ **台帳のリンクをそのまま href にしないこと**（2026-09-13）。
+     *   Prime Video の `app.primevideo.com/…` は tag= が乗らず0円になる。
+     *   落とし先の規則は `work-links.ts` の `availabilityUrl` に1か所で置いた。
+     *   ここで host を見て分岐を足さないこと（規則が2つに割れる）。
+     */
+    const url =
+      mark === 'subscription' || mark === 'paid'
+        ? availabilityUrl(svc.key, marks.links.get(svc.key), title)
+        : undefined
     const inner: Node[] = [
       {
         type: 'element',

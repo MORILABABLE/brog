@@ -145,6 +145,46 @@ export function resolveUrl(work: RawWork, kind: string): string {
   return amazonSearchUrl(title)
 }
 
+/** 表の ○ / △ の印から送る先。**サービス1社ぶん**（`resolveUrl` は作品1本ぶん）。 */
+const PRIME_VIDEO_KEY = 'prime-video'
+
+/**
+ * 表の ○ / △ の印を押したときの送り先（`plugins/rehype-availability.ts`）。
+ *
+ * ■ なぜ `resolveUrl` と別に要るのか（2026-09-13 追加）
+ * あちらは**作品名**のリンクで、行き先が1つに決まればどこでもよい。
+ * こちらは**「Amazon Prime Video ○」という印そのもの**がリンクになっている。
+ * **印と行き先が食い違ってはいけない**ので、落とし先の規則が変わる。
+ *
+ * ■ 何が起きていたか（2026-09-13 実測）
+ * 配信APIが返す Prime Video の作品ページURLには2種類ある。
+ *
+ *     www.amazon.co.jp/gp/video/detail/…   69件   tag= が乗る
+ *     app.primevideo.com/detail?gti=…      34件   **tag= が乗らない ＝ 0円**
+ *
+ * 台帳（`data/availability.json`）はAPIの応答をそのまま持つので、
+ * 印の列は 33% を素の外部リンク（`rel="sponsored"` すら付かない）として
+ * 出していた。ハリー・ポッターの記事では ○9件のうち3件がこれだった。
+ *
+ * ■ 落とし先
+ *   Prime Video … Amazon のビデオ内検索へ。**同じ Amazon の売り場**なので
+ *                 「Amazon Prime Video」の印と行き先が食い違わない。
+ *                 `resolveUrl` と同じ逃げ先で、規則を2つ持たない。
+ *   それ以外    … **リンクにしない**（`undefined` を返す＝ただの印になる）。
+ *                 ★ **Amazon へ振り替えないこと。** 「Netflix ○」を押した
+ *                   読者がAmazonに着くのは、印が嘘をついたのと同じ。
+ *                   収益のために印の意味を曲げない（docs/AFFILIATE.md 7節）。
+ */
+export function availabilityUrl(
+  service: string,
+  link: string | undefined,
+  title: string,
+): string | undefined {
+  const host = hostOf(link)
+  if (host && DIRECT_HOSTS.includes(host)) return link
+  return service === PRIME_VIDEO_KEY ? amazonSearchUrl(title) : undefined
+}
+
 // --- サムネイル ---------------------------------------------------------------
 
 let thumbFiles: Set<string> | null = null

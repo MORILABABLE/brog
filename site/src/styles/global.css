@@ -685,8 +685,46 @@ h3 {
   color: inherit;
   text-decoration: none;
 }
+/*
+ * ★ **リンクになっているチップは、平常時からそれと分かる形にする**（2026-09-13）。
+ *
+ *   それまで手がかりは `:hover` だけだった。**タッチ端末には一生出ない。**
+ *   実測（2026-09-01〜13）でセッションの71%がスマホ、いちばん読まれている
+ *   ハリー・ポッターの記事は38PV中37がスマホで、`aff_avail` は**0クリック**。
+ *   同じ表の「他で探す」チップ（`.avail-find-link`）だけが最初から
+ *   accent の枠を持っていて、そちらは押されていた。
+ *   **答えのチップが、逃げ先のチップより目立たない**状態だった。
+ *
+ * ★ 「名前は本文と同じ色のまま」（上の `.avail-mark` の注意書き）は、
+ *   **リンクでないチップについては今も同じ。** 色が付くのは押せるものだけで、
+ *   1行4つのうち通常1〜2個。色の塊にはならず、むしろ
+ *   「×は沈める」（下の `[data-mark='none']`）と同じ方向に働く。
+ *
+ * ★ **リンクなら全社そろって同じ見た目にする。** サービスで差を付けない
+ *   （docs/AFFILIATE.md 7節「紹介料の高いサービスを優先して掲載しない」）。
+ *   読者に見える差は ○ / △ / × / — の印だけにする。
+ */
+.prose .avail-item:has(a) {
+  /* ★ 余白は `a` 側に移す。**チップの端まで押せるようにする**ためで、
+     ここに残すと枠の内側なのに反応しない帯ができる（スマホで効く） */
+  padding: 0;
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: var(--bg);
+}
+.prose .avail-item a {
+  padding: 0.12rem 0.55rem;
+  color: var(--accent);
+}
+/* ★ タッチ端末だけ指で押せる高さにする。マウスでは今までの詰まった見た目のまま。
+     1行に4つ並ぶので、全端末で上げるとページが無駄に伸びる */
+@media (pointer: coarse) {
+  .prose .avail-item a {
+    min-height: 32px;
+  }
+}
 .prose .avail-item:has(a):hover {
-  border-color: var(--text-muted);
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 .prose .avail-item a:hover {
   text-decoration: underline;
