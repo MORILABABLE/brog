@@ -7,7 +7,7 @@ import UnextCta from '../../components/UnextCta.astro'
 import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
-import { otherServiceLinks } from '../../lib/search-links'
+import { amazonVideoLink, otherServiceLinks } from '../../lib/search-links'
 import { seriesRefFor } from '../../lib/series-for-work'
 import {
   HISTORY_LABEL,
@@ -106,16 +106,29 @@ const seriesPost = seriesRef
  * U-NEXT / Hulu / DMM TV の配信状況データは持っていないので、
  * 渡せるのは検索結果へのリンクだけ（lib/search-links.ts 冒頭）。
  *
+ * ★ **Amazon（レンタル・購入）を最後に足す**（2026-09-13）。
+ *   それまでこの節は U-NEXT / Hulu / DMM TV の3社だけで、**1本も成果にならなかった**
+ *   （U-NEXT・Hulu は未提携、DMM TV は対象外）。記事側の同じ節
+ *   （`plugins/rehype-find-links.ts`）と表のチップ（`rehype-availability.ts` の
+ *   `findChips`）は 2026-09-12 から Amazon を含んでいるので、**構成をそこに揃える。**
+ *   並びは `search-links.ts` の定義順のまま Amazon が最後で、
+ *   **紹介料の順に並べ替えない**（docs/AFFILIATE.md 7節）。
+ *
  * ★ tag= と rel はここで付ける。常設ページは .astro なので rehype を通らない
  *   （components/WorkTable.astro と同じ理由・同じ関数を使う）。
  *
- * ★ 枠は `work`。作品ページのリンクは**読者の意図が最もはっきりしている**
- *   （その作品を名指しで見に来ている）ので、他の枠と混ぜて数えない。
+ * ★ **枠は2つに分かれる。** 上の配信状況の行は `work`、この節は `find`。
+ *   作品ページのリンクは読者の意図が最もはっきりしている（その作品を名指しで
+ *   見に来ている）ので `work` で数えるが、**この節だけは記事側と同じ意味の導線**
+ *   （答えを出せなかったときの逃げ先）なので `find` に入れる。
+ *   **HTMLの `data-slot` とトラッキングIDを必ず揃えること。** 片方だけにすると
+ *   GA4 のクリック数とアソシエイトのレポートが別の枠を数えることになる。
  */
 const WORK_TAG = amazonTagFor('work')
+const FIND_TAG = amazonTagFor('find')
 
-const findLinks = otherServiceLinks(w.title).map((l) => {
-  const url = withAmazonTag(l.url, WORK_TAG)
+const findLinks = [...otherServiceLinks(w.title), amazonVideoLink(w.title)].map((l) => {
+  const url = withAmazonTag(l.url, FIND_TAG)
   return { label: l.label, url, rel: relFor(url) }
 })
 
@@ -412,6 +425,7 @@ const jsonLd = {
       このページの配信状況は Netflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスぶんです
       （当サイトが追いかけている U-NEXT は記事でのみ扱っており、作品ページには入っていません）。
       下のリンクは各サービスの検索結果に飛ぶだけで、配信の有無を保証するものではありません。
+      Amazon のリンクは<strong>見放題ではなくレンタル・購入</strong>を探すものです。
     </p>
     <p class="find-links">
       {

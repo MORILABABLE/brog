@@ -320,23 +320,55 @@ git push -u origin main
 - [ ] afb で提携できたら、`theme.yaml` の `search_links` を
       ASPのディープリンクに差し替え（afb は LinkSwitch のような自動変換を持たない）
 
-### アフィリエイトの環境変数（2026-09-02 時点で1つ未反映）
+### アフィリエイトの環境変数（2026-09-13 に全11変数の反映を確認）
 
 `site/.env` はリポジトリに入らない。**Pages 側にも同じものを入れないと本番だけ出ない。**
-`Workers & Pages → brog-ez1 → Settings → Environment variables` の
-**Production / Preview の両方**に入れる。
+`Workers & Pages → brog-ez1 → Settings → Environment variables`
+（新しいUIでは `Variables and Secrets`）の **Production / Preview の両方**に入れる。
+種別は **Plaintext** でよい。`PUBLIC_` はHTMLに出る値なので秘密ではなく、
+Secret にすると**あとから管理画面で値を読み返せなくなる**。
 LinkSwitch は `*.pages.dev` では自分で無効化するので、Preview に入れても成果は動かない
 （docs/AFFILIATE.md 5-6）。
 
 | 変数 | 値 | Pages 側 |
 |---|---|---|
-| `PUBLIC_AMAZON_TAG` | `jetbike-22` | ✅ 反映済み（本番HTMLに `tag=jetbike-22` を確認） |
-| `PUBLIC_VC_LINKSWITCH_PID` | `892690936` | ⬜ **未登録**。入れる前に VC のブロック設定（docs/AFFILIATE.md 2節） |
+| `PUBLIC_AMAZON_TAG` | `jetbike-22` | ✅ 反映済み |
+| `PUBLIC_VC_LINKSWITCH_PID` | `892690936` | ✅ 反映済み（本番HTMLに `pid = "892690936"` を確認） |
+| `PUBLIC_AMAZON_TAG_TABLE` | `jetbike-table-22` | ✅ 反映済み |
+| `PUBLIC_AMAZON_TAG_RAIL` | `jetbike-rail-22` | ✅ 反映済み |
+| `PUBLIC_AMAZON_TAG_CTA` | `jetbike-cta-22` | ✅ 反映済み |
+| `PUBLIC_AMAZON_TAG_POSTER` | `jetbike-poster-22` | ✅ 反映済み |
+| `PUBLIC_AMAZON_TAG_FIND` | `jetbike-find-22` | ✅ 反映済み（2,040本） |
+| `PUBLIC_AMAZON_TAG_BAR` | `jetbike-bar-22` | ✅ 反映済み（922本） |
+| `PUBLIC_AMAZON_TAG_WORK` | `jetbike-work-22` | ✅ 反映済み（591本） |
+| `PUBLIC_AMAZON_TAG_AVAIL` | `jetbike-avail-22` | ✅ 反映済み（70本） |
+| `PUBLIC_AMAZON_TAG_PRIME` | `prime022-22` | ✅ 反映済み（11本） |
+| `PUBLIC_AMAZON_TAG_BODY` | `jetbike-body-22` | ⬜ Amazonリンクが0本なので本番HTMLでは確認できない |
+
+> 本数は 2026-09-13 のビルド実測（全960ページ・`tag=` の出現数。合計 8,768本）。
+> **既定ID `jetbike-22` のリンクは本番に0本**（同日に全ページで確認）。
+> これ以降 `jetbike-22` が本番に現れたら、**枠を増やしたのに Pages へ入れ忘れた合図**。
+
+> 🔴 **`_WORK` と `_PRIME` は `.env` にあるのに Pages だけ抜けていた。**
+> ローカルビルドでは正しく分かれて見えるので、**本番HTMLを見ない限り気づけない。**
+> `.env` に足したら、その場で Pages にも足すこと。
+
+> **Cloudflare の環境変数はビルド時に読まれる。** 値を入れただけでは反映されない。
+> push が無いときは **Deployments → 最新 → Retry deployment** が要る。
 
 反映されたかは本番のHTMLで確かめる。
 
 ```bash
+# LinkSwitch
 curl -s https://mihoudairader.com/ | grep -c vcdal.js   # 1 なら出ている
+
+# 枠別トラッキングID。全部入れば jetbike-22 は0本になる
+curl -s https://mihoudairader.com/posts/harry-potter | grep -o 'tag=[A-Za-z0-9_-]*' | sort | uniq -c
+
+# work（作品ページ）/ prime（無料体験）/ bar（下の追従枠）
+curl -s https://mihoudairader.com/works/536 | grep -o 'tag=[A-Za-z0-9_-]*' | sort | uniq -c
+curl -s https://mihoudairader.com/posts/2026-09-leaving-prime-video | grep -o 'amazonprime?tag=[A-Za-z0-9-]*'
+curl -s https://mihoudairader.com/posts/2026-09-leaving-prime-video | grep -o 'gp/video/storefront?tag=[A-Za-z0-9-]*' | sort | uniq -c
 ```
 
 ---
