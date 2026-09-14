@@ -265,7 +265,15 @@ const SLOT_NOTE: Record<string, string> = {
   poster: '記事本文の節ポスター',
   body: '記事本文の地の文のリンク',
   prime: 'Amazonプライムの無料体験（専用リンク・500円/件）',
-  unext: 'U-NEXT の afb 枠',
+  // afb の枠は **広告主 + 位置** で持つ（2026-09-14）。
+  // 記事と作品ページで置き場所が違うので、まとめると
+  // 「上へ動かしたら効いたのか」が読めない。
+  unext: 'U-NEXT の afb 枠（位置の区別なし・2026-09-14 より前）',
+  'unext-cta': 'U-NEXT の afb 枠（記事）',
+  'unext-work': 'U-NEXT の afb 枠（作品ページ）',
+  hulu: 'Hulu の afb 枠（位置の区別なし・2026-09-14 より前）',
+  'hulu-cta': 'Hulu の afb 枠（記事）',
+  'hulu-work': 'Hulu の afb 枠（作品ページ・状態行の下）',
 }
 
 async function main(): Promise<void> {

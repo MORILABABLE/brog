@@ -120,21 +120,25 @@ const adPageText = [post.data.title, post.data.description, post.body ?? ''].joi
       各サービスの都合により変更される場合があります。ご視聴前に公式サイトでご確認ください。
     </p>
 
-    <div class="prose">
-      <Content />
-    </div>
-
     {/*
-      afb への導線（U-NEXT / Hulu）。**本文のすぐ下＝Amazon より先。**
+      afb（U-NEXT / Hulu）への導線。**本文のすぐ上**（2026-09-14 に移動）。
 
-      ■ なぜ Amazon より上なのか（2026-09-14 に入れ替え）
-      **記事の最後尾まで読者は到達しない。** スクロール90%到達は実測22%
-      （docs/FUNNEL.md 5-3）。ここは本文を読み終えた直後の1枠目で、
-      **単価が2桁違うほう**（afb 917〜1,430円 / Amazon は紹介料数十円）を先に置く。
+      ■ なぜ上なのか — **記事の最後尾まで読者は到達しない**
+      スクロール90%到達は実測22%（docs/FUNNEL.md 5-3）。それまでこの枠は
+      本文の下にあり、枠別のクリック実測は **`cta` 0回**だった
+      （`data-slot`・2026-09-11 まで。踏まれていたのは work 4 / table 3 /
+      bar 2 / poster 1）。**8割の読者に見られていない場所**に、
+      単価がいちばん高い枠を置いていたことになる。
 
-      ★ **Amazon の枠を置き換えるものではない。** Amazon はクリックから24時間の
-        あらゆる購入が成果になる別の性質を持つ。並べて枠別に測る
-        （docs/AFFILIATE.md 11-7 / 12節）。順番を変えただけで、どちらも出る。
+      記事で踏まれているのは表の作品名（`table`）で、表は本文の最初の1画面に入る。
+      その直前がこの位置。
+
+      ★ **押し下げる代償は承知の上。** 表を最初の1画面に置くのは
+        docs/FUNNEL.md 5-3 の設計で、ここに1枚入れるとスマホで約46px
+        （728x90 が画面幅に合わせて縮む）、PCで90px 下がる。
+        **効かなければ戻すこと。** 判断材料は `hulu-cta` 枠のクリック数。
+      ★ 広告（PR）表記は**この枠より上**にある（AffiliateNotice）。
+        順番を入れ替えないこと — 広告が表記より先に出てはいけない。
       ★ **1ページに afb の枠は1つだけ。** U-NEXT を優先し、出せない面に
         Hulu を落とす（判断は AfbCta.astro）。2社は掲載NGの範囲が
         噛み合っていないので、これは「空白を埋める」動きになる。
@@ -152,6 +156,10 @@ const adPageText = [post.data.title, post.data.description, post.body ?? ''].joi
       services={post.data.tags}
       unextSubject={unextSubject}
     />
+
+    <div class="prose">
+      <Content />
+    </div>
 
     {/*
       Amazon への導線。**afb の枠の下**（2026-09-14 に入れ替え。上の★）。

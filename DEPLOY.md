@@ -344,10 +344,10 @@ LinkSwitch は `*.pages.dev` では自分で無効化するので、Preview に�
 | `PUBLIC_AMAZON_TAG_AVAIL` | `jetbike-avail-22` | ✅ 反映済み（70本） |
 | `PUBLIC_AMAZON_TAG_PRIME` | `prime022-22` | ✅ 反映済み（11本） |
 | `PUBLIC_AMAZON_TAG_BODY` | `jetbike-body-22` | ⬜ Amazonリンクが0本なので本番HTMLでは確認できない |
-| **`PUBLIC_AFB_HULU_LP`** | `https://t.afi-b.com/visit.php?a=G8792C-q298067J&p=U9922286` | 🔴 **未反映。入れるまで本番に Hulu の広告は1バイトも出ない**（2026-09-14 に `.env` へ追加） |
-| **`PUBLIC_AFB_HULU_IMP`** | `https://t.afi-b.com/lead/G8792C/U9922286/q298067J` | 🔴 同上。無くてもリンクは動くが、**表示回数が測れない** |
-| **`PUBLIC_AFB_HULU_BANNER`** | `https://www.afi-b.com/upload_image/8792-1504659486-3.gif` | 🔴 同上。**空にするとテキストリンクに戻る** |
-| **`PUBLIC_AFB_HULU_BANNER_SIZE`** | `320x50` | ⬜ 任意（未設定でも 320x50） |
+| **`PUBLIC_AFB_HULU_LP`** | `https://t.afi-b.com/visit.php?a=G8792C-h298034g&p=U9922286` | 🔴 **未反映。入れるまで本番に Hulu の広告は1バイトも出ない**（2026-09-14 に `.env` へ追加） |
+| **`PUBLIC_AFB_HULU_IMP`** | `https://t.afi-b.com/lead/G8792C/U9922286/h298034g` | 🔴 同上。無くてもリンクは動くが、**表示回数が測れない** |
+| **`PUBLIC_AFB_HULU_BANNER`** | `https://www.afi-b.com/upload_image/8792-1500163686-3.gif` | 🔴 同上。**空にするとテキストリンクに戻る** |
+| **`PUBLIC_AFB_HULU_BANNER_SIZE`** | `728x90` | 🔴 **必須**（未設定だと 320x50 と誤って書かれ、画像が縦に潰れる） |
 
 > 本数は 2026-09-13 のビルド実測（全960ページ・`tag=` の出現数。合計 8,768本）。
 > **既定ID `jetbike-22` のリンクは本番に0本**（同日に全ページで確認）。
@@ -358,7 +358,7 @@ LinkSwitch は `*.pages.dev` では自分で無効化するので、Preview に�
 >   U-NEXT の提携が通ったら `PUBLIC_AFB_UNEXT_LP` も同じ場所に足す（docs/AFFILIATE.md 12-3 / 13-5）。
 
 > 🔴 **Hulu の3つ（LP・IMP・BANNER）は同じ原稿から取ったものを揃えて入れる。**
->   afb は原稿ごとに `a=` が違う（テキスト原稿 `T298408v` / バナー原稿 `q298067J`）。
+>   afb は原稿ごとに `a=` が違う（テキスト `T298408v` / バナー320x50 `q298067J` / **バナー728x90 `h298034g`**）。
 >   混ぜてもリンクは動くので**画面では気づけず、成果が別の原稿に付く。**
 
 > 🔴 **`_WORK` と `_PRIME` は `.env` にあるのに Pages だけ抜けていた。**

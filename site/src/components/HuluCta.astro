@@ -69,7 +69,7 @@ const ad = huluAd({ slot: spot, pageText, services })
         rel="sponsored noopener"
         target="_blank"
         data-affiliate="true"
-        data-slot="hulu"
+        data-slot={`hulu-${ad.slot}`}
         data-hulu-ad={ad.slot}
       >
         {
@@ -104,6 +104,12 @@ const ad = huluAd({ slot: spot, pageText, services })
    */
   .hulu-cta {
     margin: 2rem 0;
+    /*
+     * 中央ぞろい（2026-09-14・運用者の指定）。728x90 の横長バナーは
+     * 左に寄せると本文の行頭と揃わず、**記事の一部に見えてしまう。**
+     * 中央に置くと「本文ではないもの」として読める。
+     */
+    text-align: center;
   }
   /*
    * `line-height: 0` は画像の下に出る隙間（インライン行のベースライン）を消す。
