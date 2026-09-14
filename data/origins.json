@@ -3,8 +3,20 @@
   "tmdb:tv/225634": [
     "English"
   ],
+  "tmdb:tv/246862": [
+    "Japanese"
+  ],
   "tmdb:tv/312697": null,
+  "tt0019777": [
+    "English"
+  ],
+  "tt0022958": [
+    "English"
+  ],
   "tt0031398": [
+    "English"
+  ],
+  "tt0034012": [
     "English"
   ],
   "tt0034591": [
@@ -19,16 +31,25 @@
   "tt0036980": [
     "Japanese"
   ],
+  "tt0037008": [
+    "English"
+  ],
   "tt0037017": [
     "English"
   ],
   "tt0041038": [
     "English"
   ],
+  "tt0041178": [
+    "English"
+  ],
   "tt0045883": [
     "English"
   ],
   "tt0046534": [
+    "English"
+  ],
+  "tt0046754": [
     "English"
   ],
   "tt0048750": [
@@ -110,6 +131,10 @@
   ],
   "tt0067824": [
     "Standard Chinese"
+  ],
+  "tt0068240": [
+    "Italian",
+    "English"
   ],
   "tt0068897": [
     "English"
@@ -292,6 +317,13 @@
   "tt0095953": [
     "English"
   ],
+  "tt0096633": [
+    "Japanese"
+  ],
+  "tt0096933": [
+    "English",
+    "Japanese"
+  ],
   "tt0097428": [
     "English"
   ],
@@ -364,6 +396,9 @@
   "tt0103141": [
     "English"
   ],
+  "tt0104040": [
+    "English"
+  ],
   "tt0105236": [
     "English"
   ],
@@ -421,9 +456,15 @@
   "tt0109446": [
     "English"
   ],
+  "tt0109578": [
+    "English"
+  ],
   "tt0109685": [
     "Southern Min",
     "Standard Taiwanese Mandarin"
+  ],
+  "tt0109830": [
+    "English"
   ],
   "tt0109831": [
     "English"
@@ -498,6 +539,9 @@
   "tt0116282": [
     "English"
   ],
+  "tt0116320": [
+    "English"
+  ],
   "tt0116695": [
     "English"
   ],
@@ -523,6 +567,9 @@
     "English"
   ],
   "tt0118178": [
+    "English"
+  ],
+  "tt0118571": [
     "English"
   ],
   "tt0119177": [
@@ -569,6 +616,9 @@
   "tt0120755": [
     "English"
   ],
+  "tt0120757": [
+    "English"
+  ],
   "tt0120768": [
     "English"
   ],
@@ -581,6 +631,9 @@
   "tt0120844": [
     "English"
   ],
+  "tt0121220": [
+    "Japanese"
+  ],
   "tt0122690": [
     "English"
   ],
@@ -591,6 +644,9 @@
     "English"
   ],
   "tt0131479": [
+    "Japanese"
+  ],
+  "tt0134768": [
     "Japanese"
   ],
   "tt0138510": [
@@ -679,6 +735,12 @@
   ],
   "tt0192984": [
     "Japanese"
+  ],
+  "tt0193253": [
+    "Japanese"
+  ],
+  "tt0193676": [
+    "English"
   ],
   "tt0206314": [
     "English"
@@ -897,6 +959,9 @@
     "French",
     "English",
     "Russian"
+  ],
+  "tt0362344": [
+    "Japanese"
   ],
   "tt0364045": [
     "French",
@@ -1177,6 +1242,9 @@
   "tt0780167": [
     "Japanese"
   ],
+  "tt0780653": [
+    "English"
+  ],
   "tt0790604": [
     "English"
   ],
@@ -1197,6 +1265,9 @@
   ],
   "tt0800268": [
     "English"
+  ],
+  "tt0808082": [
+    "Japanese"
   ],
   "tt0810085": null,
   "tt0815244": [
@@ -1238,6 +1309,9 @@
   "tt0877057": [
     "Japanese"
   ],
+  "tt0878036": [
+    "Japanese"
+  ],
   "tt0878647": [
     "English",
     "Korean"
@@ -1256,6 +1330,7 @@
   "tt0892791": [
     "English"
   ],
+  "tt0907604": null,
   "tt0926084": [
     "English",
     "parseltongue"
@@ -1327,6 +1402,7 @@
     "English"
   ],
   "tt10064124": null,
+  "tt10098248": null,
   "tt1016075": [
     "English"
   ],
@@ -1345,6 +1421,9 @@
     "English"
   ],
   "tt10304142": [
+    "English"
+  ],
+  "tt10323676": [
     "English"
   ],
   "tt10324144": [
@@ -1419,6 +1498,7 @@
   "tt10820704": [
     "Japanese"
   ],
+  "tt10823610": null,
   "tt1082807": [
     "English"
   ],
@@ -1692,6 +1772,9 @@
   "tt1234721": [
     "English"
   ],
+  "tt12390384": [
+    "Japanese"
+  ],
   "tt12404980": null,
   "tt12412888": [
     "English"
@@ -1723,6 +1806,9 @@
     "Italian"
   ],
   "tt12787182": null,
+  "tt12826684": [
+    "Japanese"
+  ],
   "tt12829958": null,
   "tt1284572": [
     "Japanese"
@@ -1749,6 +1835,9 @@
   "tt1289401": [
     "English"
   ],
+  "tt12899578": [
+    "Japanese"
+  ],
   "tt1291150": [
     "English"
   ],
@@ -1768,6 +1857,7 @@
   "tt13064272": [
     "Japanese"
   ],
+  "tt1308847": null,
   "tt13097730": null,
   "tt1315336": [
     "Japanese"
@@ -1795,6 +1885,7 @@
   "tt1343046": [
     "Japanese"
   ],
+  "tt13433110": null,
   "tt1344107": [
     "Japanese"
   ],
@@ -1817,6 +1908,9 @@
   "tt1355630": [
     "Spanish",
     "English"
+  ],
+  "tt1355642": [
+    "Japanese"
   ],
   "tt13575838": null,
   "tt13581026": null,
@@ -1863,6 +1957,9 @@
   ],
   "tt1399103": [
     "English"
+  ],
+  "tt1401207": [
+    "Japanese"
   ],
   "tt1401719": [
     "Japanese"
@@ -2020,6 +2117,7 @@
     "Japanese"
   ],
   "tt15366860": null,
+  "tt15391274": null,
   "tt15398776": [
     "English"
   ],
@@ -2030,6 +2128,7 @@
     "Japanese"
   ],
   "tt15478884": null,
+  "tt1548389": null,
   "tt15486810": [
     "English"
   ],
@@ -2133,6 +2232,7 @@
     "English"
   ],
   "tt16478058": null,
+  "tt1649261": null,
   "tt1649400": [
     "Japanese"
   ],
@@ -2177,6 +2277,7 @@
   "tt17069148": [
     "Japanese"
   ],
+  "tt1715332": null,
   "tt17163876": [
     "Japanese"
   ],
@@ -2211,6 +2312,7 @@
   "tt17660740": [
     "English"
   ],
+  "tt1770690": null,
   "tt1773185": [
     "Japanese"
   ],
@@ -2229,6 +2331,9 @@
   ],
   "tt18259086": [
     "English"
+  ],
+  "tt18395238": [
+    "Japanese"
   ],
   "tt1840372": [
     "Japanese"
@@ -2268,6 +2373,9 @@
     "English"
   ],
   "tt1959490": [
+    "English"
+  ],
+  "tt19637052": [
     "English"
   ],
   "tt19713090": [
@@ -2340,9 +2448,14 @@
   "tt21097264": [
     "English"
   ],
+  "tt21105772": [
+    "Japanese",
+    "Korean"
+  ],
   "tt21110200": [
     "Japanese"
   ],
+  "tt21147714": null,
   "tt21151212": [
     "English"
   ],
@@ -2432,6 +2545,9 @@
   ],
   "tt22299226": [
     "Japanese"
+  ],
+  "tt22398528": [
+    "English"
   ],
   "tt22410622": [
     "Japanese"
@@ -2528,6 +2644,12 @@
   "tt23873418": [
     "English"
   ],
+  "tt2390066": [
+    "Japanese"
+  ],
+  "tt2396135": [
+    "English"
+  ],
   "tt2397180": null,
   "tt2397461": [
     "English"
@@ -2565,6 +2687,9 @@
   "tt2515034": [
     "English"
   ],
+  "tt2549176": [
+    "Japanese"
+  ],
   "tt2562232": [
     "English"
   ],
@@ -2589,6 +2714,7 @@
   "tt25994796": [
     "Japanese"
   ],
+  "tt2624220": null,
   "tt2630336": [
     "Japanese"
   ],
@@ -2627,12 +2753,17 @@
   "tt26744484": null,
   "tt26919016": null,
   "tt26930646": null,
+  "tt27010738": null,
+  "tt2703708": [
+    "Japanese"
+  ],
   "tt27074938": [
     "English"
   ],
   "tt2709768": [
     "English"
   ],
+  "tt27137485": null,
   "tt27155038": [
     "English"
   ],
@@ -2646,6 +2777,9 @@
   "tt27504251": [
     "Japanese"
   ],
+  "tt27504510": [
+    "Japanese"
+  ],
   "tt27508306": null,
   "tt27521477": [
     "Japanese"
@@ -2656,12 +2790,21 @@
   "tt27543562": [
     "English"
   ],
+  "tt27548413": [
+    "Japanese"
+  ],
   "tt27548557": null,
   "tt27554366": [
     "Korean"
   ],
   "tt27616073": null,
+  "tt27621333": [
+    "English"
+  ],
   "tt27671691": null,
+  "tt2772104": [
+    "Japanese"
+  ],
   "tt27750745": null,
   "tt2785038": [
     "Japanese"
@@ -2719,11 +2862,19 @@
   "tt28314144": [
     "Japanese"
   ],
+  "tt28329684": [
+    "Japanese"
+  ],
+  "tt28329925": null,
+  "tt28347814": [
+    "Japanese"
+  ],
   "tt28362655": null,
   "tt28363783": [
     "Hindi"
   ],
   "tt28366799": null,
+  "tt28374121": null,
   "tt28374149": null,
   "tt28378170": null,
   "tt28378172": null,
@@ -2761,6 +2912,9 @@
   "tt28678677": null,
   "tt2869728": [
     "English"
+  ],
+  "tt28740765": [
+    "Japanese"
   ],
   "tt28743377": null,
   "tt28750546": null,
@@ -2808,11 +2962,17 @@
     "Korean"
   ],
   "tt29711811": null,
+  "tt29716957": [
+    "Japanese"
+  ],
   "tt2974918": [
     "English"
   ],
   "tt2975578": [
     "English"
+  ],
+  "tt29792231": [
+    "Japanese"
   ],
   "tt2980516": [
     "French",
@@ -2848,6 +3008,9 @@
     "Japanese"
   ],
   "tt30297286": null,
+  "tt30325850": [
+    "Japanese"
+  ],
   "tt30400536": [
     "Japanese"
   ],
@@ -2856,6 +3019,9 @@
     "Japanese"
   ],
   "tt3063996": [
+    "Japanese"
+  ],
+  "tt30643982": [
     "Japanese"
   ],
   "tt30743549": [
@@ -2884,6 +3050,9 @@
   "tt3102208": [
     "Romanian"
   ],
+  "tt3104246": [
+    "Japanese"
+  ],
   "tt31054427": null,
   "tt31064841": [
     "English"
@@ -2899,6 +3068,9 @@
   ],
   "tt31171712": [
     "Korean"
+  ],
+  "tt31183823": [
+    "Thai"
   ],
   "tt31186547": [
     "Japanese"
@@ -2972,6 +3144,9 @@
   "tt32218303": [
     "Thai"
   ],
+  "tt3225270": [
+    "Japanese"
+  ],
   "tt32253416": [
     "Japanese"
   ],
@@ -2989,6 +3164,7 @@
     "Japanese"
   ],
   "tt32345083": null,
+  "tt32357119": null,
   "tt32376857": [
     "Japanese"
   ],
@@ -3003,6 +3179,9 @@
   "tt32516343": [
     "Japanese"
   ],
+  "tt3254796": [
+    "English"
+  ],
   "tt32582999": [
     "Japanese"
   ],
@@ -3015,6 +3194,9 @@
   ],
   "tt32779862": [
     "Japanese"
+  ],
+  "tt32831881": [
+    "Thai"
   ],
   "tt32889884": null,
   "tt32909469": null,
@@ -3037,6 +3219,7 @@
     "Japanese"
   ],
   "tt3306838": null,
+  "tt33083563": null,
   "tt33088452": [
     "English"
   ],
@@ -3082,6 +3265,7 @@
   "tt33636006": [
     "Thai"
   ],
+  "tt33651133": null,
   "tt3369806": [
     "English"
   ],
@@ -3112,6 +3296,13 @@
   "tt34564059": [
     "English"
   ],
+  "tt34597975": [
+    "Korean"
+  ],
+  "tt34607637": [
+    "Cantonese",
+    "Putonghua"
+  ],
   "tt34616699": [
     "Japanese"
   ],
@@ -3133,6 +3324,7 @@
   "tt34910018": [
     "English"
   ],
+  "tt34914607": null,
   "tt34953261": [
     "Norwegian"
   ],
@@ -3167,6 +3359,9 @@
   ],
   "tt35351359": [
     "Japanese"
+  ],
+  "tt3541524": [
+    "English"
   ],
   "tt35436364": [
     "Japanese"
@@ -3221,6 +3416,9 @@
   "tt35768530": [
     "Putonghua"
   ],
+  "tt35836025": [
+    "Tamil"
+  ],
   "tt3588588": [
     "English"
   ],
@@ -3260,6 +3458,9 @@
     "English"
   ],
   "tt3630828": null,
+  "tt3633394": [
+    "Korean"
+  ],
   "tt36347588": [
     "Korean"
   ],
@@ -3300,6 +3501,9 @@
   "tt3682770": [
     "Cantonese"
   ],
+  "tt36832428": [
+    "Korean"
+  ],
   "tt36832679": null,
   "tt36942360": null,
   "tt36955608": [
@@ -3314,6 +3518,12 @@
   "tt36981677": [
     "Japanese"
   ],
+  "tt36987681": [
+    "Japanese"
+  ],
+  "tt36988220": [
+    "Japanese"
+  ],
   "tt36996011": [
     "Korean"
   ],
@@ -3322,6 +3532,7 @@
   ],
   "tt37053085": null,
   "tt37069111": null,
+  "tt37109800": null,
   "tt37113118": [
     "Japanese"
   ],
@@ -3355,6 +3566,7 @@
   "tt3753372": [
     "Japanese"
   ],
+  "tt37533886": null,
   "tt37538491": [
     "Japanese",
     "Korean"
@@ -3429,6 +3641,7 @@
   ],
   "tt38670018": null,
   "tt38681496": null,
+  "tt38707293": null,
   "tt3872958": null,
   "tt3874544": [
     "English"
@@ -3468,10 +3681,12 @@
   "tt39150449": null,
   "tt39161228": null,
   "tt39163015": null,
+  "tt39163341": null,
   "tt39216314": null,
   "tt39260895": null,
   "tt39282701": null,
   "tt39309902": null,
+  "tt39310683": null,
   "tt39365311": [
     "Japanese"
   ],
@@ -3503,6 +3718,8 @@
   "tt39741670": null,
   "tt39749747": null,
   "tt39750720": null,
+  "tt39779622": null,
+  "tt39779927": null,
   "tt39818587": null,
   "tt40001699": [
     "Portuguese"
@@ -3559,7 +3776,11 @@
   "tt41559858": null,
   "tt41653540": null,
   "tt4168604": null,
+  "tt41846573": [
+    "Japanese"
+  ],
   "tt4186212": null,
+  "tt41888569": null,
   "tt41973261": null,
   "tt41983415": null,
   "tt41991040": null,
@@ -3575,6 +3796,7 @@
   "tt42338585": null,
   "tt42369871": null,
   "tt42473200": null,
+  "tt42501198": null,
   "tt42615436": null,
   "tt42654265": null,
   "tt4270516": [
@@ -3582,6 +3804,9 @@
   ],
   "tt42742314": null,
   "tt42839367": null,
+  "tt4287852": [
+    "Japanese"
+  ],
   "tt43140112": null,
   "tt43141030": [
     "English"
@@ -3641,6 +3866,7 @@
     "Japanese"
   ],
   "tt44112771": null,
+  "tt44113382": null,
   "tt4419314": null,
   "tt4422136": null,
   "tt44286911": null,
@@ -3660,6 +3886,7 @@
   "tt4477536": [
     "English"
   ],
+  "tt44974627": null,
   "tt4503906": [
     "Japanese"
   ],
@@ -3667,6 +3894,9 @@
     "English"
   ],
   "tt4513678": [
+    "English"
+  ],
+  "tt4550098": [
     "English"
   ],
   "tt4558376": [
@@ -3705,6 +3935,9 @@
   ],
   "tt4802214": [
     "Japanese"
+  ],
+  "tt4803766": [
+    "English"
   ],
   "tt4881806": [
     "English"
@@ -3835,6 +4068,9 @@
   "tt5709188": [
     "English"
   ],
+  "tt5768840": [
+    "Korean"
+  ],
   "tt5772554": [
     "English",
     "Japanese"
@@ -3901,6 +4137,7 @@
   "tt6256734": [
     "Korean"
   ],
+  "tt6326182": null,
   "tt6329226": null,
   "tt6344476": [
     "Japanese"
@@ -3920,6 +4157,7 @@
   "tt6495056": [
     "English"
   ],
+  "tt6497408": null,
   "tt6513120": [
     "English"
   ],
@@ -3939,6 +4177,13 @@
   "tt6594882": null,
   "tt6595896": [
     "Japanese"
+  ],
+  "tt6599482": [
+    "French",
+    "English"
+  ],
+  "tt6628228": [
+    "Russian"
   ],
   "tt6673612": [
     "English"
@@ -3987,6 +4232,9 @@
   "tt6911608": [
     "English"
   ],
+  "tt6912372": [
+    "Japanese"
+  ],
   "tt6917420": null,
   "tt6927316": [
     "Korean"
@@ -3997,6 +4245,9 @@
   "tt6966692": [
     "Italian",
     "English"
+  ],
+  "tt6982472": [
+    "Japanese"
   ],
   "tt6987760": null,
   "tt7026672": [
@@ -4013,6 +4264,9 @@
   ],
   "tt7098236": [
     "Japanese"
+  ],
+  "tt7099334": [
+    "Korean"
   ],
   "tt7137846": [
     "English"
@@ -4033,6 +4287,7 @@
     "Japanese"
   ],
   "tt7253006": null,
+  "tt7256538": null,
   "tt7262882": null,
   "tt7264462": null,
   "tt7268388": [
@@ -4045,12 +4300,21 @@
   "tt7319486": [
     "English"
   ],
+  "tt7335600": [
+    "Japanese"
+  ],
+  "tt7375028": [
+    "Korean"
+  ],
   "tt7396518": null,
   "tt7464188": [
     "English"
   ],
   "tt7490342": [
     "Catalan"
+  ],
+  "tt7498270": [
+    "Japanese"
   ],
   "tt7504726": [
     "French",
@@ -4060,6 +4324,7 @@
     "English"
   ],
   "tt7512304": null,
+  "tt7521990": null,
   "tt7547130": null,
   "tt7601480": [
     "Russian"
@@ -4077,6 +4342,9 @@
   "tt7701724": [
     "Japanese"
   ],
+  "tt7713776": [
+    "Korean"
+  ],
   "tt7722178": [
     "Japanese"
   ],
@@ -4088,6 +4356,9 @@
   ],
   "tt7754284": [
     "Japanese"
+  ],
+  "tt7768192": [
+    "English"
   ],
   "tt7786486": [
     "English"
@@ -4104,6 +4375,9 @@
   "tt7907922": [
     "English"
   ],
+  "tt7933666": [
+    "Japanese"
+  ],
   "tt7945720": [
     "English"
   ],
@@ -4112,6 +4386,9 @@
   ],
   "tt7997042": [
     "Japanese"
+  ],
+  "tt8001226": [
+    "English"
   ],
   "tt8001748": null,
   "tt8007436": [
@@ -4133,8 +4410,14 @@
   "tt8285216": [
     "Russian"
   ],
+  "tt8314920": [
+    "Japanese"
+  ],
   "tt8362502": [
     "Japanese"
+  ],
+  "tt8372298": [
+    "English"
   ],
   "tt8380776": [
     "English"
@@ -4147,6 +4430,9 @@
     "Turkish"
   ],
   "tt8499662": [
+    "Japanese"
+  ],
+  "tt8520512": [
     "Japanese"
   ],
   "tt8589698": [
@@ -4214,6 +4500,9 @@
   "tt9340860": [
     "English"
   ],
+  "tt9377880": [
+    "Tamil"
+  ],
   "tt9426210": [
     "Japanese"
   ],
@@ -4222,6 +4511,9 @@
   ],
   "tt9484998": [
     "English"
+  ],
+  "tt9495690": [
+    "Hindi"
   ],
   "tt9501310": [
     "Japanese"
@@ -4243,6 +4535,9 @@
     "Japanese"
   ],
   "tt9620474": null,
+  "tt9679644": [
+    "Japanese"
+  ],
   "tt9680722": null,
   "tt9682428": [
     "English"
@@ -4257,6 +4552,9 @@
   "tt9749282": null,
   "tt9778158": null,
   "tt9849160": null,
+  "tt9860350": [
+    "Japanese"
+  ],
   "tt9881586": [
     "Japanese"
   ],
