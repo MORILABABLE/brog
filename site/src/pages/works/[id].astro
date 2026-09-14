@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
+import Thumb from '../../components/Thumb.astro'
 import UnextCta from '../../components/UnextCta.astro'
 import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
@@ -190,15 +191,65 @@ const observedSince = history.length > 0 ? observationStart() : null
  */
 const relatedGroups = relatedWorks(w)
 
+/**
+ * 出演者を何人まで開いたまま出すか。**4人までは全部出す**
+ * （1人だけたたんでも読者の得が無い）。5人以上は3人＋たたみ。
+ */
+const castShown = w.cast.length > 4 ? 3 : w.cast.length
+
 /*
- * この作品を扱っているシリーズ記事（あれば）。
+ * この作品を載せた記事（あれば）。
  *
- * ★ **記事→作品の一方通行にしない**（2026-09-10）。シリーズ記事の表からは
+ * ★ **記事→作品の一方通行にしない**（2026-09-10）。記事の表からは
  *   plugins/rehype-work-links.ts がここへリンクを張るが、戻る道が無いと
- *   読者はシリーズのまとめへ帰れず、クローラにも記事へ返る線が1本も無い。
+ *   読者はまとめへ帰れず、クローラにも記事へ返る線が1本も無い。
  *   判定は lib/works.ts の `seriesArticleFor()`（記事の表に載っているか）。
+ *
+ * ★ **月次記事も落とし先にする**（2026-09-14）。それまでシリーズ記事だけを
+ *   見ていたので、**658枚中91枚にしか戻る道が無かった**。表に載っている
+ *   作品ページは250枚あり、**159枚が「記事に載っているのに戻れない」**状態だった
+ *   （実測。作品ページからの回遊は90日で0件）。文言は `kind` で書き分ける。
+ *
+ * ★ **上の `series-ref` と同じ記事なら出さない。** 同じリンクが1ページに
+ *   2本並ぶだけで、読者には次の一手が増えたように見えない。
  */
 const seriesArticle = seriesArticleFor(w.id)
+const backLink = seriesArticle?.slug === seriesPost?.id ? undefined : seriesArticle
+
+/*
+ * この作品の「次の1本」。**1ページに1つだけ、配信状況のすぐ下に置く**（2026-09-14）。
+ *
+ * ■ なぜ位置を変えたか（実測 2026-09-14・90日）
+ * セッションの**71%がスマホ**だが、左レールも右レールも 1200px 以上でしか出ない。
+ * スマホの本文に出る内部リンクは、**上から順に**
+ * シリーズ枠（91枚だけ）→ 出演者 → Amazon の枠 → 関連作品 だった。
+ * つまり**記事への戻り道を持つ162枚では、それが Amazon の枠より下**にあった。
+ * `/works/*` からの回遊は90日で**0件**。
+ *
+ * ★ **シリーズ記事が先、月次記事は落とし先**（`seriesArticleFor()` と同じ順）。
+ * ★ **1ページに1つだけ。** 同じ記事が2か所に出ると、読者には
+ *   次の一手が増えたようには見えず、リンクが重複しているようにしか見えない。
+ */
+const nextArticle = seriesPost
+  ? {
+      href: `/posts/${seriesPost.id}`,
+      title: seriesPost.data.title,
+      label: 'このシリーズをまとめた記事はコチラ',
+      image: seriesPost.data.heroImage,
+      category: seriesPost.data.category,
+    }
+  : backLink
+    ? {
+        href: `/posts/${backLink.slug}`,
+        title: backLink.title,
+        label:
+          backLink.kind === 'series'
+            ? 'このシリーズをまとめた記事はコチラ'
+            : 'この作品を載せた記事はコチラ',
+        image: backLink.heroImage,
+        category: backLink.category,
+      }
+    : undefined
 
 /*
  * U-NEXT（afb）の掲載NG判定に渡す文字列。
@@ -303,10 +354,20 @@ const jsonLd = {
      *   押す前に何が待っているか分かる形にするのと、
      *   内部リンクの文字はそのまま記事の主題の手がかりになるため。
      */
-    seriesPost && (
+    nextArticle && (
       <aside class="series-ref">
-        <p class="series-ref-label">このシリーズをまとめた記事があります</p>
-        <a href={`/posts/${seriesPost.id}`}>{seriesPost.data.title}</a>
+        {/*
+          ★ **記事カードと同じ絵**（`PostCard.astro` と同じ `Thumb`・同じ 72px）。
+            一覧で見た絵と同じものがここにも出ることで、読者は
+            「さっき見た記事」なのか「まだ見ていない記事」なのかを絵で判別できる。
+          ★ 画像が無い記事でも **Thumb がカテゴリ色のタイルを出す**ので、
+            枠の高さが揃う（画像あり/なしで並びが乱れない）。
+        */}
+        <Thumb src={nextArticle.image} category={nextArticle.category} size={72} radius={8} />
+        <div class="series-ref-body">
+          <p class="series-ref-label">{nextArticle.label}</p>
+          <a href={nextArticle.href}>{nextArticle.title}</a>
+        </div>
       </aside>
     )
   }
@@ -354,17 +415,40 @@ const jsonLd = {
             </dd>
           </>
         )}
-        {/* ★ 「主演」と書かない。Wikidata の並びは主演順ではない。 */}
+        {/*
+          ★ 「主演」と書かない。Wikidata の並びは主演順ではない。
+
+          ★ **5人以上は3人でたたむ**（2026-09-14）。実測で**315枚が10人ちょうど**
+            （上限）で、スマホでは名前の列が数行を占めていた。読者が次に押すもの
+            （上のシリーズ枠・下の関連作品）の間に、長い名前の列が挟まっている。
+            `/person` は229枚あって**90日で8表示・0クリック**で、
+            読者がここから辿っている形跡は無い。
+
+          ★ **名前を消さない。`<details>` でたたむだけ。** 中身はHTMLに残るので
+            `/person` への820本のリンクは1本も減らない（孤立させない）。
+            JSも足さない（素のHTMLで開閉する）。
+        */}
         {w.cast.length > 0 && (
           <>
             <dt>出演</dt>
             <dd>
-              {nameLinks(w.cast).map((n, i) => (
+              {nameLinks(w.cast.slice(0, castShown)).map((n, i) => (
                 <>
                   {i > 0 && '、'}
                   {n.href ? <a href={n.href}>{n.name}</a> : n.name}
                 </>
               ))}
+              {w.cast.length > castShown && (
+                <details class="more-cast">
+                  <summary>ほか{w.cast.length - castShown}人</summary>
+                  {nameLinks(w.cast.slice(castShown)).map((n, i) => (
+                    <>
+                      {i > 0 && '、'}
+                      {n.href ? <a href={n.href}>{n.name}</a> : n.name}
+                    </>
+                  ))}
+                </details>
+              )}
             </dd>
           </>
         )}
@@ -421,11 +505,18 @@ const jsonLd = {
 
   <section class="find">
     <h2>他のサービスで探す</h2>
+    {/*
+      ★ **名乗るのは、この節に実際にリンクがあるサービスだけ**（2026-09-14・運用者の指定）。
+        リンクの並びから組むので、`search-links.ts` を足し引きしても文が自動で合う。
+        **手で社名を書かないこと** — 書いた社名とリンクがずれるのがいちばん悪い。
+
+      ★ **U-NEXT の一文は残す。** リンクはこの節にあるが、
+        **配信状況のデータを持っているのは記事だけ**（作品ページの表には入らない）。
+        読者が「この作品ページにU-NEXTの状況が出ていない」ことに気づくのはここ。
+    */}
     <p class="find-note">
-      このページの配信状況は Netflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスぶんです
-      （当サイトが追いかけている U-NEXT は記事でのみ扱っており、作品ページには入っていません）。
-      下のリンクは各サービスの検索結果に飛ぶだけで、配信の有無を保証するものではありません。
-      Amazon のリンクは<strong>見放題ではなくレンタル・購入</strong>を探すものです。
+      {findLinks.map((l) => l.label).join('・')}
+      の配信状況をリンクから検索できます。U-NEXTは記事でのみ扱っております。
     </p>
     <p class="find-links">
       {
@@ -464,14 +555,6 @@ const jsonLd = {
   <UnextCta spot="work" pageText={unextPageText} />
 
   <AmazonCta category={STATE_CATEGORY[w.state]} query={w.title} />
-
-  {
-    seriesArticle && (
-      <p class="series-article">
-        シリーズのまとめ: <a href={`/posts/${seriesArticle.slug}`}>{seriesArticle.title}</a>
-      </p>
-    )
-  }
 
   {
     relatedGroups.length > 0 && (
@@ -539,11 +622,17 @@ const jsonLd = {
    *   左の縦線だけで「補足」だと分かる形にしてある。
    */
   .series-ref {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
     margin: 1.2rem 0 0;
-    padding: 0.7rem 0 0.7rem 0.9rem;
+    padding: 0.7rem 0.9rem 0.7rem 0.9rem;
     border-left: 3px solid var(--accent);
     background: var(--accent-soft);
     border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .series-ref-body {
+    min-width: 0;
   }
   .series-ref-label {
     margin: 0 0 0.25rem;
@@ -555,6 +644,21 @@ const jsonLd = {
     font-size: 0.92rem;
     font-weight: 700;
     line-height: 1.6;
+  }
+
+  /* 出演者のたたみ。**開閉の印だけを出し、枠で囲わない**（詳細の1行なので） */
+  .more-cast {
+    display: inline;
+  }
+  .more-cast summary {
+    display: inline;
+    margin-left: 0.4rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .more-cast[open] summary {
+    margin-right: 0.4rem;
   }
 
   /* --- 配信状況 --- */
@@ -698,16 +802,6 @@ const jsonLd = {
     color: var(--text-muted);
   }
 
-  /* シリーズ記事へ戻る1本。関連リンクの列より目立たせる（読者の帰り道なので） */
-  .series-article {
-    margin-top: 2rem;
-    padding: 0.9rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg-subtle);
-    font-size: 0.9rem;
-    line-height: 1.7;
-  }
 
   .related a {
     margin-left: 0.7rem;

@@ -141,11 +141,18 @@ function lineFor(work: RowWork): Node {
   if (links.length === 0) return { type: 'element', tagName: 'li', children: [] }
 
   const children: Node[] = [
-    { type: 'element', tagName: 'strong', children: [text(work.title)] },
-    text(' '),
+    {
+      type: 'element',
+      tagName: 'strong',
+      properties: { className: ['find-work'] },
+      children: [text(work.title)],
+    },
   ]
-  links.forEach((l, i) => {
-    if (i > 0) children.push(text(' / '))
+  /*
+   * ★ **区切り文字を入れない**（2026-09-14）。チップ（枠つきのピル）にしたので、
+   *   間隔は CSS の `gap` が持つ。`/` を挟むと枠と枠の間に記号が浮く。
+   */
+  links.forEach((l) => {
     children.push({
       type: 'element',
       tagName: 'a',
@@ -154,6 +161,11 @@ function lineFor(work: RowWork): Node {
        *   表の中の「他で探す」チップと**同じ枠に数える**。押された意味が同じで、
        *   どちらも「答えが出せなかったときの逃げ先」だから
        *   （docs/FUNNEL.md 7-5 の枠分けの考え方）。
+       */
+      /*
+       * ★ **`find-link` の名前を変えないこと。** `rehype-affiliate.ts` の
+       *   `slotOf()` がこのクラス名で枠を決めている。見た目のために
+       *   別名に替えると、**計測だけ黙って `body` 枠に落ちる。**
        */
       properties: { href: l.url, className: ['find-link'] },
       children: [text(l.label)],
@@ -207,7 +219,26 @@ export function rehypeFindLinks() {
         properties: { className: ['find-list'] },
         children: works.slice(0, MAX_WORKS).map(lineFor),
       }
-      tree.children = [...body.slice(0, at), ...kept, list, ...body.slice(end)]
+
+      /*
+       * ★ **注記はリンクの後ろに置く**（2026-09-14・運用者の指定）。
+       *
+       *   この節に来た読者は「で、どこで探せるのか」を知りたい。
+       *   ※で始まる2つの注記（把握している5サービス／掲載範囲の断り）は
+       *   **読んだうえで効く前提**であって、**答えの前に立ちはだかる文章ではない。**
+       *   先に置くと、作品80本ぶんのリンクが注記2段落の下に沈む。
+       *
+       *   ★ **注記は消さない。** 掲載範囲の断りは
+       *     「この記事は抜けている」と読まれないための線で、
+       *     この記事タイプの信用そのもの（`templates/series.md` 4節）。
+       *   ★ **記事のMarkdownは書き換えない。** 並べ替えるのはここ（ビルド時）だけなので、
+       *     既存の記事も次のビルドから新しい並びになる。
+       */
+      const heading = kept[0]
+      const notes = kept.slice(1)
+      tree.children = [...body.slice(0, at), heading, list, ...notes, ...body.slice(end)].filter(
+        (n): n is Node => n !== undefined,
+      )
     } catch {
       // 節の形が想定と違っても記事は出す。**リンクが増えないだけ。**
     }

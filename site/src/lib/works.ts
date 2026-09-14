@@ -34,6 +34,7 @@ import {
   type RawWork,
 } from './events-data'
 import { resolveUrl, workLinkByTitle } from './work-links'
+import { seriesRefFor } from './series-for-work'
 import { formatDate, isoDate } from '../utils/date'
 
 /** ポスターの公開パスの根。scripts/make-thumbs.mjs の出力先と揃える。 */
@@ -712,9 +713,28 @@ export interface SeriesArticle {
   slug: string
   /** frontmatter の title。リンクの文字列にそのまま出す */
   title: string
+  /**
+   * どちらの記事か。**読者に出す文言が変わる**（`works/[id].astro`）。
+   *
+   *   series  … シリーズ記事（保存版）。「シリーズのまとめ」
+   *   monthly … 月次記事。「この作品を載せた記事」
+   *
+   * ★ 混ぜて1つの文言にしない。シリーズ記事は**その作品群そのもの**を扱うが、
+   *   月次記事は「その月に動いた作品の1本として載っている」だけで、
+   *   読者が受け取る約束が違う。
+   */
+  kind: 'series' | 'monthly'
+  /**
+   * frontmatter の `heroImage`（`/heroes/<slug>.webp`）。**記事カードと同じ絵**。
+   * 無いこともある（`npm run sections -- --write` を通していない記事）。
+   */
+  heroImage?: string
+  /** frontmatter の `category`。画像が無いときのタイルの色分けに使う（`Thumb.astro`） */
+  category?: CategorySlug
 }
 
 let featured: Map<string, SeriesArticle> | null = null
+let monthly: Map<string, SeriesArticle> | null = null
 
 /**
  * `site/src/content/posts` を探す。**実行時のカレントから上へ辿る**
@@ -764,6 +784,38 @@ function findUpPosts(): string | null {
  *   別の引き方をすると、記事の表が張るリンク先と、ここで作るページのIDがずれて
  *   **404 になる**（work-links.ts の `workIdsForTitle` の注意書き）。
  */
+function readArticle(
+  dir: string,
+  file: string,
+  kind: SeriesArticle['kind'],
+): { article: SeriesArticle; ids: string[] } | undefined {
+  const raw = readFileSync(join(dir, file), 'utf8')
+  // 下書きはページに出ない（getCollection の絞り込みと合わせる）
+  if (/^draft:\s*true\s*$/m.test(raw)) return undefined
+  // シリーズ記事の目印。theme-packs の article-types が付けるタグ
+  const isSeries = /^tags:.*['"]シリーズ['"]/m.test(raw)
+  if (isSeries !== (kind === 'series')) return undefined
+  // frontmatter の title。クォートの有無どちらでも拾う
+  const title = raw.match(/^title:\s*['"]?(.+?)['"]?\s*$/m)?.[1]
+  if (!title) return undefined
+  // ★ 記事カードと同じ絵を使うため（2026-09-14）。無ければ Thumb がタイルを出す。
+  const heroImage = raw.match(/^heroImage:\s*['"]?(.+?)['"]?\s*$/m)?.[1]
+  const category = raw.match(/^category:\s*['"]?(.+?)['"]?\s*$/m)?.[1] as CategorySlug | undefined
+
+  const ids: string[] = []
+  for (const line of raw.split('\n')) {
+    if (!line.startsWith('|')) continue
+    for (const cell of line.split('|').slice(1, -1)) {
+      const cellTitle = cell.trim()
+      // 区切り行（`| --- |`）と空セルを飛ばす
+      if (!cellTitle || /^[-\s:—]+$/.test(cellTitle)) continue
+      const id = workLinkByTitle(cellTitle)?.workId
+      if (id) ids.push(id)
+    }
+  }
+  return { article: { slug: file.replace(/\.md$/, ''), title, kind, heroImage, category }, ids }
+}
+
 function seriesFeatured(): Map<string, SeriesArticle> {
   if (featured) return featured
   const ids = new Map<string, SeriesArticle>()
@@ -773,29 +825,54 @@ function seriesFeatured(): Map<string, SeriesArticle> {
     return ids
   }
   for (const file of readdirSync(dir).filter((n) => n.endsWith('.md'))) {
-    const raw = readFileSync(join(dir, file), 'utf8')
-    // 下書きはページに出ない（getCollection の絞り込みと合わせる）
-    if (/^draft:\s*true\s*$/m.test(raw)) continue
-    // シリーズ記事の目印。theme-packs の article-types が付けるタグ
-    if (!/^tags:.*['"]シリーズ['"]/m.test(raw)) continue
-    // frontmatter の title。クォートの有無どちらでも拾う
-    const title = raw.match(/^title:\s*['"]?(.+?)['"]?\s*$/m)?.[1]
-    if (!title) continue
-    const article: SeriesArticle = { slug: file.replace(/\.md$/, ''), title }
-    for (const line of raw.split('\n')) {
-      if (!line.startsWith('|')) continue
-      for (const cell of line.split('|').slice(1, -1)) {
-        const cellTitle = cell.trim()
-        // 区切り行（`| --- |`）と空セルを飛ばす
-        if (!cellTitle || /^[-\s:—]+$/.test(cellTitle)) continue
-        const id = workLinkByTitle(cellTitle)?.workId
-        // ★ 先に読んだ記事を優先する。同じ作品が2本のシリーズ記事に出ることは
-        //   いまは無いが、出たときに毎ビルドで行き先が入れ替わらないようにする。
-        if (id && !ids.has(id)) ids.set(id, article)
-      }
+    const hit = readArticle(dir, file, 'series')
+    if (!hit) continue
+    for (const id of hit.ids) {
+      // ★ 先に読んだ記事を優先する。同じ作品が2本のシリーズ記事に出ることは
+      //   いまは無いが、出たときに毎ビルドで行き先が入れ替わらないようにする。
+      if (!ids.has(id)) ids.set(id, hit.article)
     }
   }
   featured = ids
+  return ids
+}
+
+/**
+ * **月次記事の表に載っている作品ID**（2026-09-14 追加）。
+ *
+ * ■ なぜ要るか（実測 2026-09-14・90日）
+ * 作品ページ658枚のうち、**記事へ戻る道があるのは91枚（14%）だけ**だった。
+ * 表に載っている作品ページは250枚あるので、**159枚が「記事に載っているのに
+ * その記事へ戻れない」**状態だった。作品ページからの回遊は90日で**0件**。
+ *
+ * ★ 🔴 **`seriesFeatured()` に月次記事を混ぜてはいけない。** あちらは
+ *   掲載判定（`isWorkPagePublishable`）も見ていて、混ぜると
+ *   **月次記事に載っただけの作品にページが生える**。薄いページを一度に増やすと
+ *   まとめて未登録に落ちる（docs/GROWTH.md 3-1）。ここは**戻る道専用**で、
+ *   ページの枚数を1枚も動かさない。
+ *
+ * ★ **新しい月の記事を優先する**（ファイル名の降順で読む）。`2026-09-…` が
+ *   `2026-08-…` より先に来る。読者が知りたいのはいまの状態で、
+ *   同じ作品が何か月も続けて載ることがあるため。
+ *   **並べ方をファイル名だけで決める**ので、月をまたいでも行き先が揺れない。
+ */
+function monthlyFeatured(): Map<string, SeriesArticle> {
+  if (monthly) return monthly
+  const ids = new Map<string, SeriesArticle>()
+  const dir = findUpPosts()
+  if (!dir) {
+    monthly = ids
+    return ids
+  }
+  const files = readdirSync(dir)
+    .filter((n) => n.endsWith('.md'))
+    .sort((a, b) => b.localeCompare(a))
+  for (const file of files) {
+    const hit = readArticle(dir, file, 'monthly')
+    if (!hit) continue
+    for (const id of hit.ids) if (!ids.has(id)) ids.set(id, hit.article)
+  }
+  monthly = ids
   return ids
 }
 
@@ -872,13 +949,19 @@ export function hasWorkPage(id: string): boolean {
 }
 
 /**
- * その作品を扱っているシリーズ記事。**作品ページから記事へ戻るリンクに使う。**
+ * その作品を扱っている記事。**作品ページから記事へ戻るリンクに使う。**
  *
  * ★ 記事→作品の一方通行にしないため（2026-09-10）。作品ページを増やしただけでは
- *   記事側にリンクが返らず、読者もシリーズのまとめへ戻れない。
+ *   記事側にリンクが返らず、読者もまとめへ戻れない。
+ *
+ * ★ **シリーズ記事が先、月次記事は落とし先**（2026-09-14）。
+ *   シリーズ記事はその作品群そのものを扱う保存版で、月次記事は
+ *   「その月に動いた作品の1本として載っている」だけ。前者のほうが
+ *   読者の次の問い（シリーズの他はどうなのか）に答えている。
+ *   **どちらが出たかは `kind` で分かる。文言を変えること。**
  */
 export function seriesArticleFor(id: string): SeriesArticle | undefined {
-  return seriesFeatured().get(id)
+  return seriesFeatured().get(id) ?? monthlyFeatured().get(id)
 }
 
 /** テスト・再読込用 */
@@ -886,6 +969,7 @@ export function resetWorkPages(): void {
   pages = null
   ambiguous = null
   featured = null
+  monthly = null
   posterFiles = null
   observedSince = null
   relatedIndex = null
@@ -911,6 +995,7 @@ export function resetWorkPages(): void {
 // ★ **題名で引かない。IDで引く。** 同じ題名の別作品が別サービスに入ることがある
 //   （work-links.ts の Entry の注意書き）。
 
+const SAME_SERIES_LIMIT = 8
 const SAME_DAY_LIMIT = 8
 const SAME_DIRECTOR_LIMIT = 6
 const SAME_GENRE_LIMIT = 6
@@ -932,6 +1017,15 @@ interface RelatedIndex {
   byDay: Map<string, WorkPage[]>
   /** 監督名 → 作品 */
   byDirector: Map<string, WorkPage[]>
+  /**
+   * シリーズ記事の slug → その記事が扱う作品（2026-09-14 追加）。
+   *
+   * ★ **束は新しく作らない。** `data/articles.json` の `match`
+   *   （記事を書くときに人が決めた正規表現）をそのまま使う。
+   *   ここで題名から独自に束ねると、WORK-PAGES 6節の
+   *   「関連を題名で引かない」に正面からぶつかる。人が確定させた式だけを通す。
+   */
+  bySeries: Map<string, WorkPage[]>
   /** `<サービス> <ジャンル>` → **終了予定の**作品 */
   byGenre: Map<string, WorkPage[]>
   /**
@@ -974,6 +1068,7 @@ function buildRelatedIndex(): RelatedIndex {
   const byGenre = new Map<string, WorkPage[]>()
   const byGenreEnded = new Map<string, WorkPage[]>()
   const byGenreAny = new Map<string, WorkPage[]>()
+  const bySeries = new Map<string, WorkPage[]>()
 
   const push = <K>(map: Map<K, WorkPage[]>, key: K, w: WorkPage) => {
     const list = map.get(key)
@@ -992,13 +1087,17 @@ function buildRelatedIndex(): RelatedIndex {
     }
     for (const d of w.directors) push(byDirector, d, w)
     for (const g of w.genres) push(byGenreAny, g, w)
+    const series = seriesRefFor(w.title)
+    if (series) push(bySeries, series.slug, w)
   }
 
   // ★ 輪をつくるので並びを固定する（byGenreEnded の説明）
   for (const list of byGenreEnded.values()) list.sort((a, b) => a.id.localeCompare(b.id))
   for (const list of byGenreAny.values()) list.sort((a, b) => a.id.localeCompare(b.id))
 
-  relatedIndex = { byDay, byDirector, byGenre, byGenreEnded, byGenreAny }
+  for (const list of bySeries.values()) list.sort((a, b) => a.id.localeCompare(b.id))
+
+  relatedIndex = { byDay, byDirector, byGenre, byGenreEnded, byGenreAny, bySeries }
   return relatedIndex
 }
 
@@ -1077,41 +1176,34 @@ export function relatedWorks(w: WorkPage): RelatedGroup[] {
     return out
   }
 
-  // 1. 同じ日・同じサービス。**このページの主役の状態に合わせる**
   const head = w.services[0]!
-  const dayBucket = idx.byDay.get(dayKey(head.service, head.state, head.at)) ?? []
-  /*
-   * ★ **輪の次の1件を必ず混ぜる**（2026-08-30）。
-   *   評価の高い順に上位8件を出すだけだと、束が大きいとき
-   *   （実測: 8月14日の Prime Video は116作品）**下位の作品は誰からもリンクされない。**
-   *   自分の次の1件を必ず入れておけば A→B→C→…→A と輪になり、
-   *   束のどれか1枚に外から入れれば全部に辿り着ける（`ringSlice` の説明）。
-   *
-   *   混ぜたうえで**表示は評価の高い順のまま**にしてある。読者に見えるのは
-   *   「同じ日に終わる作品が8件」で、並びの意図は変わらない。
-   */
-  const ordered = [...dayBucket].sort((a, b) => a.id.localeCompare(b.id))
-  const picked: WorkPage[] = []
-  const pickedIds = new Set<string>([w.id])
-  // ★ 輪の次の1件を先に確保してから、評価の高い順で残りを埋める。
-  //   先に並べ替えてしまうと、輪の1件が順位で押し出されて効かなくなる。
-  for (const x of [...ringSlice(ordered, w, 1), ...[...dayBucket].sort(byNotability)]) {
-    if (pickedIds.has(x.id)) continue
-    pickedIds.add(x.id)
-    picked.push(x)
-    if (picked.length >= SAME_DAY_LIMIT) break
-  }
-  // 見せる順は評価の高い順に戻す（読者から見た並びの意図は変えない）
-  const sameDay = take(picked.sort(byNotability), SAME_DAY_LIMIT, (x) =>
-    x.year ? `${x.year}年` : '',
-  )
-  if (sameDay.length > 0) {
-    groups.push({
-      heading: `${formatDate(head.at)}に${head.label}で${dayVerb(head.state)}`,
-      items: sameDay,
-    })
-  }
 
+  /*
+   * 1. 同じシリーズ（2026-09-14 追加）。**いちばん上に置く枠。**
+   *
+   * ■ なぜ順番を変えたか（実測 2026-09-14・90日）
+   * それまで先頭は「同じ日に同じサービスで終わる作品」だった。
+   * これは**配信側の都合でできた束**で、読者の問いの続きではない。
+   * 実測で `/works/*` からの回遊は**90日で0件**、
+   * 「からかい上手の高木さん」のページの先頭に**ハリー・ポッター7作**が並んでいた
+   * （同じ9月30日にNetflixで終わるから）。
+   *
+   * ★ **同じ日の枠は消さない。最後に置く。** あれは
+   *   「束のどれか1枚に外から入れば全部に辿り着ける」輪（`ringSlice`）を作っていて、
+   *   消すと**誰からもリンクされない作品ページ**が戻ってくる。
+   *   順番を変えても、このページから輪の次の1件へリンクが出ることは変わらない
+   *   （先の枠が先に取ったなら、その枠からリンクが出ている）。
+   */
+  const seriesSlug = seriesRefFor(w.title)?.slug
+  if (seriesSlug) {
+    const mates = (idx.bySeries.get(seriesSlug) ?? []).slice().sort(byNotability)
+    const items = take(mates, SAME_SERIES_LIMIT, (x) =>
+      [x.year ? `${x.year}年` : '', STATE_LABEL[x.state]].filter(Boolean).join('・'),
+    )
+    if (items.length > 0) {
+      groups.push({ heading: `${seriesRefFor(w.title)?.topic ?? ''}の作品`, items })
+    }
+  }
   // 2. 同じ監督。**配信状況が変わっても古くならない枠**（docs/STOCK.md S-3）
   const director = w.directors[0]
   if (director) {
@@ -1160,6 +1252,46 @@ export function relatedWorks(w: WorkPage): RelatedGroup[] {
     if (endedItems.length > 0) {
       groups.push({ heading: `${head.label}で見放題配信が終了した${genre}作品`, items: endedItems })
     }
+  }
+
+  /*
+   * 5. 同じ日・同じサービス。**輪（`ringSlice`）を保つための枠。**
+   *
+   * ★ **2026-09-14 に先頭から最後へ移した。** 配信側の都合でできた束なので、
+   *   読者の問い（このシリーズの他は／同じ監督は）より前に出す理由が無い。
+   *   枠そのものは残す — この輪が切れると、どこからもリンクされない作品ページが戻る。
+   */
+  const dayBucket = idx.byDay.get(dayKey(head.service, head.state, head.at)) ?? []
+  /*
+   * ★ **輪の次の1件を必ず混ぜる**（2026-08-30）。
+   *   評価の高い順に上位8件を出すだけだと、束が大きいとき
+   *   （実測: 8月14日の Prime Video は116作品）**下位の作品は誰からもリンクされない。**
+   *   自分の次の1件を必ず入れておけば A→B→C→…→A と輪になり、
+   *   束のどれか1枚に外から入れれば全部に辿り着ける（`ringSlice` の説明）。
+   *
+   *   混ぜたうえで**表示は評価の高い順のまま**にしてある。読者に見えるのは
+   *   「同じ日に終わる作品が8件」で、並びの意図は変わらない。
+   */
+  const ordered = [...dayBucket].sort((a, b) => a.id.localeCompare(b.id))
+  const picked: WorkPage[] = []
+  const pickedIds = new Set<string>([w.id])
+  // ★ 輪の次の1件を先に確保してから、評価の高い順で残りを埋める。
+  //   先に並べ替えてしまうと、輪の1件が順位で押し出されて効かなくなる。
+  for (const x of [...ringSlice(ordered, w, 1), ...[...dayBucket].sort(byNotability)]) {
+    if (pickedIds.has(x.id)) continue
+    pickedIds.add(x.id)
+    picked.push(x)
+    if (picked.length >= SAME_DAY_LIMIT) break
+  }
+  // 見せる順は評価の高い順に戻す（読者から見た並びの意図は変えない）
+  const sameDay = take(picked.sort(byNotability), SAME_DAY_LIMIT, (x) =>
+    x.year ? `${x.year}年` : '',
+  )
+  if (sameDay.length > 0) {
+    groups.push({
+      heading: `${formatDate(head.at)}に${head.label}で${dayVerb(head.state)}`,
+      items: sameDay,
+    })
   }
 
   /*

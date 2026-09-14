@@ -774,7 +774,13 @@ h3 {
  *   ★ ここに ○ △ × を足さないこと。足した瞬間に「印」になり、
  *     **調べていない先を調べたことにしてしまう**（在庫が取れない3社だから検索に渡している）。
  */
-.prose .avail-find-link {
+/*
+ * ★ 記事の「他のサービスで探す」節のリンク（`.find-link`）も**同じ形**にする
+ *   （2026-09-14・運用者の指定）。表の中のチップと節のリンクで見た目が違うと、
+ *   読者には**別の部品**に見える。組み立ては `plugins/rehype-find-links.ts`。
+ */
+.prose .avail-find-link,
+.prose .find-link {
   display: inline-flex;
   align-items: center;
   padding: 0.12rem 0.55rem;
@@ -785,9 +791,34 @@ h3 {
   text-decoration: none;
   white-space: nowrap;
 }
-.prose .avail-find-link:hover {
+.prose .avail-find-link:hover,
+.prose .find-link:hover {
   border-color: var(--accent);
   background: var(--accent-soft);
+}
+
+/*
+ * 「他のサービスで探す」節の一覧（`plugins/rehype-find-links.ts` が組む）。
+ *
+ * ★ **1作品＝1行。** 題名とチップを同じ行に流し、入りきらなければ折り返す。
+ *   80作品ぶん並ぶことがあるので、行間を詰めて縦を短くしてある。
+ */
+.prose .find-list {
+  margin: 0 0 1.4rem;
+  padding: 0;
+  list-style: none;
+}
+.prose .find-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+.prose .find-work {
+  margin-right: 0.15rem;
 }
 
 /* 表の直後の凡例。記号の意味を、記号を見た流れで読ませる */

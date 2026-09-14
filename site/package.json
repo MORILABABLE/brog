@@ -13,6 +13,7 @@
     "posters:purge": "node scripts/purge-posters.mjs",
     "prebuild": "node scripts/make-cards.mjs && node scripts/make-sections.mjs && node scripts/make-thumbs.mjs",
     "build": "astro build",
+    "build:watch": "node scripts/watch-build.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "thumbs": "node scripts/make-thumbs.mjs"

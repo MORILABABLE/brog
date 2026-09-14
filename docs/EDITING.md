@@ -273,6 +273,30 @@ npm run dev:fresh
 
 → http://localhost:4321/ 。ファイル保存で自動反映。Ctrl+C で停止。
 
+### ★ ビルド後の形を見たいとき（2026-09-14 追加）
+
+`npm run dev` は速いが**本番と同じ出力ではない**。
+サイトマップの間引き（`prune-sitemap`）・画像の最適化・`prebuild` が作る
+カード/セクション/サムネイルは**ビルドにしか無い**。
+「作品ページの見た目を本番と同じ形で確かめたい」ときは、
+**ターミナルを2つ**開いてこうする。
+
+```bash
+cd site && npm run build:watch   # 保存すると自動でビルド（Ctrl+C で停止）
+cd site && npm run preview       # http://localhost:4321 で配信
+```
+
+- `build:watch` は `src` / `plugins` / `public` / `scripts` / `data` / `theme-packs` を見張る
+- **ブラウザの自動再読込はしない。**「ビルド完了」が出たらタブを再読込する
+- 依存は足していない（Node 標準の `fs.watch` だけ。`site/scripts/watch-build.mjs`）
+- **`plugins/` と `data/` と `astro.config.mjs` を直したときは、自動で `build:fresh`**
+  （キャッシュを消してからビルド）に切り替わる。画面に「（キャッシュを消してから）」と出る
+
+> 🔴 **`prebuild` の書き出し先を見張りから外してある。** `public/cards`・
+> `public/sections`・`public/thumbs`・`data/image-manifest.json` などを拾うと、
+> **ビルドが自分の出力を拾って永久に回り続ける**（2026-09-14 に実際に踏んだ）。
+> 見張る場所を足すときは、そこがビルドの書き出し先でないか必ず確かめること。
+
 ---
 
 ## 記事を新しく作る場合
