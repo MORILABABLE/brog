@@ -236,6 +236,15 @@ export function resolveThumb(work: RawWork, service?: string): string | undefine
   return files.has(generic) ? `${THUMB_BASE}/${generic}` : undefined
 }
 
+/**
+ * その作品そのもののポスターか（ジャンルの汎用画像ではないか）。
+ * 同じ題名の作品が2つあるときに、どちらを表に残すかの判定に使う（`put`）。
+ */
+function isPosterThumb(thumb?: string): boolean {
+  // 汎用画像は `genre-*.webp`（`scripts/genre-art.mjs` の `genreThumbName`）
+  return !!thumb && !thumb.startsWith(`${THUMB_BASE}/genre-`)
+}
+
 // --- サービス名 ---------------------------------------------------------------
 
 /**
@@ -408,10 +417,34 @@ function buildIndex(): Index {
       map.get(key) ?? { title, byService: new Map<string, ServiceLink>(), latestService: '' }
     entry.title = title
     entry.latestService = e.service
+    const thumb = resolveThumb(e.work, e.service)
+    /*
+     * ★ **同じ題名・同じサービスに別IDの作品が2つあるとき、絵のあるほうを残す**
+     *   （2026-09-14 追加）。
+     *
+     *   長寿シリーズにはテレビ版と劇場版が同じ題名で入っていることがある。
+     *   `byService` はサービスごとに1つしか持てないので、**後から来たほうが勝つ。**
+     *   サムネイルは作品IDごとのファイル（`make-thumbs.mjs`）で、あちらは
+     *   **表の題名から先勝ちで1件だけ**作る。両者が別のIDを選ぶと、
+     *   **絵を持たない側が表に出て、その行だけジャンルの汎用画像になる。**
+     *
+     *     実測（2026-09-14・「ガンダム」30行）
+     *       機動戦士ガンダム  id 10206（絵あり・thumbsを作ったのはこちら）
+     *                         id 61679（絵なし・表が選んでいたのはこちら）
+     *       → 30行のうちこの1行だけ genre-animation.webp になっていた
+     *
+     * ★ **引き継ぐのは絵だけ。** 送り先（`url`）と `workId` はこれまでどおり後勝ちにする。
+     *   ここで行ごと据え置くと、**終了済みになった観測が反映されなくなり**、
+     *   もう見放題ではない作品をサービスの作品ページへ送ってしまう
+     *   （`resolveUrl()` が `kind` を見て検索へ落とす規律を壊す）。
+     *   絵がずれても同じ題名の作品なので、読者の実害はこちらのほうが小さい。
+     * ★ 汎用画像どうし・作品ポスターどうしのときは、これまでどおり後勝ち。
+     */
+    const prev = entry.byService.get(e.service)
     entry.byService.set(e.service, {
       workId: String(e.work.id),
       url: resolveUrl(e.work, e.kind),
-      thumb: resolveThumb(e.work, e.service),
+      thumb: !isPosterThumb(thumb) && isPosterThumb(prev?.thumb) ? prev?.thumb : thumb,
     })
     map.set(key, entry)
   }

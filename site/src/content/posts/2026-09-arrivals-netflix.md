@@ -71,7 +71,7 @@ heroImage: '/heroes/2026-09-arrivals-netflix.webp'
 
 ## 9月4日：「ストロベリームーン 余命半年の恋」が見放題配信を開始
 
-![9月4日：「ストロベリームーン 余命半年の恋」が見放題配信を開始。ストロベリームーン 余命半年の恋](/sections/2026-09-arrivals-netflix-acc36657.jpg)
+[![ストロベリームーン 余命半年の恋](/sections/posters/2026-09-arrivals-netflix-acc36657-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%B9%E3%83%88%E3%83%AD%E3%83%99%E3%83%AA%E3%83%BC%E3%83%A0%E3%83%BC%E3%83%B3%20%E4%BD%99%E5%91%BD%E5%8D%8A%E5%B9%B4%E3%81%AE%E6%81%8B&i=instant-video)
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |

@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-13T14:26:41.599Z",
+  "updatedAt": "2026-09-14T13:39:18.082Z",
   "works": {
     "102": {
       "fetchedAt": "2026-09-13T14:23:26.113Z",
@@ -1272,6 +1272,88 @@
         }
       ]
     },
+    "10146": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80146549"
+        }
+      ],
+      "work": {
+        "id": "10146",
+        "title": "Mobile Suit Gundam SEED",
+        "originalTitle": "機動戦士ガンダムSEED",
+        "type": "series",
+        "year": 2002,
+        "overview": "Young Gundam pilot Kira Yamato is drawn into the war between the people of Earth and its orbital colonies when the neutral Orb Union is attacked.",
+        "rating": 70,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "cast": [
+          "Toshihiko Seki",
+          "Akira Ishida",
+          "Soichiro Hoshi",
+          "Rie Tanaka",
+          "Naomi Shindo"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/10146/poster/vertical/en/480.jpg?Expires=1810993815&Signature=lXVNds0o~~xSSyWL6ogI1B~ZHsTzKgCXXVXbijYplEGTK~r6tj0VZuADk~0G8lRhrcGNLqVVrkQXitffPhr4D51-ix5AVf6AD8ry6qp8kJAVWPX50CY0MXVmjjuOQRsLXSNLwhAkNG6gj7P3wpGazBtketgSJQMt~MyQ1QVfiWEUZz06yxS5D2ISWpvPqDSVLsAopLFQ3ggXcz7e7NaNI-mzLrSXVw42b8A2hcjxGacDPn5HhRAi5x59A-2E1h~nSx0bf77xsI7TuX0eZMR1k8ycp-6HFmM2P8qC4Uc4tHGqC41O9YifG1q9GHfMTfUdLqvbZdB3V9rM0oPUHL2khw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/10146/backdrop/horizontal/1080.jpg?Expires=1820693854&Signature=M9k0VMhlAW7ULmQJN-IMLun8e~5DcXKxzr-PvE-TMoZsRpEnh0B5TJUGWFvAhKdyvbBsaFzYUzhs7ExUd-zQ5JlsGzumxhV7IIF~vd~auqTHhL41KP8yv3KnNRe8bBlooV9F-UdBby3oJBNvSWPEGrc1Vb1B-YFsx411PGGKTXK~ITwdqlhRXo8N-omB3UN2UVwXgbkYy9PSxCr2zDYiu1EubW-hpzeZTYM5x95FCq~AWxODKTS5bGsrmDwofhvdL9LeTeBBmyDthat7nP1tFof~RR4aH37Hk7EipO9Z6wX0h~TH9KHvDn-glwIJfQdZ0uYl2VvrEB~1Jy4NnRvlMg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80146549",
+        "meta": {
+          "imdbId": "tt0374407",
+          "tmdbId": "tv/20111"
+        },
+        "localizedTitle": "機動戦士ガンダムSEED"
+      }
+    },
+    "10206": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80124040"
+        }
+      ],
+      "work": {
+        "id": "10206",
+        "title": "Mobile Suit Gundam",
+        "originalTitle": "機動戦士ガンダム",
+        "type": "series",
+        "year": 1979,
+        "overview": "",
+        "rating": 69,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "cast": [
+          "Toru Furuya",
+          "Shuichi Ikeda",
+          "Hirotaka Suzuoki",
+          "Fuyumi Shiraishi",
+          "Kiyonobu Suzuki"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/10206/poster/vertical/en/480.jpg?Expires=1805797946&Signature=X8hRifbDed0BlYv9dTdEEGulK9RLXgK9HApzFxudBj-xGjE8C2ge363DGnzCrc0-PJa6vIIsCNU6v8FlUOMiPujFQyI0w5cphSbUUeBSPbI5s6gaOpeDzh6T4gedrikQrjia48SOX0xdRjGVk-eDsx4rMTmrx5KU~1-fv7hgKe2df8FCmTxrvruS4BYidTKmzeItaympDBLBnIYLpYsb8N9qeS4iIM~NII3NvqJAXVJ8nJZu37o2~pflL7rkkhHMctLE-BPuwpuOwKplmKJryJs4uYd-FA~l81FecvJ-wJWDx4eeYPxKZ91KEnZ1m0AGmGLgJWivfIsbRz5dana3vQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/10206/backdrop/horizontal/1080.jpg?Expires=1803859020&Signature=JB-7HCqqI3wyUmAM8qvYZeZjRm39HLVcjw1YL~B8WSYy-yrtEKnHw77bz5l3peZxmsht0pNKoLvzYLnXGGktP4MsFVWKPxsoYxiSDCkHOLAuDKubKuUyP73s0KpAorKEGCCtL8kCA1Q4FgQFN~DsN~aHlbn8BnP5rY0vgdqlbbNM~dRnP-YsGagyI6GMjmyQ5axh1D0SQdRpLxSLBrY06TOJhT6AqC~UQ-gw7X1b8uavPGgj4NkZXBgTBhuUWutSs95KgnASieN6uNnoXIokkqfMvYWYAtzF6RfmUFrICoDwTQzZBFeZw3oAWY1eb-h8H8zFqZx2zr2uAgRxWMrgZg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80124040",
+        "meta": {
+          "imdbId": "tt0159172",
+          "tmdbId": "tv/21731"
+        },
+        "localizedTitle": "機動戦士ガンダム"
+      }
+    },
     "10383": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1308,6 +1390,177 @@
           "link": "https://tv.apple.com/jp/movie/big-mommas-like-father-like-son/umc.cmc.3p2swxivn855qz9bs926fu8ti?playableId=tvs.sbd.9001%3A452508833"
         }
       ]
+    },
+    "12100": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription",
+            "free"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0KZ4JNA1Q0KXA4YXN2IYKYS1O2"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80150290"
+        }
+      ],
+      "work": {
+        "id": "12100",
+        "title": "Mobile Suit Gundam: Iron-Blooded Orphans",
+        "originalTitle": "機動戦士ガンダム 鉄血のオルフェンズ",
+        "type": "series",
+        "year": 2015,
+        "overview": "When Mikazuki Augus accepts a mission to protect a young woman seeking to liberate the Martian city of Chryse from Earthâ€™s rule, he sets off a chain of events that threatens to send the entire galaxy to war.",
+        "rating": 60,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "cast": [
+          "Kengo Kawanishi",
+          "Yoshimasa Hosoya",
+          "Yuka Terasaki",
+          "Hisako Kanemoto",
+          "Yuuichirou Umehara"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/12100/poster/vertical/en/480.jpg?Expires=1805572502&Signature=R28V~A64G6RNGvIISZFqnrnD1JGf2Ry37XMv5-acpQFSksxLwjQL7hmg4E~g9WU3TbMng8Y~JS-KKYFcqTd2BaOETCokE5KVaz9a12evFUwfxMAsjBYO4Wm3WNp5XlBIsL~GhHrKwOuxnpDfQ4Rcb-XhtfECjZq66WPM2QhjWeypZ0rQAssp~a3qqioL1b5E4sjB50iSdpF8ep6dC5kUEDD5jd3SysqgYd3ya879mkPyGCquKOSXu0HR9KUwxxMpME5p~gvXAQi0PQ0ysU71OQ9~LNjOPZcOuxQhqC8gA78C9SgM~XcXBwe9WRmln6Pu1QZoSDPZJvy2myvkxzhQfw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/12100/backdrop/horizontal/1080.jpg?Expires=1820532642&Signature=bSe2UbrPx7FyJY9XwO~PNPN~hP1hqjT7jvtB9PL649-R2Kgyo8UGo94HX5Einxh19beAfHczO5Bkzc6xQG4yHj5uob1~WVKmassv8Vc~tFc5~w~t-qqP0WyBmJacUzkoa3G44birxm55FkoBd6jbn8u9l1Jh2wMfWjIcTsgFxWgfuxlFZQXSA97zEBwveFEWDa1zR-hiIRKDwrZKuG4k3zlpDn~0YTcelv8S7vDGvgjwxxlpK8OrioN3n~xSA~eNyTcMTjAQ18KTrRROP0sORLQfGTeoELPsCXQwV1sKKyoSJn1hYhWl8N1Rp835HdBeF-o4sJg0JhaXs9nybn4SVQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.amazon.co.jp/gp/video/detail/0KZ4JNA1Q0KXA4YXN2IYKYS1O2",
+        "meta": {
+          "imdbId": "tt5344382",
+          "tmdbId": "tv/64375"
+        },
+        "localizedTitle": "機動戦士ガンダム 鉄血のオルフェンズ"
+      }
+    },
+    "12750": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80146281"
+        }
+      ],
+      "work": {
+        "id": "12750",
+        "title": "Mobile Suit Gundam: The 08th MS Team",
+        "originalTitle": "機動戦士ガンダム 第08MS小隊",
+        "type": "series",
+        "year": 1996,
+        "overview": "Universal Century 0079. The One Year War has raged on for almost nine months. Now, the Federation is ready to strike back with its own mobile suits. Young Shiro Amada is en route to Earth to take command of a ground unit of Gundams fighting in the jungles of Southeast Asia. After being stranded in space with one of the enemy, Shiro is rescued and claims his command. But no sooner does he arrive than his team is given their marching orders. With barely time for introductions, the 08th MS teams heads into battle.",
+        "rating": 68,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "cast": [
+          "Nobuyuki Hiyama",
+          "Mami Koyama",
+          "Osamu Ichikawa",
+          "Kikuko Inoue",
+          "Keiji Fujiwara"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/12750/poster/vertical/en/480.jpg?Expires=1803891040&Signature=N7xJxETqbiozS7ryx~A~QlE1XZ7cDxO6rgFyNEDGrKCyq5Hlnnj6YHM2l0d5hWseQf4b3xejfDc3UyxdPUXd4LtNV38eFiGf1oF6gLZ4nTLJW8rlW9jfQq1T9TJmuLAM~Bij9dOQ9HiOzq7UodoC8bdE~0Q5cW0YvAjm1c0ufw7wdgfQXA8Vx7~J8elb5VgzNF6nW~av~1awMJcQxGiFsw-hsB0nz~4G1Rx74ef0a9c1exLavHJ01fzw2xXYGBRxj~Q~FONGXL5ZLo4aI~5HwDzSoc00STBQYFOM-zVPS64oX1~YjEb50ixpMijsnD~VTkeQIArwcsYLsgo8lZMUZg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/12750/backdrop/horizontal/1080.jpg?Expires=1803891036&Signature=Hc~rXGzQzSQNIcAuDhgKSRuC4MZZtvlO-pJj9r~6aFrAkEySAay7RZCeXIblVhGVlTI6OayXhHNBLiDKLQtLbHQ7D8AsLXZA0JM-S8Qcjrpz165G5CGiGbe5eeA6pN~qbCoDWXGWS5GKSI2QYQ8ppXbdPpzjOzMm0y5hVbWWWmv~Z9yhr~KUNMdlwoLLtJMW7ZldhwnYOdhht9zjgnkv-Wj-RjuKZNmeIve8MMWQZat~tL7txX2sDb0~5Se8GgkH5e9zsF1IylXtVHSRJ5~wN~ulF4P2OEPEnhLzqOwp6HYE2WcC8CZMk7jqvP~hZZQwpl2jAuTonjcFLMGdoB8fng__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80146281",
+        "meta": {
+          "imdbId": "tt0159569",
+          "tmdbId": "tv/43887"
+        },
+        "localizedTitle": "機動戦士ガンダム 第08MS小隊"
+      }
+    },
+    "14723": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80146402"
+        }
+      ],
+      "work": {
+        "id": "14723",
+        "title": "Mobile Suit Zeta Gundam",
+        "originalTitle": "機動戦士Zガンダム",
+        "type": "series",
+        "year": 1985,
+        "overview": "",
+        "rating": 67,
+        "genres": [
+          "Action",
+          "Animation",
+          "Drama"
+        ],
+        "cast": [
+          "Nobuo Tobita",
+          "Shuichi Ikeda",
+          "Miyuki Matsuoka",
+          "Maya Okamoto",
+          "Kazuhiko Inoue"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/14723/poster/vertical/en/480.jpg?Expires=1805711177&Signature=l0F9lUjXCYn1ST3gBOxmYlTNCdiANccFZ08ynRV~Yi4Xs1RJgbISShhU3f-HL-M1AeGFclXu6Y3GMkZghw572IZlvI-X2dd0wfs5fxscaUrTpReIODmgQgGTz9YQvxYPmDm1LYR~t3zCTEXrBYv5rhpp4IqaO5y2SAQg3NrDjErv~w6UlR12XcEZ9uQqkyzVwCXkuP5rb6m2HoRczceF-SQnyaMPd9qVB7Jlp5IfZtkPFajZWLqIkQThPV0e7fR-2o183feYU2Zes6rtf0G4xC0rLi3QnZQEaEfnP9jhrDjgjtDqtdcDqzGhw5nB4sAs1xyKCWIFNMLp99y55fvnKw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/14723/backdrop/horizontal/1080.jpg?Expires=1805711177&Signature=BxMUwinI0BuYiekWGfl5WA9ozMO5ewBq04KI3Q-9SUnwgb0hmkKL-xfuVTorQaNN9gZY7QN~2y0O~nztlYqtHk8CJ~z6ULsu5D3NMcaoFel0Ep8Dm8e2RS20Xfgv7ujjXtvIoBduqE-EvjpRNuCASDUEQf2m7WlVkZ4n-tXqQuTnoI1rLaloM4FA8g0Ub92cDegu7FNutwdKDOMLFLrcAvZrAcjnCLWH1DJehmUlYTY-1PuBmGRlveIZbeNF7e~sACO5TfaMJd8A-KikJ5592QycP3PAj-1fzUJDEqfolzquBL4edKYEDo3ZEgnyvTcXsrPY2Q4ag7drGd1YeKHngA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80146402",
+        "meta": {
+          "imdbId": "tt0159186",
+          "tmdbId": "tv/13674"
+        },
+        "localizedTitle": "機動戦士Ζガンダム"
+      }
+    },
+    "14823": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82678960"
+        }
+      ],
+      "work": {
+        "id": "14823",
+        "title": "Mobile Suit Gundam 0080: War in the Pocket",
+        "originalTitle": "機動戦士ガンダム0080 ポケットの中の戦争",
+        "type": "series",
+        "year": 1989,
+        "overview": "",
+        "rating": 67,
+        "genres": [
+          "Action",
+          "Animation",
+          "Drama"
+        ],
+        "cast": [
+          "Daisuke Namikawa",
+          "Megumi Hayashibara",
+          "Koji Tsujitani",
+          "Minoru Inaba",
+          "Konami Yoshida"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/14823/poster/vertical/en/480.jpg?Expires=1805803565&Signature=buFnI695HWknvimDnv-0hnIwF76-yEWYArqsGa8bOg6scbKlkzyUa0UYVstLPLmQ1ifG09Yvphk0Zb~cVgrcGjQkAnz9Gx3jQ4DZ5lFBBoZvuEOB9VRv~97SURtEUJT2vagqqJTseG5RDBYpg49t8HgKYqxG-4ZWIxfy8m5XVFcoEAD0co23jI7J9l6z35ASSU19Hlbw~FySHL7NVO5Xgtq5VvyE03YmMQIDvKnLLuSdYna2jP0iJcFuUzhow6PpMgRlCK5gvf9p7QTLSUCs9Qs5Nrvgi3sn7f1utaHVz81kunnnwh-OVk3M3wtiA~lDVr7Xl~INjHKUb0uu4AXOUA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/14823/backdrop/horizontal/1080.jpg?Expires=1803860466&Signature=jJore4QOsncVoF8lubOHzlGTPZ7uUCO-KY4sfXmUJArBw~YtqYOk2DNIEXc53zwtfq0XnpgWJ9PXLj9tg6z4yTF00C-nTKEy6MFyinx43LBCdOvVX1sQMLgx1Iqte3gE7djg1h7exuqp0vG9EzvWi2e7enSp6F6-5uGrK7Y2Y0R0lI0iUArqAapqD415OYFSj56nCj4-4bK5LlBd0vW5DZaWg2hIoH2kQUBMCOiirYCFooEowg7ozoBoOLmYIkVAYx9OlfUbqkx~QZb4U1i7WEjNsfjQK3UMiBAj5HxoKQ1kofeqyeIZBkzFEb6eDvbzwnzUm0WKuml6tB22QMebkg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/82678960",
+        "meta": {
+          "imdbId": "tt0097661",
+          "tmdbId": "tv/46512"
+        },
+        "localizedTitle": "機動戦士ガンダム0080 ポケットの中の戦争"
+      }
     },
     "15224": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -1357,6 +1610,46 @@
           "link": "https://www.amazon.co.jp/gp/video/detail/0II7F9NWDBSL2UB8Z2F29X7J06?ref_=atv_dp"
         }
       ]
+    },
+    "16178": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80146416"
+        }
+      ],
+      "work": {
+        "id": "16178",
+        "title": "Mobile Suit Gundam 0083: Stardust Memory",
+        "originalTitle": "機動戦士ガンダム0083 STARDUST MEMORY",
+        "type": "series",
+        "year": 1991,
+        "overview": "",
+        "rating": 66,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "cast": [
+          "Ryo Horikawa",
+          "Akio Otsuka",
+          "Rei Sakuma",
+          "Kiyoshi Kobayashi",
+          "Mari Mashiba"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/16178/poster/vertical/en/480.jpg?Expires=1805833389&Signature=GObX9YD1z8QVhSgOyj-mbZKSZ8TakjkGZCCVy6VpE7GEK2QiLxxAxLTGfK9C6mnWvXQ0oOOupfIA2gTMgqlg82Fd7uzLlB4JNCRRY-J3MRidgGU7ajel2zaYi0utve~UjTLWDSynYBea509ZxHtylGvn7KuLuZXAqLlzx0MI3-Q1u2fm9ZffmaEuTo-eaWt3Ucvu9VE~aA1R7q-C-mBJiDdWAeVyBixXlfuMU7BkMm0nDHpUEaQK2bjwTaEHynDjSuiWBUCDC~Eh0rPoHX768PT823obGtBh6O3cS80ahNzPip7DAQ1uzr2Fy-ERRjSwkC0dGikeBxty3VUdE7~T-g__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/16178/backdrop/horizontal/1080.jpg?Expires=1805833388&Signature=gDqNgrPU2N-azpuWtrCUSGP-kvBdJbwEEGJ--pb9vzD72cPCNf2vq9tFvvpujcdS~ZeG27n09nZkZ9MiHbjaYB3R8mx6QDWghFjwIHQ6XSoHEIGWhFQqsVOaGtzQQwI9MvLRDF8Y~bLmIsJxS8nav57E5cpQJ8cBSHIJjjrya-C204y0FRqgdwYSq21L4nZdCPXTdTPTYejz9KJLk7YITXwNXoQHt0rg6RJBpTX5KdBiRl1ikbizDYzxfA6~AcZZGMccJtEQkR7sgNnyoC96znHLOtJsIcl-KupNTBh1ZeIDnQwBE4SzKoXVdzpCRaiQgfbxk8dPnFhFQZpm91MiLg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/80146416",
+        "meta": {
+          "imdbId": "tt0159567",
+          "tmdbId": "tv/72677"
+        },
+        "localizedTitle": "機動戦士ガンダム0083 STARDUST MEMORY"
+      }
     },
     "16493": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
@@ -1484,6 +1777,47 @@
           "link": "https://www.disneyplus.com/browse/entity-88d77ded-caef-4b86-9209-0967f4cb465d"
         }
       ]
+    },
+    "21585": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82685913"
+        }
+      ],
+      "work": {
+        "id": "21585",
+        "title": "Mobile Suit Gundam ZZ",
+        "originalTitle": "機動戦士ガンダムZZ",
+        "type": "series",
+        "year": 1986,
+        "overview": "",
+        "rating": 64,
+        "genres": [
+          "Action",
+          "Animation",
+          "Comedy"
+        ],
+        "cast": [
+          "Kazuki Yao",
+          "Hirotaka Suzuoki",
+          "Masami Kikuchi",
+          "Naoko Matsui",
+          "Eriko Hara"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/21585/poster/vertical/en/480.jpg?Expires=1805826226&Signature=aIhD9YgGwwdBWAdIpTD4L0Uv2RPoNjcSs2dcLP3e5Jj-XvG4GrmSQfaWVP3UsnbsBiyFamFaXaawt97wpsai7WHCeO2G1MyA3MFYE3~yY0EVGEVY3P6kaId3PXwuvuk6EVbNFq3UCBCUJlQLAgZPzoGmhB9GIjLRtAl8C7~-J7lRQ-jyhSmwl0sXjrNa80KkyV18N-tRnDwdKKW0jtrxZObUkLLEITqoNgIpSsEpculSj6FnxYJTb7qTRZxILHVI9OySO-uuEK3XYYXsgiJ9b~83hS5F9Rz-4L1fLS~MN2n~Ojcatfo5V8leNgmGmOjnLGS-w7P3NzJsn0nrC~RrNQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/21585/backdrop/horizontal/1080.jpg?Expires=1803935565&Signature=L2FldPN7JoHbLnDTegbZOnheTFl69nYVpOZjWkeTF8~NbUL2pwNy2a-jxTz~FMuZVR-9KwSQShP88JegXInEI7BXttf6qvKbfIoWt5yiIxo6JX7yiLJJo-4ZtXasW0DJk0Publk7cPC8SJq4YBBmJRUxsDhz6Cm5lsSWW9McP8wV-~6uXWhscmx7zp6vGs7gNQUKcXaIutRs31jeTbwTeFpBhwTw6u1~HgZn9Ca~4LR6YmTXC0zJKzp0Tfv1BBPx24VAau0FXPlrKqKESOOkNzwHjM5p3uQPSbP49zasn2eec9yLm9vny4GDbIo7j2rGarq-EdlMbXm2DRi8T1uU-g__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/82685913",
+        "meta": {
+          "imdbId": "tt0159184",
+          "tmdbId": "tv/5660"
+        },
+        "localizedTitle": "機動戦士ガンダムΖΖ"
+      }
     },
     "22464": {
       "fetchedAt": "2026-09-11T12:49:01.122Z",
@@ -1687,6 +2021,55 @@
         }
       ]
     },
+    "33053": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-4b2ac871-bc5a-4d1a-bacb-833a2f74b8d7"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.83a4fef2-dec2-493c-8368-0275de573a38"
+        }
+      ],
+      "work": {
+        "id": "33053",
+        "title": "Mobile Suit Gundam: The Witch from Mercury",
+        "originalTitle": "機動戦士ガンダム 水星の魔女",
+        "type": "series",
+        "year": 2022,
+        "overview": "It’s Ad Stella 122 and Suletta Mercury has just transferred to the prestigious mobile suit school Asticassia. When she runs into Miorine Rembran, a student fleeing an arranged marriage to the brutish ace pilot Guel Jeturk, Suletta challenges him to a duel. Her moment of bravery unwittingly thrusts her into the cutthroat world of illegal mobile suit technology, corrupt megacorporations, and mu...",
+        "rating": 61,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "cast": [
+          "Kana Ichinose",
+          "Lynn",
+          "Yohei Azakami",
+          "Natsuki Hanae",
+          "Makoto Furukawa"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/33053/poster/vertical/en/480.jpg?Expires=1805373508&Signature=djVouAh1gnkI~OLSaZ164mluHWgOEYiWgEqMttvHAkTgQkLnROO2hO4UeJliNzvCC4VgiT0uLB4ScLcFdxUlIHweeImdcAXbZ32PR~58gUwNnGxwgHVAaok5FFaTvpuarIkQg6qf3C7lXKLRwDGAZFUm8QCmnIId68whIcLNpc9Cwda~3VDo9g88SHeKvQ2Jgi3UppvjCHcK0cbffYvGNfx2jkTZHIZgOPlpkguQ8YFoj0eD2SP5FTL1~AF1QpYUrG6X-GUB4Ao6LLv4zHZOMJolW-HqwNlJ111B5EHwKZjV50FDNXd~ljWhkO4UX4rBBms3q~HAadFP~fWCpWuY1A__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/33053/backdrop/horizontal/1080.jpg?Expires=1818574091&Signature=QcSlBFc-4GNg7sFS~kvZCb2kUoALS00yDDRjxtLWkACyCQqFlnhHAlMnUmEj1B2oafoJcPblDnp3xKlL68pzIvhblrQfu3tU0GhmvVNH7hvRvfa7tAMbbj9QyFqGCMvhTnUaab7W2FKJ8fScZQpCZlZBq3sBPDm9Dp7ubvsdQiP99~m0N-1G3uQjirmyLTzhvBF3gXN9Gv644osljYl8C-Jic0RJGk29zGz~jIDcWeG-IVA7gmKqfmLPk~jFSSog1-HbHJb-kccD-k9aqVhJO4IQubcKwBTv99Wpn02yLqros88Xc-hp0z~4sE129M0BXLvpHAMayky6ZlJkZ9cL~Q__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.disneyplus.com/browse/entity-4b2ac871-bc5a-4d1a-bacb-833a2f74b8d7",
+        "meta": {
+          "imdbId": "tt15433166",
+          "tmdbId": "tv/196400"
+        },
+        "localizedTitle": "機動戦士ガンダム 水星の魔女"
+      }
+    },
     "35178": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1869,6 +2252,47 @@
         }
       ]
     },
+    "47979": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82678997"
+        }
+      ],
+      "work": {
+        "id": "47979",
+        "title": "Mobile Suit Gundam MS IGLOO",
+        "originalTitle": "機動戦士ガンダム MSイグルー",
+        "type": "series",
+        "year": 2004,
+        "overview": "",
+        "rating": 57,
+        "genres": [
+          "Action",
+          "Animation",
+          "Science Fiction"
+        ],
+        "cast": [
+          "Tamio Ohki",
+          "Hideo Ishikawa",
+          "Miki Nagasawa",
+          "Dai Matsumoto",
+          "Jun Fukuyama"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/47979/poster/vertical/en/480.jpg?Expires=1805798562&Signature=MPeoPE3Apd7qvdNZRPVb6YvpNbPfQ3~JqofBVQ2CjHV4Jx0Yk3fQexzRevoDAzi0H4TCznxj1kpDrobaOa3uA7eRpCnmuhAshYQYr6G-LqO7j~bJvvQPxXNQJybErEIh73vbcf3G9ozaYawTbbGaRQsYXrzFTjWieEy60gOh3V2wqLYgzEVM9e~PIRLcZZHeEfdlsmVs6LvX3ClgGx-qeXcGViQm-WMfPqPx-ArEsU6Vb5MQ04CvLvNoXTU3Kbf9cEcfzagmbb0hzkn-Ax765F0jJGHeCWlLsn1Cv0UVQW8dxYzSnZ9B22TUTbcf86R9989FPCjO1a273YFwv611kA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/47979/backdrop/horizontal/1080.jpg?Expires=1805798561&Signature=AB-rEElHryHHn3fNdeuMT5lDA-4BAraXVRdocrlYXPhft5JJczmStsc~xGCI33Y3H1XXcm2D~YyCdMkK9pbVtI5jEXWXTjIqOmoy-hPdM4euKF6-zM4G20K8dc4cFHeIKHPXaVqepAWfpzCh6ukqW2lwvw2z~yKkceWO~S0teu382e6sgxyh5724YDcVATrCU67vpUgRkV4UC9nmXl4Azu3utKmIhmOQaxakJ8ucVKdOhfswq7E7A2pCdWSHdAmkYpSdunewdpO1KHP0Mk67fFcSY-lMgxRsI7mo4AiWNTMM7dyxnmiZBcUlh0RSgrgDatnuOE4iK30MtFeqmUDMvw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/82678997",
+        "meta": {
+          "imdbId": "tt2328145",
+          "tmdbId": "tv/44919"
+        },
+        "localizedTitle": "機動戦士ガンダム MSイグルー"
+      }
+    },
     "49997": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": [
@@ -1925,6 +2349,46 @@
         }
       ]
     },
+    "57724": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82678986"
+        }
+      ],
+      "work": {
+        "id": "57724",
+        "title": "Mobile Suit Gundam MS IGLOO 2: Gravity Front",
+        "originalTitle": "機動戦士ガンダム MS IGLOO 2 重力戦線",
+        "type": "series",
+        "year": 2008,
+        "overview": "",
+        "rating": 56,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "cast": [
+          "Tsutomu Isobe",
+          "Katsuyuki Konishi",
+          "Akio Otsuka",
+          "Kikuko Inoue",
+          "Nobuyuki Hiyama"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/57724/poster/vertical/en/480.jpg?Expires=1805717154&Signature=k~qPAjrEG-MlixZOxXKEecW147xebNa0RDhsIJQmmXbdlYTRdqKPKWFrKhJpkaU8eq7BnnU1Ke1j6tMwiQi3ylq5BadHtxJzJxRf4RAPAoN8R9nNbKfYwbypUUEi61maiWvTGBeEsKcUb1UD8E0nspnSJhumY9quwSLt-9ATVhye0Xs0~t9vvDQca7bNmxrXS7DyzhV7dyHcdrZJFI08tU34Nt1Le8FDgUpvmZWrbAXeCKhAwV8nQaEkErkURmD3L1SRc~vywPsEq-vdTW~UtzdH2JFchy3ltgQhCZpfQt3~Z2GrqEE3I6th~j~2TEQlQsmDRT5pFWQ9Yb3dq3Nnrg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/57724/backdrop/horizontal/1080.jpg?Expires=1805717153&Signature=j04GhGRSfPkwZT-10LwLm-phuBXYsMO9bcLRW~PW4Dws74-IceTMGf9C0SLWoN~s-pztDmWv5K0o9vO8VMK0fMyRyDYKoaDOOxd9mVvN1ZngYzQdPtR7tp0WHYQu6OpBREreJEkloTQH33Tnq-JwMvtcaMUVEKW3TmySnzyH~jtOlPTMJTf5mCMq2ntvPLb35xZp5Ef9JtpakPSin-XMfL5unqEy~iGbVRtWiA9gaPCOruEarRPv3qWjYE4oEt4XwGOJCpP8BY2akdHdRLls0s~q5XODhFUAFjkXC7XEg6OZzUz7VJDQdKVEdbA7BGEqUHq8q779SW53GAIkGgO2TQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/82678986",
+        "meta": {
+          "imdbId": "tt7127562",
+          "tmdbId": "tv/97626"
+        },
+        "localizedTitle": "機動戦士ガンダム MS IGLOO 2 重力戦線"
+      }
+    },
     "58653": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
@@ -1972,6 +2436,59 @@
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
+    "61679": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-i/umc.cmc.750sy3uz07i36hefyiznjfleh?playableId=tvs.sbd.9001%3A555942490"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70014611"
+        }
+      ],
+      "work": {
+        "id": "61679",
+        "title": "Mobile Suit Gundam I",
+        "originalTitle": "機動戦士ガンダム",
+        "type": "movie",
+        "year": 1981,
+        "overview": "The Earth Federation's last hope in its fight against the Principality of Zeon is the prototype mobile suit Gundam, piloted by civilian Amuro Ray.",
+        "rating": 68,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Yoshiyuki Tomino",
+          "Ryoji Fujiwara"
+        ],
+        "cast": [
+          "Toru Furuya",
+          "Shuichi Ikeda",
+          "Yo Inoue",
+          "Hirotaka Suzuoki",
+          "Fuyumi Shiraishi"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/61679/poster/vertical/en/480.jpg?Expires=1803820385&Signature=LMih6U61GArVG8ofs9hmax0T4zLATqYwkDNCG712STqlOGOjJa405w6oCHFv6I2gCsABm5lDo5Y7MiW2HARiMXj0Bx1sgBA9yMkz-fkA-E84Kpbv-juwWnYEy8xVep6fYgP-YGnih0pG2ZRCnzo3IhLeM9pzknegStWrw0L8QlqOqkWL6kuOZhDbrkD-JBGC8wIOTEhg9s2yFXx3U-CKxjHKDpMuFWDPIOI71yrzn555ecndCqh3YwSPu04OPDB-W1h912LwhmdwZJhdVgTwVV0ZtlHjeuW~ay9FkAiJ1y8zjAqEflM9TjRn4MfrHmnNCpCM6s30rl7Fjt1u8upibg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/61679/backdrop/horizontal/1080.jpg?Expires=1803820385&Signature=iAWWnUwL-IlTw5D3YrFj4NzI8YKUb8b-gjGl5iY6Ueh6QkdefYGHTwhabkoRp4LcGIn1Hvm0Q-iJCxU76VYCeVq087u8ksYrCp0IL6JPf8Py2M3zQd8O~gvDZek4OnpxdYaOVulIPo1q~M4VV-PoV5TVWzOnZr-RvLubw78qvkQLdulTOtCOTOc83Id~zJ3jKyfD1BGToifzq3wfFWFjO1Vsfz3FwLS0spJj2QUGwh2lanFksM3K7rpDAUrWRc1bqHcL0JeBoktyOrsZ~KJ2md5js8SUHhO0PqBy7idEAhG9zXAoHJv1zOjgfPfehecGRiJnDTpOzniU~Glx6QFw5A__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-i/umc.cmc.750sy3uz07i36hefyiznjfleh?playableId=tvs.sbd.9001%3A555942490",
+        "meta": {
+          "imdbId": "tt0159509",
+          "tmdbId": "movie/39228"
+        },
+        "localizedTitle": "機動戦士ガンダム"
+      }
+    },
     "62203": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1987,6 +2504,65 @@
     "62802": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
+    },
+    "63731": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-chars-counterattack/umc.cmc.6n8oa0js1o4br3h3xggse57qz?playableId=tvs.sbd.9001%3A1362737505"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0S7BXZAMAK61LUF72URYC2IDJA?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60024179"
+        }
+      ],
+      "work": {
+        "id": "63731",
+        "title": "Mobile Suit Gundam: Char's Counterattack",
+        "originalTitle": "機動戦士ガンダム 逆襲のシャア",
+        "type": "movie",
+        "year": 1988,
+        "overview": "Thirteen years after the war, the Neo Zeon army threatens the peace. Armed with the Nu Gundam, Amuro Ray and Federation forces take the field once more.",
+        "rating": 68,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Yoshiyuki Tomino"
+        ],
+        "cast": [
+          "Toru Furuya",
+          "Shuichi Ikeda",
+          "Fuyumi Shiraishi",
+          "Hirotaka Suzuoki",
+          "Kazue Ikura"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/63731/poster/vertical/en/480.jpg?Expires=1820709776&Signature=HSO9wl4WSCqgmIzFLbYy84sQcnxdB6RoXMjIKQbPvBbE3z-TpSqhVKBbL7D-r9T4ZceRs0wISi2fqq~nrEorHOMpuGoXyKIIiFGp0UHPZIZF2VcMP5liw0KRj-~9flW7ECRj5Riw2hF3nxl6ZOKzHxdufudk4IAq9thZnryMlrdJVin4CmmTQPvyzhgc4Ixq5a5cixXnB1YSNkyZSlLLGcIo3GdYKNcmu17m80iARQCHHni2dc5Mbg19l0TezQJNI0o7RChD-Q14eDu~UVS5vPkpPB-YNHnDsOlHUouWbSnTilSnMc5pXyIDWkOo7DKDAxtCJiTGJ91P~tGIRpNUEw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/63731/backdrop/horizontal/1080.jpg?Expires=1820709773&Signature=htex6MGD4NM-LERNcx4xW-~5HHSzqTFtQuw4MvFILhddKiuPVucQzGhV0fhsnpj~3bh2gZd~VTe9CIpANFEEFd8JQtG~mLhNdKkDn4O93GNGWRM8vBfVsiP55Z14Mhi3kZ045EcvdtwGS8gUwbb-SGD~5yGzzHQbKOY1~TvpssgKlj-EPIL7FFzrUyj5bOcUbSytwhUHeNaEUkB-jMrL1B8luDwLoymMUazkuQSbzPpU~j2MOW72yE5EFYzCmG1uw0DF~TcnNOv49d84rLOYdHE5kF94iDLAEpL8OE~8K1hQnpt3LZoUQa-Idg4vgpfwg~83ADYSYs20hcUKALszaQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-chars-counterattack/umc.cmc.6n8oa0js1o4br3h3xggse57qz?playableId=tvs.sbd.9001%3A1362737505",
+        "meta": {
+          "imdbId": "tt0095262",
+          "tmdbId": "movie/16157"
+        },
+        "localizedTitle": "機動戦士ガンダム 逆襲のシャア"
+      }
     },
     "64313": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
@@ -2041,6 +2617,74 @@
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
+    "69303": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "subscription",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0QVG76OTAJMFOPUGH77K1WHNI3?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-hathaway/umc.cmc.6cxgyrbzleemfkaqlibjgxujo?playableId=tvs.sbd.9001%3A1586317260"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-f2991556-a6b0-4853-8111-78a1dd80f4ac"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81439253"
+        }
+      ],
+      "work": {
+        "id": "69303",
+        "title": "Mobile Suit Gundam Hathaway",
+        "originalTitle": "機動戦士ガンダム 閃光のハサウェイ",
+        "type": "movie",
+        "year": 2021,
+        "overview": "After Char’s rebellion, Hathaway Noa leads an insurgency against Earth Federation, but meeting an enemy officer and a mysterious woman alters his fate.",
+        "rating": 61,
+        "genres": [
+          "Action",
+          "Animation",
+          "Drama"
+        ],
+        "directors": [
+          "Shukou Murase"
+        ],
+        "cast": [
+          "Kensho Ono",
+          "Reina Ueda",
+          "Junichi Suwabe",
+          "Soma Saito",
+          "Atsumi Tanezaki"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/69303/poster/vertical/en/480.jpg?Expires=1819823268&Signature=C4oSEhefAshXmKkCpKZHNrz1iJCFaOymbe8bS8JLfV8wzT8wbU4VFxYHsdFi9jGWNeYdknkwYZQHyxFXWCD4wXQ7nxzkODA6hHsgmxCmctR-jS82zvTUfEfo7wVlusGwMVB8dK0U0c75Dbt~48nrEaehoxxR09YMj--7I~zLedP9vNxXsw0NxQOPxCYNs9L2yWij8-LMziqHpb-dySp-g~6USx7ps92WkQmUJ2ffmT5nrD8XbNsYkeizffRpm~Nzov~NbEtmyM7GX5NG6idXmLoQMZh8HL-fhoShuNq268GwoFYJEYriQ7UDIjJkJkV1j873Cx49KU~Qcdy0x9GIMQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/69303/backdrop/horizontal/1080.jpg?Expires=1819823264&Signature=dyPYdE~6Wd~CWs2tUXV98ebEiheNeOk-UnhenU6KRCawykqYdpXVcauF~SbP6ys4i1YlvjruY0Sei6I4CxoEsJO4lwDj~bzr77-kAqz9ZarvHTArxcSzs~mLi7y9jPsf5f7BjUqIH~lwv5-yItHhbKYo4Btx2Ec8ttiQRohNvl6Wy3OrkS~7cVXbJffLN9dl4f~XL5uhy4gmF084lCX7yoD9ttrD5TfZc-VCMFfvYbHAeZTHpTF4FY8088T7HLDIYRB4t0HxCCznvOXC5vh5FO9mmEh7VM3lskeifpa7-EzhJXQihndf6SQnecbVTr2DacUuXVNhlETyMMpRlOHOjQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.amazon.co.jp/gp/video/detail/0QVG76OTAJMFOPUGH77K1WHNI3?ref_=atv_dp",
+        "meta": {
+          "imdbId": "tt13288678",
+          "tmdbId": "movie/685274"
+        },
+        "localizedTitle": "機動戦士ガンダム 閃光のハサウェイ"
+      }
+    },
     "69447": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
@@ -2078,6 +2722,59 @@
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
+    "75693": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70014612"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-ii-soldiers-of-sorrow/umc.cmc.2x79sscs38zslrl7nm1qvfywc?playableId=tvs.sbd.9001%3A555954500"
+        }
+      ],
+      "work": {
+        "id": "75693",
+        "title": "Mobile Suit Gundam II: Soldiers of Sorrow",
+        "originalTitle": "機動戦士ガンダムII 哀・戦士編",
+        "type": "movie",
+        "year": 1981,
+        "overview": "The Earth Federation warship White Base and its Gundam pilot Amuro Ray struggle to make it back through enemy territory, pursued by Zeon's warriors.",
+        "rating": 67,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Yoshiyuki Tomino",
+          "Yoshikazu Yasuhiko",
+          "Osamu Sekita"
+        ],
+        "cast": [
+          "Toru Furuya",
+          "Shuichi Ikeda",
+          "Yo Inoue",
+          "Hirotaka Suzuoki",
+          "Fuyumi Shiraishi"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/75693/poster/vertical/en/480.jpg?Expires=1803838453&Signature=lA~vSZdq6oPCVQOgG-j6OaCPfOgjLEx55GfsAzokS~SJh3EqP~BMPcOp2TqfPxjgEin53vBN8TVRrOXGCXuQlqSmiLn6xYcrhPvvJQg~wZCMQhZrJy9vTXkXg1nAtWdCZLlWxiJT7XSOAWBnN1bzwG0TOZCTW7lQlYGNhdtYIND4yBRF2FQFmt~j49rDQg~iCn6Wux4yd8upOBbtvLWaO3d8lGn4EEsf-A6GL2MPg2YxJy5Mb4UgqNtPI7429aGl2B1VN4BAbU2Z4tBcAxfyq8KeekTDVnimImtC~p8EEjw69fZLYIrSulqqky3j8HH1CqC9fcMTPq3eNhXBBJv~IQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/75693/backdrop/horizontal/1080.jpg?Expires=1803838453&Signature=AvTqfs7vFt4mKQVijxPcUfwhV5Hexipc1x9CyX7LfjhYDx6TCaRKYqPWFg-8lBbFJRWKNdNvK1yK-llux~YuEYAKT3bbnoerJU8rv0B~U1DSo8WpoPwW24mhRRw54edF3rQkK6tB6twHhrbbcaHaplpBSSo0GY363xYpuaaeojU~8vpt7qb4iNTlE4UN5izXmTIDg-boZr4pNl4A8ytytj46wShjt7GIvbI8AqrNBLZe7qPaqsq7e7fHxSyLUxdU6QmI0a4Pe4HSk9VCxQyAIwXY0xvhT7J1AkZaA9XygJyVJHkQ4Mn0DCkbDGcGU6xT~ZBa~j~mqRE4kDIW1NEJBA__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/70014612",
+        "meta": {
+          "imdbId": "tt0159510",
+          "tmdbId": "movie/39229"
+        },
+        "localizedTitle": "機動戦士ガンダムII 哀・戦士編"
+      }
+    },
     "75740": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
@@ -2093,6 +2790,59 @@
           "link": "https://www.netflix.com/title/70270758"
         }
       ]
+    },
+    "77469": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-iii-encounters-in-space/umc.cmc.27l4uzuy2owb8dlg6w1hbhge5?playableId=tvs.sbd.9001%3A555970925"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70014613"
+        }
+      ],
+      "work": {
+        "id": "77469",
+        "title": "Mobile Suit Gundam III: Encounters in Space",
+        "originalTitle": "機動戦士ガンダム III めぐりあい宇宙編",
+        "type": "movie",
+        "year": 1982,
+        "overview": "The Earth Federation prepares to take the war into the Duchy of Zeon's home territory. Veteran pilot Amuro Ray returns to space for the final battle.",
+        "rating": 67,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Yoshiyuki Tomino",
+          "Yoshikazu Yasuhiko",
+          "Osamu Sekita"
+        ],
+        "cast": [
+          "Toru Furuya",
+          "Shuichi Ikeda",
+          "Yo Inoue",
+          "Keiko Han",
+          "Hirotaka Suzuoki"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/77469/poster/vertical/en/480.jpg?Expires=1803839488&Signature=CcrdrTUCyj29Jx4s-Ydxwg8fAR1IT8NvN6O0d7H9IA1BBC-RXAHpOIXebNdUDtLj9nmqahbuUcZbDvUUB-K0QjhJk8WwSpGuzHEVgDNQsCoBzcUPrL7P~NJKMQnXxyxvYqGKymHv0eHQHaZu3NaYpFiSZ0GTPeEYFKR1XrG3~MvGPt9cHh2FZz1VKnIJCUYWJ4BYoZyznfic0O7G52704VHIjgIwSORHAmeutgZWITT9SYCmIKudSeXa1FWyDaKNG6f-OSwLoJ0kPUJozkxzmzQ6OUjT-f7sQT2gTYHg-ZSD6t6oCXyaYqmHEoDKK6GUqpurtHfLZGe2uNeXSjGoaQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/77469/backdrop/horizontal/1080.jpg?Expires=1803839488&Signature=BxFS8VS-JoD5aplTf~tNVxYARD6mb4UWGJh9CwFPWNYXORGI3rxUEJBkxAnDSVioDpGngb5A7GCvZQynIvOAlN8wOvP2DAlT0FcKHapUU1s1tIZhSM6Wtcy5PKYuBNWFQL-WGIT1ZAr7HvRYMdbDUmWb8pfWJIRK6zs~7JN8co2ZLwx5Uv4iJ-k0wQH~aqTMboyV2zwRXpuC-BtEG76zCHP7T2ncpFXi8lG1NxElr8O~GNxpU8g0GGLqzk7paocGpRe6X4SE06BsWnp9tCc~4mx7Buh0ce6pmjOzSDWIUrmDTGwRN40dmmes3M1fIMDGc~9shIGku8o0F5rv2Ya85g__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-iii-encounters-in-space/umc.cmc.27l4uzuy2owb8dlg6w1hbhge5?playableId=tvs.sbd.9001%3A555970925",
+        "meta": {
+          "imdbId": "tt0159511",
+          "tmdbId": "movie/39230"
+        },
+        "localizedTitle": "機動戦士ガンダムIII めぐりあい宇宙編"
+      }
     },
     "78585": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -2233,6 +2983,111 @@
           "link": "https://www.netflix.com/title/81416534"
         }
       ]
+    },
+    "105548": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-thunderbolt-december-sky/umc.cmc.49icqxxliwqnmtx6jcwvkc8np?playableId=tvs.sbd.9001%3A1123921332"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82682035"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0O5KNMMDMPUBB1K6W2GZBUES0K?ref_=atv_dp"
+        }
+      ],
+      "work": {
+        "id": "105548",
+        "title": "Mobile Suit Gundam Thunderbolt: December Sky",
+        "originalTitle": "機動戦士ガンダム サンダーボルト DECEMBER SKY",
+        "type": "movie",
+        "year": 2016,
+        "overview": "",
+        "rating": 55,
+        "genres": [
+          "Animation",
+          "Science Fiction",
+          "War"
+        ],
+        "directors": [
+          "Ko Matsuo"
+        ],
+        "cast": [
+          "Yuichi Nakamura",
+          "Ryohei Kimura",
+          "Toa Yukinari",
+          "Hiroshi Tsuchida",
+          "Daisuke Hirakawa"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/105548/poster/vertical/en/480.jpg?Expires=1805369791&Signature=PST7arFiOBKbBv37wazs19pHdw9uH34sYsTDDTlRQfmS1gicq5SjcYfG6w6rAv~bqJnWugQ46b~72BEd3KA8N-qagQ73bYKW5Jkx2ULaQPnxlZKKRF5WnA-XrMuxZ6DhYZUKnZ77IZmQrFLNDYhiNkCF2-UHLDHaF7my~sSRLauJAfxi32Tf8EoTVy96340HoWkH4WWtcvZzM5ANj13wvaNTXXd6-zvsA0Rbg3qYDPNs8R~hCxYK~penoH~FFJlEiMcTjOQkAWmDvCslWXhGgIO7wFpor71a965CjbvRgORAiHh1O~5umqMKkXZsds~LUp-rhWHt9LVaHeY5noxQ2g__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/105548/backdrop/horizontal/1080.jpg?Expires=1820740341&Signature=XPYHcsTMdWy0nj6obg1ya1IYNxzjzPkZRNz2zoKUdemiKZ7cjjJbVhls6h2YeUTKNnqm2kg3299TXKiohxLAuAq5BSk-jkwYYrsppBY-7tPYdHJ~cfwlkRwdhA4eBaLc~TpsJyyWvuIqApqMmp3GFKf8VWfCD3NlVlEyRecyeVj0PhD9WyaWE6g44aHTj6idH~gglXdGAzFn04SEEZyUfyKKiqcLovPZkzvqXqm0MSrsn46xAKZd7t0W8SgchK2eFsUEDxm8oK0VHH3-V972TVjeFcXJjqn55dEfIGjjKtP~A5DdkpFkc7kGs-85-f9e027HFi-5V4HeK11G3FoZEQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-thunderbolt-december-sky/umc.cmc.49icqxxliwqnmtx6jcwvkc8np?playableId=tvs.sbd.9001%3A1123921332",
+        "meta": {
+          "imdbId": "tt6035470",
+          "tmdbId": "movie/404114"
+        },
+        "localizedTitle": "機動戦士ガンダム サンダーボルト DECEMBER SKY"
+      }
+    },
+    "107368": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0T8I8O8IH6BT3WIHI500V40Z4X?ref_=atv_dp"
+        }
+      ],
+      "work": {
+        "id": "107368",
+        "title": "Mobile Suit Gundam 00 The Movie: -A Wakening of the Trailblazer-",
+        "originalTitle": "劇場版 機動戦士ガンダム00 -A wakening of the Trailblazer-",
+        "type": "movie",
+        "year": 2010,
+        "overview": "",
+        "rating": 64,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Seiji Mizushima"
+        ],
+        "cast": [
+          "Mamoru Miyano",
+          "Shin-ichiro Miki",
+          "Hiroyuki Yoshino",
+          "Hiroshi Kamiya",
+          "Ryo Katsuji"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/107368/poster/vertical/en/480.jpg?Expires=1805826914&Signature=BtM-ZfZ8bAVcRqkmVRb4rQ0ewyWeu-6-25FOl2hJsT0tRgBXwBtRwpcfJkCUi~HC0jB29IgM26u4U4hYIZ5B4mc5gohrw7gcmou~gvgGtkE~6WTnvPsWzOGNbm-2vyzVcEpHid4yA30CmC0gLgJfrNh~ycs3ocVbw-3HAXnq0~r3JutgLsQlDAf2-gQh65j4~-A07q2xomok~VaZIOD87lQ~oaTgjpja8gmjddMcJHFOABYQbs14RnP7D6mDkqlvWf-mIkYxm1VgXNSTk~kIcYk01oADYy7r2wtiTPtFcQVZ6VFQEY1JQB9R3ROJf3GWuqtgJ7OrO~J-H5tILW-buQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/107368/backdrop/horizontal/1080.jpg?Expires=1803937105&Signature=J-HfiEWi5BtrdsveChxpuW3SW07WlpaYOO0CkNdKJxSCzbG-EKn0SMSK3wi6xoY1LNoOjGlL9pHhGrhEIAxAeJEyTiqmZWa8ANw6Aarn8YRQJwke63lrhI974Z4THnWRlBNJ3K-oLI0Xf7EHwnMpWbE4S8bLgO8gnDVLTIL6Q2lrjZdgid7Uvjv2fvA0-wBSJNl~dXi1PCHkuzIKUTwbKw4Ts4ykNN2vS37fT1UkGuW~gw03RssCUx641-vMx3mML2OU581K6gQfCleJx~dziTZVQSiIGMXlp-yWU~Apth0pZzio104wGxiriYJ5z4Yrs81cpScKYmUfUXREyjF0Aw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.amazon.co.jp/gp/video/detail/0T8I8O8IH6BT3WIHI500V40Z4X?ref_=atv_dp",
+        "meta": {
+          "imdbId": "tt1726286",
+          "tmdbId": "movie/37048"
+        },
+        "localizedTitle": "劇場版 機動戦士ガンダム00 -A wakening of the Trailblazer-"
+      }
     },
     "108163": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
@@ -2378,6 +3233,65 @@
           "link": "https://www.netflix.com/title/81044927"
         }
       ]
+    },
+    "118630": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-narrative/umc.cmc.2quj21qirln3iik6qwf763ub3?playableId=tvs.sbd.9001%3A1453808729"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0FV9NKMOAYM2PG1NDBQYD24E9H?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81441357"
+        }
+      ],
+      "work": {
+        "id": "118630",
+        "title": "Mobile Suit Gundam Narrative",
+        "originalTitle": "機動戦士ガンダムNT",
+        "type": "movie",
+        "year": 2018,
+        "overview": "",
+        "rating": 55,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Shunichi Yoshizawa"
+        ],
+        "cast": [
+          "Junya Enoki",
+          "Tomo Muranaka",
+          "Ayu Matsuura",
+          "Ayumi Fujimura",
+          "Tomoko Shiota"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/118630/poster/vertical/en/480.jpg?Expires=1805544935&Signature=g16VUWuuxgO9RNRU9QgHyiPAMhOjIIPZOw20Y1MFwjHkySM5wZE5-a5IhtLBNMARtP7fcFlmEt8BHzfnhv76RlwTvjI9tVWI-bhwXhYfzglWVwRgNvMAC~uTIPZQ8mhenjyM5UIZaSLCWneiLxg2kmnGTUFtvfiJfsgk95kqPaXZfU2aaeuiURwy9ei14Yl1XiWwUJJZGMNzExaLw1G7bPOho6MMzfNp5ZcBHGI6MceJP56KvnHlCqDc6yEhyF5o7-47fAyXWCoa2tb84pwfaKKYvorI-fc0Q5Y-I7dFpcinK~bJt4SiEe3l4Ydp2cOYyHxghklN9EMUUVbgkV5QPQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/118630/backdrop/horizontal/1080.jpg?Expires=1818656940&Signature=eV0lnU0Aw0a~3P5HlpywXLXUH6rIrWHkEaGtCrniNi09pWdgI-FEUUWAkgEuPw7Eu2cLPJzakxS19vF7S6aiSpUnm2DJykpX7DnC3expBBsGXafXv2I5xhM3zm8hA1RcG~KBZVmfWcJmidbGSTSf6O-yLwD9P4A2A2PTVmTd7iTmhDSZlp6qskeN9ZfwUV2NtedWHxemaeYZu1h3HhVk1RVyzuM7SlkxdvzuwLPmUjB-emjE4JMNlTdJ3TshU9~8-EaBxvZK4TIqxPwhEfKipAc1EyfH3fNHaPhSB4NtIv7h-AwR2pNG6JVQYkvB-p5RoKC0f1zPQovKk~ljDSnwqQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-narrative/umc.cmc.2quj21qirln3iik6qwf763ub3?playableId=tvs.sbd.9001%3A1453808729",
+        "meta": {
+          "imdbId": "tt9497146",
+          "tmdbId": "movie/553610"
+        },
+        "localizedTitle": "機動戦士ガンダムNT"
+      }
     },
     "122069": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -2621,6 +3535,57 @@
         "localizedTitle": "クレヨンしんちゃん 謎メキ!花の天カス学園"
       }
     },
+    "134509": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-thunderbolt-bandit-flower/umc.cmc.1xdxdt644ih8r7z827tyo31xb?playableId=tvs.sbd.9001%3A1299087325"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82678983"
+        }
+      ],
+      "work": {
+        "id": "134509",
+        "title": "Mobile Suit Gundam Thunderbolt: Bandit Flower",
+        "originalTitle": "機動戦士ガンダム サンダーボルト Bandit Flower",
+        "type": "movie",
+        "year": 2017,
+        "overview": "",
+        "rating": 53,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Ko Matsuo"
+        ],
+        "cast": [
+          "Yuichi Nakamura",
+          "Ryohei Kimura",
+          "Toa Yukinari",
+          "Sayaka Ohara",
+          "Yurina Furukawa"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/134509/poster/vertical/en/480.jpg?Expires=1805369614&Signature=Lbf3CcBa~aN4rIQzFJ2~HHcS9U1exGU7J41zcq2XPbzHUlRP3s8sKdEOiwwE-igPvJnSEZR9Zf2uYbEQzMEjBfJZb~PSvS0ge5gAAtSHLv2-Js-gI2m2khRsvK~wGJvMNHEFDEiNImXU8EhgJ2tsQR-q4zugHlwtqdZ-1uq51CBWp-AcTsJcjvvsQCxQ860gG2mX4mvD5ZTCwaaRsaukV1Na3lxsJQejI3B2rtI1UiTiwHxtlPchRM5S8Ifi6rTdVHwc9m8Zwoa-2k-F-bhWQQJQ9ZwpIhrVhFNXV57fKT~fyi2C8SL1flYxrShV6kJJHiINR4053SjNVfoonqRpgQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/134509/backdrop/horizontal/1080.jpg?Expires=1820655972&Signature=ZqZwSq3nPm73ztDEZkk46DEuBQG9R2q1x~6WfZP5xjFHD~gwqqtyDG2qsRulM7zHYjU8w7CZgTHZbhNTS7UCQiZaXIJlXpl6dcN~x1KinSwTM7-Zh0uTCa8l5D7DrXOWc1vb7~VNwoPSvLcmQXhRPxpiaOUj~yuUt9Ly0mM-EKcDzDLSzbN9kAiCmix6OzxB0kI53cBwiRJLT3rxGCpTErj4NCUQvJ0EoRqw9WSBxbWkjGmb1lbU~KACnEGgA0XL728WPkH3F652MoBXsUu~y8zRY0hh~ntXjXlEbkKhqFLDuufasZUzxfTCz4KzEwz-ht-N9ZaZiY142oZYT4sfyQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://tv.apple.com/jp/movie/mobile-suit-gundam-thunderbolt-bandit-flower/umc.cmc.1xdxdt644ih8r7z827tyo31xb?playableId=tvs.sbd.9001%3A1299087325",
+        "meta": {
+          "imdbId": "tt7933596",
+          "tmdbId": "movie/468690"
+        },
+        "localizedTitle": "機動戦士ガンダム サンダーボルト BANDIT FLOWER"
+      }
+    },
     "138947": {
       "fetchedAt": "2026-09-06T14:20:57.152Z",
       "services": [
@@ -2727,6 +3692,108 @@
           "tmdbId": "movie/424656"
         },
         "localizedTitle": "クレヨンしんちゃん 爆睡!ユメミーワールド大突撃"
+      }
+    },
+    "141557": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-z-gundam-a-new-translation--heirs-to-the-stars/umc.cmc.61lj1ckja31d1m66tdcmsc8n8?playableId=tvs.sbd.9001%3A560080455"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80215577"
+        }
+      ],
+      "work": {
+        "id": "141557",
+        "title": "Mobile Suit Zeta Gundam - A New Translation I: Heirs to the Stars",
+        "originalTitle": "機動戦士Ζガンダム A New Translation 星を継ぐ者",
+        "type": "movie",
+        "year": 2005,
+        "overview": "",
+        "rating": 51,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Yoshiyuki Tomino"
+        ],
+        "cast": [
+          "Shuichi Ikeda",
+          "Nobuo Tobita",
+          "Toru Furuya",
+          "Hirotaka Suzuoki",
+          "Toshio Furukawa"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/141557/poster/vertical/en/480.jpg?Expires=1805594941&Signature=jVi3JGFSR~UxqIVvPCz6evaJ3DUAywu-CqfCBetWGo7aSjxgSumKTH2wUT9DPrcFUeV16B8gxwu~3Fg0qgXtoHq9cX6B5aEi2-bgRF2FXw8rXymufKeGiw9YBYnsnvBL4rvt-VcrZ-l27QFjtEdY75-7g32X6T0E3EzoOXaw3APk8najLhyvBOx3SbBSHE~wSkaX8jS00fwF6DwDCCiU-c9bo3k2radoRnQQAgsubiD1uvWRwCk~rv2X-r3cpqsdocl3lJX5IpeljI0unpdLkrQf5Vs7WeBBPgJ5nVPRWYsUFjYq7gglKHfnRUarDspwILmMHDbT~UfNY8jLQnAEkw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/141557/backdrop/horizontal/1080.jpg?Expires=1820707192&Signature=hmTG5Y~WSNhLKnRk8s7WjMUJUjyHjri2dTRMi198hAVZKovGOAayFH4A2d5li1BTUaYAr0VNCd1I8kSdCEC9JTiOn-EGRGmfHCwzQFsFp6XPCBiilyymQpOWRhM60o7EjO3oM0ES5U9G3sztd5UHotUcsn~yHbNg7KVWYZscMsC63OhEDkwroVoRUnmXd2CqpgpE6ml3AV43VKD-OUJTgQvqYa4V--k8CHMFDg5gKcjnsX-zl6LLRrOtA9LSNXZcX~HhgzEvdlM6T6b7JIzgI8kgrrRPl6vE-CHAMqKOL9y3NYO7DNbXS9bFiK13O96y6uKxDrrzC4iWFtw-lV2lsQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://tv.apple.com/jp/movie/mobile-suit-z-gundam-a-new-translation--heirs-to-the-stars/umc.cmc.61lj1ckja31d1m66tdcmsc8n8?playableId=tvs.sbd.9001%3A560080455",
+        "meta": {
+          "imdbId": "tt0435202",
+          "tmdbId": "movie/19256"
+        },
+        "localizedTitle": "機動戦士Ζガンダム A New Translation -星を継ぐ者-"
+      }
+    },
+    "141998": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-z-gundam-a-new-translation--love-is-the-pulse-of-the-stars/umc.cmc.7amf4hxbnl0rmd41nyl5az9x8?playableId=tvs.sbd.9001%3A560087324"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80215579"
+        }
+      ],
+      "work": {
+        "id": "141998",
+        "title": "Mobile Suit Zeta Gundam - A New Translation III: Love is the Pulse of the Stars",
+        "originalTitle": "機動戦士ZガンダムIII A New Translation 星の鼓動は愛",
+        "type": "movie",
+        "year": 2006,
+        "overview": "",
+        "rating": 50,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Yoshiyuki Tomino"
+        ],
+        "cast": [
+          "Nobuo Tobita",
+          "Hirotaka Suzuoki",
+          "Bin Shimada",
+          "Yoshiko Sakakibara",
+          "Kazuhiko Inoue"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/141998/poster/vertical/en/480.jpg?Expires=1805596075&Signature=I0WWNHwZf5sa~xxHh~YdviT0Sz8JCBuvuTURee~R-Kb866cPeEr6qWRliafRBNYdq1EURhjgJwnjupiASJ2getSdBXLGZBZkfpUZsiLLb760bJF4NZCOXzdIIzPUAtM97T4huqpCoRVRAgwcqkL-vrDCdJAtB4~sU7RAXrmYln~0Eno3bLu8T2bJBmEUTDXYFbt5afbgPdutOIaqu2q9LnGxGf19YM3SVrrYvQi0zNHcrl9lQ7xsnJQZg7C56Y0rilkyZUoe-bjNKUzPkUyoog8tqPJxTXeXEwhPRCevdSVlkeCZnrQzqNJ4y74pT5J512QUcFAmoKBN2rbZDry~fQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/141998/backdrop/horizontal/1080.jpg?Expires=1820704816&Signature=e6JlsaxhV8lFUaiNJeSaN9JpgJtMtPLIIs7S~aq~mDgNZRaGnWJPJclSOFxzd4cGAwBcJMqhuQTwx2dL6CCDLydizJNvlHWKsvwF3SGUc9~xm0sMWS5VY4pN6jiW1NXmr9ZPYAgmrqT5VwnffdzAfpgqJBB6Yeatnc8wML~pzSnagI9GgFBjU8Zhojx5ZozHJPp729we7WAsxGaj3is60ai8lmX7R5NsEIi7rD2mDmVS2Lk-bvx7mT6ghcqZc7JvHPzWwQroCIi2tsKbAIMJWFnLpoLAoqVl0x5moCVEn~mYfLl5EioY3i9rfJE80DFH6S~2IkYj4kzk~nOrmW0itw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://tv.apple.com/jp/movie/mobile-suit-z-gundam-a-new-translation--love-is-the-pulse-of-the-stars/umc.cmc.7amf4hxbnl0rmd41nyl5az9x8?playableId=tvs.sbd.9001%3A560087324",
+        "meta": {
+          "imdbId": "tt0488584",
+          "tmdbId": "movie/30606"
+        },
+        "localizedTitle": "機動戦士ΖガンダムIII A New Translation -星の鼓動は愛-"
       }
     },
     "142554": {
@@ -3013,6 +4080,64 @@
         "localizedTitle": "クレヨンしんちゃん 電撃!ブタのヒヅメ大作戦"
       }
     },
+    "152182": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mobile-suit-zeta-gundam-a-new-translation-ii---lovers/umc.cmc.qm6tcfdw78zpsfcqwojv1fp?playableId=tvs.sbd.9001%3A560094967"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RUIQQ0XV3VIH0JG2HDRL90X5I?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80215578"
+        }
+      ],
+      "work": {
+        "id": "152182",
+        "title": "Mobile Suit Zeta Gundam - A New Translation II: Lovers",
+        "originalTitle": "機動戦士ZガンダムII A New Translation 恋人たち",
+        "type": "movie",
+        "year": 2005,
+        "overview": "",
+        "rating": 50,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Yoshiyuki Tomino"
+        ],
+        "cast": [
+          "Nobuo Tobita",
+          "Shuichi Ikeda",
+          "Toru Furuya",
+          "Hirotaka Suzuoki",
+          "Fuyumi Shiraishi"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/152182/poster/vertical/en/480.jpg?Expires=1805617132&Signature=OHslF452H8u2ryeM15YcjRWlUZgv8myuvtbaWUQKQpHN1jffieim411p4oDZmNR2J7VVeZFFQ2S4R2ZDQ389-8yxcc7nXBwUuZ5Lw7ecVCTy2zumMRX5zXLQAfF8jjBen-S~BjuvgcH5hXgZLOTYWDlJA-shYRBS1LhkyqwdaUOMFB8aYIjvbUBlQs~TyI3MGjAecKu6bewn1oM2iumTOPgIwUJviDRZwUeMPygitS589EHQl~oAr3p5moZSnxhyXLVt3vkA7yoRWlPJlm0noIiRCPCKF5HUf6S76tqmuV8GvtneSjskeHbNKmpfRUX8-mtG-av77jsbOKJtUywMXg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/152182/backdrop/horizontal/1080.jpg?Expires=1820626571&Signature=Vb9LbvAynYJyyqXw47Ap8gcnJk3zmLN49zndaIvvN-iy5Ai2gHZzG4hyShVxdgjfpa4KS7vWmAZh4JfHpELTKbXQTagH9kuLKM8mageaaUGpcJq7fiu9DR2M6S18lilxkcwPZj-~ZRiEXnYVkFvluP96TWJ~s2nP6xfx9LzVgZ05VLv7qhMEfuoabSfM6-L2W50fDVDhYqiX9o08kBROIlkUIryv9uPocq0LnxC0NNJAQ8Ol-gwuf6FhuUIGiyZzbRJ0kMkQS9GNuKF02hsn99SAatxsx7LRbBxmzGhugua5pxi0G7X53SdeL-2QDCK5c0v04ls1QVcihp5KsaUT-A__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://tv.apple.com/jp/movie/mobile-suit-zeta-gundam-a-new-translation-ii---lovers/umc.cmc.qm6tcfdw78zpsfcqwojv1fp?playableId=tvs.sbd.9001%3A560094967",
+        "meta": {
+          "imdbId": "tt0468812",
+          "tmdbId": "movie/19257"
+        },
+        "localizedTitle": "機動戦士ΖガンダムII A New Translation -恋人たち-"
+      }
+    },
     "153238": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
       "services": [
@@ -3054,6 +4179,59 @@
           "tmdbId": "movie/163786"
         },
         "localizedTitle": "クレヨンしんちゃん バカうまっ!B級グルメサバイバル!!"
+      }
+    },
+    "154731": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "subscription",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0MR5I1JZYLMBMUAXP8Y2OHA846?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82679060"
+        }
+      ],
+      "work": {
+        "id": "154731",
+        "title": "Mobile Suit Gundam: Cucuruz Doan's Island",
+        "originalTitle": "機動戦士ガンダム ククルス・ドアンの島",
+        "type": "movie",
+        "year": 2022,
+        "overview": "",
+        "rating": 55,
+        "genres": [
+          "Action",
+          "Animation",
+          "Drama"
+        ],
+        "directors": [
+          "Yoshikazu Yasuhiko"
+        ],
+        "cast": [
+          "Toru Furuya",
+          "Shunsuke Takeuchi",
+          "Ken Narita",
+          "Toshio Furukawa",
+          "Megumi Han"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/154731/poster/vertical/en/480.jpg?Expires=1805550839&Signature=hLsCt9RcmlJ7noODKM-BWe8bV41wTCCOgnl7Wq~IyjE5JRhqoSCkCd8pHsJKjYkeaSKpqSypAJ5GenKf5wqrWqE69msuT7-1rAuZUOKqujd3NXojTDZfksyBvH7i4hx5F-3HEbnXfqXc63YaZPNvakqEYnmyJQdgoclVC1kWJLdiQUaOuukzZrNA8H7PFOHfN3xgF5R0RCe7AwdX2CbqYZUI5VCTCZTfL8zOKXtSffmeP9XslaoPySoeGGvPubOV9kYSQYm7eJK-Ve3B57aEujLI~neizmo7--RVCEiFnLRhuA2fVIQSKkNifV8TsQPTsMr2KSIItOYJ-idHNXgkuw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/154731/backdrop/horizontal/1080.jpg?Expires=1808551199&Signature=VqFwo0GiEsGGFbjCG2tEaek78LZK2xe9LrUbjqYGNAtHXdvh62Afvp9rijANLoqfFu4AKRX4NLjf83kNHFhg7qRh-VIASD3QYa2D9fzG5i-NHhpqBYO-mSBnh0~r6nX3l6w5ILVUGDjJIMvLLkc9r~tAlVEl1jzzp4iKAIXr-e~Zy7kcb~BcDbiDZOnDLQOYvarKoJ2OGP~U~1-k4Voyck6vfEaSsHCshu3f6hR3Mbi9O3S6HnIIId86qd04Pjr51Vlhb9YtUcx3c22T5f3x~0ITXLd9Jt6eh1ITX-bkeL~Zhg38gzPpDd2F7Uxfu9W2~0AWNdc0BxoySigbhTYyGQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.amazon.co.jp/gp/video/detail/0MR5I1JZYLMBMUAXP8Y2OHA846?ref_=atv_dp",
+        "meta": {
+          "imdbId": "tt15428330",
+          "tmdbId": "movie/883768"
+        },
+        "localizedTitle": "機動戦士ガンダム ククルス・ドアンの島"
       }
     },
     "156635": {
@@ -3507,6 +4685,47 @@
           "link": "https://www.crunchyroll.com/series/GRQWH14QV/adventures-in-voice-acting"
         }
       ]
+    },
+    "220507": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82678991"
+        }
+      ],
+      "work": {
+        "id": "220507",
+        "title": "Mobile Suit Gundam MS IGLOO: Apocalypse 0079",
+        "type": "movie",
+        "year": 2006,
+        "overview": "",
+        "rating": 56,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Takashi Imanishi"
+        ],
+        "cast": [
+          "Miki Nagasawa",
+          "Hideo Ishikawa",
+          "Shozo Iizuka",
+          "Jun Fukuyama",
+          "Sayaka Aida"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/220507/poster/vertical/en/480.jpg?Expires=1805835835&Signature=Cc2JFzLaoqOFuuGI9SLSvQb2wbus0bcCFoAWRjFm8jx4Y3B3eyPmiAGBcHqAXMHM-DYAssQPZI3KcG5NPeVgndHAun0eqUBGXGSNoYEGGpHbW3UtPJkgIkLLb8U6aiQIThKAvknVNitUdKWAkx06JOyS73psXcWZTpCu1pVBzsXiOLdULJgAkLInPyTCGLBFraUB4mQ7jKBbeKbF8EKH3iIY1pGbwfEStlPj2fcC5-Z7y~A4yPKkEx93jAc1Bx-UZEs0Qk6V9KKdV8rQD7D7NgxxyA5nH8M6s6egrXJyHj~UX0OrxozjtDXuK1ME1GzScjNA~EUKX~JVh0hUsW5M8w__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/220507/backdrop/horizontal/1080.jpg?Expires=1805835834&Signature=Jkx66RJ4YyIhc8ph9hzz1D3QVhlnBN8vnmg2XjRuxf~jLqG4BGYHqA6K8zKo7SK9V-pP-xi~R84F999cyRjqHvnXkv7bKnWtqRKUacNb8nxEJSwQzpS~GjDWOe6sUaOoTcsBsezG2vI1Se43xTTfHolahUp91bdgv51W8C4yeGOCgdkFTSXqhK-psvHUzQ2EgSdaGKOctA8J~XkHuZouznBB97xRxw~Qmpr71uIwR3~0gGBfq5ZJw863KjWi1h5PcrYNVhhzqnVeIAzPocOymTekV-9crd5cVzmnI6V8GfW5-EC3m9EuP1WsdTpDxnjKmpoN4Y10vU-JrMiEs0Jnhw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/82678991",
+        "meta": {
+          "imdbId": "tt7127518",
+          "tmdbId": "movie/587355"
+        }
+      }
     },
     "227395": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -4086,6 +5305,59 @@
         }
       ]
     },
+    "7520845": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81747912"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0U9JS1JRNIJ0BJH9CY6NR1IS7T?ref_=atv_dp"
+        }
+      ],
+      "work": {
+        "id": "7520845",
+        "title": "Mobile Suit Gundam SEED FREEDOM",
+        "originalTitle": "機動戦士ガンダムSEED FREEDOM",
+        "type": "movie",
+        "year": 2024,
+        "overview": "After the Second Alliance-PLANT War, Gundam pilot Kira Yamato joins a new peacekeeping organization determined to eradicate the remains of Blue Cosmos.",
+        "rating": 59,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "directors": [
+          "Mitsuo Fukuda"
+        ],
+        "cast": [
+          "Soichiro Hoshi",
+          "Rie Tanaka",
+          "Akira Ishida",
+          "Nanako Mori",
+          "Kenichi Suzumura"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/7520845/poster/vertical/en/480.jpg?Expires=1810902485&Signature=eFxxTRcj76tals9WHWKgBJg7NbEzcy~1qjVXFiHQeWUOiX6POsdO3ShUROexSosUq4QGs0DChXFZtM7BHdvXQe~vYUTmXeUB5sRZNDgfbB8Zo40P3UdnhnBG~nk-BbxT~AfXrtgiQIQD0NIebQ0UIaMxnh4LcxcFTDxESvzPmWNEUX4Ae~BLRHINvMyj6zTe56xi-iYIh03yuNvXTXXWQvZ2IAkSFI2HeB~M~iUpV1y25D9WdBE-RMST2cR1KS~KFp40f8zpNbrynGLeetUojIQza8u5G93VCui2gRc3aKGOtXCSanWEKSt-yAbQNLI4em1O-FETVL13fm-cqVP0Og__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/7520845/backdrop/horizontal/1080.jpg?Expires=1805517545&Signature=BKAstagEU3q-SVI~6qlk-grZ4Q0gZPY6rvtbF50inPCsszBcY6UF1ASuR2tSjJXdiWbprDJAodRga83j~QsB6aUmD57Cc3~zVYTImQbYGvgfkIIIFj62bj5~fXobZUtuVzCxiyhIy0PS8dQuOM~~CIRUXTO0BW-cM8Ggplj1PDtZY3MapIoEc8JXW7u1kaU3BCT6aDlp-NCOidfurQl-n0ioxg-lT9~FEhBw-KcYZKS4Xfx5JyJ1aCrrLeTt1RZDlEq2Pun9UleZ6iM4R0xtgSNmK1j2KvDAYzgU~V2NvP9R6UPBOW0xvFvF6HjsZgAYuaC3-feoyAKZRSW9R3EfpQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/81747912",
+        "meta": {
+          "imdbId": "tt14759062",
+          "tmdbId": "movie/1146972"
+        },
+        "localizedTitle": "機動戦士ガンダムSEED FREEDOM"
+      }
+    },
     "7551786": {
       "fetchedAt": "2026-09-07T07:12:36.783Z",
       "services": [
@@ -4158,6 +5430,47 @@
         }
       ]
     },
+    "8954981": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81276500"
+        }
+      ],
+      "work": {
+        "id": "8954981",
+        "title": "Gundam: Requiem for Vengeance",
+        "originalTitle": "機動戦士ガンダム 復讐のレクイエム",
+        "type": "series",
+        "year": 2024,
+        "overview": "Eleven months into the One Year War in U.C.0079, top Zaku II pilot Captain Solari faces the Earth Federation’s new lethal weapon: the mobile suit Gundam.",
+        "rating": 64,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "cast": [
+          "Celia Massingham",
+          "James Watts",
+          "Lavance",
+          "Daniel Wishes",
+          "Andrew Woolner"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/8954981/poster/vertical/en/480.jpg?Expires=1808539377&Signature=K~D8~FNedt5PHbYW-rKrWx7RTO73qDTbLELGP2HzA9BXBQ7c4WHIUymGOn2EOqdd9SiotXWXdFelyKCBUwNMX~MebpzsS2K0FJ3pkbh~5hMIAgG~PYvJJoyZ1d~oMvBwLuY2X1uDTeyzVpWpZtcYY14bQAUw3bTYiIs2tXA0SvvmxFms8fFZrIan8OiUjJLSk3eMEIvwhCKyA3xe4aO3xfrygWDzgNNtFuw5Pr9sVCbEFxWFbwpDVbExGt0B8FxOp07AGUx2nljojVgmdD49KTcXtum7w7i7Z9V31oy6NAKc3WbitLMND3Rd4h1w3DCWUdedmWiVd-qqhChdeilNmg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/8954981/backdrop/horizontal/1080.jpg?Expires=1808539372&Signature=LEVIXlbkEDulpsmyLXcUBQYWnSuGaXboDCtcsfkn2l7eQ5L~LVtv8YkyPJeZfr0zXGSjGEpI-0ZQjA2LNUYS-7gPQ6NLJUOe8kR2fYbUwNfRWzFfZkc4Pr~xkO02hXDhnYF6KzVF4cACoZdtOYnYUZBDDp7fOjQXzr2CbBmkPXFfIz0MBZCDV7iIsCD-iGnl7jzOWzwsWWAKxIXObA22ePaf~kCuvZYghgBlUZralUbxs~UOzhdiGZWrubZwa3YjwZOKaWg6HVM4soeNRRgFNLr~9TA~YQXwF1gUSxnZVr5iOxii-L3XgIIwX4qItFTd1O6tUGQMtVewyuy6kuwGxw__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.netflix.com/title/81276500",
+        "meta": {
+          "imdbId": "tt30277745",
+          "tmdbId": "tv/229906"
+        },
+        "localizedTitle": "機動戦士ガンダム 復讐のレクイエム"
+      }
+    },
     "8955431": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -4220,6 +5533,55 @@
           "link": "https://www.zee5.com/global/tv-shows/details/loop-11-47/0-6-4z5577119"
         }
       ]
+    },
+    "11264287": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription",
+            "free"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RAKMIVY9QS769SM70HHANW8UQ"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80186285"
+        }
+      ],
+      "work": {
+        "id": "11264287",
+        "title": "Mobile Suit Gundam Unicorn RE:0096",
+        "originalTitle": "機動戦士ガンダムUC  RE:0096",
+        "type": "series",
+        "year": 2016,
+        "overview": "",
+        "rating": 42,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "cast": [
+          "Koki Uchiyama",
+          "Ayumi Fujimura",
+          "Takayuki Sugo",
+          "Tetsuya Kakihara",
+          "Haruka Tomatsu"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/11264287/poster/vertical/en/480.jpg?Expires=1805551748&Signature=bvp3Pt8HmsRsq6Q0hm6wtBDUcoO9MBxX8rLlBubOtxE7~cEX0zzcq7v3yLsiP-BOwBR8Pr1tMgyj83aKnld8hKPLMOI1QcpoDCJcUg6U1tmvDHOD1sQpGhh7DJSTq7qrXKRlAGC-MEX2Szws1~PZORmelDfdkKveaJUh5sa1pZ~4F61cIi~608o7zBx-es0ZwIUgarnw4sBcTwjkplqywrUz-tHJZzdNaaoFgHsmL3WMFdKTBZHbVA7hAfB1quUjKzxm1VAqU2h422zgdauSCTb5monK5WIZ3whmR~xDxKYo0-21g~WuN5FsV7nVESHU3jnM7mLugI0alJjTOgCBUg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/11264287/backdrop/horizontal/1080.jpg?Expires=1819411247&Signature=GU~ERlN9xXMJ8xZnrvZPupA65xec4-h4KpCkQ61hCae3mIfHNC6Zir30GQElmf~2ZsSVsoQEeR8uQR5Z678KjWQBlWRbIpgCM5xl-m-x0HaMP0pddbJR9dzrTfmQyeOsAy-zKNsvN37YCmZCz93SDQYiRGEZkuRB7mSE8smEK8sMt3BJ3OaapeW0DgNzuburPy7-DyXFK0wZQyTzdZK6302eVa5d24UqeE2Co14C5zUJydCOMmzj2ginA~naY6KC6Ez91wzKgewWnZ0ocOY6JbNO-sQhWI3bx~3MoKT09qR-ZCa9d1tdHvapcgBoq5hLQp2nfbHRjM7eJCFSyTgzkQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://www.amazon.co.jp/gp/video/detail/0RAKMIVY9QS769SM70HHANW8UQ",
+        "meta": {
+          "imdbId": "tt28740765",
+          "tmdbId": "tv/67524"
+        },
+        "localizedTitle": "機動戦士ガンダムユニコーン RE:0096"
+      }
     },
     "14625987": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -4313,6 +5675,63 @@
           "link": "https://www.amazon.co.jp/gp/video/detail/0SYS13DCF4MIC98B0B8E4RXR5G"
         }
       ]
+    },
+    "16700700": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "addon"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.5908ba0e-1f0f-4463-ba73-8bf38abb35fd"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-2f3b9315-0983-48ef-98dd-cff50840d84b"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82033213"
+        }
+      ],
+      "work": {
+        "id": "16700700",
+        "title": "Mobile Suit Gundam GQuuuuuuX",
+        "originalTitle": "機動戦士Gundam GQuuuuuuX（ジークアクス）",
+        "type": "series",
+        "year": 2025,
+        "overview": "Amate Yuzuriha is a high-school student living peacefully in a space colony floating in outer space. When she meets a girl named Nyaan, Amate is drawn into the illegal mobile suit dueling sport known as Clan Battle. Under the entry name \"Machu,\" she throws herself into fierce battle day after day, piloting the GQuuuuuuX.",
+        "rating": 58,
+        "genres": [
+          "Action",
+          "Adventure",
+          "Animation"
+        ],
+        "cast": [
+          "Tomoyo Kurosawa",
+          "Yui Ishikawa",
+          "Shimba Tsuchiya",
+          "Shinji Kawada",
+          "Seiichiro Yamashita"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/16700700/poster/vertical/en/480.jpg?Expires=1805413040&Signature=hnOsc-VA-8-Ks0lEXMxQq9HKDf4jRsV3qO7I1PLJqB2as~hXzei8J5NXbJZXpYU8rTsaXeOUnPzCjuE0W8shXJCQx9qSU7iOUc~o-UqndVsBqxZbzomJCt~1J8A-~p9LRdN7UMXHmZwYSDK6mxtpqKoAiNrm3aRLu602B2ShcNR48~G8KtNhd898LdjtiAVMvCt76qNTtsWg8mL2DUg54jYrjm9yoiNSAyinQE5Wf7KML-SYZxujDHdEsJlt29YYm-1caTYuRW1FkKDaVtNt0Do6e6bejGdRa2eYcCGipwe6YPeNvQwlQzAw8zw~kJo7g0f~SisWoB7teG4V5FCR5A__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/16700700/backdrop/horizontal/1080.jpg?Expires=1810735516&Signature=RnjMmcb~dInl-5hmDqvK11XZFIIgvtuHeoQChk6uSs3hiaQJr0Xc5c1jUs~l51dwLkhGscuXxwvnse4FRvqc0jTJb2pY95kXT33TYCn5fHZ4akoQhT58BWJ4iNh4g9DzzDWda27gQI3VZyH1qzc2XKEbLQ9Ezp93fx0rrRyl9k27BAavwnBEd0LtSQvvpsMF~I8My6gBA5uA6Hhz7Xgc159ERuDNyu28Ds0UtFYe9z9jfnvYoZ5yBdqD8Cel4xdEb6ELQmpK3tgk6YWOS~he6~osD1tYSKtqThHc020NNU3-WGkkkcXkPyOBz9vhrKhWdXvZI-6dVzklXiUhl8GuJQ__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.5908ba0e-1f0f-4463-ba73-8bf38abb35fd",
+        "meta": {
+          "imdbId": "tt34880941",
+          "tmdbId": "tv/278704"
+        },
+        "localizedTitle": "機動戦士Gundam GQuuuuuuX"
+      }
     },
     "18533337": {
       "fetchedAt": "2026-09-08T12:42:01.459Z",
@@ -4600,6 +6019,58 @@
           "link": "https://www.amazon.co.jp/gp/video/detail/0U512I7W0JVD3SQ6O9NCSWO9AS?ref_=atv_dp"
         }
       ]
+    },
+    "24594410": {
+      "fetchedAt": "2026-09-14T13:39:16.137Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "buy"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.ccdc8eb9-7513-4b58-8c14-e34650be8029"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82678985"
+        }
+      ],
+      "work": {
+        "id": "24594410",
+        "title": "Mobile Suit Gundam: Iron-Blooded Orphans - Urdr-Hunt: Path of the Little Challenger",
+        "originalTitle": "機動戦士ガンダム 鉄血のオルフェンズ ウルズハント -小さな挑戦者の軌跡-",
+        "type": "movie",
+        "year": 2025,
+        "overview": "",
+        "rating": 0,
+        "genres": [
+          "Action",
+          "Animation"
+        ],
+        "directors": [
+          "Tatsuyuki Nagai"
+        ],
+        "cast": [
+          "Rina Ikoma",
+          "Kenyu Horiuchi",
+          "Reina Ueda",
+          "Taro Kiuchi",
+          "Minami Tanaka"
+        ],
+        "posterUrl": "https://cdn.movieofthenight.com/show/24594410/poster/vertical/en/480.jpg?Expires=1805420840&Signature=lXciMR331GMMwLYV04HRlFaX4F5dnxyLh9BjjESmkw8McjSVea0PuGeVtIaS1vP~bpPhJQE5NZOonL7tJcPP2Hxr0FP00qobwuSgfu48kAQl4EMvvqlkw6TJ5A2Nf4C0ajOqKzCURgNXohqr~RQOVJooTEbAcnmTzwYMMRNWR5VXcgizL4nVgwUnFTOQYyCguXMvEvuDpJXr5ZR94SOWx-fHSZDZJGjV8kZMg13heTVM9ElSFeWPnjpqEUFZVH-0HTfqzDTpcfarQERlDBjUrQNN9Huun7No9PXBThSm4DXujjX6PJ1Ryrr-rNboKOTBaJH79ZbD6OuDV1AOCuhzXg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "backdropUrl": "https://cdn.movieofthenight.com/show/24594410/backdrop/horizontal/1080.jpg?Expires=1818088188&Signature=Mc94iOqFi3vdLZeu5w61tYjbdhRKhzs6kNvzorJu25fLOfcr4aQ2gQct3lchHwXIa2RENXxUCK9xTGvvuLjSmW3OuoCOwAVI6DfMDzcf7S5hpll-~sEFXHlouLjt3Tb7~pzMWOsmjPOIRR5d~-cBl5iA58x1R74OfoNv7vfG23QWOLQsaP60vBVdhoASyP1Rqu7RIyP6304pbzc7C5cl00bP8RXKwxuWGTZWruseheFNowL0O~U0arwamOr8Pu7a-5nt5o~-0W6NKZkdPLqb6sz5XqBDyDdkplVgcXR56UWgDXRVRkPoAWnUZc03sKAxF-5Oa8-hc3x9SVb7ZawExg__&Key-Pair-Id=KK4HN3OO4AT5R",
+        "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.ccdc8eb9-7513-4b58-8c14-e34650be8029",
+        "meta": {
+          "imdbId": "tt38828026",
+          "tmdbId": "movie/1520936"
+        },
+        "localizedTitle": "機動戦士ガンダム 鉄血のオルフェンズ ウルズハント -小さな挑戦者の軌跡-"
+      }
     },
     "24973699": {
       "fetchedAt": "2026-09-10T05:45:02.097Z",

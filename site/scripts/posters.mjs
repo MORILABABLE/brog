@@ -101,6 +101,8 @@ export function loadWorkImages(repoDir) {
   const dir = join(repoDir, 'data', 'events')
   /** @type {Map<string, {id: string, title: string, url: string, expiresAt?: string}>} */
   const map = new Map()
+  /** 原題ぶんの控え。**本文の鍵を全部入れ終わってから**、空いている鍵にだけ足す */
+  const pendingOriginals = []
   if (!existsSync(dir)) return map
 
   for (const f of readdirSync(dir).filter((f) => f.endsWith('.jsonl'))) {
@@ -118,11 +120,61 @@ export function loadWorkImages(repoDir) {
       const title = e.work.localizedTitle ?? e.work.title
       if (!title) continue
 
-      const cur = map.get(title)
+      /*
+       * ★ **原題でも引けるようにする**（2026-09-14 追加）。
+       *
+       *   記事の表に出る題名は `withJapaneseWorkTitle()`（pipeline/core/events.ts）で
+       *   **邦題が無ければ `originalTitle` を充てた**あとのもの。ここが
+       *   `localizedTitle ?? title` しか鍵にしていないと、邦題を持たない作品は
+       *   **英題でしか引けず、記事の日本語題では当たらない。**
+       *
+       *     実測（2026-09-14・「ガンダム」）
+       *       閃光のハサウェイ キルケーの魔女
+       *         title          MOBILE SUIT GUNDAM HATHAWAY The Sorcery of Nymph Circe
+       *         localizedTitle （無し）
+       *         originalTitle  機動戦士ガンダム  閃光のハサウェイ キルケーの魔女
+       *       → 節の代表2作のうち1作が引けず、**節がまるごと文字だけに落ちた**
+       *         （ポスターは節の全員ぶん揃ったときだけ使う決まりのため）
+       *
+       * ★ **規則は写さない。** `originalTitle` がかなを含むかどうかの判定は
+       *   `src/lib/work-title.ts` が持っている（サイト側の写しはあの1か所だけ）。
+       *   ここは**鍵を増やすだけ**にしてあるので、引くのは
+       *   `imageFor(記事に書かれた題名)` の側で、判定を二重に持たない。
+       *
+       * ★ **原題は後回し**（`work-links.ts` の索引と同じ順序）。
+       *   別の作品が邦題として使っている文字列を、原題で上書きさせない。
+       */
       const at = expiryOf(url)
+      const cur = map.get(title)
       if (!cur || (at ?? '') > (cur.expiresAt ?? '')) {
         map.set(title, { id: String(e.work.id), title, url, expiresAt: at })
       }
+      /*
+       * ★ **記事に出るのは空白を詰めた版**（`src/lib/work-title.ts` の
+       *   `fillJapaneseTitle`／`pipeline/core/events.ts` の `withJapaneseWorkTitle`）。
+       *   配信APIの `originalTitle` には全角空けの名残で二重空白が入ることがあり、
+       *   詰める前の文字列だけを鍵にすると**記事の題名と一致しない。**
+       *
+       *     実測: "機動戦士ガンダム␣␣閃光のハサウェイ キルケーの魔女"（API）
+       *           "機動戦士ガンダム␣閃光のハサウェイ キルケーの魔女"（記事）
+       *
+       *   両方を鍵にする。**詰め方の規則だけを合わせ、かなの判定は持たない。**
+       */
+      const original = e.work.originalTitle
+      if (original) {
+        for (const key of new Set([original, original.replace(/ {2,}/g, ' ').trim()])) {
+          if (key && key !== title) {
+            pendingOriginals.push({ key, id: String(e.work.id), title, url, expiresAt: at })
+          }
+        }
+      }
+    }
+  }
+
+  // 原題ぶん。**空いている鍵にだけ足す**（邦題を持つ作品の鍵は奪わない）
+  for (const p of pendingOriginals) {
+    if (!map.has(p.key)) {
+      map.set(p.key, { id: p.id, title: p.title, url: p.url, expiresAt: p.expiresAt })
     }
   }
 

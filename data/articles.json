@@ -70,6 +70,18 @@
       "writtenAt": "2026-09-10"
     },
     {
+      "slug": "gundam",
+      "typeId": "series",
+      "targetMonth": "2026-09",
+      "flags": {
+        "topic": "「ガンダム」シリーズ",
+        "slug": "gundam",
+        "match": "ガンダム|Gundam|GUNDAM|ハサウェイ|Gのレコンギスタ|ジークアクス"
+      },
+      "category": "arrivals",
+      "writtenAt": "2026-09-14"
+    },
+    {
       "slug": "harry-potter",
       "typeId": "series",
       "targetMonth": "2026-09",
@@ -178,5 +190,5 @@
       "writtenAt": "2026-09-06"
     }
   ],
-  "updatedAt": "2026-09-13T14:44:16.165Z"
+  "updatedAt": "2026-09-14T22:05:37.792Z"
 }
