@@ -235,14 +235,38 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
 
 記事ページの本文より下は、`site/src/pages/posts/[...slug].astro` に上から順に並んでいる。
 
-    1. Amazonへの導線   → site/src/components/AmazonCta.astro
-                          文面はカテゴリで変わる（終了記事に「見放題で探す」と出さない）
-    2. U-NEXTへの導線   → site/src/components/UnextCta.astro（見た目だけ）
-                          **文言とLPの選び方は site/src/lib/unext-ad.ts にある。**
-                          U-NEXT のタグが付いた記事にだけ出る。
-                          PUBLIC_AFB_UNEXT_LP 未設定なら何も描かれない。
-                          掲載NG作品（TBS／日テレ／FOD）が本文にあるページでは
-                          枠ごと消える（site/src/lib/unext-ng.ts）
+    1. afbへの導線      → site/src/components/AfbCta.astro（中身は下の「1の詳細」）
+                          ★ **2026-09-14 に Amazon より上へ移した**（記事の最後尾まで
+                            読者は到達しない・スクロール90%到達は22%）。単価が2桁違う
+    2. Amazonへの導線   → site/src/components/AmazonCta.astro
+                          **リンク1本だけ**（2026-09-14 に説明文と注記を撤去）。
+                          必須の固定文は Footer にあるので、この枠は義務の文言を持たない。
+                          ★ **COPY の動詞を強めないこと** — 終了記事に「見放題で探す」と
+                            出さない線を守っているのが、いまはその1行だけ
+    1の詳細 — AfbCta.astro が**どちらを出すかを決める**
+                          **1ページに1つだけ。U-NEXT を優先し、出せない面に Hulu。**
+                          2社は掲載NGの範囲が噛み合っていないので、枠を増やさずに空白が埋まる
+                          （日テレ作品は U-NEXT ✕ / Hulu ○、ディズニーは U-NEXT ○ / Hulu ✕）。
+
+                          U-NEXT → site/src/components/UnextCta.astro（見た目だけ）
+                            **文言とLPの選び方は site/src/lib/unext-ad.ts にある。**
+                            U-NEXT のタグが付いた記事にだけ出る。
+                            PUBLIC_AFB_UNEXT_LP 未設定なら何も描かれない。
+                            掲載NG作品（TBS／日テレ／FOD）が本文にあるページでは消える
+                            （site/src/lib/unext-ng.ts）
+
+                          Hulu   → site/src/components/HuluCta.astro（見た目だけ）
+                            **バナー1枚だけ。文字を持たない**（2026-09-14）。
+                            PR表記はページ冒頭の AffiliateNotice が担う。
+                            **あれを消すと無表示の広告になる（片方だけ消さない）。**
+                            **文言を戻すなら site/src/lib/hulu-ad.ts。作品名を入れないこと。**
+                            当サイトは Hulu の配信状況を持っていないので、
+                            作品を訴求した瞬間に「未配信タイトルでの訴求」になる（AFFILIATE 13-1）。
+                            PUBLIC_AFB_HULU_LP 未設定なら何も描かれない。
+                            バナーかテキストかは PUBLIC_AFB_HULU_BANNER の有無で決まる。
+                            **画像は afb 管理画面のURLのまま出す（再ホストしない）。**
+                            TBS作品・ディズニー作品・Disney+ のページでは消える
+                            （site/src/lib/hulu-ng.ts）
     3. 広告枠           → site/src/components/AdSlot.astro
                           PUBLIC_ADSENSE_CLIENT 未設定なら何も描かれない
     4. 出典             → 中身は記事の frontmatter `sources`

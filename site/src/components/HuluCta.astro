@@ -1,0 +1,145 @@
+---
+import { huluAd } from '../lib/hulu-ad'
+import type { AfbSlot } from '../lib/afb'
+
+/**
+ * Hulu（afb）への導線。**バナー1枚だけ。文字を持たない。**
+ *
+ * ■ 中身の判断はこのファイルにない
+ * 出すかどうかは `src/lib/hulu-ad.ts` が決める。ここは返ってきたものを描くだけ。
+ * **文言をこのファイルに書き足さないこと。**
+ *
+ * ■ 作品名を書かない。**これがこの枠の設計そのもの**
+ * Hulu のガイドライン１）は「使用可能タイトルは配信中の作品のみ」で、
+ * 当サイトは Hulu の配信状況を取得できない（規約で禁止）。
+ * だから**作品に触れない広告**にしてある。この枠に作品名や
+ * 「この作品は」を足した瞬間、却下条件（未配信タイトルでの訴求）に入る。
+ *
+ * ■ 枠の中に「PR」を置かない（2026-09-14）
+ * ステマ規制が求めるのは「一般消費者にとって事業者の表示であることが明瞭」で、
+ * **それはページ冒頭の `AffiliateNotice` が満たしている**
+ * （「[PR] このページにはアフィリエイト広告…」・記事と作品ページの両方に出る）。
+ * 位置はむしろ冒頭が要件（docs/AFFILIATE.md 5-5）。
+ * **冒頭の表記を消すと、この枠が無表示の広告になる。片方だけ消さないこと。**
+ *
+ * ■ 未設定なら何も描かない
+ * `PUBLIC_AFB_HULU_LP` が入るまで `huluAd()` は null を返す。
+ *
+ * ■ 掲載NGのページには出ない
+ * `pageText` と `services` を渡すと、TBS作品・ディズニー作品・Disney+ の
+ * ページでは広告そのものが消える。**渡し忘れると素通りする。**
+ *
+ * ■ 直接置かない。**`AfbCta.astro` から呼ぶ**
+ * 1ページに afb の枠は1つだけ、という決まりをそちらが持っている。
+ */
+interface Props {
+  /**
+   * どの枠か。成果データの `id1` に入る。
+   *
+   * ★ **`slot` という名前にしてはいけない**（Astro の予約語。
+   *   コンポーネントごと出力から消える。2026-09-04 に踏んだ）。
+   */
+  spot?: AfbSlot
+  /** ページに出ている文字列。**掲載NGの判定に要る。必ず渡す** */
+  pageText?: string
+  /** そのページが扱っているサービス（記事の tags / 作品ページの services） */
+  services?: readonly string[]
+}
+
+const { spot = 'cta', pageText, services } = Astro.props
+
+const ad = huluAd({ slot: spot, pageText, services })
+---
+
+{
+  ad && (
+    <aside class="hulu-cta">
+      {/*
+        バナー原稿があればバナー、無ければテキスト。**混ぜない。**
+        afb は原稿ごとに `a=` が違うので、片方の href に
+        もう片方の画像を組み合わせると成果が別の原稿に付く（lib/hulu-ad.ts の🔴）。
+
+        ★ 画像は **afb の管理画面が配っているもの**を、そのURLのまま出す。
+          ガイドライン３）が求めているのはまさにそれで、
+          **自前のドメインに再ホストした瞬間に条件から外れる。**
+      */}
+      <a
+        class={ad.banner ? 'banner' : 'action'}
+        href={ad.href}
+        rel="sponsored noopener"
+        target="_blank"
+        data-affiliate="true"
+        data-slot="hulu"
+        data-hulu-ad={ad.slot}
+      >
+        {
+          ad.banner ? (
+            <img
+              src={ad.banner.src}
+              width={ad.banner.width}
+              height={ad.banner.height}
+              alt={ad.banner.alt}
+            />
+          ) : (
+            ad.action
+          )
+        }
+      </a>
+      {/*
+        表示計測の1x1画像（afb の原稿に付いてくるもの）。
+        **原稿の一部なので落とさない。** 未設定なら出ない。
+      */}
+      {ad.impression && (
+        <img src={ad.impression} width="1" height="1" alt="" aria-hidden="true" class="imp" />
+      )}
+    </aside>
+  )
+}
+
+<style>
+  /*
+   * 枠も背景も付けない。**広告主が作った絵をそのまま置く。**
+   * 縁を付けると「当サイトが作ったクリエイティブ」に近づくし、
+   * 文字が1つも無い枠にカードの体裁だけ残っても意味がない。
+   */
+  .hulu-cta {
+    margin: 2rem 0;
+  }
+  /*
+   * `line-height: 0` は画像の下に出る隙間（インライン行のベースライン）を消す。
+   * 狭い画面での縮小は global.css の img { max-width:100%; height:auto } が持つ。
+   */
+  .banner {
+    display: inline-block;
+    line-height: 0;
+  }
+  .banner img {
+    border: none;
+  }
+  .banner:hover {
+    opacity: 0.9;
+  }
+  /* バナー未設定のときのテキスト原稿（`PUBLIC_AFB_HULU_BANNER` が空のとき） */
+  .action {
+    display: inline-block;
+    padding: 0.6rem 1.1rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .action:hover {
+    opacity: 0.9;
+  }
+  .imp {
+    border: none;
+    /* 計測用。読者には見えないが、display:none にはしない（読み込まれなくなる） */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>

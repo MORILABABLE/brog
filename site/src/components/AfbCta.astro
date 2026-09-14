@@ -1,0 +1,98 @@
+---
+import UnextCta from './UnextCta.astro'
+import HuluCta from './HuluCta.astro'
+import { unextAd } from '../lib/unext-ad'
+import type { AfbSlot } from '../lib/afb'
+import type { CategorySlug } from '../config'
+
+/**
+ * afb の広告枠。**1ページに1つだけ出す。**
+ *
+ * ■ なぜ束ねるのか（2026-09-14・Hulu の提携が通って2社になった）
+ * 単純に2社ぶん置くと、記事末尾に **PR枠が2つ＋Amazon枠**で3つ並ぶ。
+ * 選択肢を増やすと読者は選べなくなる（docs/DESIGN.md 5節の方針）し、
+ * 自動生成ページの比率が高いサイトで広告枠だけ増やすのは
+ * AdSense 審査にも効く（docs/AFFILIATE.md 10-5）。
+ *
+ * ■ 優先順位は単価と、禁止範囲の噛み合わせで決まる
+ *
+ *   1. U-NEXT（1,320〜1,430円）… 出せるならこちら
+ *   2. Hulu（917円）             … U-NEXT が出せない面だけ
+ *
+ * **2社は掲載NGの範囲が噛み合っていない。** だからこの順番は
+ * 「安いほうを捨てる」ではなく、**空白を埋める**動きになる。
+ *
+ * | 権利元 | U-NEXT | Hulu |
+ * |---|---|---|
+ * | TBS | ✕ | ✕（Amazonだけが残る） |
+ * | **日テレ** | **✕** | **○**（Hulu は日本テレビ系） |
+ * | FOD / HBO | ✕ | ○ |
+ * | **ディズニー・Disney+** | ○ | **✕** |
+ *
+ * さらに U-NEXT は「U-NEXT を扱っている記事」にしか出さない（【6】関連性）。
+ * 記事31本のうち U-NEXT タグは10本なので、**残り21本には枠が1つも無かった。**
+ * そこが Hulu の置き場所になる。
+ *
+ * ■ Hulu 側の関連性
+ * 記事と作品ページには「他のサービスで探す」の節があり、そこに
+ * Hulu の検索リンクが並んでいる。**そのページは元から Hulu に触れている**ので、
+ * 噛み合わない広告にはならない。逆に言えば、この節が無い面には置かないこと。
+ *
+ * ■ Amazon の枠を置き換えない
+ * 単価は afb が桁違いに高いが、Amazon は**クリックから24時間のあらゆる購入**が
+ * 成果になる別の性質を持つ。**並べて枠別に測る**（docs/AFFILIATE.md 11-7）。
+ */
+interface Props {
+  /**
+   * どの枠か。成果データの `id1` に入る。既定は記事末尾の `cta`。
+   *
+   * ★ **`slot` という名前にしてはいけない**（Astro の予約語。
+   *   コンポーネントごと出力から消える）。
+   */
+  spot?: AfbSlot
+  /** 記事カテゴリ。U-NEXT の文面が変わる */
+  category?: CategorySlug
+  /** 記事のジャンル、または U-NEXT のジャンルキー。U-NEXT のLP選択に使う */
+  genre?: string
+  /** ページに出ている文字列。**掲載NGの判定に要る。必ず渡す** */
+  pageText?: string
+  /** 注意文言に出す基準日。記事の dataAsOf */
+  asOf?: Date
+  /**
+   * そのページが扱っているサービス（記事の `tags` / 作品ページの `services`）。
+   * **Hulu を Disney+ のページに出さないために要る。**
+   */
+  services?: readonly string[]
+  /**
+   * U-NEXT を候補にしてよいページか（ガイドライン【6】関連性）。
+   * 記事では「U-NEXT のタグが付いているか」。作品ページは常に true。
+   */
+  unextSubject?: boolean
+}
+
+const {
+  spot = 'cta',
+  category,
+  genre,
+  pageText,
+  asOf,
+  services,
+  unextSubject = true,
+} = Astro.props
+
+/*
+ * ★ ここで `unextAd()` を呼ぶのは**出るかどうかを知るため**で、
+ *   描くのは UnextCta（同じ入力で同じ答えを返す）。
+ *   判断を2か所に散らさないために、条件はこの1行しかない。
+ */
+const unextFits =
+  unextSubject && unextAd({ slot: spot, category, genre, pageText, asOf }) !== null
+---
+
+{
+  unextFits ? (
+    <UnextCta spot={spot} category={category} genre={genre} pageText={pageText} asOf={asOf} />
+  ) : (
+    <HuluCta spot={spot} pageText={pageText} services={services} />
+  )
+}

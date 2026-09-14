@@ -5,7 +5,7 @@ import AdSlot from '../../components/AdSlot.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import PrimeCta from '../../components/PrimeCta.astro'
-import UnextCta from '../../components/UnextCta.astro'
+import AfbCta from '../../components/AfbCta.astro'
 import { CATEGORIES, GENRES, hubFor } from '../../config'
 import { primeAd } from '../../lib/prime-ad'
 import { formatDate, isoDate } from '../../utils/date'
@@ -53,9 +53,10 @@ const unextSubject = post.data.tags.includes('U-NEXT')
 const primeSlot = primeAd({ tags: post.data.tags, category: post.data.category })
 /*
  * 掲載NGの判定に渡す文字列。**タイトル・説明文・本文をすべて渡す。**
- * 表の作品名も解説文も本文の中にあるので、これで足りる（src/lib/unext-ng.ts）。
+ * 表の作品名も解説文も本文の中にあるので、これで足りる
+ * （U-NEXT は src/lib/unext-ng.ts、Hulu は src/lib/hulu-ng.ts が読む）。
  */
-const unextPageText = [post.data.title, post.data.description, post.body ?? ''].join('\n')
+const adPageText = [post.data.title, post.data.description, post.body ?? ''].join('\n')
 ---
 
 <BaseLayout
@@ -124,7 +125,37 @@ const unextPageText = [post.data.title, post.data.description, post.body ?? ''].
     </div>
 
     {/*
-      Amazon への導線。文面は記事カテゴリで変わる
+      afb への導線（U-NEXT / Hulu）。**本文のすぐ下＝Amazon より先。**
+
+      ■ なぜ Amazon より上なのか（2026-09-14 に入れ替え）
+      **記事の最後尾まで読者は到達しない。** スクロール90%到達は実測22%
+      （docs/FUNNEL.md 5-3）。ここは本文を読み終えた直後の1枠目で、
+      **単価が2桁違うほう**（afb 917〜1,430円 / Amazon は紹介料数十円）を先に置く。
+
+      ★ **Amazon の枠を置き換えるものではない。** Amazon はクリックから24時間の
+        あらゆる購入が成果になる別の性質を持つ。並べて枠別に測る
+        （docs/AFFILIATE.md 11-7 / 12節）。順番を変えただけで、どちらも出る。
+      ★ **1ページに afb の枠は1つだけ。** U-NEXT を優先し、出せない面に
+        Hulu を落とす（判断は AfbCta.astro）。2社は掲載NGの範囲が
+        噛み合っていないので、これは「空白を埋める」動きになる。
+      ★ `unextSubject` が false でもこの枠は消えない — U-NEXT が出ないだけで、
+        Hulu の条件を満たせば Hulu が出る。**記事31本中21本が該当する。**
+      ★ afb のリンクコードが未設定なら1バイトも出ない。
+      ★ 掲載NGの作品・権利元が本文にあるページでは、この枠ごと消える。
+    */}
+    <AfbCta
+      spot="cta"
+      category={post.data.category}
+      genre={post.data.genre}
+      pageText={adPageText}
+      asOf={post.data.dataAsOf}
+      services={post.data.tags}
+      unextSubject={unextSubject}
+    />
+
+    {/*
+      Amazon への導線。**afb の枠の下**（2026-09-14 に入れ替え。上の★）。
+      リンクの文字は記事カテゴリで変わる
       （配信終了記事に「見放題で探す」と出すのは誤誘導になるため）。
       トラッキングID未設定なら描画されない。
 
@@ -137,28 +168,6 @@ const unextPageText = [post.data.title, post.data.description, post.body ?? ''].
         <PrimeCta tags={post.data.tags} category={post.data.category} />
       ) : (
         <AmazonCta category={post.data.category} />
-      )
-    }
-
-    {/*
-      U-NEXT（afb）への導線。**Amazon の枠を置き換えるものではない。**
-      単価は afb のほうが桁違いに高いが、Amazon はクリックから24時間の
-      あらゆる購入が成果になる別の性質を持つ。並べて枠別に測る
-      （docs/AFFILIATE.md 11-7 / 12節）。
-
-      ★ afb のリンクコードが未設定なら1バイトも出ない。
-      ★ 掲載NGの作品・権利元が本文にあるページでは、この枠ごと消える
-        （ガイドライン「掲載NG権利元、作品について」）。
-    */}
-    {
-      unextSubject && (
-        <UnextCta
-          spot="cta"
-          category={post.data.category}
-          genre={post.data.genre}
-          pageText={unextPageText}
-          asOf={post.data.dataAsOf}
-        />
       )
     }
 

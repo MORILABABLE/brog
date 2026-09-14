@@ -409,11 +409,19 @@ export const AFFILIATE = {
    * ★ 環境変数の名前を変えるときは src/lib/unext-ad.ts の LP.default も直すこと。
    */
   unextAfbLp: import.meta.env.PUBLIC_AFB_UNEXT_LP ?? '',
+  /**
+   * afb の Hulu のLPのリンクコード（2026-09-14 提携）。**上と同じ扱い。**
+   *
+   * ★ 中身を扱うのは src/lib/hulu-ad.ts（文言・掲載NGの判定）。
+   *   ここは広告表記（PR）を出すかどうかの判定にだけ使う。
+   * ★ Hulu は**LPが1枚だけ**（U-NEXT のようなジャンル別LPが無い）。
+   */
+  huluAfbLp: import.meta.env.PUBLIC_AFB_HULU_LP ?? '',
 } as const
 
 /** アフィリエイトが1つでも有効か。広告表記の出し分けに使う。 */
 export const AFFILIATE_ENABLED = Boolean(
-  AFFILIATE.amazonTag || AFFILIATE.linkSwitchPid || AFFILIATE.unextAfbLp,
+  AFFILIATE.amazonTag || AFFILIATE.linkSwitchPid || AFFILIATE.unextAfbLp || AFFILIATE.huluAfbLp,
 )
 
 /**

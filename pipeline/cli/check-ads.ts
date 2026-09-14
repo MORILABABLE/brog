@@ -1,9 +1,27 @@
 /**
- * 公開物（site/dist）を U-NEXT のアフィリエイトガイドラインで検査する。
+ * 公開物（site/dist）を afb 広告主のガイドラインで検査する。
  *
- *   npm run check:unext                 site/dist の全HTMLを検査する
- *   npm run check:unext -- --dir <path>  別のディレクトリを見る
- *   npm run check:unext -- --list        広告が出ているページを全部並べる
+ *   npm run check:ads                 site/dist の全HTMLを検査する
+ *   npm run check:ads -- --dir <path>  別のディレクトリを見る
+ *   npm run check:ads -- --list        広告が出ているページを全部並べる
+ *
+ * `npm run check:unext` は同じものを指す別名（前からある呼び方）。
+ *
+ * ■ 広告主は2社（2026-09-14 に Hulu を追加）
+ *
+ * | | 掲載NG | 出し方 |
+ * |---|---|---|
+ * | **U-NEXT** | TBS / 日テレ / FOD / HBO ＋名指しの37作品 | ジャンル別LP・カテゴリ別の文面 |
+ * | **Hulu** | TBS / ディズニー ＋**配信終了タイトル** | LP1枚・**作品名を持たない文面** |
+ *
+ * ★ **同じ一覧を両方に当ててはいけない。** 日テレ作品は U-NEXT ではNGだが、
+ *   Hulu は日本テレビ系なので**むしろ主力**。混ぜると Hulu にとって
+ *   いちばん噛み合うページを自分で潰す（site/src/lib/hulu-ng.ts）。
+ *
+ * ★ Hulu の「配信終了タイトルは掲載NG」は一覧で守れない
+ *   （当サイトは Hulu の配信状況を取得できない＝規約違反になる）。
+ *   **広告の文言に作品名を入れない**ことで守っている。
+ *   だからこの検査は「Huluの広告があるページに作品の断定が無いか」を見る。
  *
  * ■ なぜ「書いたもの」ではなく「出したもの」を見るか
  * 記事の品質ゲート（pipeline/core/verify.ts）は**書いた瞬間**を見るが、
@@ -26,7 +44,7 @@
  *   error … 公開してはいけない。**提携解除・成果全却下の対象になりうる**
  *   warn  … 直したほうがよい（計測が効かない・取りこぼしている）
  *
- * ★ 掲載NGの判定ロジックは site/src/lib/unext-ng.ts にもある。
+ * ★ 掲載NGの判定ロジックは site/src/lib/ng-match.ts にもある。
  *   サイトは独立した npm プロジェクトでこちらを読めないため二重になっている
  *   （search-links.ts と同じ事情）。**正規化の規則を変えるときは両方直すこと。**
  */
@@ -52,6 +70,8 @@ interface NgFile {
   titles?: { match: string; scope?: 'all' | 'sns' }[]
   rightsHolders?: { match: string; label?: string }[]
   works?: Record<string, string>
+  /** メニュー（権利元）別の内訳。**Hulu は TBS だけを借りる** */
+  worksByMenu?: Record<string, Record<string, string>>
   worksFetchedAt?: string
 }
 
@@ -90,21 +110,30 @@ function isAbbrev(p: string): boolean {
 const OPEN = `|「『【（(><*\n\t`
 const CLOSE = `|」』】）)<>*\n\t`
 
-function loadNg(): {
-  file: NgFile
+interface Ng {
   re: RegExp | null
   word: RegExp | null
   delimited: RegExp | null
   origin: Map<string, string>
-} {
-  let file: NgFile = {}
-  try {
-    file = JSON.parse(readFileSync(resolve('data/unext-ng.json'), 'utf8')) as NgFile
-  } catch {
-    console.warn('data/unext-ng.json が読めませんでした。掲載NGの検査は行いません。')
-    return { file, re: null, word: null, delimited: null, origin: new Map() }
-  }
+  /** 集めてきた題名の件数（報告用） */
+  workCount: number
+}
 
+const EMPTY_NG: Ng = { re: null, word: null, delimited: null, origin: new Map(), workCount: 0 }
+
+function readNgFile(path: string): NgFile | null {
+  try {
+    return JSON.parse(readFileSync(resolve(path), 'utf8')) as NgFile
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 照合器を組む。**広告主ごとに読むデータが違うだけで、当て方は同じ。**
+ * ずれると「片方では止まるのにもう片方では素通りする」が起きる。
+ */
+function buildNg(file: Pick<NgFile, 'titles' | 'rightsHolders' | 'works'>): Ng {
   const origin = new Map<string, string>()
   const patterns: string[] = []
   const abbrevs: string[] = []
@@ -139,7 +168,6 @@ function loadNg(): {
   }
 
   return {
-    file,
     re: patterns.length > 0 ? new RegExp(patterns.map(escapeRe).join('|'), 'g') : null,
     word:
       abbrevs.length > 0
@@ -153,7 +181,56 @@ function loadNg(): {
           )
         : null,
     origin,
+    workCount: works.length,
   }
+}
+
+/** そのページに当たった掲載NG。**何も持っていない照合器には当たらない。** */
+function hitsOf(ng: Ng, norm: string, plain: string, lines: string): string[] {
+  if (!ng.re && !ng.word && !ng.delimited) return []
+  const hits: string[] = []
+  if (ng.re) {
+    ng.re.lastIndex = 0
+    hits.push(...new Set([...norm.matchAll(ng.re)].map((m) => m[0])))
+  }
+  if (ng.word) {
+    ng.word.lastIndex = 0
+    hits.push(...new Set([...plain.matchAll(ng.word)].map((m) => m[0])))
+  }
+  if (ng.delimited) {
+    ng.delimited.lastIndex = 0
+    hits.push(...new Set([...lines.normalize('NFKC').matchAll(ng.delimited)].map((m) => m[1]!)))
+  }
+  return [...new Set(hits.map((h) => ng.origin.get(h) ?? h))]
+}
+
+/** U-NEXT の掲載NG。3メニュー（TBS / 日テレ / FOD）ぜんぶが対象。 */
+function loadUnextNg(): { file: NgFile; ng: Ng } {
+  const file = readNgFile('data/unext-ng.json')
+  if (!file) {
+    console.warn('data/unext-ng.json が読めませんでした。U-NEXT の掲載NG検査は行いません。')
+    return { file: {}, ng: EMPTY_NG }
+  }
+  return { file, ng: buildNg(file) }
+}
+
+/**
+ * Hulu の掲載NG。**TBS だけを U-NEXT の一覧から借りる。**
+ *
+ * ★ `worksByMenu.tbs` が無い古いファイルのときは `works` 全体に落ちる。
+ *   日テレ・FOD まで止まるので Hulu にとっては止め過ぎだが、
+ *   **取りこぼすより安い**ので安全側に倒してある（site/src/lib/hulu-ng.ts と同じ）。
+ */
+function loadHuluNg(unext: NgFile): { file: NgFile; ng: Ng; narrowed: boolean } {
+  const file = readNgFile('data/hulu-ng.json')
+  if (!file) {
+    console.warn('data/hulu-ng.json が読めませんでした。Hulu の掲載NG検査は行いません。')
+    return { file: {}, ng: EMPTY_NG, narrowed: false }
+  }
+  const tbs = unext.worksByMenu?.tbs
+  const narrowed = Boolean(tbs && Object.keys(tbs).length > 0)
+  const works = { ...(file.works ?? {}), ...(narrowed ? tbs! : (unext.works ?? {})) }
+  return { file, ng: buildNg({ ...file, works }), narrowed }
 }
 
 // --- 禁止表現 -----------------------------------------------------------------
@@ -227,9 +304,11 @@ function main(): void {
     return
   }
 
-  const ng = loadNg()
+  const unext = loadUnextNg()
+  const hulu = loadHuluNg(unext.file)
   const issues: Issue[] = []
   const withAd: string[] = []
+  const withHuluAd: string[] = []
   const blocked: { page: string; hit: string }[] = []
   let unextPages = 0
 
@@ -249,6 +328,7 @@ function main(): void {
     const lines = textOf(html, '\n')
 
     const hasAd = html.includes('data-unext-ad')
+    const hasHuluAd = html.includes('data-hulu-ad')
     // ★ `href` だけを見る。ページ全体から拾うと、<head> の vref.js
     //   （`t.afi-b.com/jslib/vref.js`）まで「id1 の無いリンク」として数えてしまう。
     const afbLinks = [...html.matchAll(/href="(https:\/\/t\.afi-b\.com\/[^"]+)"/g)].map(
@@ -257,53 +337,106 @@ function main(): void {
     const mentionsUnext = /U-?NEXT|ユーネクスト/i.test(text)
     if (mentionsUnext) unextPages++
     if (hasAd) withAd.push(page)
+    if (hasHuluAd) withHuluAd.push(page)
+
+    // ★ **1ページに afb の枠は1つだけ**（components/AfbCta.astro）。
+    //   2つ出ていたら出し分けが壊れている。読者には PR枠が2つ並んで見える。
+    if (hasAd && hasHuluAd) {
+      issues.push({
+        level: 'error',
+        page,
+        message: 'U-NEXT と Hulu の広告が同じページに出ています（枠は1ページに1つ）。',
+      })
+    }
 
     const err = (message: string) => issues.push({ level: 'error', page, message })
     const warn = (message: string) => issues.push({ level: 'warn', page, message })
 
     // --- 禁止表現 ---
-    // U-NEXT に触れているページは error、それ以外は warn。
-    // ガイドラインが縛るのは U-NEXT の訴求だが、他社の話で同じ言い回しを
-    // 使っていると「サイトの書き方」として見られたときに説明が要る。
+    // **広告が出ているページは error**（その言い回しが広告と同居している）。
+    // U-NEXT に触れているだけのページも error にする — ガイドラインが縛るのは
+    // U-NEXT の訴求だが、他社の話で同じ言い回しを使っていると
+    // 「サイトの書き方」として見られたときに説明が要る。それ以外は warn。
     for (const b of BANNED) {
       const m = text.match(b.pattern)
       if (!m) continue
       const around = text.slice(Math.max(0, text.indexOf(m[0]) - 20), text.indexOf(m[0]) + 30)
       const msg = `禁止表現「${m[0]}」… ${b.why}（…${around.trim()}…）`
-      if (mentionsUnext) err(msg)
+      if (mentionsUnext || hasAd || hasHuluAd) err(msg)
       else warn(msg)
     }
 
     // --- 掲載NG作品・権利元と広告の同居 ---
-    if (ng.re || ng.word || ng.delimited) {
-      const hits: string[] = []
-      // 略称と題名は記号を落とさない文字列に当てる（全角対策に NFKC だけかける）
-      const plain = text.normalize('NFKC')
-      if (ng.re) {
-        ng.re.lastIndex = 0
-        hits.push(...new Set([...norm.matchAll(ng.re)].map((m) => m[0])))
-      }
-      if (ng.word) {
-        ng.word.lastIndex = 0
-        hits.push(...new Set([...plain.matchAll(ng.word)].map((m) => m[0])))
-      }
-      if (ng.delimited) {
-        ng.delimited.lastIndex = 0
-        hits.push(
-          ...new Set([...lines.normalize('NFKC').matchAll(ng.delimited)].map((m) => m[1]!)),
-        )
-      }
-      if (hits.length > 0) {
-        const shown = [...new Set(hits.map((h) => ng.origin.get(h) ?? h))].slice(0, 3).join(' / ')
-        if (hasAd) {
-          err(`${shown} が載っているページに U-NEXT の広告が出ています。広告を外してください。`)
-        } else if (mentionsUnext) {
-          blocked.push({ page, hit: shown })
-        }
+    // 略称と題名は記号を落とさない文字列に当てる（全角対策に NFKC だけかける）
+    const plain = text.normalize('NFKC')
+
+    const unextHits = hitsOf(unext.ng, norm, plain, lines)
+    if (unextHits.length > 0) {
+      const shown = unextHits.slice(0, 3).join(' / ')
+      if (hasAd) {
+        err(`${shown} が載っているページに U-NEXT の広告が出ています。広告を外してください。`)
+      } else if (mentionsUnext) {
+        blocked.push({ page, hit: shown })
       }
     }
 
-    if (!hasAd && afbLinks.length === 0) continue
+    /*
+     * Hulu 側。**当てる一覧が違う**（TBS ＋ ディズニー。日テレは対象外）。
+     * 広告が出ていないページは報告しない — Hulu は当サイトの主題ではないので、
+     * 「Huluに触れているページ」を数えても運用の判断材料にならない。
+     */
+    const huluHits = hitsOf(hulu.ng, norm, plain, lines)
+    if (huluHits.length > 0 && hasHuluAd) {
+      err(
+        `${huluHits.slice(0, 3).join(' / ')} が載っているページに Hulu の広告が出ています。` +
+          '広告を外してください（Hulu１）TBS作品・ディズニー作品は掲載NG）。',
+      )
+    }
+
+    if (!hasAd && !hasHuluAd && afbLinks.length === 0) continue
+
+    /*
+     * 🔴 **枠の外に afb のリンクがある。**
+     *
+     * 広告はビルド時に枠（components/AfbCta.astro）が出していて、そのときに
+     * 掲載NG作品・権利元を見て出す / 出さないを決めている。
+     * 枠の目印（`data-unext-ad` / `data-hulu-ad`）が無いのに afb のリンクが
+     * あるページは、**記事本文に直接書かれた広告コード**である可能性が高い。
+     * それは**掲載NGの判定を通らない**ので、翌月そのページにTBS作品が
+     * 入っても消えない。記事側は品質ゲート（core/ad-policy.ts）が止めるが、
+     * 固定文言やテンプレートから混ざる経路もあるので、出力側でも見る。
+     */
+    if (!hasAd && !hasHuluAd && afbLinks.length > 0) {
+      err(
+        `広告の枠が無いのに afb のリンクがあります（${afbLinks[0]!.slice(0, 60)}…）。` +
+          '記事本文に直接書かれていませんか（掲載NGの判定を迂回します）。',
+      )
+    }
+
+    // --- Hulu の広告があるページの必須要素 ---
+    if (hasHuluAd) {
+      /*
+       * 🔴 **ページ冒頭の広告（PR）表記。**
+       *
+       * Hulu４）はステマ規制の遵守を求めていて、対応しない場合は提携解除。
+       * **枠の中には「PR」を置いていない**（2026-09-14 に撤去）ので、
+       * 要件を満たしているのは `AffiliateNotice`（記事・作品ページの冒頭）だけ。
+       * **つまりここが唯一の砦。** 冒頭の表記が消えると、
+       * この枠は無表示の広告になる。
+       *
+       * ★ 「PR」だけでは弱い。目次やタグの「PR」に当たりうるので、
+       *   `AffiliateNotice` の実文（「アフィリエイト広告」）も一緒に見る。
+       */
+      if (!/\bPR\b/.test(text) || !/アフィリエイト広告/.test(text)) {
+        err(
+          '広告（PR）表記がありません（Hulu４）ステマ規制）。' +
+            'ページ冒頭の AffiliateNotice が出ていない可能性があります。',
+        )
+      }
+      if (afbLinks.length === 0) {
+        err('Hulu の枠はあるのに afb のリンク（t.afi-b.com）がありません。')
+      }
+    }
 
     // --- 広告があるページの必須要素 ---
     if (hasAd) {
@@ -342,11 +475,25 @@ function main(): void {
   console.log(`検査したページ: ${files.length}`)
   console.log(`  U-NEXT に触れているページ: ${unextPages}`)
   console.log(`  U-NEXT の広告が出ているページ: ${withAd.length}`)
+  console.log(`  Hulu の広告が出ているページ: ${withHuluAd.length}`)
   // ★ 「広告枠を置いているページ」だけを数えているわけではない。
   //   一覧ページやサイトマップのように、もともと枠が無いページも入る。
-  console.log(`  掲載NGに当たったページ（広告なし）: ${blocked.length}`)
-  console.log(`  掲載NGの一覧: ${Object.keys(ng.file.works ?? {}).length}件` +
-    (ng.file.worksFetchedAt ? `（${ng.file.worksFetchedAt.slice(0, 10)} 取得）` : '（未取得。npm run unext:ng）'))
+  console.log(`  掲載NGに当たったページ（U-NEXTの広告なし）: ${blocked.length}`)
+  console.log(
+    `  U-NEXT 掲載NGの一覧: ${Object.keys(unext.file.works ?? {}).length}件` +
+      (unext.file.worksFetchedAt
+        ? `（${unext.file.worksFetchedAt.slice(0, 10)} 取得）`
+        : '（未取得。npm run unext:ng）'),
+  )
+  console.log(`  Hulu 掲載NGの一覧: ${hulu.ng.workCount}件`)
+  if (hulu.ng !== EMPTY_NG && !hulu.narrowed) {
+    console.log(
+      '  ⚠ Hulu の一覧が TBS に絞れていません（data/unext-ng.json に worksByMenu が無い）。',
+    )
+    console.log(
+      '    日テレ・FOD の作品でも Hulu の広告が止まります。npm run unext:ng で取り直すと絞られます。',
+    )
+  }
 
   /*
    * 一覧の古さ。**取り直しは人が思い出さないと走らない**ので、ここで言う。
@@ -355,7 +502,7 @@ function main(): void {
    * 1回飛ばしたら気づける幅。権利元の入れ替わりは緩やかなので、
    * これを過ぎたからといって即座に危険になるわけではない。
    */
-  const fetchedAt = ng.file.worksFetchedAt ? Date.parse(ng.file.worksFetchedAt) : NaN
+  const fetchedAt = unext.file.worksFetchedAt ? Date.parse(unext.file.worksFetchedAt) : NaN
   const staleDays = Number.isNaN(fetchedAt) ? Infinity : (Date.now() - fetchedAt) / 86_400_000
   if (staleDays > 45) {
     const how = Number.isFinite(staleDays) ? `${Math.floor(staleDays)}日前` : '未取得'
@@ -371,9 +518,10 @@ function main(): void {
     console.log('')
   }
 
-  if (has('list') && withAd.length > 0) {
+  if (has('list') && withAd.length + withHuluAd.length > 0) {
     console.log('広告が出ているページ')
-    for (const p of withAd) console.log(`  ${p}`)
+    for (const p of withAd) console.log(`  [U-NEXT] ${p}`)
+    for (const p of withHuluAd) console.log(`  [Hulu]   ${p}`)
     console.log('')
   }
 

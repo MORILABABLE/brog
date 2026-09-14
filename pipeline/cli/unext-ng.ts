@@ -3,7 +3,7 @@
  *
  *   npm run unext:ng                 3つのNGメニューを全部読んで data/unext-ng.json を更新
  *   npm run unext:ng -- --menu tbs   1つだけ試す（tbs / ntv / fod）
- *   npm run unext:ng -- --pages 5    読むページ数の上限を変える（既定 40・1ページ30件）
+ *   npm run unext:ng -- --pages 5    読むページ数の上限を変える（既定 60・1ページ30件）
  *   npm run unext:ng -- --dry-run    読むだけで書かない
  *
  * ■ なぜ要るのか
@@ -26,7 +26,8 @@
  *
  * ■ 相手への負荷
  * 一覧ページだけを読む（作品ページは開かない）。既定の上限は
- * 1メニュー40ページ＝1,200件で、3メニューで最大120遷移。
+ * 1メニュー60ページ＝1,800件で、3メニューで最大180遷移。
+ * 実際に読むのは一覧の件数ぶんだけ（2026-09-14 実測: 60遷移）。
  * 遷移間隔は theme.yaml の `min_interval_ms`（2.5秒）に従うので、
  * 全部読んでも5分ほど。**頻繁に回すものではない。月1回で足りる。**
  *
@@ -43,8 +44,16 @@ import { UnextSource, type UnextConfig } from '../sources/unext.ts'
 
 const OUT = resolve('data/unext-ng.json')
 
-/** 1メニューあたり読むページ数の上限（1ページ30件） */
-const DEFAULT_MAX_PAGES = 40
+/**
+ * 1メニューあたり読むページ数の上限（1ページ30件）。
+ *
+ * ★ **40 では足りなくなった**（2026-09-14）。TBSオンデマンドが1,478件＝50ページになり、
+ *   毎回「読み切れていません → `--pages 50`」で止まるようになった。
+ *   **上限は「一覧が伸びても届く」側に置くこと。** 足りないと書き込みが中止され、
+ *   古い一覧のまま運用が続く（止まるので気づけるが、手間が増えるだけで得が無い）。
+ *   読むのは一覧ページだけなので、余裕を持たせても負荷はページ数に比例するだけ。
+ */
+const DEFAULT_MAX_PAGES = 60
 
 interface NgMenu {
   key: string
@@ -57,6 +66,8 @@ interface NgMenu {
 interface NgFile {
   menus?: NgMenu[]
   works?: Record<string, string>
+  /** メニュー（権利元）別の内訳。Hulu 側が TBS だけを取り出すために使う */
+  worksByMenu?: Record<string, Record<string, string>>
   worksFetchedAt?: string
   [key: string]: unknown
 }
@@ -116,13 +127,32 @@ async function main(): Promise<void> {
 
   /** 作品ID → 題名。メニューをまたいで同じ作品が出ることがあるので Map で持つ */
   const works = new Map<string, string>()
+  /**
+   * メニュー（権利元）別の内訳。**Hulu 側が TBS だけを取り出すために要る。**
+   *
+   * ■ なぜ分けて持つのか（2026-09-14 追加）
+   * 掲載NGの範囲は広告主ごとに違う。
+   *
+   *   U-NEXT … TBS / 日テレ / FOD ぜんぶNG
+   *   Hulu   … **TBS だけNG。日テレはむしろ主力**（Hulu は日本テレビ系）
+   *
+   * 混ぜたまま Hulu に渡すと、**日テレ作品のページで Hulu の広告が消える。**
+   * Hulu にとって最も噛み合うページを自分で潰すことになる
+   * （読むのは site/src/lib/hulu-ng.ts の `tbsWorks()`）。
+   */
+  const byMenu = new Map<string, Map<string, string>>()
   /** 読み切れなかったメニュー。**あるなら一覧は欠けている。** */
   const truncated: { label: string; need: number }[] = []
 
   try {
     for (const m of menus) {
       const { rows, total, pages } = await source.listCategoryTitles(m.genre, m.category, maxPages)
-      for (const r of rows) works.set(r.id, r.title)
+      const mine = new Map<string, string>()
+      for (const r of rows) {
+        works.set(r.id, r.title)
+        mine.set(r.id, r.title)
+      }
+      byMenu.set(m.key, mine)
       console.log(`  ${m.label}  ${rows.length}件 / 全${total}件`)
       if (pages > maxPages) {
         truncated.push({ label: m.label, need: pages })
@@ -163,17 +193,36 @@ async function main(): Promise<void> {
   }
 
   const before = Object.keys(file.works ?? {}).length
-  // ★ 積み上げない。**メニューから消えた作品はNGでもなくなる**ので、
-  //   今回読めたものだけに入れ替える（成果データの台帳とは性質が逆）。
-  file.works = Object.fromEntries([...works.entries()].sort((a, b) => a[0].localeCompare(b[0])))
+
+  /*
+   * ★ 積み上げない。**メニューから消えた作品はNGでもなくなる**ので、
+   *   今回読めたものだけに入れ替える（成果データの台帳とは性質が逆）。
+   *
+   * ★ ただし**入れ替えるのはメニュー単位**（2026-09-14）。
+   *   `--menu tbs` のような部分実行で、読んでいない日テレ・FOD の一覧まで
+   *   消してはいけない。消えると**その権利元が素通りになる**＝いちばん悪い壊れ方。
+   *   全メニューを読んだときは、この形でも結果は今までと同じになる。
+   */
+  const sorted = (m: Map<string, string>) =>
+    Object.fromEntries([...m.entries()].sort((a, b) => a[0].localeCompare(b[0])))
+
+  const merged: Record<string, Record<string, string>> = { ...(file.worksByMenu ?? {}) }
+  for (const [key, m] of byMenu) merged[key] = sorted(m)
+  file.worksByMenu = merged
+
+  // `works` は全メニューの合計。**U-NEXT 側はこちらを見る**（3メニューすべてNG）。
+  const union = new Map<string, string>()
+  for (const m of Object.values(merged)) for (const [id, t] of Object.entries(m)) union.set(id, t)
+  file.works = sorted(union)
   file.worksFetchedAt = new Date().toISOString()
 
   writeFileSync(OUT, `${JSON.stringify(file, null, 2)}\n`, 'utf8')
-  console.log(`${OUT} に書きました（${before}件 → ${works.size}件）`)
+  console.log(`${OUT} に書きました（${before}件 → ${Object.keys(file.works).length}件）`)
+  console.log(`  内訳: ${Object.entries(merged).map(([k, v]) => `${k} ${Object.keys(v).length}`).join(" / ")}`)
   console.log('')
   console.log('次にやること:')
   console.log('  1. npm run build（site/）でサイトを作り直す')
-  console.log('  2. npm run check:unext  … 掲載NG作品のページに広告が出ていないか検査する')
+  console.log('  2. npm run check:ads  … 掲載NG作品のページに広告が出ていないか検査する')
 }
 
 main().catch((e: unknown) => {

@@ -62,29 +62,20 @@ const subject = query ?? (await ctaQueryFor(Astro.url.pathname))
  * 主題が決まっているなら**押す前に分かる形**にする。
  * 決まっていないページでは今までどおりの汎用文面に落ちる。
  */
-const COPY: Record<string, { lead: string; action: string }> = {
-  leaving: {
-    lead: '見放題の配信が終わっても、レンタル・購入なら引き続き観られる作品があります。',
-    action: 'Prime Videoでレンタル・購入を探す',
-  },
-  ended: {
-    lead: '見放題での配信は終了していますが、レンタル・購入なら観られる場合があります。',
-    action: 'Prime Videoでレンタル・購入を探す',
-  },
-  arrivals: {
-    lead: '配信が始まった作品は Prime Video でまとめて探せます。',
-    action: 'Prime Videoで作品を探す',
-  },
-  ranking: {
-    lead: 'ランキング上位の作品は Prime Video でまとめて探せます。',
-    action: 'Prime Videoで作品を探す',
-  },
+/*
+ * ★ **説明文（lead）は 2026-09-14 に撤去した。** この枠はリンク1本だけになり、
+ *   カテゴリごとの言い分けは**この action の1行が全部背負っている。**
+ *   「配信終了の記事に『見放題で探す』と出すのは誤誘導」という線
+ *   （上の「文面が category で変わる理由」）を守っているのはここだけ。
+ */
+const COPY: Record<string, { action: string }> = {
+  leaving: { action: 'Prime Videoでレンタル・購入を探す' },
+  ended: { action: 'Prime Videoでレンタル・購入を探す' },
+  arrivals: { action: 'Prime Videoで作品を探す' },
+  ranking: { action: 'Prime Videoで作品を探す' },
 }
 
-const fallback = {
-  lead: '観たい作品が見放題にあるか、レンタル・購入で観られるかを Prime Video で探せます。',
-  action: 'Prime Videoで作品を探す',
-}
+const fallback = { action: 'Prime Videoで作品を探す' }
 
 const base = (category && COPY[category]) || fallback
 
@@ -92,11 +83,10 @@ const base = (category && COPY[category]) || fallback
  * 主題が決まっているときの行動文。
  *
  * ★ 「観られる」と断定しないこと。当サイトは Amazon の在庫を持っていない。
- *   言ってよいのは「探せる」まで（下の .note と同じ線引き）。
+ *   言ってよいのは「探せる」まで。**注記も説明文も無くなったので、
+ *   この線を守っているのはこの文字列だけ。**
  */
-const copy = subject
-  ? { lead: base.lead, action: `「${subject}」をPrime Videoで探す` }
-  : base
+const copy = subject ? { action: `「${subject}」をPrime Videoで探す` } : base
 
 // 検索語があれば動画カテゴリ内検索、無ければ売り場トップ。
 // どちらも tag= が付くのでクッキーは同じように効く。
@@ -107,8 +97,21 @@ const href = subject
 
 {
   tag && (
-    <aside class="amazon-cta" aria-label="Amazonで探す">
-      <p class="lead">{copy.lead}</p>
+    <aside class="amazon-cta">
+      {/*
+        **リンク1本だけ**（2026-09-14・運用者の指定で説明文と注記を撤去）。
+
+        撤去してよい理由:
+          - Amazonアソシエイトの**必須の固定文は Footer にある**
+            （「Amazonのアソシエイトとして、…は適格販売により収入を得ています」）。
+            この枠は義務の文言を1つも持っていない
+          - 広告（PR）表記は**ページ冒頭の `AffiliateNotice`**が出している
+          - 「配信中と断定しない」線は**リンクの文字そのもの**が守っている
+            （下の COPY。どれも「探す」で止めてあり、「観られる」と書かない）
+
+        ★ だから **COPY の動詞を強めないこと。** 説明文と注記が無くなったぶん、
+          誤誘導を防いでいるのは COPY の1行だけになった。
+      */}
       <a
         class="action"
         href={href}
@@ -119,23 +122,17 @@ const href = subject
       >
         {copy.action}
       </a>
-      <p class="note">リンク先はAmazonの検索結果です。配信・販売状況はAmazon側でご確認ください。</p>
     </aside>
   )
 }
 
 <style>
+  /*
+   * 枠も背景も付けない（2026-09-14）。中身がリンク1本になったので、
+   * カードの体裁だけ残すと**中身の無い箱**に見える。
+   */
   .amazon-cta {
     margin: 2rem 0;
-    padding: 1.1rem 1.2rem;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--bg-subtle);
-  }
-  .lead {
-    margin: 0 0 0.8rem;
-    font-size: 0.92rem;
-    line-height: 1.7;
   }
   .action {
     display: inline-block;
@@ -149,15 +146,5 @@ const href = subject
   }
   .action:hover {
     opacity: 0.9;
-  }
-  /*
-   * 「配信中」と断定しないための注記。
-   * 当サイトは Amazon の在庫・配信状況のデータを持っていないので、
-   * リンクの先が空振りでも誤情報にならない書き方にしておく。
-   */
-  .note {
-    margin: 0.7rem 0 0;
-    font-size: 0.76rem;
-    color: var(--text-muted);
   }
 </style>

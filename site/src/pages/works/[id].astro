@@ -4,7 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import Thumb from '../../components/Thumb.astro'
-import UnextCta from '../../components/UnextCta.astro'
+import AfbCta from '../../components/AfbCta.astro'
 import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
@@ -258,7 +258,7 @@ const nextArticle = seriesPost
  * 掲載NGの作品名がページのどこかに出ていたら「扱っている」と読まれうるため
  * （ガイドライン「掲載NG権利元、作品について」）。取りこぼすより広く止める。
  */
-const unextPageText = [
+const adPageText = [
   w.title,
   w.originalTitle ?? '',
   ...relatedGroups.flatMap((g) => g.items.map((i) => i.title)),
@@ -551,8 +551,14 @@ const jsonLd = {
     ★ 「U-NEXTで配信中」とは書かない。当サイトは U-NEXT の作品別の
       配信状況を持っていない（上の .find-note と同じ線引き）。
     ★ 掲載NGの作品が本作にも関連作品にも無いときだけ出る。
+
+    ★ **2026-09-14 から枠は1つで、中身が入れ替わる**（AfbCta.astro）。
+      U-NEXT が出せない面には Hulu が落ちる。2社は掲載NGの範囲が
+      噛み合っていない（日テレ作品は U-NEXT ✕ / Hulu ○、
+      ディズニー・Disney+ は U-NEXT ○ / Hulu ✕）ので、枠を増やさずに空白が埋まる。
+      `services` は Hulu 側が Disney+ のページを避けるために要る。
   */}
-  <UnextCta spot="work" pageText={unextPageText} />
+  <AfbCta spot="work" pageText={adPageText} services={w.services.map((s) => s.service)} />
 
   <AmazonCta category={STATE_CATEGORY[w.state]} query={w.title} />
 

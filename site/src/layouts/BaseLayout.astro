@@ -7,6 +7,7 @@ import LeftRail from '../components/LeftRail.astro'
 import FollowRail from '../components/FollowRail.astro'
 import FollowBar from '../components/FollowBar.astro'
 import { UNEXT_AD_ENABLED } from '../lib/unext-ad'
+import { HULU_AD_ENABLED } from '../lib/hulu-ad'
 import '../styles/global.css'
 
 interface Props {
@@ -361,11 +362,15 @@ const jsonLd = jsonLdOverride ?? (publishedAt
       700ページのどこで成果が出たのかが永久に分からない（docs/AFFILIATE.md 11-5）。
 
       ★ **リンクを置く前に入れないこと。** afb のリンクが1本も無いページで
-        外部スクリプトを1本増やすだけになる。判定は U-NEXT の広告と同じ
-        `UNEXT_AD_ENABLED`（＝リンクコードが .env に入っているか）。
+        外部スクリプトを1本増やすだけになる。判定は広告と同じ
+        （＝どちらかのリンクコードが .env に入っているか）。
+        **2026-09-14 に Hulu を足した。** 広告主が増えたら必ずここも足すこと —
+        忘れると、その広告主の成果だけリンク元ページが取れない。
       ★ 成果が出てから遡って直せない値なので、**リンクを置くのと同時に入れる。**
     */}
-    {UNEXT_AD_ENABLED && <script is:inline async src="https://t.afi-b.com/jslib/vref.js" />}
+    {(UNEXT_AD_ENABLED || HULU_AD_ENABLED) && (
+      <script is:inline async src="https://t.afi-b.com/jslib/vref.js" />
+    )}
   </head>
 
   <body>

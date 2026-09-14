@@ -32,23 +32,17 @@
  *   注意事項【6】SNS・YouTube の PR 表記 … 投稿する人が付ける
  */
 import { ngHitsIn } from './unext-ng'
+import { AFB_SLOTS, SLOT_OK, withSlot, type AfbSlot } from './afb'
 import type { CategorySlug } from '../config'
 
 /**
- * 枠。**Amazon 側の AMAZON_SLOTS と同じ名前を使う**（affiliate.ts）。
- * 揃えておくと「同じ枠で Amazon と afb のどちらが効いたか」を並べて読める。
- *
- * afb ではリンクコードの末尾に `&id1=<枠>` として付ける。成果データの
- * `keyword` 欄に返ってくる（docs/AFFILIATE.md 11-4）。
+ * 枠。**中身は `afb.ts` の AFB_SLOTS**（Hulu と共有している）。
+ * 名前をここに増やさないこと — 2社で枠名がずれると成果データを並べて読めない。
  */
-export const UNEXT_SLOTS = ['cta', 'rail', 'work', 'table', 'poster', 'body'] as const
-export type UnextSlot = (typeof UNEXT_SLOTS)[number]
+export const UNEXT_SLOTS = AFB_SLOTS
+export type UnextSlot = AfbSlot
 
-/**
- * id1 に使える文字（afb の仕様）。半角英数字と `.` `-` `_` `*` だけ。
- * 日本語や `=` `&` `/` は使えない。**枠名を増やすときはここを通ること。**
- */
-const SLOT_OK = /^[A-Za-z0-9._*-]+$/
+export { withSlot }
 
 /**
  * ジャンル別LP。**成果はここで指定されたLPからしか認められない**
@@ -176,26 +170,6 @@ const LP_BY_GENRE: Record<string, UnextLpKey> = {
 function hrefFor(lp: UnextLpKey): { href: string; lp: UnextLpKey } {
   const direct = LP[lp]
   return direct ? { href: direct, lp } : { href: LP.default, lp: 'default' }
-}
-
-/**
- * リンクコードに枠（`id1`）を足す。
- *
- * afb が認めている改変は `target` を外すこと・`rel` を `noopener` /
- * `sponsored` にすること・**パラメータの追加**まで（docs/AFFILIATE.md 11-3）。
- * `a=` `p=` には触れない。
- */
-export function withSlot(href: string, slot: UnextSlot): string {
-  if (!href || !SLOT_OK.test(slot)) return href
-  try {
-    const u = new URL(href)
-    u.searchParams.set('id1', slot)
-    return u.toString()
-  } catch {
-    // リンクコードが URL として読めない形（貼り間違い）。
-    // 勝手に文字列連結して壊すより、そのまま返して検査に見つけさせる。
-    return href
-  }
 }
 
 export interface UnextAd {
