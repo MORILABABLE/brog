@@ -492,7 +492,7 @@ export const AMAZON_TAGS: AmazonTags = {
   /** 「他のサービスで探す」。作品ページと、記事の表の×だけの行 */
   find: import.meta.env.PUBLIC_AMAZON_TAG_FIND ?? '',
   /**
-   * 記事の**表の直後**の「終了後も観られるもの」（`plugins/rehype-next-step.ts`）。
+   * 記事の**表の直前**の「紹介する◯本のうち△本は…」（`plugins/rehype-next-step.ts`）。
    * ★ **`avail` と分ける。** あちらは行ごとの答え、こちらは表全体の要約からの一手。
    *   90%スクロール到達が16%という実測に対して「表の直後に置く」ことが
    *   効いたかどうかは、この枠だけが答えられる。

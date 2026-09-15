@@ -90,7 +90,7 @@ function slotOf(node: Node): AmazonSlot {
    */
   if (Array.isArray(cls) && cls.includes('find-link')) return 'find'
   /*
-   * ★ 表の直後の「終了後も観られるもの」（`plugins/rehype-next-step.ts`。2026-09-15）。
+   * ★ 表の直前の「紹介する◯本のうち△本は…」（`plugins/rehype-next-step.ts`。2026-09-15）。
    *   **`avail` と混ぜないこと。** あちらは行ごとの答えで、こちらは
    *   **表全体を要約したうえでの一手**。スクロール到達16%という実測に対して
    *   「表の直後に置く」ことが効いたかどうかは、この枠だけが答えられる。

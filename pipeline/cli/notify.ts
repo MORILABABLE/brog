@@ -22,6 +22,8 @@ import { loadArticleTypes, loadTheme } from '../theme.ts'
 import { loadLedger, readAllEvents } from '../core/events.ts'
 import { buildDigest } from '../core/digest.ts'
 import { readUsage } from '../core/api-usage.ts'
+import { loadAvailability } from '../core/availability.ts'
+import { availabilityGaps } from '../core/availability-gaps.ts'
 import { formatIsoDate } from '../core/datetime.ts'
 import { POSTS_DIR, readPublishedPosts } from '../core/coverage.ts'
 import { liveElsewhereRows, staleArticles } from '../core/stale.ts'
@@ -112,6 +114,12 @@ async function main(): Promise<void> {
     stock: events,
     stale,
     live,
+    /*
+     * ★ **在庫台帳の穴**（`core/availability-gaps.ts`）。APIは呼ばない。
+     *   印（○△×）を出せていない作品を数えるだけで、**送信の理由にはしない**
+     *   （`core/digest.ts` の `DigestOptions.gaps` の★）。通知が出る日に一緒に載る。
+     */
+    gaps: availabilityGaps(events, await loadAvailability(), now),
     now,
   })
 

@@ -24,6 +24,7 @@ import { daysUntil, formatIsoDate, formatMonthDay } from './datetime.ts'
 import type { UsageSnapshot } from './api-usage.ts'
 import { rewriteCommand } from './article-log.ts'
 import { staleSummary, type LiveElsewhereRow, type StaleArticle } from './stale.ts'
+import type { AvailabilityGaps } from './availability-gaps.ts'
 
 /** 表に出す変化の種類と、その見出し。並び順もこの通りにする。 */
 const KIND_LABELS: Record<ChangeKind, string> = {
@@ -107,6 +108,14 @@ export interface DigestOptions {
    * （`core/stale.ts` の `liveElsewhereRows()`）。渡さなければその欄は出ない。
    */
   live?: LiveElsewhereRow[]
+  /**
+   * 在庫台帳の穴（`core/availability-gaps.ts`）。渡さなければその欄は出ない。
+   *
+   * ★ **これは送信の理由にしない。** 台帳の薄さは毎日そこにあるもので、
+   *   「今日知らせるべきこと」ではない。`isEmpty` にも数えないので、
+   *   **通知が出る日にだけ、ついでに載る**（通知の本数は変わらない）。
+   */
+  gaps?: AvailabilityGaps
   usage?: UsageSnapshot
   now?: Date
 }
@@ -175,6 +184,7 @@ export function buildDigest(events: ChangeEvent[], opts: DigestOptions): Digest 
   if (soon.length) lines.push(...soonSection(soon, label, tz, now))
   if (expiring.length) lines.push(...expiringSection(expiring, label, tz, now))
   if (upcoming.length) lines.push(...upcomingSection(upcoming, label, tz))
+  if (opts.gaps) lines.push(...gapsSection(opts.gaps, tz))
   if (usage) lines.push(...quotaSection(usage))
 
   lines.push(
@@ -272,6 +282,74 @@ function staleSection(stale: StaleArticle[]): string[] {
   for (const s of stale) out.push(rewriteCommand(s.record, s.type))
   out.push('```')
   out.push('', 'まとめて回すなら `npm run write -- --refresh`（対話セッションなら `/refresh`）。', '')
+  return out
+}
+
+/**
+ * **在庫台帳の穴。** 印（○△×）を出せていない作品。
+ *
+ * ■ なぜ通知に載せるのか（2026-09-15 追加）
+ * 記事の表の印は `data/availability.json` だけが根拠で、そこに無い作品は
+ * 「—（未確認）」になる。実測で `2026-09-leaving-netflix` は**63作中40作が未確認**だった。
+ * 印が出せないと「紹介する◯本のうち△本は…でも見放題配信中です」の一文も出せない。
+ *
+ * **台帳は放っておくと減る**（読む側が14日で落とす）ので、一度埋めれば済む話ではない。
+ * だから毎回の通知に出す。
+ *
+ * ★ **これ自体は通知を出す理由にしない**（`DigestOptions.gaps` の★）。
+ * ★ **束から先に出す。** キーワード1回で複数作に効くので、枠の使い方として安い。
+ */
+function gapsSection(gaps: AvailabilityGaps, tz: number): string[] {
+  const missing = gaps.reachable - gaps.covered
+  if (missing === 0) return []
+
+  const out = ['## 在庫台帳の穴（印が出せない作品）', '']
+  out.push(
+    `未来に終了する作品のうち、配信API由来は **${gaps.reachable}作**。` +
+      `そのうち印を出せているのは **${gaps.covered}作**で、**${missing}作が未確認**です。`,
+    '未確認の作品は表が「—」になり、**「◯本のうち△本は…でも見放題配信中です」の一文も出ません。**',
+    '',
+  )
+
+  if (gaps.bundles.length) {
+    out.push('**まとめて取れるもの**（キーワード1回で複数作）', '')
+    out.push('| 束 | 作 | 最短終了日 | キーワード候補 |', '|---|--:|---|---|')
+    for (const b of gaps.bundles) {
+      out.push(
+        `| ${b.key}… | ${b.works.length} | ${formatMonthDay(b.nearest, tz)} | ` +
+          `${b.keyword ? `\`${b.keyword}\`` : '（原題が英字でない）'} |`,
+      )
+    }
+    out.push('', '```')
+    for (const b of gaps.bundles) {
+      if (b.keyword) out.push(`npm run availability -- --keyword "${b.keyword}"`)
+    }
+    out.push('```', '')
+  }
+
+  if (gaps.singles.length) {
+    out.push(
+      `**単発で終了が近いもの**（${gaps.singleCount}作のうち${gaps.singles.length}作。**1作1リクエスト**）`,
+      '',
+      '```',
+      `npm run availability -- --ids ${gaps.singles.map((w) => w.id).join(',')}`,
+      '```',
+      '',
+    )
+    for (const w of gaps.singles) {
+      out.push(`- ${formatMonthDay(w.at, tz)} ${w.localizedTitle}`)
+    }
+    out.push('')
+  }
+
+  if (gaps.unreachable > 0) {
+    out.push(
+      `> ★ ほかに **${gaps.unreachable}作**が未来に終了しますが、` +
+        'U-NEXT の自前収集と告知の作品で、**配信APIのカタログに無いので取りようがありません**' +
+        '（docs/CROSS-SERVICE.md 9-3）。ここには出していません。',
+      '',
+    )
+  }
   return out
 }
 

@@ -857,13 +857,58 @@ h3 {
 }
 /* サイト内の記事へ。**塗りのボタンにしない**（作品ページの .series-ref と同じ） */
 .prose .next-step-article {
-  display: block;
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
   margin-top: 0.6rem;
-  padding: 0.6rem 0.9rem;
+  padding: 0.7rem 0.9rem;
   border-left: 3px solid var(--accent);
   border-radius: 0 var(--radius) var(--radius) 0;
   background: var(--accent-soft);
   text-decoration: none;
+}
+/*
+ * 記事カードと同じ絵。**`components/Thumb.astro` の写し**（2026-09-15）。
+ *
+ * ★ あちらはスコープ付きCSSなので、rehype が組んだ素のHTMLには乗らない。
+ *   **大きさ・角丸・切り抜き方・色分けを揃えてある**（72px・8px・cover・--cat-*）。
+ *   Thumb を直すときはここも見ること。
+ * ★ **画像が無くても同じ大きさの枠を出す**（Thumb.astro の★と同じ）。
+ *   出さないと、絵のある記事と無い記事で枠の高さが変わる。
+ */
+.prose .next-step-thumb {
+  flex: none;
+  display: block;
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-subtle);
+}
+.prose .next-step-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* ★ 本文の img に付く既定の余白・角丸を打ち消す（枠の側が角丸を持つ） */
+  margin: 0;
+  border-radius: 0;
+}
+.prose .next-step-thumb[data-category='leaving'] {
+  background: var(--cat-leaving-bg);
+}
+.prose .next-step-thumb[data-category='ended'] {
+  background: var(--cat-ended-bg);
+}
+.prose .next-step-thumb[data-category='arrivals'] {
+  background: var(--cat-arrivals-bg);
+}
+.prose .next-step-thumb[data-category='ranking'] {
+  background: var(--cat-ranking-bg);
+}
+/* ★ 題が長いので、絵の右は縮められるようにする（min-width:0 が無いと溢れる） */
+.prose .next-step-body {
+  min-width: 0;
 }
 .prose .next-step-title {
   display: block;
