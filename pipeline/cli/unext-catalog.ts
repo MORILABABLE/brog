@@ -71,6 +71,27 @@ const has = (name: string) => process.argv.includes(`--${name}`)
 /** 1回の実行で読むページ数の既定。300ページ ≒ 12〜13分。 */
 const DEFAULT_MAX_PAGES = 300
 
+/**
+ * 索引と周回の進み具合を書き出す間隔（ページ数）。
+ *
+ * ■ なぜ要るか（2026-09-15 追加）
+ * 以前は**ループを抜けたあとに1回だけ**書いていた。途中経過は
+ * `appendInflight`（作品IDの控え）だけがページごとに残る形で、
+ * **プロセスが途中で殺されると索引も `nextPage` も丸ごと失われる。**
+ *
+ *   実測（2026-09-10 の実行）:
+ *     ジョブが timeout-minutes: 45 で打ち切られ、邦画の約198ページが
+ *     `houga.inflight` だけ残して消えた。`houga.jsonl` も
+ *     `_sweeps.json` の houga も書かれていない。
+ *     次の実行はまた1ページ目から始まり、**同じ結果になるので
+ *     git の差分も出ず、コミットも起きない**（無限に同じ所を歩く）。
+ *
+ * ★ **毎ページは書かない。** `saveGenre` はジャンルのファイル（最大1.5MB）を
+ *   丸ごと書き直すので、385ページで385回書くことになる。
+ *   20ページごとなら1回の実行で十数回で済み、失っても50秒ぶん。
+ */
+const SAVE_EVERY_PAGES = 20
+
 async function main(): Promise<void> {
   const theme = await loadTheme()
   if (!theme.unext) throw new Error(`テーマ ${theme.key} に unext の設定がありません`)
@@ -128,16 +149,32 @@ async function main(): Promise<void> {
   }
 
   /*
-   * ★ **歩き終えていないジャンルを先に。** 全部終わっているなら、
-   *   いちばん古い周回から歩き直す（索引は放っておくと古くなる）。
+   * ★ **途中まで歩いたジャンルを最優先。** 次が未着手、最後が歩き終えたもの。
+   *   同じ段の中は、いちばん古い周回から（索引は放っておくと古くなる）。
+   *
+   * ■ なぜ3段に分けるか（2026-09-15 修正）
+   * 以前は「歩き終えたか」の2段しかなく、同じ段の中を `startedAt` の
+   * 古い順に並べていた。**未着手のジャンルは `startedAt` が空文字なので、
+   * 進行中のジャンルより必ず前に来る。**
+   *
+   *   実測（2026-09-10 の実行）:
+   *     洋画 251/385ページで中断 → 次の実行は未着手の邦画から始まり、
+   *     予算250ページを邦画で使い切って洋画に到達しなかった。
+   *     未着手のジャンルが9つ残っているので、洋画の続きは**永久に来ない**。
+   *
+   * ワークフロー（collect-unext.yml）の「ジャンルごとに続きから再開する」は
+   * この並び順が前提になっている。**始めた周回を先に終わらせる。**
    */
+  function stage(key: string): number {
+    const s = sweeps[key]
+    if (!s) return 1 // 未着手
+    if (s.completedAt) return 2 // 歩き終えた
+    return 0 // 進行中（始めたが、まだ終わっていない）
+  }
   const queue = [...genres].sort((a, b) => {
-    const sa = sweeps[a.key]
-    const sb = sweeps[b.key]
-    const da = sa?.completedAt ? 1 : 0
-    const db = sb?.completedAt ? 1 : 0
-    if (da !== db) return da - db
-    return (sa?.startedAt ?? '').localeCompare(sb?.startedAt ?? '')
+    const d = stage(a.key) - stage(b.key)
+    if (d !== 0) return d
+    return (sweeps[a.key]?.startedAt ?? '').localeCompare(sweeps[b.key]?.startedAt ?? '')
   })
 
   console.log(`\n予算 ${maxPages}ページ（min_interval ${unext.min_interval_ms}ms）で歩きます。`)
@@ -178,6 +215,17 @@ async function main(): Promise<void> {
 [${g.label}] ${s.nextPage}ページ目から`)
 
       let hitEnd = false
+      let sinceSave = 0
+      /*
+       * 索引と周回の進み具合を書き出す。**途中でも呼べる。**
+       * `saveGenre` はジャンルのファイルを丸ごと書き直すので毎ページは呼ばない。
+       */
+      const persist = async (): Promise<void> => {
+        s.entries = entries.size
+        await saveGenre(g.key, entries)
+        await saveSweeps(sweeps)
+        sinceSave = 0
+      }
       try {
         while (spent < maxPages) {
           const seenOn = dayOf(new Date().toISOString())
@@ -205,11 +253,10 @@ async function main(): Promise<void> {
             break
           }
           s.nextPage++
+          if (++sinceSave >= SAVE_EVERY_PAGES) await persist()
         }
       } finally {
-        s.entries = entries.size
-        await saveGenre(g.key, entries)
-        await saveSweeps(sweeps)
+        await persist()
       }
 
       if (hitEnd) {

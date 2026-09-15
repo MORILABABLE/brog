@@ -968,7 +968,13 @@ function coverageGapsFor(
 }
 
 /**
- * 「サービスを横断して終わるシリーズ」を候補として並べる。
+ * 「まとめて終わる作品群」を候補として並べる。
+ *
+ * 出すのは2種類（`core/series-candidates.ts`）。
+ *   1. **横断** … 2社で同時に終わる束。サービス軸の記事では書けない
+ *   2. **1社で閉じているが、どの記事も扱えていない束**（2026-09-15 追加）
+ * 2 を足したのは、U-NEXT の在庫（未来の終了予定 556作）が
+ * 月次記事1本（80本）に入り切らず、**23束が候補から落ちていた**ため。
  *
  * ■ なぜ一覧表とも取りこぼしとも別に出すのか
  * 上の一覧表は**記事タイプごと**、取りこぼしは**素材ごと**に数えている。
@@ -1012,14 +1018,30 @@ async function reportSeriesCandidates(
   )
   if (candidates.length === 0) return
 
-  console.log('\n  シリーズ候補（サービスを横断して終わる作品群）')
+  console.log('\n  シリーズ候補（まとめて終わる作品群）')
   console.log('  ' + '-'.repeat(72))
+  /*
+   * ★ **横断と「1社で閉じた束」を見出しで分ける。** 出ている理由が違う。
+   *   横断はサービス軸の記事では書けないもの、1社のほうは
+   *   その社の月次記事が扱い切れていないもの（`series-candidates.ts` の `MIN_UNWRITTEN`）。
+   *   混ぜて並べると、運用者にはどちらも同じ「候補」に見える。
+   */
+  let printedSingleHeading = false
   for (const c of candidates) {
+    if (c.singleService && !printedSingleHeading) {
+      printedSingleHeading = true
+      console.log('')
+      console.log('  ── 1社で閉じているが、どの記事もまだ扱えていない束 ──')
+    }
     const labels = c.services.map((s) => serviceLabel(ctx.theme, s)).join(' / ')
     const when = c.nearest
       ? `最短 ${formatMonthDay(c.nearest, ctx.theme.utc_offset_minutes)}`
       : '日付なし'
-    console.log(`  ${(c.key + '…').padEnd(20)}${String(c.works).padStart(3)}作  ${labels}  ${when}`)
+    // 1社の束は「なぜ出ているか」＝どの記事にも載っていない作品数が判断材料になる
+    const why = c.singleService ? `  未執筆 ${c.unwritten}作` : ''
+    console.log(
+      `  ${(c.key + '…').padEnd(20)}${String(c.works).padStart(3)}作  ${labels}  ${when}${why}`,
+    )
     console.log(`      ${c.titles.join(' / ')}`)
     console.log(
       `      npm run write -- --type series --topic "「?」シリーズ" --slug ? --match "${c.match}" --dry-run`,
@@ -1027,6 +1049,9 @@ async function reportSeriesCandidates(
   }
   console.log('  ※ --topic と --slug は人が決める。束の名前をそのまま主題にしないこと。')
   console.log('  ※ 件数は --dry-run が正確に出す。上の作数は先頭6文字で束ねた粗い数。')
+  if (printedSingleHeading) {
+    console.log('  ※ 下の束は月次記事の容量に入り切らなかったもの。**在庫が多い面ほど出る**。')
+  }
 }
 
 /**
