@@ -6,7 +6,7 @@ import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import PrimeCta from '../../components/PrimeCta.astro'
 import AfbCta from '../../components/AfbCta.astro'
-import { CATEGORIES, GENRES, hubFor } from '../../config'
+import { CATEGORIES, GENRES, SERVICE_HUBS, hubFor } from '../../config'
 import { primeAd } from '../../lib/prime-ad'
 import { formatDate, isoDate } from '../../utils/date'
 
@@ -199,9 +199,16 @@ const adPageText = [post.data.title, post.data.description, post.body ?? ''].joi
     {
       post.data.tags.length > 0 && (
         <ul class="tags">
-          {post.data.tags.map((t) => (
-            <li>#{t}</li>
-          ))}
+          {post.data.tags.map((t) => {
+            /*
+             * サービスのタグは**サイト内のサービス別ページへ送る**（2026-09-15）。
+             * タグの文字列は config.ts の SERVICE_HUBS の tag と完全一致させてあるので、
+             * ここで引き当てられる。対応するページが無いタグ（#シリーズ など）は
+             * これまでどおり文字のまま — 行き先の無いリンクを作らない。
+             */
+            const hub = SERVICE_HUBS.find((h) => h.tag === t)
+            return <li>{hub ? <a href={`/service/${hub.slug}`}>#{t}</a> : <>#{t}</>}</li>
+          })}
         </ul>
       )
     }

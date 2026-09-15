@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-14T13:39:18.082Z",
+  "updatedAt": "2026-09-15T00:43:49.239Z",
   "works": {
     "102": {
       "fetchedAt": "2026-09-13T14:23:26.113Z",
@@ -6071,6 +6071,20 @@
         },
         "localizedTitle": "機動戦士ガンダム 鉄血のオルフェンズ ウルズハント -小さな挑戦者の軌跡-"
       }
+    },
+    "24602077": {
+      "fetchedAt": "2026-09-15T00:43:48.381Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0I6AAWU2AVCUVYE289FBX6F1AB?ref_=atv_dp"
+        }
+      ]
     },
     "24973699": {
       "fetchedAt": "2026-09-10T05:45:02.097Z",

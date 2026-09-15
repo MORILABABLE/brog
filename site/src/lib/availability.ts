@@ -34,6 +34,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { deniesSubscription } from './availability-ng.ts'
+import { addedSubscriptions } from './availability-add.ts'
 
 /** 台帳の場所を探す。`work-links.ts` と同じ理由で実行時のカレントから上へ辿る。 */
 function findUp(...segments: string[]): string | null {
@@ -165,6 +166,24 @@ export function marksFor(
     // ★ 「—（未確認）」にリンクは付けない（`rehype-availability.ts` も張らない）
     if (s.link && mark !== 'unknown') links.set(s.service, s.link)
   }
+
+  /*
+   * ★ **APIが知らない見放題を足す**（`availability-add.ts`。2026-09-15 追加）。
+   *
+   *   上のループは `entry.services` ＝ **APIが返した社**しか回らない。
+   *   カタログにその社の扱いが1件も無い作品は、ここを通らないと
+   *   `rehype-availability.ts` 側で `?? 'none'` に落ち、
+   *   **「調べたうえで取り扱いなし（×）」として表に出てしまう。**
+   *
+   * ★ **否認より後に置く。** 同じ組み合わせを両方の台帳に書くと、こちらが勝つ。
+   *   台帳の注意書きで「両方に書かないこと」と釘を刺してある。
+   * ★ **リンクは付けない。** 台帳に無いのでURLを持っていない。
+   *   Prime Video だけは `availabilityUrl()` が題名から検索リンクに落とす。
+   */
+  for (const service of addedSubscriptions(workId, titles)) {
+    marks.set(service, 'subscription')
+  }
+
   return { marks, links, fetchedAt: new Date(at) }
 }
 

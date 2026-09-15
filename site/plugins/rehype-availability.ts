@@ -32,10 +32,12 @@
  *   **どちらを逆にしても静かに壊れる。**
  *
  * ■ 絶対に守ること
- *   - **その行が扱っているサービスは出さない。**
- *     「Netflixで9月30日に終了」の行に「Netflix ●」を出すと、
- *     終わるのか観られるのか読者に判別できない（2026-09-06・運用者の指摘）
- *   - **残りのサービスは ○ △ × を揃えて全部出す。**
+ *   - **その行が扱っているサービスも含めて出す**（2026-09-15・運用者の指定）。
+ *     以前は外していたが、**記事が主題にしているサービスの配信状況が表に出ない**
+ *     という逆の穴が開いていた（「Prime Videoで見放題配信中」の記事の行が
+ *     「× Netflix × Disney+ △ Apple TV+」だけになり、ラベルまで赤い「取り扱いなし」になる）。
+ *     終わるのか観られるのかは**状態列が言っている**ので、印は在庫台帳のまま出す。
+ *   - **4社ぶんを ○ △ × で揃えて全部出す。**
  *     ×を省くと「調べたうえで無い」と「調べていない」の区別が付かない
  *   - **台帳に無い作品は — （未確認）。× にしない。**
  *     行そのものを出さないと、読者には「表示されていない」としか見えない
@@ -112,9 +114,10 @@ function cellsOf(row: Node): Node[] {
 /**
  * その行の作品IDと、**その行が扱っているサービス**。
  *
- * ★ サービスも返すのは、**その行の主題のサービスを行から外す**ため。
- *   「Netflixで9月30日に終了」の行に「Netflix ●」と出すと、
- *   終わるのか観られるのか分からない。読者が知りたいのは**残りの3社**。
+ * ★ サービスも返すのは、**送り先を決めるため**（`workLinkByTitle` の第2引数と、
+ *   「他で探す」のリンクから自社を外す `findChips`）。
+ *   ○ △ × の印からは外さない — 記事が扱う社こそ読者が見たい列だから
+ *   （2026-09-15 変更。冒頭の「絶対に守ること」）。
  */
 function workOf(row: Node): { ids: string[]; title: string; service?: string } | undefined {
   let service: string | undefined
@@ -182,26 +185,48 @@ function workOf(row: Node): { ids: string[]; title: string; service?: string } |
  *   嘘の印を出すより、印が無いほうがましという判断。
  */
 function marksOf(ids: string[], title: string): WorkMarks | undefined {
-  let chosen: WorkMarks | undefined
-  let signature = ''
+  /*
+   * ★ **印が割れたら、サービスごとに強いほうを採る**（2026-09-15 変更）。
+   *
+   *   それまでは「1つでも食い違ったら `undefined`（＝行ごと出さない）」にしていた。
+   *   別作品を巻き込んだときに嘘の印を出さないための安全策だったが、
+   *   **同じ題名の別の版**で日常的に割れることが分かった。
+   *
+   *     実測（2026-09-15・「ガンダム」）
+   *       機動戦士ガンダム  id 10206（テレビ版）  netflix: 見放題
+   *                         id 61679（劇場版I）   netflix: 見放題 ＋ apple-tv: 購入
+   *       → 印が食い違うので黙り、**その行だけ「— 未確認」**になっていた
+   *
+   *   読者の問いは「**この題名の作品はどこで観られるか**」なので、
+   *   版が違っても答えは足し合わせてよい。見放題 > レンタル・購入 > 取り扱いなし の順に強い。
+   *
+   * ★ **題名を渡す。** 否認の一覧（`data/availability-ng.json`）は
+   *   作品IDだけでなく題名の部分一致でも当たる。**シリーズまるごと**を
+   *   否認した場合、あとから台帳に入った別IDの作品もここで落ちる
+   *   （`src/lib/availability-ng.ts`）。
+   * ★ 否認された「—（未確認）」は**いちばん弱い**ので、他の版が印を持っていれば
+   *   そちらが残る。逆に全部が未確認なら未確認のまま（嘘を足さない）。
+   */
+  const RANK: Record<Mark, number> = { subscription: 3, paid: 2, none: 1, unknown: 0 }
+  const marks = new Map<string, Mark>()
+  const links = new Map<string, string>()
+  let fetchedAt: Date | undefined
   for (const id of ids) {
-    /*
-     * ★ **題名を渡す。** 否認の一覧（`data/availability-ng.json`）は
-     *   作品IDだけでなく題名の部分一致でも当たる。**シリーズまるごと**を
-     *   否認した場合、あとから台帳に入った別IDの作品もここで落ちる
-     *   （`src/lib/availability-ng.ts`）。
-     */
     const m = marksFor(id, [title])
     if (!m) continue
-    const sig = [...m.marks].sort().map(([k, v]) => `${k}:${v}`).join(',')
-    if (!chosen) {
-      chosen = m
-      signature = sig
-    } else if (sig !== signature) {
-      return undefined
+    for (const [svc, mark] of m.marks) {
+      const cur = marks.get(svc)
+      if (cur !== undefined && RANK[cur] >= RANK[mark]) continue
+      marks.set(svc, mark)
+      const link = m.links.get(svc)
+      // ★ リンクは**採った印と同じ版のもの**にする。混ぜると別の版へ送ってしまう
+      if (link) links.set(svc, link)
+      else links.delete(svc)
     }
+    // ★ 「◯月◯日時点」は**いちばん古い観測**に合わせる（言い過ぎない）
+    if (!fetchedAt || m.fetchedAt < fetchedAt) fetchedAt = m.fetchedAt
   }
-  return chosen
+  return fetchedAt ? { marks, links, fetchedAt } : undefined
 }
 
 /** 見出し名で列を探して落とす（中身は見ない）。 */
@@ -262,16 +287,6 @@ const LABEL_TITLE: Record<LabelState, string> = {
 }
 
 /**
- * ★ **その行のサービスを外しているときは「4サービス」と言わない**（2026-09-12）。
- *
- *   行に並んでいるのは**残りの3社**で、外した1社はその作品を配信していることがある
- *   （「Prime Videoで見放題配信中」の行に「取り扱いなし ×Netflix ×Disney+ ×Apple TV+」）。
- *   そこで「この4サービスでは取り扱いがありません」と出すと、**事実と違う。**
- *   閾値を 1/3 に緩めて仮面ライダーの表が出るようになり、**12行で表に出た。**
- */
-const LABEL_TITLE_NONE_OTHERS = 'この行のサービス以外では取り扱いがありません'
-
-/**
  * ラベルの文字。**状態ごとに変える**（2026-09-09・運用者の判断）。
  *
  * ★ **全部を「配信中」にしてはいけない。** 一度そうしていて、
@@ -307,15 +322,14 @@ const LABEL_TEXT: Record<LabelState, string> = {
  *   ここは状態を宣言するだけで、色の値は持たない。
  *   色を足す・変えるときは global.css 側だけを直すこと。
  */
-function availLabel(state: LabelState, own?: string): Node {
+function availLabel(state: LabelState): Node {
   return {
     type: 'element',
     tagName: 'span',
     properties: {
       className: ['avail-label'],
       'data-state': state,
-      // ★ 「取り扱いなし」だけ、その行のサービスを外しているかで文言が変わる
-      title: state === 'none' && own ? LABEL_TITLE_NONE_OTHERS : LABEL_TITLE[state],
+      title: LABEL_TITLE[state],
     },
     /*
      * ★ **箱は内側の `span` が描く。** 外側は並びのための入れ物。
@@ -477,25 +491,40 @@ function availRow(
    *   **印での並べ替えは読者の行動で決まる順**なので、その方針には反しない。
    */
   const RANK: Record<Mark, number> = { subscription: 0, paid: 1, none: 2, unknown: 3 }
-  const shown = SERVICES
-    /*
-     * ★ **その行のサービスは出さない。**
-     *   「Netflixで9月30日に終了」の行に「Netflix ○」を出すと、
-     *   終わるのか観られるのか読者に判別できない。
-     *   出すのは**行き先になりうる残りのサービス**だけ。
-     */
-    .filter((svc) => !(own && svc.key === own))
-    .map((svc, i) => ({ svc, i, mark: (marks.marks.get(svc.key) ?? 'none') as Mark }))
-    .sort((a, b) => RANK[a.mark] - RANK[b.mark] || a.i - b.i)
+  /*
+   * ★ **その行のサービスも出す**（2026-09-15 変更。それまでは外していた）。
+   *
+   *   外していた理由は「『Netflixで9月30日に終了』の行に Netflix ○ を出すと、
+   *   終わるのか観られるのか読者に判別できない」だった。だが**判別は状態列がしている。**
+   *   外すほうの損が大きいと分かったのでやめた。
+   *
+   *   ✕ 外していたとき
+   *       「Amazon Prime Videoで見放題配信中」の記事なのに、
+   *       行の印が「× Netflix  × Disney+  △ Apple TV+」だけになり、
+   *       **記事が主題にしているサービスの配信状況が表に出ない。**
+   *       ラベルまで「取り扱いなし」と赤くなり、**見放題で観られる作品の行が
+   *       観られないように見えた。**
+   *
+   *   ○ いま
+   *       「● Amazon Prime Video  × Netflix  × Disney+  △ Apple TV+」
+   *       記事が扱う社を含めた4社ぶんが揃い、ラベルも「配信中」になる。
+   *
+   * ★ 印の根拠は**在庫台帳そのまま**（`marks`）。状態列から作り直さない。
+   *   終了予定の行は終了日まで見放題なので ●、終了済みの行は台帳が見放題を
+   *   返さなくなるので自然に △ か × に落ちる（2026-09-15・運用者の指定）。
+   */
+  const shown = SERVICES.map((svc, i) => ({
+    svc,
+    i,
+    mark: (marks.marks.get(svc.key) ?? 'none') as Mark,
+  })).sort((a, b) => RANK[a.mark] - RANK[b.mark] || a.i - b.i)
 
   /*
    * ★ ラベルの色は**その行に実際に並ぶ印**から決める（`shown`）。
-   *   その行のサービスを外したあとの並びなので、**読者が見ているものと一致する**。
-   *   台帳の全サービスから決めると、外した1社のせいで色と印が食い違う
-   *   （「Netflixで終了」の行が、その Netflix の ○ を根拠に青くなる）。
+   *   4社ぶんが揃うようになったので、**読者が見ているものと一致する**。
    */
   const state = labelStateOf(shown.map((s) => s.mark))
-  const items: Node[] = [availLabel(state, own)]
+  const items: Node[] = [availLabel(state)]
 
   for (const { svc, mark } of shown) {
     // ★ ×（取り扱いなし）も出す。**4社ぶんを揃えて見せる**ことで、
