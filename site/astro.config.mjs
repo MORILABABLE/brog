@@ -10,6 +10,7 @@ import { rehypeWorkLinks } from './plugins/rehype-work-links.ts'
 import { rehypeAvailability } from './plugins/rehype-availability.ts'
 import { rehypeCast } from './plugins/rehype-cast.ts'
 import { rehypeFindLinks } from './plugins/rehype-find-links.ts'
+import { rehypeNextStep } from './plugins/rehype-next-step.ts'
 
 // astro.config は Astro が .env を読み込む前に評価されるため、
 // ここでは import.meta.env が使えない。Vite の loadEnv で明示的に読む。
@@ -25,11 +26,12 @@ const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '')
  *   **変数名を変えるときは両方直すこと。** 片方だけだと、
  *   記事本文のリンクだけ古い枠のIDのまま公開される。
  *
- * 記事本文から出るのは5種類。
+ * 記事本文から出るのは6種類。
  *   poster … 節ごとの作品ポスター（`<a>` の中身が /sections/ の画像）
  *   table  … 表の作品名（rehypeWorkLinks が付ける .work-link）
  *   avail  … 表の在庫行の ○ / △（rehypeAvailability が付ける .avail-link）
  *   find   … 表の×だけの行の「他で探す」（同 .avail-find-link）
+ *   watch  … 表の直後の「終了後も観られるもの」（rehypeNextStep が付ける .next-watch-link）
  *   body   … それ以外の本文中のリンク
  */
 const amazonTags = {
@@ -43,6 +45,8 @@ const amazonTags = {
   // **未設定なら既定IDに落ちる**ので、IDを作ってから .env に足せばよい。
   avail: env.PUBLIC_AMAZON_TAG_AVAIL ?? '',
   find: env.PUBLIC_AMAZON_TAG_FIND ?? '',
+  // 表の直後の「終了後も観られるもの」（plugins/rehype-next-step.ts。2026-09-15）
+  watch: env.PUBLIC_AMAZON_TAG_WATCH ?? '',
 }
 
 export default defineConfig({
@@ -112,6 +116,10 @@ export default defineConfig({
       //   「他のサービスで探す」の節を組み直し、ここで作った <a> に
       //   後段が tag= と rel="sponsored" を付ける。
       rehypeFindLinks,
+      // ★ availability のあと・affiliate の前。前段が入れた ○ の行を数え直して
+      //   表の直後に「次の一手」を差し込み、ここで作った <a> に
+      //   後段が tag= と rel="sponsored" を付ける。
+      rehypeNextStep,
       [rehypeAffiliate, { tags: amazonTags }],
     ],
   },

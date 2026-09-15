@@ -83,6 +83,10 @@ export const AMAZON_SLOTS = [
   // 「他のサービスで探す」。作品ページと、**記事の表の×だけの行**
   // （plugins/rehype-availability.ts の `findChips`。2026-09-12）
   'find',
+  // 記事の**表の直後**の「終了後も観られるもの」（plugins/rehype-next-step.ts。2026-09-15）。
+  // ★ `avail` と混ぜないこと。あちらは行ごとの答え、こちらは**表全体の要約からの一手**で、
+  //   押された意味が違う（表の直後に置いた施策が効いたかどうかの唯一の証拠）。
+  'watch',
 ] as const
 
 export type AmazonSlot = (typeof AMAZON_SLOTS)[number]

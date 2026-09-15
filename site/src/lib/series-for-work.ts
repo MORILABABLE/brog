@@ -105,6 +105,28 @@ function load(): { ref: SeriesRef; re: RegExp }[] {
  *   実際に起こりうる — 「仮面ライダー」と「ウルトラマン」の両方に
  *   当たる作品名が将来出ないとは言えない。
  */
+/**
+ * その記事の**主題**（`「ハリー・ポッター」シリーズ`）。
+ *
+ * ■ どこから来るか
+ * `data/articles.json` の `flags.topic`。**記事を書いたときに人が指定した言い方**で、
+ * タイトル・見出しに出ている文字列そのもの。ここで作り直さない
+ * （作ればタイトルと見出しで主題の呼び方がずれる）。
+ *
+ * ■ 何に使うか
+ * 「他のサービスで探す」の見出しを**読者の問いの形**に組み直すのに使う
+ * （`plugins/rehype-find-links.ts`）。実測（GSC 28日）で、
+ * `/posts/harry-potter` は「ハリーポッター 配信終了」で7.2位を取れているのに、
+ * **「ハリーポッター 配信」は47位・「ハリーポッター サブスク」は101位**だった。
+ * 終了という出来事の語だけを取っていて、**定常の語を1つも取れていない。**
+ *
+ * ★ 控えに無い記事（月次記事など）は `undefined`。見出しは主題を名乗らない形になる。
+ */
+export function topicForSlug(slug: string): string | undefined {
+  const hit = load().find((m) => m.ref.slug === slug)
+  return hit?.ref.topic
+}
+
 export function seriesRefFor(title: string): SeriesRef | undefined {
   const hits = load().filter((m) => m.re.test(title))
   return hits.length === 1 ? hits[0]!.ref : undefined

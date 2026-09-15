@@ -89,6 +89,13 @@ function slotOf(node: Node): AmazonSlot {
    *   分けると、同じ問いへの導線が2つの枠に割れてどちらも読めなくなる。
    */
   if (Array.isArray(cls) && cls.includes('find-link')) return 'find'
+  /*
+   * ★ 表の直後の「終了後も観られるもの」（`plugins/rehype-next-step.ts`。2026-09-15）。
+   *   **`avail` と混ぜないこと。** あちらは行ごとの答えで、こちらは
+   *   **表全体を要約したうえでの一手**。スクロール到達16%という実測に対して
+   *   「表の直後に置く」ことが効いたかどうかは、この枠だけが答えられる。
+   */
+  if (Array.isArray(cls) && cls.includes('next-watch-link')) return 'watch'
 
   for (const child of node.children ?? []) {
     if (child.tagName !== 'img') continue

@@ -798,6 +798,84 @@ h3 {
 }
 
 /*
+ * 表の直後の「次の一手」（`plugins/rehype-next-step.ts` が差し込む）。
+ *
+ * ■ なぜ表の直後なのか（2026-09-15・実測）
+ * `/posts/harry-potter` は38PV中37がスマホで、**90%スクロール到達は6（16%）**。
+ * 本文の後半にある「他のサービスで探す」とCTAは、8割の読者に届いていない。
+ * いちばん読まれるのは表なので、**次の一手を表の直後に置く**。
+ *
+ * ■ 2つは見た目を分ける
+ *   .next-step-watch   … 外部リンク（PR）。チップは `.avail-find-link` と同じ形
+ *   .next-step-article … サイト内の記事。**塗らない**（左の線だけ）
+ * 作品ページの `.series-ref` と同じ考え方で、**広告とサイト内リンクを
+ * 同じ見た目にしない**。同じ塗りのボタンにすると、記事へのリンクも広告に見える。
+ */
+.prose .next-step {
+  margin: 1.1rem 0 1.5rem;
+}
+/* ★ **表の直前に置く**（`rehype-next-step.ts` の差し込み位置の★）。
+   下の余白を詰めて、表と1つの塊に見せる */
+.prose .next-step-watch {
+  margin: 1.1rem 0 0.6rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-subtle);
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+/* ★ ラベルは行頭に独立させる。文中に混ぜると要約の1文が読み出しにくい */
+.prose .next-step-label {
+  display: block;
+  margin-bottom: 0.15rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+/*
+ * ★ **チップは「他で探す」と同じ形にする**（`.avail-find-link`）。
+ *   平常時から accent の枠を持たせるのは 2026-09-13 と同じ理由で、
+ *   `:hover` しか手がかりが無いとタッチ端末には一生出ない。
+ */
+.prose .next-watch-link {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.18rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.prose .next-watch-link:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+/* サイト内の記事へ。**塗りのボタンにしない**（作品ページの .series-ref と同じ） */
+.prose .next-step-article {
+  display: block;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--accent-soft);
+  text-decoration: none;
+}
+.prose .next-step-title {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.prose .next-step-article:hover .next-step-title {
+  text-decoration: underline;
+}
+
+/*
  * 「他のサービスで探す」節の一覧（`plugins/rehype-find-links.ts` が組む）。
  *
  * ★ **1作品＝1行。** 題名とチップを同じ行に流し、入りきらなければ折り返す。

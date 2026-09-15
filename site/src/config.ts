@@ -492,6 +492,13 @@ export const AMAZON_TAGS: AmazonTags = {
   /** 「他のサービスで探す」。作品ページと、記事の表の×だけの行 */
   find: import.meta.env.PUBLIC_AMAZON_TAG_FIND ?? '',
   /**
+   * 記事の**表の直後**の「終了後も観られるもの」（`plugins/rehype-next-step.ts`）。
+   * ★ **`avail` と分ける。** あちらは行ごとの答え、こちらは表全体の要約からの一手。
+   *   90%スクロール到達が16%という実測に対して「表の直後に置く」ことが
+   *   効いたかどうかは、この枠だけが答えられる。
+   */
+  watch: import.meta.env.PUBLIC_AMAZON_TAG_WATCH ?? '',
+  /**
    * 画面下の追従枠（FollowBar.astro）。**1200px 未満でしか出ない。**
    * rail と対になる枠で、**同じページの同じ主題を狭い画面に出したもの。**
    * 分けてあるのは「PCの右枠とスマホの下枠のどちらが効くか」を読むため。

@@ -38,6 +38,14 @@
  */
 import { SERVICE_BY_LABEL } from '../src/lib/work-links.ts'
 import { amazonVideoLink, otherServiceLinks } from '../src/lib/search-links.ts'
+import { topicForSlug } from '../src/lib/series-for-work.ts'
+import { postBySlug } from '../src/lib/post-index.ts'
+
+/** Markdown のファイル。slug を取るためだけに使う。 */
+interface VFile {
+  path?: string
+  history?: string[]
+}
 
 /** HAST のノード。必要な形だけ（他のプラグインと同じ方針）。 */
 interface Node {
@@ -174,14 +182,56 @@ function lineFor(work: RowWork): Node {
   return { type: 'element', tagName: 'li', children }
 }
 
+/** Markdown のファイル名から slug を取る（`rehype-next-step.ts` と同じ取り方） */
+function slugOf(file: VFile): string {
+  const path = file.path ?? file.history?.[0] ?? ''
+  return path.replace(/\\/g, '/').split('/').pop()?.replace(/\.md$/, '') ?? ''
+}
+
+/**
+ * 節の見出しを**読者の問いの形**に組み直す（2026-09-15）。
+ *
+ * ■ なぜ変えるのか（実測・GSC 28日）
+ * `/posts/harry-potter` が取れている語は「ハリーポッター 配信終了」**7.2位**だけで、
+ * **「ハリーポッター 配信」は47位・「ハリーポッター サブスク」は101位**だった。
+ * 需要のほうは消えていない（Wikipedia「ハリー・ポッターシリーズ」は
+ * 1日1,400〜1,800回で横ばい）。取れていないのは**終了という出来事ではない、定常の語**。
+ *
+ * 記事の `<title>` と h1 は `templates/naming.md` の決まりがあって動かせない
+ * （軸を1つだけ名乗る・略称を使わない）。**見出しなら決まりに触れずに足せる。**
+ *
+ *   終了予定・終了済みの記事 … 「「ハリー・ポッター」シリーズは終了後どこで観られるか」
+ *   それ以外               … 「「ガンダム」シリーズはどこで観られるか」
+ *   主題が控えに無い記事    … 「終了後、どこで観られるか」
+ *
+ * ★ **断定にしない。** 問いの形にしてあるのは、この節が出すのが検索リンクだけで、
+ *   **在庫を断定しない**ため（`search-links.ts` 冒頭）。すぐ下の固定文言が
+ *   「確認する場合はこちらから検索できます」と続けて、答えの範囲を読者に渡す。
+ */
+function headingText(slug: string): string {
+  const topic = slug ? topicForSlug(slug) : undefined
+  const category = slug ? postBySlug(slug)?.category : undefined
+  const ended = category === 'leaving' || category === 'ended'
+  if (!topic) return ended ? '終了後、どこで観られるか' : 'ほかのサービスで観られるか'
+  return ended ? `${topic}は終了後どこで観られるか` : `${topic}はどこで観られるか`
+}
+
 export function rehypeFindLinks() {
-  return (tree: Node): void => {
+  return (tree: Node, file: VFile): void => {
     try {
       const body = tree.children ?? []
       const at = body.findIndex(
         (n) => n.tagName === 'h2' && textOf(n).trim() === HEADING,
       )
       if (at < 0) return
+
+      /*
+       * ★ **見つけるのは固定文言、出すのは読者の問い**（上の `headingText`）。
+       *   探すほうを変えると、記事側の `templates/fixed-phrases.md` と食い違って
+       *   節そのものが見つからなくなる。**書き換えるのは中身だけ。**
+       */
+      const h2 = body[at]
+      if (h2) h2.children = [text(headingText(slugOf(file)))]
 
       // 次の見出しまでがこの節。無ければ本文の終わりまで。
       let end = body.findIndex((n, i) => i > at && n.tagName === 'h2')

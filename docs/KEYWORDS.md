@@ -10,6 +10,7 @@
 
 | 関連 | |
 |---|---|
+| **いま検索されている作品から主題を選ぶ（需要 × 在庫・2026-09-15 実装）** | **[DEMAND.md](./DEMAND.md)** |
 | 的を増やす（面の設計） | [GROWTH.md](./GROWTH.md) |
 | 積み上がる形にする | [STOCK.md](./STOCK.md) |
 | 記事の軸とタイトルの決まり | [ARTICLE-RULES.md](./ARTICLE-RULES.md) |
