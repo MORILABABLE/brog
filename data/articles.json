@@ -100,10 +100,10 @@
       "flags": {
         "topic": "「007」シリーズ",
         "slug": "james-bond",
-        "match": "007"
+        "match": "^007|ジェームズ・ボンド|James Bond"
       },
-      "category": "leaving",
-      "writtenAt": "2026-09-13"
+      "category": "ended",
+      "writtenAt": "2026-09-15"
     },
     {
       "slug": "jurassic-park",
@@ -127,7 +127,7 @@
         "match": "仮面ライダー|風都探偵"
       },
       "category": "arrivals",
-      "writtenAt": "2026-09-11"
+      "writtenAt": "2026-09-15"
     },
     {
       "slug": "mission-impossible",
@@ -139,7 +139,7 @@
         "match": "ミッション:インポッシブル"
       },
       "category": "arrivals",
-      "writtenAt": "2026-09-06"
+      "writtenAt": "2026-09-15"
     },
     {
       "slug": "resident-evil",
@@ -187,8 +187,8 @@
         "match": "ウルトラマン"
       },
       "category": "ended",
-      "writtenAt": "2026-09-06"
+      "writtenAt": "2026-09-15"
     }
   ],
-  "updatedAt": "2026-09-14T22:05:37.792Z"
+  "updatedAt": "2026-09-15T03:38:14.055Z"
 }

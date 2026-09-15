@@ -4121,6 +4121,7 @@
     "article:james-bond",
     "article:james-bond",
     "article:james-bond",
+    "article:james-bond",
     "article:jurassic-park",
     "article:jurassic-park",
     "article:jurassic-park",
@@ -4132,6 +4133,8 @@
     "article:kamen-rider",
     "article:kamen-rider",
     "article:kamen-rider",
+    "article:kamen-rider",
+    "article:mission-impossible",
     "article:mission-impossible",
     "article:mission-impossible",
     "article:resident-evil",
@@ -4148,10 +4151,11 @@
     "article:transformers",
     "article:transformers",
     "article:transformers",
+    "article:ultraman",
     "article:ultraman",
     "article:ultraman",
     "article:ultraman",
     "article:ultraman"
   ],
-  "updatedAt": "2026-09-14T22:27:36.753Z"
+  "updatedAt": "2026-09-15T03:38:14.046Z"
 }

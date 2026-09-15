@@ -131,7 +131,9 @@ const REQUIRED_PHRASES = [
   'series-update-lead-first-sentence',
   'series-returned-lead-first-sentence',
   'series-streaming-lead-first-sentence',
+  'series-streaming-lead-partial-first-sentence',
   'series-ended-lead-first-sentence',
+  'series-ended-lead-partial-first-sentence',
   'series-unext-note',
   'series-lead-elsewhere',
   'other-services-intro',
@@ -570,9 +572,59 @@ function stanceOf(items: ChangeEvent[], ctx: ArticleContext): Stance {
    */
   if (leaving > 0 && leaving >= returned + streaming) return 'leaving'
   if (returned > 0) return 'returned'
+
+  /*
+   * ★ **配信中が「少数派」なら、いま観られることで記事全体を名乗らない**
+   *   （2026-09-15 修正。上の `leaving` の決まりの裏返し）。
+   *
+   *   以前は「配信中が1本でもあれば `streaming`」だった。
+   *   在庫から素材を拾うようになった今、**全作が終わった記事に新作が1本入っただけ**で
+   *   記事まるごとが「見放題配信中の作品◯本」に化ける。
+   *
+   *     実測（2026-09-15・「ウルトラマン」）
+   *       終了済み12本 ／ 配信中1本（9月11日に Prime Video で始まった1作）
+   *       → `見放題配信中の作品13本` と名乗り、リードも「13本が配信中」と書いていた
+   *       （公開中の版は正しく `見放題配信が終了した作品12本`）
+   *
+   * ★ **イベント数ではなく作品数で比べる。** 同じ作品が2社にあると、
+   *   片方で終わっていても、もう片方では観られる。イベントで数えると
+   *   「終了済み」が多く見えて、**いま観られる作品まで終わったと名乗る**。
+   *
+   *     実測（2026-09-15・「ミッション:インポッシブル」）
+   *       イベント: 終了済み6件（Disney+）／ 配信中5件（Prime Video）
+   *       作品:     6本のうち5本が Prime Video で観られる
+   *       → イベントで比べると `ended`。作品で比べると `streaming`（こちらが正しい）
+   *
+   * ★ **同数なら配信中を採る。** 観られる作品があることのほうが読者の用に近い。
+   */
+  const gone = countWorks(items, ctx, (ss) => ss.every((s) => s === '終了済み'))
+  if (streaming > 0 && streamingWorks(items, ctx) >= gone) return 'streaming'
+  if (gone > 0) return 'ended'
+
   if (streaming > 0) return 'streaming'
   if (leaving > 0) return 'leaving'
   return 'ended'
+}
+
+/** 作品ごとに状態をまとめ、`pick` が真になる**作品**の数を返す。 */
+function countWorks(
+  items: ChangeEvent[],
+  ctx: ArticleContext,
+  pick: (states: State[]) => boolean,
+): number {
+  const byWork = new Map<string, State[]>()
+  for (const e of items) {
+    const k = workKey(e.work.localizedTitle ?? e.work.title)
+    const arr = byWork.get(k)
+    if (arr) arr.push(stateOf(e, ctx.now))
+    else byWork.set(k, [stateOf(e, ctx.now)])
+  }
+  return [...byWork.values()].filter(pick).length
+}
+
+/** **いま見放題で観られる作品の数。** 1本でも配信中の観測があればその作品を数える。 */
+function streamingWorks(items: ChangeEvent[], ctx: ArticleContext): number {
+  return countWorks(items, ctx, (ss) => ss.some((s) => s === '見放題配信中'))
 }
 
 /** 状態ごとの本数。プロンプトと品質ゲートが同じ数え方を使うための1か所。 */
@@ -1851,6 +1903,12 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
     本数: workCount(items),
     // ★ **終了日が分かっている作品数。** `本数` とは別（`leadKey` の下の注記）。
     終了本数: endDated,
+    // ★ **いま見放題で観られる作品数。** `本数` とは別
+    //   （`series-streaming-lead-partial-first-sentence` の注記）。
+    配信中本数: streamingWorks(items, ctx),
+    // ★ **もう観られない作品数。** `本数` とは別
+    //   （`series-ended-lead-partial-first-sentence` の注記）。
+    終了済み本数: countWorks(items, ctx, (ss) => ss.every((s) => s === '終了済み')),
     // ★ **終了するサービス。** `サービス` とは別（`endingServices` の注記）。
     終了サービス:
       endingServices.length === 2
@@ -1870,11 +1928,30 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
    *   在庫から素材を拾えるようにしたぶん、混ざる回のほうが多くなる。
    */
   const mixed = endDated > 0 && endDated < workCount(items)
-  const leadKey = mixed
-    ? 'series-lead-partial-first-sentence'
-    : isUpdate && traits.leadKey === 'series-lead-first-sentence'
-      ? 'series-update-lead-first-sentence'
-      : traits.leadKey
+  /*
+   * ★ **配信中の記事でも、観られるのが一部だけなら別の文言にする**（2026-09-15）。
+   *   `mixed` と同じ事故で、同じ直し方（`series-streaming-lead-partial-first-sentence`）。
+   */
+  const streamingMixed =
+    traits.leadKey === 'series-streaming-lead-first-sentence' &&
+    streamingWorks(items, ctx) < workCount(items)
+  /*
+   * ★ **終了済みの記事でも、1本でも残っていれば「すべて」と書かない**（2026-09-15）。
+   *   `stanceOf()` が少数派で名乗らない決まりになったぶん、`ended` の記事にも
+   *   終わっていない作品が混ざる（`series-ended-lead-partial-first-sentence` の注記）。
+   */
+  const endedMixed =
+    traits.leadKey === 'series-ended-lead-first-sentence' &&
+    countWorks(items, ctx, (ss) => ss.every((s) => s === '終了済み')) < workCount(items)
+  const leadKey = (() => {
+    if (mixed) return 'series-lead-partial-first-sentence'
+    if (streamingMixed) return 'series-streaming-lead-partial-first-sentence'
+    if (endedMixed) return 'series-ended-lead-partial-first-sentence'
+    if (isUpdate && traits.leadKey === 'series-lead-first-sentence') {
+      return 'series-update-lead-first-sentence'
+    }
+    return traits.leadKey
+  })()
 
   // ★ データの出どころが違えば出典表記も違う。1本の記事に API 由来と
   //   U-NEXT 由来が混ざるので、混ざったぶんだけ全部要る。

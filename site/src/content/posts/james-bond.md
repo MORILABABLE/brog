@@ -1,32 +1,32 @@
 ---
-title: '【保存版】「007」シリーズの見放題配信が終了予定の作品5本｜クレイグ版5作がそろって終了'
-description: '「007」シリーズのうち、ダニエル・クレイグがジェームズ・ボンドを演じた5作が、Netflixで見放題配信を終了する予定です。作品ごとの終了日と、終了後に他のサービスで観られるかをまとめました。'
-pubDate: 2026-09-13
-category: 'leaving'
+title: '【保存版】「007」シリーズはどこで見れる？見放題配信が終了した作品5本【9月15日更新】｜クレイグ版5作がそろって終了'
+description: '「007」シリーズのうち、ダニエル・クレイグがジェームズ・ボンドを演じた5作が、Netflixで見放題配信を終了しました。作品ごとの終了日と、いま他のサービスで観られるかをまとめました。'
+pubDate: 2026-09-15
+category: 'ended'
 tags: ['Netflix', '配信終了', 'シリーズ']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'
     url: 'https://www.movieofthenight.com/about/api'
   - label: '作品タイトル（Wikidata・CC0）'
     url: 'https://www.wikidata.org/'
-dataAsOf: 2026-09-13
+dataAsOf: 2026-09-15
 heroImage: '/heroes/james-bond.webp'
 ---
-「007」シリーズがNetflixで見放題配信を終了します。記事作成時点（9月13日時点）で5本の終了日が判明しています。
+「007」シリーズのNetflixでの見放題配信は終了しました。記事作成時点（9月15日時点）で5本すべての見放題配信が終了しています。
 
 2006年の『007 カジノ・ロワイヤル』から2021年の『007 ノー・タイム・トゥ・ダイ』まで、ダニエル・クレイグがジェームズ・ボンドを演じた5作品が対象です。
 
-## Netflixで見放題配信が終了する5本
+## Netflixで見放題配信が終了した5本
 
-[![007 カジノ・ロワイヤル（2006年）](/sections/posters/james-bond-392b089e-1.webp)](https://www.amazon.co.jp/s?k=007%20%E3%82%AB%E3%82%B8%E3%83%8E%E3%83%BB%E3%83%AD%E3%83%AF%E3%82%A4%E3%83%A4%E3%83%AB&i=instant-video) [![007 慰めの報酬（2008年）](/sections/posters/james-bond-392b089e-2.webp)](https://www.amazon.co.jp/s?k=007%20%E6%85%B0%E3%82%81%E3%81%AE%E5%A0%B1%E9%85%AC&i=instant-video)
+[![007 カジノ・ロワイヤル（2006年）](/sections/posters/james-bond-72dc0225-1.webp)](https://www.amazon.co.jp/s?k=007%20%E3%82%AB%E3%82%B8%E3%83%8E%E3%83%BB%E3%83%AD%E3%83%AF%E3%82%A4%E3%83%A4%E3%83%AB&i=instant-video) [![007 慰めの報酬（2008年）](/sections/posters/james-bond-72dc0225-2.webp)](https://www.amazon.co.jp/s?k=007%20%E6%85%B0%E3%82%81%E3%81%AE%E5%A0%B1%E9%85%AC&i=instant-video)
 
 | 終了日 | 作品 | 状態 | 出演者 | サービス |
 | --- | --- | --- | --- | --- |
-| 9月14日 | 007 カジノ・ロワイヤル | 終了予定 | ダニエル・クレイグ、ジュディ・デンチ | Netflix |
-| 9月14日 | 007 スカイフォール | 終了予定 | ダニエル・クレイグ、ハビエル・バルデム | Netflix |
-| 9月14日 | 007 ノー・タイム・トゥ・ダイ | 終了予定 | ダニエル・クレイグ、レア・セドゥ | Netflix |
-| 9月14日 | 007 スペクター | 終了予定 | ダニエル・クレイグ、クリストフ・ヴァルツ | Netflix |
-| 9月14日 | 007 慰めの報酬 | 終了予定 | ダニエル・クレイグ、オルガ・キュリレンコ | Netflix |
+| 9月15日 | 007 カジノ・ロワイヤル | 終了済み | ダニエル・クレイグ、ジュディ・デンチ | Netflix |
+| 9月15日 | 007 スカイフォール | 終了済み | ダニエル・クレイグ、ハビエル・バルデム | Netflix |
+| 9月15日 | 007 ノー・タイム・トゥ・ダイ | 終了済み | ダニエル・クレイグ、レア・セドゥ | Netflix |
+| 9月15日 | 007 スペクター | 終了済み | ダニエル・クレイグ、クリストフ・ヴァルツ | Netflix |
+| 9月15日 | 007 慰めの報酬 | 終了済み | ダニエル・クレイグ、オルガ・キュリレンコ | Netflix |
 
 **出演者**
 
@@ -52,6 +52,6 @@ heroImage: '/heroes/james-bond.webp'
 
 ## まとめ
 
-Netflixで見放題配信が終了予定なのは、ダニエル・クレイグがボンドを演じた5本です。終了日はいずれも9月14日です。終了したあとに他のサービスで観られるかは、上の表のとおりです。
+Netflixで見放題配信が終了したのは、ダニエル・クレイグがボンドを演じた5本です。終了日はいずれも9月15日でした。いま他のサービスで観られるかは、上の表のとおりです。
 
 > 配信情報は Streaming Availability API by Movie of the Night 提供

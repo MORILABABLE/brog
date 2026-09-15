@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-15T00:43:49.239Z",
+  "updatedAt": "2026-09-15T03:22:19.567Z",
   "works": {
     "102": {
       "fetchedAt": "2026-09-13T14:23:26.113Z",
@@ -95,7 +95,7 @@
       ]
     },
     "350": {
-      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "fetchedAt": "2026-09-15T03:22:16.937Z",
       "services": [
         {
           "service": "apple-tv",
@@ -104,13 +104,6 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/skyfall/umc.cmc.1q3urmkb5n2c7hgwp4gcteg6l?playableId=tvs.sbd.9001%3A598856950"
-        },
-        {
-          "service": "netflix",
-          "types": [
-            "subscription"
-          ],
-          "link": "https://www.netflix.com/title/70243459"
         },
         {
           "service": "prime-video",
@@ -123,7 +116,7 @@
       ]
     },
     "404": {
-      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "fetchedAt": "2026-09-15T03:22:16.937Z",
       "services": [
         {
           "service": "prime-video",
@@ -140,13 +133,6 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/casino-royale/umc.cmc.1atgrgw4dcsk9mel3zi94yv8d?playableId=tvs.sbd.9001%3A561902712"
-        },
-        {
-          "service": "netflix",
-          "types": [
-            "subscription"
-          ],
-          "link": "https://www.netflix.com/title/70044604"
         }
       ]
     },
@@ -474,7 +460,7 @@
       ]
     },
     "746": {
-      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "fetchedAt": "2026-09-15T03:22:16.937Z",
       "services": [
         {
           "service": "prime-video",
@@ -491,18 +477,11 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/quantum-of-solace/umc.cmc.4u3r6twwctjybrrelts1fi5if?playableId=tvs.sbd.9001%3A564109614"
-        },
-        {
-          "service": "netflix",
-          "types": [
-            "subscription"
-          ],
-          "link": "https://www.netflix.com/title/70099117"
         }
       ]
     },
     "761": {
-      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "fetchedAt": "2026-09-15T03:22:16.937Z",
       "services": [
         {
           "service": "apple-tv",
@@ -511,13 +490,6 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/spectre/umc.cmc.3scnh3k3z06o0vx014hpy68r1?playableId=tvs.sbd.9001%3A1042425776"
-        },
-        {
-          "service": "netflix",
-          "types": [
-            "subscription"
-          ],
-          "link": "https://www.netflix.com/title/80056799"
         },
         {
           "service": "prime-video",
@@ -616,7 +588,7 @@
       ]
     },
     "873": {
-      "fetchedAt": "2026-09-13T14:26:39.121Z",
+      "fetchedAt": "2026-09-15T03:22:16.937Z",
       "services": [
         {
           "service": "apple-tv",
@@ -625,13 +597,6 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/no-time-to-die/umc.cmc.1sk81aco37s8f5grnjp6ydqad?playableId=tvs.sbd.9001%3A1589483727"
-        },
-        {
-          "service": "netflix",
-          "types": [
-            "subscription"
-          ],
-          "link": "https://www.netflix.com/title/81198234"
         },
         {
           "service": "prime-video",
