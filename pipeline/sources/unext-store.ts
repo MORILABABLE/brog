@@ -27,6 +27,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { Lineup } from './unext.ts'
+import { parseDataJson } from '../core/read-json.ts'
 
 export const UNEXT_STORE_PATH = join('data', 'unext-titles.json')
 
@@ -73,7 +74,7 @@ const EMPTY: UnextStore = { version: 1, titles: {} }
 export async function loadStore(path = UNEXT_STORE_PATH): Promise<UnextStore> {
   try {
     const raw = await readFile(path, 'utf8')
-    const parsed = JSON.parse(raw) as Partial<UnextStore>
+    const parsed = parseDataJson<Partial<UnextStore>>(raw, path)
     return { version: 1, titles: parsed.titles ?? {} }
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') return { ...EMPTY, titles: {} }
@@ -113,7 +114,7 @@ export function unextStartDates(path = UNEXT_STORE_PATH): Map<string, string> {
   if (startDates) return startDates
   const map = new Map<string, string>()
   try {
-    const parsed = JSON.parse(readFileSync(path, 'utf8')) as Partial<UnextStore>
+    const parsed = parseDataJson<Partial<UnextStore>>(readFileSync(path, 'utf8'), path)
     for (const [id, rec] of Object.entries(parsed.titles ?? {})) {
       if (rec?.publicStartDate) map.set(id, rec.publicStartDate)
     }

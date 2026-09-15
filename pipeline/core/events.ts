@@ -11,6 +11,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { ChangeEvent } from '../sources/types.ts'
 import { currentYearMonth } from './datetime.ts'
+import { parseDataJson } from './read-json.ts'
 import { unextStartDates } from '../sources/unext-store.ts'
 
 export const EVENT_DIR = join('data', 'events')
@@ -34,7 +35,7 @@ export function eventKey(e: ChangeEvent): string {
 export async function loadLedger(): Promise<Ledger> {
   try {
     const raw = await readFile(LEDGER_PATH, 'utf8')
-    return { ...EMPTY_LEDGER, ...(JSON.parse(raw) as Partial<Ledger>) }
+    return { ...EMPTY_LEDGER, ...parseDataJson<Partial<Ledger>>(raw, LEDGER_PATH) }
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') return { ...EMPTY_LEDGER }
     throw err
