@@ -3,6 +3,8 @@ title: '【2026年9月】Amazon Prime Videoで見放題配信が終了予定の�
 description: 'Amazon Prime Videoで2026年9月に見放題配信が終了予定の作品4本をまとめました。9月12日に「スマイル2」、9月14日に「野生の島のロズ」と「ブルータリスト」、9月17日に「シャッター アイランド」が終了予定です。'
 pubDate: 2026-09-05
 category: 'leaving'
+genres: ['western']
+genreDetail: 'アクション'
 tags: ['Amazon Prime Video', '配信終了', '2026年9月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

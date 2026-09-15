@@ -3,6 +3,8 @@ title: '【保存版】「トランスフォーマー」実写映画シリーズ
 description: '「トランスフォーマー」実写映画シリーズ5本は、9月6日時点でAmazon Prime Videoの見放題で配信中です。一度告知された終了予定日を過ぎたあとも配信が続いています。作品ごとの配信状況を表にまとめました。'
 pubDate: 2026-09-06
 category: 'arrivals'
+genres: ['western']
+genreDetail: 'アクション'
 tags: ['Amazon Prime Video', 'Disney+', '見放題配信中', 'シリーズ']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

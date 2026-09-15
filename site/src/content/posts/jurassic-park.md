@@ -3,6 +3,8 @@ title: '【保存版】「ジュラシック・パーク」シリーズの見放
 description: '「ジュラシック・パーク」シリーズ5本は、Netflixで9月29日に見放題配信が終了します。1993年の第1作から2018年の炎の王国までの配信状況を、作品ごとに表にまとめました。'
 pubDate: 2026-09-08
 category: 'leaving'
+genres: ['western']
+genreDetail: 'アドベンチャー'
 tags: ['Netflix', 'Amazon Prime Video', '配信終了', 'シリーズ']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

@@ -3,6 +3,7 @@ title: '【2026年9月】U-NEXTで見放題配信が終了予定の作品80本�
 description: '9月30日に46本が集中。「るろうに剣心」最終章2作や劇場版アニメ11作、「仮面ライダーゼッツ」などU-NEXTで見放題終了する80本を終了日順にまとめました。'
 pubDate: 2026-09-02
 category: 'leaving'
+genres: ['japanese', 'western', 'anime']
 tags: ['U-NEXT', '配信終了', '2026年9月']
 sources:
   - label: '配信状況・見放題終了日は U-NEXT の作品ページに掲載されている情報'

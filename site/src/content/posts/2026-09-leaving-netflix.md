@@ -3,6 +3,7 @@ title: '【2026年9月】Netflixで見放題配信が終了予定の作品63本�
 description: 'Netflixで2026年9月に見放題配信が終了する作品63本を終了日順にまとめました。9月30日に「ハリー・ポッター」7作と「ファンタスティック・ビースト」3作、9月29日に「ジュラシック・パーク」シリーズ5作が同じ日に終了します。'
 pubDate: 2026-09-01
 category: 'leaving'
+genres: ['western', 'japanese', 'anime']
 tags: ['Netflix', '配信終了', '2026年9月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

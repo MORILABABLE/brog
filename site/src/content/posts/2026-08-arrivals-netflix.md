@@ -3,6 +3,7 @@ title: '【2026年8月】Netflixで見放題配信が始まった作品199本｜
 description: 'Netflixで2026年8月に見放題配信が始まった作品199本を配信開始日順にまとめました。8月3日にエドワード・ヤン監督の台湾映画3作、8月19日に「落下の解剖学」、8月21日に「アリー/ スター誕生」が配信開始となっています。'
 pubDate: 2026-08-27
 category: 'arrivals'
+genres: ['western', 'japanese', 'anime']
 tags: ['Netflix', '配信開始', '2026年8月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

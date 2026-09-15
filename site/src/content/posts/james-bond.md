@@ -3,6 +3,8 @@ title: '【保存版】「007」シリーズはどこで見れる？見放題配
 description: '「007」シリーズのうち、ダニエル・クレイグがジェームズ・ボンドを演じた5作が、Netflixで見放題配信を終了しました。作品ごとの終了日と、いま他のサービスで観られるかをまとめました。'
 pubDate: 2026-09-15
 category: 'ended'
+genres: ['western']
+genreDetail: 'アクション'
 tags: ['Netflix', '配信終了', 'シリーズ']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

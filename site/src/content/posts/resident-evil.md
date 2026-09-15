@@ -4,6 +4,8 @@ description: '「バイオハザード」シリーズは9月7日時点で8本が
 pubDate: 2026-09-06
 updatedDate: 2026-09-10
 category: 'arrivals'
+genres: ['western']
+genreDetail: 'アクション'
 tags: ['Amazon Prime Video', '見放題配信中', 'シリーズ']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

@@ -3,6 +3,7 @@ title: '【2026年9月配信開始】Amazon Prime Videoの見放題邦画・国�
 description: 'Amazon Prime Videoで2026年9月に見放題配信が始まる予定の邦画・国内ドラマ17本をまとめました。「旅と日々」と「花咲舞が黙ってない」3シリーズが9月1日、「踊る大捜査線捜査資料管理室」が9月4日に配信開始予定です。'
 pubDate: 2026-08-29
 category: 'arrivals'
+genres: ['japanese']
 tags: ['Amazon Prime Video', '配信開始予定', '邦画・国内ドラマ', '2026年9月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

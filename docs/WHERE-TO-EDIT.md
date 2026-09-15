@@ -159,7 +159,8 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                               /category/leaving へ転送している
                             ★ 常設ページのカードはここには出さない（2026-08-27）
     ジャンル一覧          → site/src/pages/genre/[genre].astro
-                            記事は frontmatter の **genre** で拾う（tags ではない）。
+                            記事は frontmatter の **genres** で拾う（tags ではない）。
+                            ★ 並ぶのは**そのジャンル1つだけの記事**。混ざっている記事は入らない。
                             拾い方は site/src/lib/genre-pages.ts
                             ★ GENRE_NAV_ENABLED が false のあいだ**1枚も生成されない**。
                               リンク元（GenreRail.astro）も同じフラグで消えるので404にならない
@@ -273,9 +274,11 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                           並べ方は [...slug].astro の <section class="sources">
     5. タグ             → 記事の frontmatter `tags`
                           ★ ジャンル（アニメ／洋画／邦画）は**タグではなくバッジ**で出す。
-                            見出し下の日付の左、カテゴリバッジの隣。
-                            出どころは frontmatter の `genre`、見た目は
+                            見出し下の日付の左、カテゴリバッジの隣。**全記事に付き、最大3枚並ぶ。**
+                            出どころは frontmatter の `genres` / `genreDetail`、
+                            文言の組み立ては site/src/lib/genres.ts、見た目は
                             global.css の `.badge.genre`
+                            入れ直すコマンドは `npm run genres`（pipeline/cli/genres.ts）
     6. フッター         → site/src/components/Footer.astro（全ページ共通）
 
 **記事本文の中**の定型文（「他のサービスで探す」の前置きなど）は記事側ではなくテンプレート。

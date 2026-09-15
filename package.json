@@ -33,7 +33,8 @@
     "stock": "tsx pipeline/cli/upcoming-stock.ts",
     "retire": "tsx pipeline/cli/retire.ts",
     "unpublish": "tsx pipeline/cli/publish.ts",
-    "publish": "tsx pipeline/cli/publish.ts --show"
+    "publish": "tsx pipeline/cli/publish.ts --show",
+    "genres": "tsx pipeline/cli/genres.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

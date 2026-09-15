@@ -3,6 +3,8 @@ title: '【保存版】「るろうに剣心」シリーズの見放題配信が
 description: '「るろうに剣心」シリーズ6本の配信状況をまとめました。U-NEXTでは実写の最終章2作が9月30日に見放題を終了します。Amazon Prime Videoの実写5作は8月に終了し、Netflixではテレビアニメ版が見放題で配信中です。'
 pubDate: 2026-09-10
 category: 'leaving'
+genres: ['japanese']
+genreDetail: 'アクション'
 tags: ['U-NEXT', 'Netflix', 'Amazon Prime Video', '配信終了', 'シリーズ']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

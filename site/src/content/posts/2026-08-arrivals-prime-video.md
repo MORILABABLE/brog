@@ -3,6 +3,7 @@ title: '【2026年8月】Amazon Prime Videoで見放題配信開始の作品167�
 description: 'Amazon Prime Videoで2026年8月に見放題配信が始まった作品167本を配信開始日順にまとめました。ロボコップシリーズ、ブルース・リーとジャッキー・チェンの香港アクション、8月14日の英語圏の話題作まで網羅しています。'
 pubDate: 2026-08-26
 category: 'arrivals'
+genres: ['western', 'anime', 'japanese']
 tags: ['Amazon Prime Video', '配信開始', '2026年8月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

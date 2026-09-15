@@ -1,6 +1,7 @@
 ---
 import Thumb from './Thumb.astro'
-import { CATEGORIES, GENRES } from '../config'
+import { CATEGORIES } from '../config'
+import { genreBadges } from '../lib/genres'
 import { formatDate, isoDate } from '../utils/date'
 import type { CollectionEntry } from 'astro:content'
 
@@ -10,10 +11,11 @@ interface Props {
 const { post } = Astro.props
 const cat = CATEGORIES[post.data.category]
 /*
- * ジャンルは**持たない記事のほうが多い**（サービス軸の記事は名乗れない）。
- * 無ければバッジごと出さない。詳細は config.ts の GENRES。
+ * ジャンルは**全記事が名乗る**（2026-09-15）。入っているものを全部出すので
+ * 最大3枚（アニメ／洋画／邦画）並ぶ。文言の組み立ては lib/genres.ts。
+ * 収集データと突き合わなかった記事では空になり、バッジごと出ない。
  */
-const genre = post.data.genre ? GENRES[post.data.genre] : undefined
+const genres = genreBadges(post.data)
 
 /**
  * 記事カード。
@@ -35,7 +37,7 @@ const genre = post.data.genre ? GENRES[post.data.genre] : undefined
     <div class="meta">
       {/* data-category で色が変わる。配色は styles/global.css の :root。 */}
       <span class="badge" data-category={cat.slug}>{cat.label}</span>
-      {genre && <span class="badge genre">{genre.label}</span>}
+      {genres.map((label) => <span class="badge genre">{label}</span>)}
       <time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time>
     </div>
     <h2><a href={`/posts/${post.id}`}>{post.data.title}</a></h2>
@@ -56,7 +58,7 @@ const genre = post.data.genre ? GENRES[post.data.genre] : undefined
   }
   .meta {
     display: flex;
-    /* バッジが2つ並ぶので、狭い画面では日付が下に落ちてよい */
+    /* バッジが最大4つ並ぶので、狭い画面では日付が下に落ちてよい */
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 0.7rem;

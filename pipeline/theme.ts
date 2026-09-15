@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parse } from 'yaml'
 import type { SearchLinkConfig } from './core/search-links.ts'
-import type { ArticleType } from './core/article.ts'
+import type { ArticleType, SummarizeGenres } from './core/article.ts'
 import type { UnextConfig } from './sources/unext.ts'
 import type { AnnouncementConfig } from './sources/announcement.ts'
 
@@ -150,6 +150,34 @@ export async function loadTheme(key = activeThemeKey()): Promise<Theme> {
 /** テーマパック内のファイルパス */
 export function themeFile(theme: Theme, ...parts: string[]): string {
   return join(THEME_ROOT, theme.key, ...parts)
+}
+
+/**
+ * テーマパックが提供するジャンルの数え方を読み込む（2026-09-15 追加）。
+ *
+ * 記事の frontmatter に入る `genres` / `genreDetail` を決める関数。
+ * 動的インポートなのは記事タイプと同じ理由で、
+ * **どんな括りがあるか（アニメ／洋画／邦画）はテーマ固有**だから。
+ * パイプラインが知っているのは `GenreSummary` の形だけ
+ * （pipeline/core/article.ts）。
+ *
+ * テーマパックは `genres.ts` から `summarizeGenres` を出す約束。
+ */
+export async function loadSummarizeGenres(theme: Theme): Promise<SummarizeGenres> {
+  const specifier = `../theme-packs/${theme.key}/genres.ts`
+  let mod: { summarizeGenres?: SummarizeGenres }
+  try {
+    mod = (await import(specifier)) as { summarizeGenres?: SummarizeGenres }
+  } catch (err) {
+    throw new Error(
+      `テーマ ${theme.key} のジャンル判定を読み込めません（${THEME_ROOT}/${theme.key}/genres.ts）: ` +
+        (err instanceof Error ? err.message : String(err)),
+    )
+  }
+  if (!mod.summarizeGenres) {
+    throw new Error(`${THEME_ROOT}/${theme.key}/genres.ts が summarizeGenres を出していません`)
+  }
+  return mod.summarizeGenres
 }
 
 /**

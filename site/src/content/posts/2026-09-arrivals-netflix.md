@@ -3,6 +3,7 @@ title: '【2026年9月】Netflixで見放題配信が始まった作品10本｜�
 description: 'Netflixで2026年9月に見放題配信が始まった作品10本をまとめました。累計333万部の漫画を原作とするアニメ「リィンカーネーションの花弁」が9月3日、「ストロベリームーン 余命半年の恋」が9月4日に配信開始しています。'
 pubDate: 2026-09-05
 category: 'arrivals'
+genres: ['western', 'anime', 'japanese']
 tags: ['Netflix', '配信開始', '2026年9月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

@@ -3,6 +3,7 @@ title: '【2026年9月】Amazon Prime Videoで見放題配信が始まった作�
 description: 'Amazon Prime Videoで2026年9月に見放題配信が始まった作品29本をまとめました。「バイオハザード」シリーズ6作が9月1日から4日にそろい、「羊たちの沈黙」「大脱走」やクリストファー・ノーラン監督作3本も加わっています。'
 pubDate: 2026-09-05
 category: 'arrivals'
+genres: ['western', 'japanese']
 tags: ['Amazon Prime Video', '配信開始', '2026年9月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

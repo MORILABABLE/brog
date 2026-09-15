@@ -3,6 +3,8 @@ title: '【保存版】「ミッション:インポッシブル」シリーズ�
 description: '「ミッション:インポッシブル」シリーズのうち5本が、9月15日時点でAmazon Prime Videoの見放題で配信中です。Disney+では6本の見放題配信が終了しました。作品ごとの配信状況を表にまとめました。'
 pubDate: 2026-09-15
 category: 'arrivals'
+genres: ['western']
+genreDetail: 'アクション'
 tags: ['Amazon Prime Video', 'Disney+', '見放題配信中', 'シリーズ']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

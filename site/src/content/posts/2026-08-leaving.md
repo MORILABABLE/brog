@@ -3,6 +3,7 @@ title: '【2026年8月】Netflix・Prime Videoで配信終了する作品32本�
 description: 'ウェス・アンダーソン4作品が8月11日、カンフー・パンダ3部作が8月14日に一斉終了。Prime Videoでも8月15日に8作品が終了します。終了日順にまとめました。'
 pubDate: 2026-08-09
 category: 'ended'
+genres: ['western', 'japanese']
 tags: ['Netflix', 'Amazon Prime Video', '配信終了済み', '2026年8月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

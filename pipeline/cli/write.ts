@@ -47,7 +47,7 @@
  */
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { loadArticleTypes, loadTheme, type Theme } from '../theme.ts'
+import { loadArticleTypes, loadSummarizeGenres, loadTheme, type Theme } from '../theme.ts'
 import { loadLedger, readAllEvents, saveLedger, type Ledger } from '../core/events.ts'
 import {
   currentYearMonth,
@@ -79,6 +79,7 @@ import {
   type ArticleContext,
   type ArticleType,
   type ArticleVariant,
+  type GenreSummary,
 } from '../core/article.ts'
 import {
   categoryLabel,
@@ -302,24 +303,45 @@ async function existingTitles(excludeSlug: string): Promise<string[]> {
 /**
  * 記事の frontmatter に入れるジャンル（`anime` / `western` / `japanese`）。
  *
- * ■ 軸で決める。バリアントの有無では決めない
- * ジャンルを名乗るのは**軸がジャンルの記事タイプだけ**（`ArticleType.axis`）。
- * サービス軸の記事にもバリアントはあるが、あちらのバリアントはサービスなので、
- * `recipe.variant.key` をそのまま渡すと `genre: 'netflix'` になる。
- * **`axis` を見ずにバリアントを渡さないこと。**
+ * ■ 軸ではなく**中身**で決める（2026-09-15 に変えた）
+ * 以前はジャンル軸の記事タイプだけが `--genre` の値をそのまま1つ名乗り、
+ * サービス軸の記事は何も名乗らなかった（1つに絞ると嘘になるため）。
+ * 結果として**大半の記事がジャンルのバッジを持たない**状態になっていた。
+ *
+ * いまは記事に入っている作品を数えて、**入っているものを全部**名乗る。
+ * 数えるのはテーマパック（`summarizeGenres()`）。ここは呼ぶだけ。
+ *
+ * ■ ジャンル軸の記事は、その軸のジャンルを必ず含む
+ * `--genre anime` で書いた記事に `anime` が入らないのは、
+ * **絞り込みか判定のどちらかが壊れている**ということ。黙って別のジャンルを
+ * 名乗らせると気づけないので、軸のジャンルを先頭に立てて必ず入れる。
+ * （数えた結果が空になる記事でも、軸があればそれが答えになる）
  *
  * ■ ジャンル軸なのにジャンルが無い記事は書き出さない
- * ジャンル軸の記事タイプを新しく足したときに、`variants` を宣言し忘れると
- * ここが undefined になり、**ジャンルの付いていない記事が黙って1本できる**。
- * 黙って落とすと、サイト側でも気づけない（`genre` は optional なので
- * スキーマ検証は通ってしまう）。ここで止める。
+ * ジャンル軸の記事タイプを新しく足したときに `variants` を宣言し忘れると
+ * ここが空になる。黙って落とすとサイト側でも気づけないので、ここで止める。
  *
  * ★ キーの値はテーマパックが決める（theme-packs/…/genres.ts の `GENRES`）。
  *   site/src/content.config.ts の enum と揃っていない値を入れると
  *   **サイトのビルドが落ちる。それが検知の仕組み**なので、ここでは値を検査しない。
  */
-function articleGenre(recipe: Recipe): string | undefined {
-  if (recipe.type.axis !== 'genre') return undefined
+async function articleGenres(
+  recipe: Recipe,
+  items: ChangeEvent[],
+  theme: Theme,
+): Promise<GenreSummary> {
+  const summarize = await loadSummarizeGenres(theme)
+  const counted = summarize(items.map((e) => e.work))
+
+  if (recipe.type.axis !== 'genre') {
+    if (counted.genres.length === 0) {
+      console.log(
+        '  [警告] 作品からジャンルを1つも判定できませんでした。' +
+          'この記事にはジャンルのバッジが出ません。',
+      )
+    }
+    return counted
+  }
 
   const key = recipe.variant?.key
   if (!key) {
@@ -333,7 +355,10 @@ function articleGenre(recipe: Recipe): string | undefined {
     )
     process.exit(1)
   }
-  return key
+
+  // 軸のジャンルを先頭に。数えた結果に他のジャンルが出ていれば後ろに残す
+  const genres = [key, ...counted.genres.filter((g) => g !== key)]
+  return { genres, detail: genres.length === 1 ? counted.detail : undefined }
 }
 
 /**
@@ -391,10 +416,12 @@ async function finalize(
   const tags = type.tags(items, ctx)
   // 特報のようにカテゴリが実行時に決まる記事タイプがある（ArticleType.categoryOf）
   const category = type.categoryOf?.(ctx, items) ?? type.category
+  const { genres, detail } = await articleGenres(recipe, items, theme)
   const md = buildMarkdown({
     parsed,
     category,
-    genre: articleGenre(recipe),
+    genres,
+    genreDetail: detail,
     tags,
     sources: sourcesFor(items),
     dataAsOf: now,

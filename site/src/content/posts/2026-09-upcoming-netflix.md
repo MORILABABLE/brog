@@ -3,6 +3,7 @@ title: '【2026年9月配信開始】Netflixの見放題作品20本｜ファウ�
 description: 'Netflixで2026年9月に見放題配信が始まる予定の作品20本を配信開始日順にまとめました。9月1日から9月11日までの日程が公表されており、9月8日と9月10日はそれぞれ4本が同じ日に配信開始予定です。'
 pubDate: 2026-08-30
 category: 'arrivals'
+genres: ['western']
 tags: ['Netflix', '配信開始予定', '2026年9月']
 sources:
   - label: '作品タイトル（Wikidata・CC0）'

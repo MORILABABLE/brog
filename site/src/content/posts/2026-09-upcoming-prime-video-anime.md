@@ -3,6 +3,7 @@ title: '【2026年9月配信開始】Amazon Prime Videoの見放題アニメ10�
 description: 'Amazon Prime Videoで2026年9月に見放題配信が始まる予定のアニメ10本をまとめました。累計1,000万部の「ゆるキャン△」3期分が9月1日、米津玄師の主題歌で知られる「チェンソーマン」の劇場版が9月19日に配信開始予定です。'
 pubDate: 2026-08-29
 category: 'arrivals'
+genres: ['anime']
 tags: ['Amazon Prime Video', '配信開始予定', 'アニメ', '2026年9月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

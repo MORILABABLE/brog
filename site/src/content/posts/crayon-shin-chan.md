@@ -3,6 +3,7 @@ title: '【保存版】「クレヨンしんちゃん」シリーズの見放題
 description: '「クレヨンしんちゃん」の劇場版が、Netflixに27本、Amazon Prime Videoに9本そろっています。『嵐を呼ぶ モーレツ!オトナ帝国の逆襲』や、シリーズで初めて賞を受けた『嵐を呼ぶ アッパレ!戦国大合戦』も見放題です。'
 pubDate: 2026-09-10
 category: 'arrivals'
+genres: ['anime']
 tags: ['Netflix', 'Amazon Prime Video', '見放題配信中', 'シリーズ']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

@@ -3,6 +3,7 @@ title: '【2026年9月配信開始】Amazon Prime Videoの見放題洋画・海�
 description: 'Amazon Prime Videoで2026年9月に見放題配信が始まる予定の洋画・海外ドラマ53本をまとめました。クリストファー・ノーラン監督作7本と「バイオハザード」シリーズ11作が9月1日、「ウィキッド 永遠の約束」が9月27日に配信開始予定です。'
 pubDate: 2026-08-29
 category: 'arrivals'
+genres: ['western']
 tags: ['Amazon Prime Video', '配信開始予定', '洋画・海外ドラマ', '2026年9月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

@@ -3,6 +3,7 @@ title: '【2026年9月】Disney+で見放題配信が終了した作品48本【9
 description: 'Disney+で48本の見放題配信が終了しました。劇場版「名探偵コナン」22作とリージェンシー・エンタープライズ制作の7作が中心です。終了した全48本を表にまとめ、他サービスの検索リンクを掲載します。'
 pubDate: 2026-09-10
 category: 'ended'
+genres: ['anime', 'western']
 tags: ['Disney+', '配信終了済み', '2026年9月']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'

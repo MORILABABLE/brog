@@ -1,7 +1,7 @@
 ---
 import Thumb from './Thumb.astro'
-import { CATEGORIES } from '../config'
-import { EVERGREEN_PAGES, evergreenStamp, evergreenSummary } from '../lib/evergreen'
+import { CATEGORIES, EVERGREEN_BADGE } from '../config'
+import { EVERGREEN_PAGES } from '../lib/evergreen'
 import { serviceImage } from '../lib/images'
 import { publishablePeople, topPeople } from '../lib/people'
 
@@ -112,12 +112,13 @@ const peopleTotal = publishablePeople().length
         EVERGREEN_PAGES.map((p) => {
           const isCurrent = p.href === current
           /*
-           * ★ いつ更新された一覧なのかを名前の頭に出す（2026-08-25）。
-           *   ここは「最新の一覧」を名乗る枠なので、日付が無いと
-           *   読者にはいつの情報か分からない。
-           *   日付は `evergreenStamp()` が組む（ページ側の「時点」と対になる）。
+           * ★ **更新日（`【2026年9月14日更新】`）は外した**（2026-09-15）。
+           *   2026-08-25 に「いつ時点の一覧か」を伝えるために入れたものだが、
+           *   その役目は隣に立てた「随時更新」のバッジが引き取った。
+           *   日付そのものはリンク先の見出し（`evergreenTitle()`）が必ず出しており、
+           *   カード3行のうち1行を使って枠の外で先に言う必要が無い。
+           *   **書き戻さないこと。**戻すならバッジとどちらかにする。
            */
-          const stamp = evergreenStamp(evergreenSummary(p).dataAsOf)
           const Inner = (
             <>
               {/*
@@ -136,10 +137,21 @@ const peopleTotal = publishablePeople().length
                 initial={p.label.charAt(0)}
               />
               <span class="body">
-                <span class="badge" data-category={p.category}>
-                  {CATEGORIES[p.category].label}
+                {/*
+                  ★ **カテゴリと「随時更新」を1行に並べる**（2026-09-15 追加）。
+                    この枠に並んでいるのは常設ページだけなのに、カードには
+                    カテゴリバッジしか無く、記事カード（PostCard）と同じ見た目だった。
+                    一覧の中の常設カード（EvergreenCard）には最初から付いているので、
+                    **同じものへの入口なのに枠と一覧で名乗りが違う**状態になっていた。
+                    文言と理由は config.ts の EVERGREEN_BADGE、色は
+                    styles/global.css の .badge.evergreen。
+                */}
+                <span class="tags">
+                  <span class="badge" data-category={p.category}>
+                    {CATEGORIES[p.category].label}
+                  </span>
+                  <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
                 </span>
-                {stamp && <span class="stamp">{stamp}</span>}
                 <span class="name">{p.shortLabel}</span>
               </span>
             </>
@@ -381,14 +393,30 @@ const peopleTotal = publishablePeople().length
   .rail-card {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    /* サムネイルと文字のすきま。ここも 0.1rem 詰めて文字の幅に回している（上の★） */
+    gap: 0.5rem;
     /*
-     * サムネイル 48px ＋ 上下padding で 64px。
-     * 文字が2行になってもこの高さを下回らせないことで、
-     * カードの高さが揃い、縦の並びが乱れない。
+     * カード1枚の高さ。**79px は右の枠（シリーズ配信）の78pxに合わせた値**
+     * （2026-09-15。実測で左79.5px / 右78.0px）。
+     *
+     * ★ もともとは「サムネイル48px ＋ 上下padding」で 64px と書いてあったが、
+     *   実際の高さを決めていたのは**文字の3行**（バッジ・更新日・サービス名）で、
+     *   カードは常に79.5pxあった。更新日の行を外した（上の `Inner` の★）ときに
+     *   64pxまで縮み、**左の枠だけカードが小さくなって左右の並びが崩れた。**
+     *   高さの根拠を文字の行数からこの値に移して、明示的に揃える。
+     *
+     * ★ **右の枠を変えたらここも見ること。** 左右で高さが違うと、
+     *   本文を挟んだ2列の横の線がそろわない。
+     * ★ サムネイルは48pxのまま。60px（右の枠と同じ）にすると横幅を12px食い、
+     *   下の `.tags` のバッジ2枚が1行に収まらなくなる。
      */
-    min-height: 64px;
-    padding: 0.45rem 0.6rem;
+    min-height: 79px;
+    /*
+     * ★ 横の余白は 0.45rem（2026-09-15 に 0.6rem から詰めた）。
+     *   バッジ2枚を1行に収めるために、文字が使える幅を左右で 4.8px 稼いでいる。
+     *   下の `.tags` の計算はこの値を前提にしている。戻すなら一緒に見直すこと。
+     */
+    padding: 0.45rem;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -410,18 +438,49 @@ const peopleTotal = publishablePeople().length
     gap: 0.25rem;
     min-width: 0;
   }
+  /*
+   * バッジ2枚を**1行に収めるための寸法**（2026-09-15）。
+   *
+   * ■ 使える幅（枠がいちばん狭い1200px。それ未満では枠ごと消える）
+   *   列232px − 枠の横padding 28.8 ＝ カード203.2px
+   *   − 枠線2 − カードの横padding 14.4 − サムネ48 − すきま8 ＝ **約130px**
+   *
+   * ■ 要る幅
+   *   「配信終了予定」6字 ＋ 「随時更新」4字 ＝ 10字。日本語は1字＝1em なので
+   *   0.62rem（9.92px）で約99px。バッジの横padding（0.26rem×2×2枚）と
+   *   すきま3.2px を足して**約119px**。**余りは約11px（9%）。**
+   *
+   * ★ **既定の0.76remでも0.68remでも入らない**（それぞれ約143px／約133px要る）。
+   *   縮めるのは**この枠だけ**。一覧の中のカード（PostCard / EvergreenCard）は
+   *   本文幅736pxの中にあるので、既定のまま3枚でも4枚でも並ぶ。
+   * ★ 9%の余りは**フォントの実装差のため**に空けてある。
+   *   最初 0.62rem で計算どおり詰めたら Chromium では1行に入ったのに、
+   *   Edge では「配信終了予定」の2枚だけ2行になった（2026-09-15 の実測）。
+   *   字の幅は環境で数%動く。**詰め直すときはここまで削らないこと。**
+   * ★ それでも折り返しは許してある（`flex-wrap`）。読者がブラウザの
+   *   最小文字サイズを上げていることもある。はみ出すより2行になるほうがよい。
+   */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.2rem;
+  }
   .badge {
-    font-size: 0.68rem;
-    padding: 0.05rem 0.45rem;
+    font-size: 0.62rem;
+    padding: 0.05rem 0.26rem;
+  }
+  /* 枠線の1pxぶん padding を引く。引かないと隣のバッジより2px高くなる */
+  .badge.evergreen {
+    padding: calc(0.05rem - 1px) calc(0.26rem - 1px);
   }
   /*
    * ★ サービス名だけ左に 0.4rem 寄せる。**見た目を揃えるための補正。**
    *
    * 3行はどれも同じ x から始まっているのに、文字が出てくる位置だけずれる。
-   *   バッジ … 背景の内側に padding(0.45rem) があるので、文字は 7.2px 内側から
-   *   更新日 … `【` は字面が右半分に寄っている全角なので、インクは 6px 内側から
+   *   バッジ … 背景の内側に padding があるので、文字はその幅だけ内側から
    *   サービス名 … 補正が無いので 0px（＝この行だけ左に飛び出して見える）
-   * 実測値（Edge・1280px）で確認したうえで、上2行の中間に合わせてある。
+   * 実測値（Edge・1280px）で確認したうえで合わせてある。
    */
   .name {
     padding-left: 0.4rem;
@@ -431,14 +490,14 @@ const peopleTotal = publishablePeople().length
     color: var(--text);
   }
   /*
-   * 更新日。**サービス名より小さく、バッジと同じ大きさにする。**
-   * ここの主役はサービス名なので、同じ大きさで並べると日付のほうが
-   * 文字数が多いぶん目立ってしまい、カードの主従が崩れる。
-   * バッジ（0.68rem）に揃えることで、日付とカテゴリが同じ「補足」の段に見える。
+   * カードの小さい行。**いま使っているのは最下段の1枚だけ**（`【はじめての方へ】`）。
+   * 常設ページのカードでは更新日をここに出していたが、2026-09-15 に外した
+   * （上の `Inner` の説明）。
    *
-   * **日付の途中では折り返させない。** 日本語は原則どこでも折り返せるので、
-   * 指定しないと「【2026年8月25」／「日更新】Netflix」のように割れる。
-   * この大きさなら枠幅（1200px時点で約158px）に1行で収まる。
+   * ★ 主役は下の太い行（`.name`）。同じ大きさで並べると文字数の多いこちらが
+   *   目立って主従が崩れるので、バッジと同じ「補足」の段に見える大きさにする。
+   * ★ **途中で折り返させない。** 日本語は原則どこでも折り返せるので、
+   *   指定しないと「【はじめ」／「ての方へ】」のように割れる。
    */
   .stamp {
     display: block;

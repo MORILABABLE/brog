@@ -10,7 +10,7 @@
  * 長いMarkdown本文をJSON文字列に入れるとエスケープ事故が起きやすい。
  * 区切り記号方式なら本文に何が入っても壊れない。
  */
-import type { ChangeEvent } from '../sources/types.ts'
+import type { ChangeEvent, Work } from '../sources/types.ts'
 import type { Theme } from '../theme.ts'
 import type { Ledger } from './events.ts'
 import type { VerifyIssue } from './verify.ts'
@@ -395,6 +395,24 @@ export function parseArticle(raw: string): ParsedArticle | null {
   return { title, description, body }
 }
 
+/**
+ * 記事1本ぶんのジャンル。**テーマパックが数えて返す形**（2026-09-15 追加）。
+ *
+ * 「アニメ」「洋画」という括りは日本の読者にとっての区分で、パイプラインが
+ * 知るべきことではない（theme-packs/streaming-jp/genres.ts の冒頭と同じ理由）。
+ * パイプラインはこの形だけを知っていて、中身の決め方はテーマパックに任せる。
+ * 読み込みは `pipeline/theme.ts` の `loadSummarizeGenres()`。
+ */
+export interface GenreSummary {
+  /** 記事に入っているジャンル。**本数の多い順**。1つも決まらなければ空 */
+  genres: string[]
+  /** 詳細ジャンル（「洋画(SF)」の括弧の中）。表示する文字そのもの */
+  detail?: string
+}
+
+/** 作品の並びから、その記事が名乗るジャンルを決める。テーマパックが実装する。 */
+export type SummarizeGenres = (works: readonly Work[]) => GenreSummary
+
 // --- Markdown の組み立て -------------------------------------------------
 
 export interface Source {
@@ -406,15 +424,25 @@ export interface BuildOptions {
   parsed: ParsedArticle
   category: Category
   /**
-   * 記事のジャンル（`anime` / `western` / `japanese`）。
+   * 記事のジャンル（`anime` / `western` / `japanese`）。**入っているものを全部**。
    *
-   * ★ **ジャンル軸（`axis: 'genre'`）の記事にだけ入れる。**
-   *   サービス軸の記事はアニメも洋画も邦画も含んでいるので、
-   *   1つのジャンルを名乗らせてはいけない。省略すれば frontmatter に行が出ない。
-   *   値は site/src/content.config.ts の enum と
+   * ★ **1つに絞らない**（2026-09-15 に単数の `genre` から変えた）。
+   *   サービス軸の記事はアニメも洋画も邦画も含んでいるので、1つだけ名乗らせると
+   *   嘘になる。かといって名乗らせないと大半の記事がジャンルを持たないままになる。
+   *   **記事に入っている作品を数えて、入っているものを全部並べる。**
+   *   数えるのはテーマパック（theme-packs/…/genres.ts の `summarizeGenres()`）で、
+   *   ここは受け取った値を書くだけ。
+   *
+   * ★ 値は site/src/content.config.ts の enum と
    *   theme-packs/streaming-jp/genres.ts の `GenreKey` に揃っていること。
+   * ★ 空なら frontmatter に行が出ない（サイト側はバッジを出さないだけ）。
    */
-  genre?: string
+  genres?: readonly string[]
+  /**
+   * 詳細ジャンル（「洋画(SF)」の括弧の中）。**表示する文字そのもの。**
+   * 基本ジャンルが1つの記事だけが持つ。決め方は `summarizeGenres()`。
+   */
+  genreDetail?: string
   tags: string[]
   sources: Source[]
   /** 配信情報の基準日 */
@@ -435,8 +463,9 @@ export function buildMarkdown(o: BuildOptions): string {
     `description: ${yamlString(o.parsed.description)}`,
     `pubDate: ${formatIsoDate(o.pubDate.toISOString(), o.offsetMinutes)}`,
     `category: '${o.category}'`,
-    // ジャンル軸の記事だけが名乗る。持たない記事では行ごと消える
-    ...(o.genre ? [`genre: '${o.genre}'`] : []),
+    // 数えられなかった記事では行ごと消える（サイト側は optional）
+    ...(o.genres?.length ? [`genres: [${o.genres.map((g) => `'${g}'`).join(', ')}]`] : []),
+    ...(o.genreDetail ? [`genreDetail: '${o.genreDetail}'`] : []),
     `tags: [${o.tags.map(yamlString).join(', ')}]`,
     'sources:',
     ...o.sources.flatMap((s) => [`  - label: ${yamlString(s.label)}`, `    url: '${s.url}'`]),

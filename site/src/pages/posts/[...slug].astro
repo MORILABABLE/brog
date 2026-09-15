@@ -6,7 +6,8 @@ import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import PrimeCta from '../../components/PrimeCta.astro'
 import AfbCta from '../../components/AfbCta.astro'
-import { CATEGORIES, GENRES, SERVICE_HUBS, hubFor } from '../../config'
+import { CATEGORIES, SERVICE_HUBS, hubFor } from '../../config'
+import { genreBadges, soleGenre } from '../../lib/genres'
 import { primeAd } from '../../lib/prime-ad'
 import { formatDate, isoDate } from '../../utils/date'
 
@@ -19,10 +20,15 @@ const { post } = Astro.props
 const { Content } = await render(post)
 const cat = CATEGORIES[post.data.category]
 /*
- * ジャンル（アニメ／洋画／邦画）。**ジャンル軸の記事だけが持つ**ので、
- * 無ければバッジを出さない。詳細は config.ts の GENRES。
+ * ジャンル（アニメ／洋画／邦画）。**全記事が名乗る**（2026-09-15）。
+ * 入っているものを全部出すので最大3枚並ぶ。組み立ては lib/genres.ts。
+ *
+ * ★ `soleGenre` は別物。**1つのジャンルだけを名乗れる記事**のときだけ値が入り、
+ *   U-NEXT のLP選び（lib/unext-ad.ts）に渡す。混ざっている記事を
+ *   先頭のジャンルで代表させると、アニメのLPに洋画の読者を送ることになる。
  */
-const genre = post.data.genre ? GENRES[post.data.genre] : undefined
+const genres = genreBadges(post.data)
+const lpGenre = soleGenre(post.data)
 /*
  * パンくずの行き先は**カテゴリではなくハブ**。
  * 「配信終了済み」の記事は /category/ended ではなく /category/leaving に載っている
@@ -95,8 +101,8 @@ const adPageText = [post.data.title, post.data.description, post.body ?? ''].joi
     <div class="meta">
       {/* 記事単体で開かれたときも、色で種別が分かるようにする。 */}
       <span class="badge" data-category={cat.slug}>{cat.label}</span>
-      {/* ジャンル軸の記事だけ。何を観る話かが、本文を読む前に分かるようにする */}
-      {genre && <span class="badge genre">{genre.label}</span>}
+      {/* 何を観る話かが、本文を読む前に分かるようにする */}
+      {genres.map((label) => <span class="badge genre">{label}</span>)}
       <time datetime={isoDate(post.data.pubDate)}>公開 {formatDate(post.data.pubDate)}</time>
       {
         post.data.updatedDate && (
@@ -150,7 +156,7 @@ const adPageText = [post.data.title, post.data.description, post.body ?? ''].joi
     <AfbCta
       spot="cta"
       category={post.data.category}
-      genre={post.data.genre}
+      genre={lpGenre}
       pageText={adPageText}
       asOf={post.data.dataAsOf}
       services={post.data.tags}

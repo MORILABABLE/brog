@@ -201,19 +201,12 @@ export function evergreenTitle(titleBase: string, dataAsOf: Date | null): string
   return `${titleBase}【${md}更新】`
 }
 
-/**
- * 常設枠（左の枠）に出す名前の頭。`【2026年8月25日更新】`
- *
- * ★ タイトル側（`evergreenTitle`）と**言葉は「更新」で揃えてある**
- *   （2026-09-06 に、タイトル側の「時点」を「更新」へ寄せた）。
- *   違うのは位置と年の有無だけ — こちらは枠の**頭**に出し、年も残す。
- *   枠は検索結果に出ないので文字数の制約が無く、正確さを優先できる。
- *
- * 基準日が取れないときは空文字を返す（何も出さない）。
+/*
+ * ★ `evergreenStamp()`（左の枠に出していた `【2026年8月25日更新】`）は
+ *   **2026-09-15 に消した。** 枠のカードには「随時更新」のバッジを立て、
+ *   日付はリンク先の見出し（上の `evergreenTitle`）だけが出す形にした。
+ *   経緯は components/LeftRail.astro の該当箇所。
  */
-export function evergreenStamp(dataAsOf: Date | null): string {
-  return dataAsOf ? `【${formatDate(dataAsOf)}更新】` : ''
-}
 
 /**
  * 常設ページ1枚ぶんの件数と基準日。

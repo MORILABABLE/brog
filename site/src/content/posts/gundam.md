@@ -3,6 +3,7 @@ title: '【保存版】「ガンダム」シリーズの見放題配信中の作
 description: '「ガンダム」シリーズ30本が、Amazon Prime Video・Netflix・Disney+の見放題で配信中です。1979年の第1作から2026年公開の最新作まで、どの作品をどこで観られるかを一覧にまとめました。'
 pubDate: 2026-09-14
 category: 'arrivals'
+genres: ['anime']
 tags: ['Amazon Prime Video', 'Netflix', 'Disney+', '見放題配信中', 'シリーズ']
 sources:
   - label: '配信情報は Streaming Availability API by Movie of the Night 提供'
