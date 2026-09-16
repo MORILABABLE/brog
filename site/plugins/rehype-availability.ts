@@ -41,8 +41,13 @@
  *     ×を省くと「調べたうえで無い」と「調べていない」の区別が付かない
  *   - **台帳に無い作品は — （未確認）。× にしない。**
  *     行そのものを出さないと、読者には「表示されていない」としか見えない
- *   - **U-NEXT / Hulu / DMM TV を出さない。** 在庫データを持っていない
+ *   - **Hulu / DMM TV を出さない。** 在庫データを持っていない
  *     （docs/CROSS-SERVICE.md 9-3）。`SERVICES` に入れないことで担保している
+ *   - **U-NEXT は ○ だけ出す**（2026-09-16 に方針が変わった）。
+ *     `npm run unext:catalog` が**歩き終えたジャンル**については在庫を持つように
+ *     なったため（docs/OWN-LEDGER.md 6-3）。ただし歩いていないジャンルの作品は
+ *     あっても引けないので、**× も —（未確認）も出さない。**
+ *     規律は `src/lib/unext-stock.ts` と、下の `UNEXT_SERVICE` にある
  *   - **並びを紹介料の高い順にしない**（docs/AFFILIATE.md 7節。ポリシーにも明記）
  *
  * ■ 落ちないこと
@@ -79,6 +84,7 @@ import {
   type WorkMarks,
 } from '../src/lib/availability.ts'
 import { amazonVideoLink, otherServiceLinks } from '../src/lib/search-links.ts'
+import { unextStockFor, type UnextStock } from '../src/lib/unext-stock.ts'
 
 /** HAST のノード。必要な形だけ（rehype-work-links と同じ方針）。 */
 interface Node {
@@ -99,6 +105,36 @@ const SERVICES: { key: string; label: string }[] = [
   { key: 'disney-plus', label: 'Disney+' },
   { key: 'apple-tv', label: 'Apple TV+' },
 ]
+
+/**
+ * **5社目の U-NEXT**（2026-09-16 追加）。上の4社とは根拠も規律も違うので分けてある。
+ *
+ * ■ 何が変わったか
+ * 冒頭の「絶対に守ること」にあった **「U-NEXT を出さない。在庫データを持っていない」**
+ * は、`npm run unext:catalog` が**歩き終えたジャンルについては成り立たなくなった。**
+ * 索引の読み方と、そこで守る5つの決まりは `src/lib/unext-stock.ts` にある。
+ *
+ * ■ ★ 4社と違うところ（混ぜて考えないこと）
+ *
+ *   1. **○ しか出ない。** × も △ も —（未確認）も出さない。
+ *      歩いていないジャンルの作品は「あっても引けない」ので、
+ *      **不在を言えるだけの根拠が無い**（`unext-stock.ts` 冒頭の 1・2）。
+ *      4社は `?? 'none'` で × に落ちるが、**ここを同じにしないこと。**
+ *   2. **ポイント作品は ○ にしない**（ガイドライン【4】）。索引側で落としている。
+ *   3. **並びは定義順のいちばん最後**（`i` に `SERVICES.length` を渡す）。
+ *      印の強さで先に来ることはあるが、それは読者の行動で決まる順であって
+ *      紹介料の順ではない（docs/AFFILIATE.md 7節）。
+ *
+ * ■ ★ 出すのは記事だけ
+ * 作品ページ・常設ページには出さない（docs/GROWTH.md 2-3・2026-09-16 に運用者へ確認）。
+ * このプラグインは記事の本文しか通らないので、**ここに置くこと自体が担保**になっている。
+ */
+const UNEXT_SERVICE = { key: 'u-next', label: 'U-NEXT' }
+
+/** ○ の送り先。**afb のLPではなく作品名の検索**（`findChips` と同じ考え方）。 */
+function unextSearchUrl(title: string): string | undefined {
+  return otherServiceLinks(title).find((l) => l.label === 'U-NEXT')?.url
+}
 
 const text = (v: string): Node => ({ type: 'text', value: v })
 
@@ -420,6 +456,45 @@ function findChips(title: string, own: string | undefined): Node[] {
 }
 
 /**
+ * U-NEXT の ○ を1枚だけ描く（4社の印が1つも引けなかった行で使う）。
+ *
+ * ★ **見た目は4社の印とまったく同じ**（`avail-item` / `data-mark`）。
+ *   根拠が違うことは凡例の「◯月◯日時点」が引き受けるので、
+ *   ここで別の見た目を作らないこと。読者にとっては同じ「○ 見放題」でよい。
+ */
+function unextChip(title: string, _stock: UnextStock): Node {
+  const url = unextSearchUrl(title)
+  const inner: Node[] = [
+    {
+      type: 'element',
+      tagName: 'span',
+      properties: { className: ['avail-mark'], 'aria-hidden': 'true' },
+      children: [text(MARK_SYMBOL.subscription)],
+    },
+    text(UNEXT_SERVICE.label),
+  ]
+  return {
+    type: 'element',
+    tagName: 'span',
+    properties: {
+      className: ['avail-item'],
+      'data-mark': 'subscription',
+      title: `${UNEXT_SERVICE.label}（${MARK_LABEL.subscription}）`,
+    },
+    children: [
+      url
+        ? {
+            type: 'element',
+            tagName: 'a',
+            properties: { href: url, className: ['avail-link'] },
+            children: inner,
+          }
+        : { type: 'element', tagName: 'span', properties: {}, children: inner },
+    ],
+  }
+}
+
+/**
  * 1作品ぶんの「どこで観られるか」の行。**元の行の直下に足す。**
  *
  * ★ `colspan` は列を落としたあとの列数に合わせること。ずれると行が崩れる。
@@ -430,6 +505,7 @@ function availRow(
   colspan: number,
   own: string | undefined,
   title: string,
+  unext: UnextStock | undefined,
 ): Node {
   /*
    * ★ **台帳に無い作品は、印を4つ並べずに「— 未確認」1つで済ませる。**
@@ -446,6 +522,26 @@ function availRow(
    *     （src/lib/availability.ts の「絶対に守ること」2）。
    */
   if (!marks) {
+    /*
+     * ★ **4社が分からなくても、U-NEXT が引けたなら答えはある**（2026-09-16 追加）。
+     *
+     *   ここへ来る行は、それまで **「— 未確認」＋「他で探す」**だけだった。
+     *   U-NEXT の月次記事がまるごとこれで、実測160行すべてが行き止まり
+     *   （`findOnlyRow` の説明）。索引が答えを持っているなら、
+     *   **「分からない」ではなく答えを出す。**
+     *
+     *   ★ **4社ぶんの「—」は並べない。** 分からないことに変わりはないが、
+     *     答えが1つ出ている行に「—」を4つ足しても読者が得るものは無い
+     *     （下の「台帳に無い作品は…」と同じ理屈）。
+     *   ★ **「他で探す」も足さない。** ○ が1つでもあるなら答えは行の中にある、
+     *     という `findChips` の決まりをそのまま通す。
+     */
+    if (unext) {
+      return availCell(
+        [availLabel('live'), unextChip(title, unext)],
+        colspan,
+      )
+    }
     const items: Node[] = [availLabel('unknown')]
     items.push({
       type: 'element',
@@ -513,11 +609,21 @@ function availRow(
    *   終了予定の行は終了日まで見放題なので ●、終了済みの行は台帳が見放題を
    *   返さなくなるので自然に △ か × に落ちる（2026-09-15・運用者の指定）。
    */
-  const shown = SERVICES.map((svc, i) => ({
-    svc,
-    i,
-    mark: (marks.marks.get(svc.key) ?? 'none') as Mark,
-  })).sort((a, b) => RANK[a.mark] - RANK[b.mark] || a.i - b.i)
+  /*
+   * ★ **U-NEXT は5社目として混ぜるが、`?? 'none'` には落とさない**（2026-09-16）。
+   *   引けなかったら**行に出さない**（`UNEXT_SERVICE` の説明の 1）。
+   *   4社と同じ `.map()` に入れると × が付いてしまうので、足すのは引けたときだけ。
+   */
+  const shown = [
+    ...SERVICES.map((svc, i) => ({
+      svc,
+      i,
+      mark: (marks.marks.get(svc.key) ?? 'none') as Mark,
+    })),
+    ...(unext
+      ? [{ svc: UNEXT_SERVICE, i: SERVICES.length, mark: 'subscription' as Mark }]
+      : []),
+  ].sort((a, b) => RANK[a.mark] - RANK[b.mark] || a.i - b.i)
 
   /*
    * ★ ラベルの色は**その行に実際に並ぶ印**から決める（`shown`）。
@@ -535,10 +641,17 @@ function availRow(
      *   落とし先の規則は `work-links.ts` の `availabilityUrl` に1か所で置いた。
      *   ここで host を見て分岐を足さないこと（規則が2つに割れる）。
      */
+    /*
+     * ★ **U-NEXT だけ送り先が違う。** 在庫台帳（配信API）に無い社なので
+     *   `marks.links` も `availabilityUrl` も持っていない。作品名の検索へ渡す
+     *   （`unextSearchUrl`）。
+     */
     const url =
-      mark === 'subscription' || mark === 'paid'
-        ? availabilityUrl(svc.key, marks.links.get(svc.key), title)
-        : undefined
+      svc.key === UNEXT_SERVICE.key
+        ? unextSearchUrl(title)
+        : mark === 'subscription' || mark === 'paid'
+          ? availabilityUrl(svc.key, marks.links.get(svc.key), title)
+          : undefined
     const inner: Node[] = [
       {
         type: 'element',
@@ -619,10 +732,20 @@ function availCell(items: Node[], colspan: number): Node {
  *   「いつ時点か」を本文に書かせて済ませない。
  * ★ **△（レンタル・購入）は説明する。** しないと見放題と読まれる。
  */
-function legendNode(asOf: Date | undefined, hasUnknown: boolean): Node {
+function legendNode(asOf: Date | undefined, hasUnknown: boolean, hasUnext = false): Node {
   const stamp = asOf ? `${asOf.getMonth() + 1}月${asOf.getDate()}日時点・` : ''
   // ★ — が1つも出ていないなら凡例にも出さない。読まなくていいものを増やさない
   const unknown = hasUnknown ? `　${MARK_SYMBOL.unknown} 未確認` : ''
+  /*
+   * ★ **社数は実際に出た印に合わせる**（2026-09-16）。
+   *   U-NEXT の ○ が出た表だけ「5サービス分」。出ていない表で5と書くと、
+   *   **調べていない社を調べたことにしてしまう**（`unext-stock.ts` 冒頭の 1）。
+   *
+   * ★ **「時点」は4社とU-NEXTのうち、いちばん古い観測**（`planTable` の `oldest`）。
+   *   U-NEXT の索引は1ジャンル歩き切るのに4〜5週間かかるので、
+   *   たいていこちらが古い。**言い過ぎないほうへ倒す**という既存の決まりのまま。
+   */
+  const count = hasUnext ? '5' : '4'
   return {
     type: 'element',
     tagName: 'p',
@@ -631,7 +754,7 @@ function legendNode(asOf: Date | undefined, hasUnknown: boolean): Node {
       text(
         `${MARK_SYMBOL.subscription} 見放題　${MARK_SYMBOL.paid} レンタル・購入　` +
           `${MARK_SYMBOL.none} 取り扱いなし${unknown}` +
-          `（${stamp}4サービス分。各社の都合で変わります）`,
+          `（${stamp}${count}サービス分。各社の都合で変わります）`,
       ),
     ],
   }
@@ -653,12 +776,14 @@ function findParent(root: Node, target: Node): Node | undefined {
 /** 1つの表について「どの行に何を足すか」を決めた結果。**まだ書き換えない。** */
 interface TablePlan {
   table: Node
-  /** 元の行 → 足す内容。`marks` が無い行は「未確認（—）」になる */
-  found: Map<Node, { marks?: WorkMarks; own?: string; title: string }>
-  /** そのうち台帳から印を引けた行の数 */
+  /** 元の行 → 足す内容。`marks` も `unext` も無い行が「未確認（—）」になる */
+  found: Map<Node, { marks?: WorkMarks; own?: string; title: string; unext?: UnextStock }>
+  /** そのうち**答えを1つ以上出せた**行の数（4社の印 or U-NEXT の ○） */
   resolved: number
   /** 引けた在庫のうち、いちばん古い取得日（凡例に出す） */
   oldest?: Date
+  /** U-NEXT の ○ が1つでも出るか。**凡例の社数が変わる** */
+  hasUnext: boolean
 }
 
 /**
@@ -691,21 +816,41 @@ function planTable(table: Node): TablePlan | undefined {
    *   **書き直しの表は前の版の行を落とさない**ので、素材から外れた作品が残る
    *   （そこが — になる。pipeline/cli/availability.ts の `--ids` の説明）。
    */
-  const found = new Map<Node, { marks?: WorkMarks; own?: string; title: string }>()
+  const found = new Map<
+    Node,
+    { marks?: WorkMarks; own?: string; title: string; unext?: UnextStock }
+  >()
   let oldest: Date | undefined
   let resolved = 0
+  let hasUnext = false
   for (const row of rows.slice(1)) {
     const w = workOf(row)
     if (!w) continue
     const m = marksOf(w.ids, w.title)
+    /*
+     * ★ **U-NEXT は題名だけで引く**（2026-09-16 追加）。
+     *   4社の印は作品ID（`w.ids`）で引くが、U-NEXT の索引は配信APIの作品IDを
+     *   1つも持っていない（別の体系。docs/HANDOVER.md の「D. U-NEXT記事の ○/△」）。
+     *   結び付けられるのは**題名だけ**なので、突き合わせの厳しさも
+     *   `unext-stock.ts` 側に閉じてある（完全一致・割れたら黙る）。
+     */
+    const unext = unextStockFor(w.title)
+    if (unext) hasUnext = true
     // ★ 題名も持たせる。**「他で探す」の検索リンクを組むのに要る**（`findChips`）
-    found.set(row, { marks: m, own: w.service, title: w.title })
-    if (!m) continue
-    resolved++
-    if (!oldest || m.fetchedAt < oldest) oldest = m.fetchedAt
+    found.set(row, { marks: m, own: w.service, title: w.title, unext })
+    /*
+     * ★ **U-NEXT だけで引けた行も「答えのある行」に数える**（2026-09-16）。
+     *   `resolved` は下の歯止め（`resolved * 3 < rows`）が読む数で、意味は
+     *   **「読者に答えを渡せた行がどれだけあるか」**。根拠が4社かU-NEXTかは
+     *   読者には関係が無い。数えないと、答えが出ている記事まで
+     *   「他で探す」だけに落ちる。
+     */
+    if (m && (!oldest || m.fetchedAt < oldest)) oldest = m.fetchedAt
+    if (unext && (!oldest || unext.sweptAt < oldest)) oldest = unext.sweptAt
+    if (m || unext) resolved++
   }
   if (found.size === 0) return undefined
-  return { table, found, resolved, oldest }
+  return { table, found, resolved, oldest, hasUnext }
 }
 
 /**
@@ -756,9 +901,9 @@ function applyPlan(
     parent.children.splice(
       idx + 1,
       0,
-      chipsOnly && !hit.marks
+      chipsOnly && !hit.marks && !hit.unext
         ? findOnlyRow(hit.title, hit.own, colspan)
-        : availRow(hit.marks, colspan, hit.own, hit.title),
+        : availRow(hit.marks, colspan, hit.own, hit.title, hit.unext),
     )
     // 元の行に印。CSSで下の罫線を消して2行を1組に見せる
     const props = (row.properties ??= {})
@@ -781,7 +926,10 @@ function applyPlan(
    *   凡例からも落とす。無い記号を説明すると読者が探しに行く。
    */
   if (plan.resolved > 0) {
-    pendingLegends.set(table, legendNode(plan.oldest, !chipsOnly && plan.resolved < found.size))
+    pendingLegends.set(
+      table,
+      legendNode(plan.oldest, !chipsOnly && plan.resolved < found.size, plan.hasUnext),
+    )
   }
 }
 
