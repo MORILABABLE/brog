@@ -1,0 +1,169 @@
+---
+import Thumb from './Thumb.astro'
+import { demandShelf, type DemandShelfItem } from '../lib/demand-picks'
+
+/**
+ * 横スクロールの「見放題の終了が近い作品」。
+ *
+ * ■ 何のためにあるか（2026-09-16 追加・docs/DEMAND.md 6節の出口A）
+ * **需要（外の検索）を、記事を増やさずにサイトへ反映する枠。**
+ * `npm run demand` が出す候補のうち「まだ観られて、終了日が近いもの」を
+ * 需要の順に並べる。中身は `data/demand-picks.json`（3日おきに自動更新）。
+ *
+ * ■ 🔴 「話題」「人気」と書かない
+ * **並び順だけが需要を反映する。画面に出る言葉は自前の観測だけ。**
+ * Wikipedia の閲覧数を根拠に「話題の作品」と名乗ると、当サイトの観測でないものを
+ * 当サイトの主張として出すことになる（docs/DEMAND.md 2節の🔴）。
+ * 「9月26日に終了予定」なら当サイトが観測している。**そちらだけを書く。**
+ *
+ * ★ だから枠の名前も「いま話題」ではなく**「見放題の終了が近い作品」**。
+ *   読者にとっても、急ぐ理由が書いてあるほうが押す理由になる。
+ *
+ * ■ SeriesShelf と違って、**広い画面でも消さない**
+ * あちらは 1200px 以上で右の枠（`SeriesRail`）が同じ中身を出すので隠している。
+ * こちらに対応する右の枠は無いので、隠すと広い画面から枠ごと消える。
+ * （追従枠に足さないのは、**読者の79.5%がスマホ**で、
+ *   右の枠は 1200px 未満で出ない ＝ 大半に届かないため。docs/FUNNEL.md 9-3）
+ *
+ * ■ 出す条件
+ * 1件も無ければ**HTMLを1バイトも出さない**（`SeriesShelf` と同じ作り）。
+ * 終了日が過ぎた作品は `lib/demand-picks.ts` が外す。
+ */
+interface Props {
+  /** この作品を棚から外す（作品ページで自分自身を並べないため） */
+  excludeId?: string
+  /** 枠の見出し。既定のままにするのがふつう */
+  heading?: string
+}
+
+const { excludeId, heading = '見放題の終了が近い作品' } = Astro.props as Props
+
+const items: DemandShelfItem[] = demandShelf(excludeId)
+---
+
+{
+  items.length > 0 && (
+    <nav class="shelf" aria-label={heading}>
+      <div class="head">
+        {/*
+          ★ 見出しは <p>。**<h2> にしない**（`SeriesShelf` と同じ理由。
+            トップの見出し階層は h1 → 各記事の h2 で、ここに h2 を挟むと
+            「見放題の終了が近い作品」という記事が1本あるように読まれる）。
+            枠の名前は nav の aria-label が持つ。
+        */}
+        <p class="title">{heading}</p>
+      </div>
+
+      <ul class="track">
+        {items.map((item) => (
+          <li>
+            {/*
+              ★ `data-slot` を付ける。枠別のクリック実測（docs/FUNNEL.md 7-4）で
+                「どの枠が踏まれているか」を数えている仕組みに乗せる。
+                **これが無いと、この枠が効いているかを後から判定できない。**
+            */}
+            <a class="card" href={item.href} data-slot="demand" title={item.title}>
+              <Thumb src={item.poster} category="leaving" size={132} />
+              <span class="when">{item.when}まで</span>
+              <span class="name">{item.title}</span>
+              <span class="service">{item.serviceLabel}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .shelf {
+    margin: 0.2rem 0 1.4rem;
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 0.55rem;
+  }
+  .title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /*
+   * 横に流す帯。**スクロールするのはこの中だけ**（`SeriesShelf` と同じ作り）。
+   * body は overflow-x: hidden なので、ページそのものは横に動かない。
+   */
+  .track {
+    display: flex;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0 0 0.35rem;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+  .track > li {
+    flex: none;
+    scroll-snap-align: start;
+  }
+
+  /*
+   * ★ スマホだけ左右の余白を打ち消して画面の端まで流す。
+   *   `--content-pad` は本文カードの左右 padding（global.css）。**直値を書かない。**
+   *   47rem より広い画面でははみ出させない（あちらは白いカードに枠線がある）。
+   */
+  @media (max-width: 47rem) {
+    .track {
+      margin-inline: calc(var(--content-pad, 0rem) * -1);
+      padding-inline: var(--content-pad, 0rem);
+    }
+  }
+
+  /* 幅は絵と同じ 132px。360px の画面で2枚と少しが見え、3枚目が切れて「続き」が伝わる */
+  .card {
+    display: block;
+    width: 8.25rem;
+    text-decoration: none;
+  }
+
+  /*
+   * ★ 日付を絵のすぐ下・いちばん目立つ位置に置く。**この枠の用は締切**で、
+   *   作品名は「どれが終わるのか」を確かめるための2番目の情報
+   *   （作品ページの見出しが締切を先に出しているのと同じ並び。lib/works.ts の workHeadline）。
+   */
+  .when {
+    display: block;
+    margin-top: 0.45rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  /* タイトルは長い。2行で切る（日付とサービス名で2行使うため） */
+  .name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-top: 0.15rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .service {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  a.card:hover .name {
+    color: var(--accent);
+  }
+</style>

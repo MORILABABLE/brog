@@ -401,7 +401,13 @@ export const STOCK_HEADING = '見放題で配信中'
  *   本文（`stateSentence()`）は年を落とさない — あちらは切れないので、
  *   正確さを優先する。
  */
-function headlineDate(at: Date): string {
+/**
+ * 見出しに出す日付。今年なら年を落とす（`9月26日`）。
+ * ★ **export してある。** 「いま終了が近い作品」の棚（`lib/demand-picks.ts`）が
+ *   同じ言い方を使う。作品ページと棚で日付の書き方がずれると、
+ *   同じ作品が別のことを言っているように見える。
+ */
+export function headlineDate(at: Date): string {
   const full = formatDate(at)
   const thisYear = formatDate(new Date()).split('年')[0]
   return full.startsWith(`${thisYear}年`) ? full.slice(`${thisYear}年`.length) : full

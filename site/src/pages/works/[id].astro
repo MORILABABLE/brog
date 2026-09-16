@@ -5,11 +5,13 @@ import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import Thumb from '../../components/Thumb.astro'
 import AfbCta from '../../components/AfbCta.astro'
+import DemandShelf from '../../components/DemandShelf.astro'
 import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
 import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
 import { amazonVideoLink, otherServiceLinks } from '../../lib/search-links'
 import { seriesRefFor } from '../../lib/series-for-work'
+import { hubArticleFor } from '../../lib/work-hub-article'
 import {
   HISTORY_LABEL,
   STATE_CATEGORY,
@@ -241,6 +243,26 @@ const seriesArticle = seriesArticleFor(w.id)
 const backLink = seriesArticle?.slug === seriesPost?.id ? undefined : seriesArticle
 
 /*
+ * **どちらにも当たらなかったときの落とし先**（2026-09-16 追加）。
+ *
+ * ■ なぜ足したか
+ * 上の2つ（シリーズ記事 ／ その作品を載せた記事）に当たるのは
+ * **673枚中262枚だけ**で、**411枚には記事への出口が1本も無かった。**
+ * 実測で流入の多い作品ページ（`/works/14281` = リコリス・リコイル・表示81）も
+ * そちら側で、その作品を扱った記事がまだ無い。
+ *
+ * ここが返すのは「同じ月に、同じサービスで、同じことが起きた作品のまとめ」。
+ * **その作品が載っているとは限らない**ので、下の `nextArticle` で文言を分けてある。
+ * 判定と言い回しは `lib/work-hub-article.ts`。
+ *
+ * ★ 上の2つが当たっているときは**引かない**。1ページに1つだけ（下の★）。
+ */
+const hubArticle =
+  seriesPost || backLink
+    ? undefined
+    : hubArticleFor(w, await getCollection('posts'), [seriesRef?.slug, seriesArticle?.slug])
+
+/*
  * この作品の「次の1本」。**1ページに1つだけ、配信状況のすぐ下に置く**（2026-09-14）。
  *
  * ■ なぜ位置を変えたか（実測 2026-09-14・90日）
@@ -253,6 +275,14 @@ const backLink = seriesArticle?.slug === seriesPost?.id ? undefined : seriesArti
  * ★ **シリーズ記事が先、月次記事は落とし先**（`seriesArticleFor()` と同じ順）。
  * ★ **1ページに1つだけ。** 同じ記事が2か所に出ると、読者には
  *   次の一手が増えたようには見えず、リンクが重複しているようにしか見えない。
+ *
+ * ■ 3段目（2026-09-16）— **その作品を載せていない記事**
+ * 上の2つに当たらない411枚のための落とし先（`hubArticle`）。
+ * 🔴 **文言を上の2つと共有しないこと。** あちらは「この作品を載せた記事」と
+ *   約束しているが、こちらは載っているとは限らない。
+ *   名乗るのは「同じ月に同じサービスで起きたことのまとめ」までで、
+ *   その言い回しは `lib/work-hub-article.ts` の `labelFor()` が持つ
+ *   （作品ページ側で書き換えない。書き換えると約束と中身がずれる）。
  */
 const nextArticle = seriesPost
   ? {
@@ -273,7 +303,15 @@ const nextArticle = seriesPost
         image: backLink.heroImage,
         category: backLink.category,
       }
-    : undefined
+    : hubArticle
+      ? {
+          href: `/posts/${hubArticle.slug}`,
+          title: hubArticle.title,
+          label: hubArticle.label,
+          image: hubArticle.heroImage,
+          category: hubArticle.category,
+        }
+      : undefined
 
 /*
  * U-NEXT（afb）の掲載NG判定に渡す文字列。
@@ -463,6 +501,33 @@ const jsonLd = {
       `services` は Hulu 側が Disney+ のページを避けるために要る。
   */}
   <AfbCta spot="work" pageText={adPageText} services={w.services.map((s) => s.service)} />
+
+  {
+    /*
+     * 「見放題の終了が近い作品」の棚（2026-09-16 追加・docs/DEMAND.md 6節の出口A）。
+     *
+     * ■ **記事への出口が「ゆるい当たり」のページにだけ出す**
+     * 出すのは次の2つのとき。**673枚中412枚**（2026-09-16 実測）。
+     *
+     *   1. `hubArticle` に落ちた … その作品を載せていない記事しか出せていない
+     *   2. `nextArticle` が無い  … 記事が1本も引けなかった（Apple TV+ だけの作品など）
+     *
+     * ★ **その作品を載せた記事・シリーズ記事が引けている261枚には出さない。**
+     *   あちらは「この作品の話が続いている記事」という強い約束が成立していて、
+     *   そこに別の棚を足すと次の一手が2つになる（上の `nextArticle` の★）。
+     *   **弱い出口しか出せていないページでだけ、2本目を出す。**
+     *
+     * ■ なぜ `AfbCta` の**下**なのか
+     * あちらの位置は枠別のクリック実測で決めてある（上の注意書き）。
+     * **測って決めた収益枠を、まだ測っていない枠のために押し下げない。**
+     * 効いていることが分かったら、そのとき順番を検討する。
+     *
+     * ★ 関連作品の枠（下の `related`）とは軸が違う。あちらは
+     *   「同じ監督・同じジャンル・同じ日」で、こちらは**サービスを横断した終了日順**。
+     * ★ 自分自身は棚から外す（`excludeId`）。
+     */
+    (hubArticle || !nextArticle) && <DemandShelf excludeId={w.id} />
+  }
 
   <section class="detail">
     <h2>作品の情報</h2>

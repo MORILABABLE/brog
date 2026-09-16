@@ -12,16 +12,26 @@
  *   当サイトの主張として出すことになる。使うのは**主題を選ぶところまで**。
  */
 
-/** どこから拾った需要か */
-export type DemandSource = 'wikipedia-pageviews' | 'google-trends'
+/**
+ * どこから拾った需要か。
+ *
+ * ★ **`search-console` だけ性質が違う。** 前の2つが「世の中で何が読まれているか」
+ *   なのに対して、こちらは**当サイトの検索結果に実際に出た語**。
+ *   外の事実であることは同じ（Google の集計）だが、
+ *   **当サイトの読者に近いぶん、主題選びの当たりが高い**（docs/DEMAND.md 2節の表）。
+ */
+export type DemandSource = 'wikipedia-pageviews' | 'google-trends' | 'search-console'
 
 /** 需要の観測1件（ある日・ある語・ある取得元） */
 export interface DemandSignal {
   source: DemandSource
   /**
    * 需要側の語。
-   *   Wikipedia … 記事名から曖昧さ回避の括弧を落としたもの（`オデュッセイア_(映画)` → `オデュッセイア`）
-   *   Trends    … 検索語そのまま
+   *   Wikipedia      … 記事名から曖昧さ回避の括弧を落としたもの（`オデュッセイア_(映画)` → `オデュッセイア`）
+   *   Trends         … 検索語そのまま
+   *   Search Console … **検索語の中から取り出した在庫の題名**
+   *                    （`五等分の花嫁 netflix 配信終了` → `五等分の花嫁`）。
+   *                    読者が打った語そのものは `raw` に残る
    */
   word: string
   /** 落とす前の元の文字列。あとで記事名に戻せるように残す */
@@ -30,12 +40,36 @@ export interface DemandSignal {
    * その数字が属する日（`YYYY-MM-DD`）。
    * ★ **Wikipedia の集計は UTC 日**。JST の日付と1日ずれることがある。
    *   ずらして直さないこと（取得元の日付をそのまま持つほうが、あとで照合できる）。
+   * ★ **`search-console` は日次ではない。** 取り込んでいるのは28日の集計なので、
+   *   ここには**集計期間の末日**が入る。1日ぶんの数字ではないことに注意
+   *   （だから `data/demand/*.jsonl` には貯めない。`demand-store.ts` の表）。
    */
   day: string
-  /** 閲覧数（Wikipedia）／おおよその検索数（Trends。`20,000+` → 20000） */
+  /**
+   * 閲覧数（Wikipedia）／おおよその検索数（Trends。`20,000+` → 20000）
+   * ／**表示回数**（Search Console。28日の合計）。
+   *
+   * 🔴 **取得元をまたいで大小を比べないこと。** Wikipedia は万の桁、
+   *   Search Console は十〜百の桁で、同じ物差しではない。
+   *   突き合わせ側（`demand-match.ts`）も畳まずに別の軸として持つ。
+   */
   count: number
   /** その日の順位。Wikipedia の top は 1〜1000。Trends は並び順 */
   rank?: number
+  /**
+   * 検索結果の平均掲載順位。**`search-console` のときだけ入る。**
+   *
+   * ★ `rank` と混ぜないこと。あちらは「その取得元の中で何番目か」で、
+   *   こちらは「**Google の検索結果で当サイトが何位に出たか**」。
+   *   意味が逆向き（`rank` は小さいほど話題、こちらは小さいほど既に取れている）。
+   */
+  searchPosition?: number
+  /**
+   * クリック数。**`search-console` のときだけ入る。**
+   * 表示回数（`count`）と順位（`searchPosition`）だけでは
+   * 「出ているが取れていない」と「取れている」を見分けにくいので併せて持つ。
+   */
+  searchClicks?: number
   /** 取得した時刻 */
   fetchedAt: string
 }

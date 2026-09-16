@@ -5,6 +5,7 @@ import PostCard from '../components/PostCard.astro'
 import AffiliateNotice from '../components/AffiliateNotice.astro'
 import AmazonCta from '../components/AmazonCta.astro'
 import SeriesShelf from '../components/SeriesShelf.astro'
+import DemandShelf from '../components/DemandShelf.astro'
 import { SITE } from '../config'
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
@@ -58,6 +59,20 @@ const latest = posts.slice(0, LATEST)
     ★ 記事が0本のあいだは HTML を1バイトも出さない。
   */}
   <SeriesShelf />
+
+  {/*
+    「見放題の終了が近い作品」（2026-09-16 追加・docs/DEMAND.md 6節の出口A）。
+
+    ★ **シリーズの棚より下、記事一覧より上。** 右の枠の並び
+      （ジャンル → シリーズ → 最新記事）と同じ**「探し方が先、中身が後」**。
+      シリーズの棚は探し方（常設の入口）で、こちらは中身（いま急ぐもの）。
+
+    ★ **こちらは広い画面でも消さない。** シリーズの棚は 1200px 以上で
+      右の枠が同じ中身を出すので隠しているが、この枠に対応する右の枠は無い。
+
+    ★ 候補が0件のあいだは HTML を1バイトも出さない。
+  */}
+  <DemandShelf />
 
   {
     posts.length === 0 ? (

@@ -1,0 +1,110 @@
+name: demand
+
+# **外の需要（検索・話題）を取り込んで、サイトに出すぶんを決める。**
+#
+# ■ 何をするか（3つ）
+#   1. 需要を取る … Wikipedia 日本語版の日次 top 1000 ／ Google トレンド（JP）
+#   2. 在庫（data/events）と突き合わせて候補を出し、Search Console の実測を重ねる
+#   3. サイトに出すぶんを data/demand-picks.json に書く（`--picks`）／
+#      新規記事の候補があれば Issue で知らせる（`--notify`）
+#
+# 設計と実測は docs/DEMAND.md。
+#
+# ■ APIキーが要らない
+# Wikipedia もトレンドも公開APIで、キーも課金も無い。
+# Search Console は**このジョブでは取りに行かない** — 取り込みは queries.yml の仕事で、
+# ここは `data/search-queries.json` を読むだけ。**Streaming Availability API も LLM も呼ばない。**
+#
+# ■ なぜ毎日なのか（「3日に一度」ではなく）
+# **Google トレンドは過去日を取り直す口が無い**（1日10語・docs/DEMAND.md 4節）。
+# 3日おきにすると、取り逃した2日ぶんは**二度と戻らない**。
+# 一方で Wikipedia は何年前の日付でも同じAPIで返るので、取り逃しても痛くない。
+# **取り逃すと戻せないほうに周期を合わせる。**
+#
+# ■ 毎日走っても、サイトが毎日作り直されるわけではない
+# `--picks` は**中身が前回と同じなら書かない**（pipeline/core/demand-picks.ts の `changed`）。
+# 貯めるほう（data/demand/*.jsonl）は毎日増えるので結局コミットは立つが、
+# それは announce.yml が既に毎日やっていることで、再ビルドの回数は変わらない。
+#
+# ■ 収集（collect.yml）との関係
+# 在庫の側は週2回（火・金）しか動かない。需要の側は日次。**ずれていて構わない。**
+# 話題が先に立ち、在庫は次の収集で追いつく（docs/DEMAND.md 5節）。
+
+on:
+  schedule:
+    # 毎日 08:13 JST (= 前日 23:13 UTC)
+    #
+    # ★ **分を :00 / :30 に置かないこと**（collect.yml の★と同じ。GitHub の schedule は
+    #   毎時0分に実行が集中し、そこに置くと開始が87〜123分遅れる実測がある）。
+    # ★ 他のジョブと時刻をずらしてある（collect 19:07 / announce 20:11 / images 20:43 /
+    #   collect-unext 21:17 / queries 22:29・いずれも UTC）。
+    #   日曜は queries（22:29 UTC）の**あと**に走るので、その週の検索語が反映される。
+    - cron: '13 23 * * *'
+  workflow_dispatch:
+    inputs:
+      days:
+        description: '突き合わせに使う日数（既定7）'
+        default: '7'
+      notify:
+        description: 'true にすると新規記事の候補を Issue で知らせる'
+        default: 'true'
+
+permissions:
+  # data/demand/*.jsonl と data/demand-picks.json をコミットするために要る。
+  contents: write
+  # 新規記事の候補を Issue で知らせるために要る。
+  # これが無いと通知だけが 403 で落ちる（取り込み自体は成功する）。
+  issues: write
+
+# collect.yml / announce.yml と同じグループ。**data/ を全員が書くので直列に流す。**
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  demand:
+    runs-on: ubuntu-latest
+    # ★ **上限を必ず置く**（collect.yml の★と同じ理由。`concurrency: collect` を握るので、
+    #   固まると collect / announce / images が待たされる）。
+    #   実測の所要は1分未満（叩くのは Wikipedia 7日ぶんとトレンド1本だけ）。
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # ★ 片方の取得が落ちても、もう片方で続く作りになっている
+      #   （候補が減るだけで壊れない。pipeline/cli/demand.ts）。
+      #   だからここでは失敗を握りつぶさない — 両方落ちたときは気づきたい。
+      - name: 需要を取り込み、サイトに出すぶんを決める
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DAYS: ${{ inputs.days || '7' }}
+          NOTIFY: ${{ inputs.notify || 'true' }}
+        run: |
+          if [ "$NOTIFY" = "true" ]; then
+            npm run demand -- --days "$DAYS" --picks --notify
+          else
+            npm run demand -- --days "$DAYS" --picks
+          fi
+
+      # 通知が失敗しても取り込んだ結果は残す（announce.yml と同じ形）。
+      - name: 結果をコミット
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "変化なし"
+          else
+            git commit -m "chore(demand): $(date -u +%Y-%m-%d)"
+            git pull --rebase
+            git push
+          fi

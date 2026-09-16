@@ -115,7 +115,7 @@ npm run collect -- --kinds new,expiring
 
 以降は毎週 火・金 の 04:07 JST に自動収集し、変化があれば自動コミットされる。
 
-ワークフローは4本ある。**見に行く先と頻度が違うので分けてある。**
+ワークフローは5本ある。**見に行く先と頻度が違うので分けてある。**
 
 | ワークフロー | いつ | 何をするか |
 |---|---|---|
@@ -123,12 +123,13 @@ npm run collect -- --kinds new,expiring
 | `collect-unext` | 毎週 火・金 06:17 JST | U-NEXT を実ブラウザで収集 |
 | **`announce`** | **毎日 05:11 JST** | **翌月ラインナップの告知が出たら取り込む**（→ [docs/ANNOUNCEMENTS.md](./docs/ANNOUNCEMENTS.md)） |
 | **`images`** | **毎日 05:43 JST** | **公開済みの記事の画像を、あとから取れるようになった版に差し替える**（→ [docs/APPEARANCE.md 10節](./docs/APPEARANCE.md)） |
+| **`demand`** | **毎日 08:13 JST** | **外の需要（検索・話題）を取り込み、サイトに出すぶんを決める**（→ [docs/DEMAND.md](./docs/DEMAND.md)）。APIキー不要 |
 
 > ★ **時刻が半端な分になっているのは意図的**（2026-09-10）。**:00 や :30 に戻さないこと。**
 > GitHub の `schedule` は毎時0分に実行が集中し、そこに置くと開始が遅れる。
 > 実測では `announce`（当時 20:00 UTC・`timeout-minutes: 20`）のコミットが
 > 21:47〜22:23 UTC で、**開始が87〜123分遅れていた**（JST 05:00 のつもりが 07:00 着）。
-> 4本は `concurrency: group: collect` で直列に流れるので、遅れは後ろほど積み上がる。
+> 5本は `concurrency: group: collect` で直列に流れるので、遅れは後ろほど積み上がる。
 
 `announce` は「出ているか」を先に判定し、記事1本ぶんの本数が出た日にだけ
 取り込んで通知する。出ていない日（404）は静かに終わる。
@@ -201,6 +202,10 @@ U-NEXT 等を将来足しても**通知側は無改修**で新サービスを含
 | `npm run write -- --apply` | `data/draft/response.md` を検証して記事にする |
 | `npm run write -- --type <記事> [--genre <ジャンル>]` | LLM APIで生成して書き出す（課金あり） |
 | `npm run write -- ... --dry-run` | プロンプトだけ表示（無料） |
+| `npm run demand` | **外の需要（Wikipedia・Google トレンド・Search Console）と自前の在庫を突き合わせて、記事の主題の候補を出す**。API課金なし → [docs/DEMAND.md](./docs/DEMAND.md) |
+| `npm run demand -- --no-fetch` | 貯めたぶんだけで候補を出す（通信なし） |
+| `npm run demand -- --picks` | **サイトに出すぶん**を `data/demand-picks.json` に書く（トップと作品ページの「見放題の終了が近い作品」の棚）。毎日 GitHub Actions が回している |
+| `npm run demand -- --notify` | **新規記事の候補**（束かつシリーズ記事が無いもの）があれば Issue で知らせる。**鳴らないのが正常** |
 | `npm run preview` | 収集済みデータが記事としてどう見えるかを表示（API消費なし） |
 | `cd site && npm run shorts` | **ショート動画のカット画像を台本から作る（1080×1920）**→ [shorts/README.md](./shorts/README.md) |
 | `npm run refresh:images` | **作品ポスターのURLを取り直す（6ヶ月ごと）**→ [docs/APPEARANCE.md 11節](./docs/APPEARANCE.md#11-作品ポスターの取り扱い許諾取り直し契約終了) |

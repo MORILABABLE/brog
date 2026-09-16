@@ -11,13 +11,20 @@
  *
  * だから両側から挟む。**話題があり、かつ答えを持っているものだけを候補にする。**
  *
- * ■ 「答え」は2種類しかない
+ * ■ 「答え」は3種類（2026-09-16 に `ended` を足した。理由は `AnswerShape`）
  *
  *   until … 未来の終了予定がある → 「いつまで観られるか」に答えられる
  *   where … 見放題に入った観測がある → 「どこで観られるか」に答えられる
+ *   ended … 終了した観測がある → 「もう観られない。では、どこで観られるか」に答えられる
  *
  * `upcoming`（配信予定）は候補にしない。**個別作品の配信開始日は予測しないと決めている**
  * （docs/KEYWORDS.md 4節）。観測として持っていても、記事の答えにはしない。
+ *
+ * ■ 需要の取得元は3つあり、**数字の物差しが違う**
+ * Wikipedia（万の桁）・トレンド（推定検索数）・Search Console（表示回数・十〜百の桁）。
+ * **1つの数字に畳まない。** `peak` が持つのは前2つ、`search` が持つのが3つ目で、
+ * 畳むと Search Console 側が必ず負ける（`五等分の花嫁 232` 対 `VIVANT 45,561`）。
+ * 取り出し方は `demand-queries.ts`。
  *
  * ■ 機械にできるのは候補出しまで
  * `series-candidates.ts` と同じ立場。ここが決めるのは
@@ -51,8 +58,9 @@ export const DEMAND_NG_PATH = join('data', 'demand-ng.json')
 /**
  * 正規化して何文字未満を捨てるか。
  * ★ 3文字にすると `イルカ` `トロイ` が通る。4文字は実測で決めた下限。
+ * ★ `demand-queries.ts` も同じ下限で検索語から題名を引く。**2か所に書かないこと。**
  */
-const MIN_WORD_LENGTH = 4
+export const MIN_WORD_LENGTH = 4
 
 /** 前方一致を「束」と認めるのに要る作品数。`series-candidates.ts` の `MIN_WORKS` と同じ値 */
 const MIN_BUNDLE_WORKS = 3
@@ -77,6 +85,19 @@ const MIN_BUNDLE_WORKS = 3
  *   落ちて困るものが出たら、ここを 1 に戻して `data/demand-ng.json` 側で捌く。
  */
 const MIN_BUNDLE_SERVICES = 2
+
+/**
+ * 並び順で「検索の実測」を効かせる下限（28日の表示回数）。
+ *
+ * ★ **これが無いと表示1件が閲覧数45,561に勝つ。** 実測（2026-09-16）で
+ *   `その女諜報員 アレックス`（表示1）が `VIVANT`（Wikipedia 45,561）より上に来た。
+ *   表示1〜2件は1人が1回見ただけでも立つ数字で、需要とは呼べない。
+ *
+ * ★ **候補から落とす閾値ではない。** 表示が少なくても行には出す
+ *   （`検索 表示◯・◯位` の欄）。効かせないのは**並び順だけ**。
+ *   落とすと、順位が悪くて表示が伸びていない語＝これから効く語を捨てることになる。
+ */
+const MIN_SEARCH_IMPRESSIONS = 5
 
 /**
  * 収益導線のあるサービス。**候補の並べ替えには使わない。表示するだけ。**
@@ -153,16 +174,58 @@ export function buildInventory(events: ChangeEvent[], excludedIds = new Set<stri
   return { byTitle, size: works.size }
 }
 
-/** 記事の答えの型 */
-export type AnswerShape = 'until' | 'where'
+/**
+ * 記事の答えの型。
+ *
+ * ```
+ * until … 未来の終了予定がある     → 「いつまで観られるか」に答えられる
+ * where … 見放題に入った観測がある → 「どこで観られるか」に答えられる
+ * ended … 終了した観測がある       → 「もう観られない。では、どこで観られるか」に答えられる
+ * ```
+ *
+ * ■ `ended` を足した理由（2026-09-16・実測）
+ * **それまで2種類しかなく、当サイト最大の需要がそこから漏れていた。**
+ * 「五等分の花嫁 netflix 配信終了」は表示232・10.1位で、観測も持っている
+ * （netflix・2026-09-09 removed）のに、`until`（未来の終了予定が無い）でも
+ * `where`（見放題入りの観測が無い）でもないため
+ * **「答えられる観測が無い」で捨てられていた。**
+ *
+ * 「終わったこと」は答えである。記事タイプ `ended` と、シリーズ記事の
+ * 「◯◯はどこで見れる？」型のタイトル（templates/naming.md）が、
+ * **もともとこの問いに答えるために作ってある。**
+ *
+ * ★ **`until` の代わりではない。** 終了日が未来にあるあいだは `until` が優先される
+ *   （読者にできることが残っているほう）。`ended` はそれが過ぎたあとの姿。
+ */
+export type AnswerShape = 'until' | 'where' | 'ended'
 
 export interface DemandCandidate {
   /** 需要側の語 */
   word: string
   /** どの取得元で出たか */
   sources: string[]
-  /** 1日あたりの最大（Wikipedia の閲覧数／Trends のおおよその検索数） */
+  /**
+   * 1日あたりの最大（Wikipedia の閲覧数／Trends のおおよその検索数）。
+   * 🔴 **Search Console の表示回数はここに入らない**（物差しが違う。冒頭の■）。
+   */
   peak: number
+  /**
+   * **当サイトの検索結果での実測**（Search Console・28日）。無ければ `undefined`。
+   *
+   * ★ `peak` と足し合わせないこと。ここが入っている候補は
+   *   「**すでに当サイトが検索結果に出ていて、順位だけが足りていない**」という別の状態で、
+   *   打つ手が違う（新しく書く、ではなく、その受け皿を押し出す）。
+   */
+  search?: {
+    /** 28日の表示回数 */
+    impressions: number
+    /** 同・クリック数 */
+    clicks: number
+    /** いちばん良かった平均掲載順位。**小さいほど既に取れている** */
+    position: number
+    /** 読者が実際に打った語。表示の多い順・最大3本。🔴 サイトに出さない */
+    queries: string[]
+  }
   /** 期間中に何日ランクインしたか。**1日だけなら瞬間の話題** */
   days: number
   /** いちばん新しく観測した日 */
@@ -177,6 +240,8 @@ export interface DemandCandidate {
   answer: AnswerShape
   /** いちばん近い未来の終了予定（ISO）。`until` のときだけ入る */
   deadline?: string
+  /** いちばん新しい「終わった」観測（ISO）。`ended` のときだけ入る */
+  endedAt?: string
   /** またがっているサービス */
   services: string[]
   /** そのうち収益導線のあるサービスの表示名 */
@@ -216,6 +281,28 @@ export interface MatchReport {
 }
 
 /**
+ * `search-console` の1行を候補のフィールドに移す。
+ *
+ * ★ クリック数は `DemandSignal` が持たない（あちらは取得元をまたぐ共通の形で、
+ *   クリックは Search Console にしか無い値）。ここでは表示回数と順位だけを持ち、
+ *   **「取れているか」の判断は順位で見る**（10位 ＝ 出ているが取れていない）。
+ */
+function searchOf(s: DemandSignal): DemandCandidate['search'] {
+  return {
+    impressions: s.count,
+    clicks: s.searchClicks ?? 0,
+    position: s.searchPosition ?? 0,
+    /*
+     * ★ **1本だけ。** `demand-queries.ts` は上位3本まで持っているが、
+     *   `DemandSignal` が運べるのは `raw` の1本（取得元をまたぐ共通の形なので、
+     *   Search Console にしか無い配列をここに生やさない）。
+     *   3本ぜんぶ見たいときは `readSearchConsoleDemand()` の戻り値を語で引く。
+     */
+    queries: s.raw && s.raw !== s.word ? [s.raw] : [],
+  }
+}
+
+/**
  * 需要の観測を語ごとに畳んで、在庫と突き合わせる。
  *
  * @param signals 需要の観測（日ごとの行）。同じ語が複数日ぶん入っていてよい
@@ -235,7 +322,14 @@ export function matchDemand(
     dropped[reason] = (dropped[reason] ?? 0) + 1
   }
 
-  /** 語ごとに畳んだもの（同じ語が Wikipedia と Trends の両方に出ることがある） */
+  /**
+   * 語ごとに畳んだもの（同じ語が Wikipedia と Trends の両方に出ることがある）。
+   *
+   * ★ **Search Console だけ別の入れ物に受ける。**
+   *   1. 数字の物差しが違う（冒頭の■）。`peak` に混ぜると必ず負ける
+   *   2. **日数が嘘になる。** あちらの1行は28日の集計なので、
+   *      `days` に足すと「1日ランクインした」と数えてしまう
+   */
   interface Folded {
     word: string
     sources: Set<string>
@@ -243,6 +337,8 @@ export function matchDemand(
     days: Set<string>
     lastDay: string
     lastCount: number
+    /** Search Console の実測。無ければ undefined */
+    search?: DemandCandidate['search']
   }
   const folded = new Map<string, Folded>()
   for (const s of signals) {
@@ -251,14 +347,21 @@ export function matchDemand(
       folded.set(s.word, {
         word: s.word,
         sources: new Set([s.source]),
-        peak: s.count,
-        days: new Set([s.day]),
+        peak: s.source === 'search-console' ? 0 : s.count,
+        days: s.source === 'search-console' ? new Set<string>() : new Set([s.day]),
         lastDay: s.day,
-        lastCount: s.count,
+        lastCount: s.source === 'search-console' ? 0 : s.count,
       })
+      if (s.source === 'search-console') folded.get(s.word)!.search = searchOf(s)
       continue
     }
     f.sources.add(s.source)
+    if (s.source === 'search-console') {
+      // 同じ語が2行来ることは無い（`demand-queries.ts` が畳んでから渡す）が、
+      // 来たときは表示の多いほうを残す
+      if (!f.search || f.search.impressions < s.count) f.search = searchOf(s)
+      continue
+    }
     f.peak = Math.max(f.peak, s.count)
     f.days.add(s.day)
     if (s.day >= f.lastDay) {
@@ -321,11 +424,22 @@ export function matchDemand(
       .filter((e) => e.kind === 'expiring' && e.at && e.at > now)
       .sort((a, b) => (a.at ?? '').localeCompare(b.at ?? ''))
 
+    /*
+     * 終わった観測。**未来の終了予定が無いときだけ意味を持つ。**
+     * `removed`（見放題から消えた）と、**日付が過ぎた `expiring`** の両方を見る。
+     * 収集は「終了予定」を観測した時点で行を書くので、その日を過ぎても
+     * `removed` の行が来るとは限らない（次の収集まで空く）。
+     */
+    const finished = events
+      .filter((e) => (e.kind === 'removed' || e.kind === 'expiring') && e.at && e.at <= now)
+      .sort((a, b) => (b.at ?? '').localeCompare(a.at ?? ''))
+
     let answer: AnswerShape
     if (expiring.length > 0) answer = 'until'
     else if (events.some((e) => e.kind === 'new')) answer = 'where'
+    else if (finished.length > 0) answer = 'ended'
     else {
-      // 観測はあるが、答えられる問いが無い（upcoming だけ／終了済みだけ）
+      // 観測はあるが、答えられる問いが無い（`upcoming` だけ／日付の無い `expiring` だけ）
       drop('答えられる観測が無い')
       continue
     }
@@ -342,6 +456,8 @@ export function matchDemand(
       works,
       answer,
       deadline: expiring[0]?.at,
+      endedAt: answer === 'ended' ? finished[0]?.at : undefined,
+      search: f.search,
       services,
       affiliates: [
         ...new Set(
@@ -362,15 +478,29 @@ export function matchDemand(
 
   /*
    * 並び順。**スコアを1つに畳まない。**
-   *   1. 答えられる問いの強さ（いつまで > どこで）
+   *   1. 答えられる問いの強さ（いつまで ＞ どこで・終了した）
    *   2. 期限の近さ（`until` のみ）
-   *   3. 話題の大きさ
+   *   3. **当サイトの検索結果に出ている表示回数**（Search Console）
+   *   4. 外の話題の大きさ（Wikipedia / トレンド）
    * 収益導線は並べ替えに使わない（上の AFFILIATE_SERVICES の★）。
+   *
+   * ★ **3 を 4 より先に見る**（2026-09-16）。3 は「当サイトが既に検索結果に出ていて、
+   *   順位だけが足りていない」という状態で、**打つ手がいちばん短い**
+   *   （書かなくてよい。押し出すだけでよい）。4 は当サイトの外の数字で、
+   *   docs/DEMAND.md 7節★のとおり配信の需要とは限らない。
+   *
+   * ★ **`where` と `ended` に優劣を付けない。** どちらも期限を持たないので
+   *   2 で並ばず、3 → 4 の順で決まる。
    */
+  const strength = (a: DemandCandidate) => (a.answer === 'until' ? 0 : 1)
+  /** 表示が少なすぎるものは 0 として扱う（上の `MIN_SEARCH_IMPRESSIONS`） */
+  const searchWeight = (a: DemandCandidate) =>
+    (a.search?.impressions ?? 0) >= MIN_SEARCH_IMPRESSIONS ? a.search!.impressions : 0
   candidates.sort(
     (a, b) =>
-      (a.answer === 'until' ? 0 : 1) - (b.answer === 'until' ? 0 : 1) ||
+      strength(a) - strength(b) ||
       (a.deadline ?? '9999').localeCompare(b.deadline ?? '9999') ||
+      searchWeight(b) - searchWeight(a) ||
       b.peak - a.peak,
   )
 

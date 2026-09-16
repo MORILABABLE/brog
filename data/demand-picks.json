@@ -1,0 +1,363 @@
+{
+  "generatedAt": "2026-09-16T07:05:52.222Z",
+  "asOf": "2026-09-16",
+  "note": "npm run demand -- --picks が書く。手で編集しない。需要の数字は入れない（並び順だけが需要を反映する）。読む側は site/src/lib/demand-picks.ts。",
+  "picks": [
+    {
+      "workIds": [
+        "14281"
+      ],
+      "title": "リコリス・リコイル",
+      "answer": "until",
+      "deadline": "2026-09-26T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "ann-a6ad88088a",
+        "4029331"
+      ],
+      "title": "オッペンハイマー",
+      "answer": "until",
+      "deadline": "2026-09-27T14:59:59.000Z",
+      "services": [
+        "prime-video",
+        "netflix"
+      ],
+      "covered": [
+        "2026-09-leaving-netflix",
+        "2026-09-upcoming-prime-video-western"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "SID0209496"
+      ],
+      "title": "大追跡～警視庁ＳＳＢＣ強行犯係～",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:00.000Z",
+      "services": [
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "SID0031256"
+      ],
+      "title": "花子とアン",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:00.000Z",
+      "services": [
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "SID0230770"
+      ],
+      "title": "仮面ライダーゼッツ",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:00.000Z",
+      "services": [
+        "u-next"
+      ],
+      "covered": [
+        "2026-09-leaving-u-next",
+        "kamen-rider"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "4363"
+      ],
+      "title": "その着せ替え人形は恋をする",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [
+        "2026-09-leaving-u-next"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "7539981"
+      ],
+      "title": "美味しんぼ",
+      "answer": "until",
+      "deadline": "2026-10-05T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "4038536"
+      ],
+      "title": "VIVANT",
+      "answer": "where",
+      "services": [
+        "disney-plus",
+        "prime-video"
+      ],
+      "covered": [
+        "2026-08-arrivals-japanese",
+        "2026-08-arrivals-prime-video"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "5293"
+      ],
+      "title": "ワールド・トレード・センター",
+      "answer": "where",
+      "services": [
+        "netflix"
+      ],
+      "covered": [
+        "2026-08-arrivals-netflix"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "SID0305797"
+      ],
+      "title": "仮面ライダーマイス",
+      "answer": "where",
+      "services": [
+        "u-next"
+      ],
+      "covered": [
+        "kamen-rider"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "SID0315739"
+      ],
+      "title": "犬神家の一族",
+      "answer": "where",
+      "services": [
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "24862561"
+      ],
+      "title": "黄泉のツガイ",
+      "answer": "where",
+      "services": [
+        "prime-video"
+      ],
+      "covered": [
+        "2026-08-arrivals-anime",
+        "2026-08-arrivals-prime-video"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "3871"
+      ],
+      "title": "魔法少女まどか☆マギカ",
+      "answer": "where",
+      "services": [
+        "prime-video"
+      ],
+      "covered": [
+        "2026-08-arrivals-anime",
+        "2026-08-arrivals-prime-video"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "4039143"
+      ],
+      "title": "どうする家康",
+      "answer": "where",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "SID0187711"
+      ],
+      "title": "室井慎次　生き続ける者",
+      "answer": "where",
+      "services": [
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "2261"
+      ],
+      "title": "エアフォース・ワン",
+      "answer": "where",
+      "services": [
+        "prime-video"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "15983"
+      ],
+      "title": "本好きの下剋上",
+      "answer": "where",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "SID0187710"
+      ],
+      "title": "室井慎次　敗れざる者",
+      "answer": "where",
+      "services": [
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "SID0317260"
+      ],
+      "title": "税金で買った本",
+      "answer": "where",
+      "services": [
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "26120718"
+      ],
+      "title": "ブラックトリック〜裁きを操る弁護人〜",
+      "answer": "where",
+      "services": [
+        "netflix"
+      ],
+      "covered": [
+        "2026-08-arrivals-japanese",
+        "2026-08-arrivals-netflix"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "ann-1d3a1f79b6",
+        "86"
+      ],
+      "title": "インターステラー",
+      "answer": "where",
+      "services": [
+        "prime-video"
+      ],
+      "covered": [
+        "2026-09-arrivals-prime-video",
+        "2026-09-upcoming-prime-video-western"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "24604708"
+      ],
+      "title": "しあわせは食べて寝て待て",
+      "answer": "where",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "9884318"
+      ],
+      "title": "不適切にもほどがある!",
+      "answer": "where",
+      "services": [
+        "prime-video"
+      ],
+      "covered": [
+        "2026-08-arrivals-japanese",
+        "2026-08-arrivals-prime-video"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    },
+    {
+      "workIds": [
+        "168462"
+      ],
+      "title": "容疑者 室井慎次",
+      "answer": "where",
+      "services": [
+        "prime-video"
+      ],
+      "covered": [
+        "2026-08-arrivals-prime-video"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-16"
+    }
+  ],
+  "notifiedSignature": ""
+}
