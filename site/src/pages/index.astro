@@ -42,7 +42,25 @@ const latest = posts.slice(0, LATEST)
         （2026-08-24 にヘッダーバナーを廃止したので、文言は重複しない）。
     */}
     <h1 class="visually-hidden">{SITE.tagline}</h1>
-    <p>{SITE.description}</p>
+    {/*
+      ★ **説明文も画面に出していない**（2026-09-16・運用者の指定）。
+        「何のサイトか」は記事の形と並びが既に語っている —
+        棚の見出し（`見放題の終了が近い作品` / `シリーズ配信`）と
+        記事カード12枚のタイトルが、上から順にそれを説明している。
+        同じことを文章でもう一度言うと、**スマホの1画面目が説明で埋まる。**
+        読者の79.5%がスマホ（docs/DEMAND.md 6-1）。
+
+      ★ **消さずに隠してある。** 理由は2つ。
+        1. 読み上げでは h1（タグライン）の次にこの1文が読まれる。
+           「消える前に、気づける。」だけでは何のサイトか伝わらない
+        2. 画面に戻したくなったら class を外すだけでよい（上の h1 と同じ扱い）
+
+      ★ **SEO では何も失っていない。** この文言は
+        `<meta name="description">` が別に持っている（`BaseLayout` に
+        `description={SITE.description}` を渡している）。
+        検索結果に出るのはそちらで、ここの <p> ではない。
+    */}
+    <p class="visually-hidden">{SITE.description}</p>
     <AffiliateNotice />
   </section>
 
@@ -121,9 +139,17 @@ const latest = posts.slice(0, LATEST)
 </BaseLayout>
 
 <style>
+  /*
+   * ★ 上の余白を 2rem → 1rem に詰めた（2026-09-16）。
+   *   説明文を隠したぶん、**ここが空白のまま残ると PR 表記が宙に浮く**
+   *   （`.visually-hidden` は position: absolute なので、隠した <p> は場所を取らない）。
+   *   下も 1rem → 0.4rem。棚（`SeriesShelf` の margin-top 0.2rem）と合わせて、
+   *   ヘッダーの直下から**棚と記事が1画面目に入る**ようにしてある。
+   */
   .hero {
-    padding: 2rem 0 1rem;
+    padding: 1rem 0 0.4rem;
   }
+  /* 隠しているあいだは効かないが、class を外せばそのまま戻る（上の★） */
   .hero p {
     margin: 0;
     color: var(--text-muted);
@@ -143,7 +169,14 @@ const latest = posts.slice(0, LATEST)
     display: flex;
     align-items: center;
     gap: 0.9rem;
-    margin: 1.2rem 0 1.1rem;
+    /*
+     * ★ 上 1.2rem → 0.9rem ／ 下 1.1rem → 0.6rem（2026-09-16）。
+     *   **上のほうを広く保つこと。** 見出しは下に続くものの名前なので、
+     *   上下が同じだと直前の棚の一部に見える。
+     *   上は直前の棚の margin-bottom と相殺される（大きいほうが勝つ）ので、
+     *   **棚側と同じ 0.9rem にしてある。片方だけ変えても効かない。**
+     */
+    margin: 0.9rem 0 0.6rem;
     color: var(--text);
     font-size: 1rem;
     font-weight: 700;

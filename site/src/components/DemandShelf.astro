@@ -76,8 +76,14 @@ const items: DemandShelfItem[] = demandShelf(excludeId)
 }
 
 <style>
+  /*
+   * ★ 下は 1.4rem → 0.9rem（2026-09-16）。`SeriesShelf` と同じ値にしてある。
+   *   **どちらの棚が最後に来るかは中身で変わる**（需要の候補が2件未満なら
+   *   この棚は出ない）ので、片方だけ詰めると「最新記事」の上の余白が
+   *   日によって変わることになる。
+   */
   .shelf {
-    margin: 0.2rem 0 1.4rem;
+    margin: 0.2rem 0 0.9rem;
   }
 
   .head {
