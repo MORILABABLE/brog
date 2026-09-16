@@ -320,7 +320,7 @@ git push -u origin main
 - [ ] afb で提携できたら、`theme.yaml` の `search_links` を
       ASPのディープリンクに差し替え（afb は LinkSwitch のような自動変換を持たない）
 
-### アフィリエイトの環境変数（2026-09-13 に全11変数の反映を確認・2026-09-14 に Hulu の2つを追加）
+### アフィリエイトの環境変数（2026-09-16 更新：Hulu の4つの反映を本番で実測／`STOCK` を追加）
 
 `site/.env` はリポジトリに入らない。**Pages 側にも同じものを入れないと本番だけ出ない。**
 `Workers & Pages → brog-ez1 → Settings → Environment variables`
@@ -342,12 +342,13 @@ LinkSwitch は `*.pages.dev` では自分で無効化するので、Preview に�
 | `PUBLIC_AMAZON_TAG_BAR` | `jetbike-bar-22` | ✅ 反映済み（922本） |
 | `PUBLIC_AMAZON_TAG_WORK` | `jetbike-work-22` | ✅ 反映済み（591本） |
 | `PUBLIC_AMAZON_TAG_AVAIL` | `jetbike-avail-22` | ✅ 反映済み（70本） |
+| 🆕 **`PUBLIC_AMAZON_TAG_STOCK`** | **`jetbike-stock-22`** | 🔴 **未作成。** 作品ページの「見放題で配信中」（2026-09-16 追加・34本中13本が Amazon）。**アソシエイト・セントラルでこのIDを作ってから**、`site/.env` と Pages の両方に入れる |
 | `PUBLIC_AMAZON_TAG_PRIME` | `prime022-22` | ✅ 反映済み（11本） |
 | `PUBLIC_AMAZON_TAG_BODY` | `jetbike-body-22` | ⬜ Amazonリンクが0本なので本番HTMLでは確認できない |
-| **`PUBLIC_AFB_HULU_LP`** | `https://t.afi-b.com/visit.php?a=G8792C-h298034g&p=U9922286` | 🔴 **未反映。入れるまで本番に Hulu の広告は1バイトも出ない**（2026-09-14 に `.env` へ追加） |
-| **`PUBLIC_AFB_HULU_IMP`** | `https://t.afi-b.com/lead/G8792C/U9922286/h298034g` | 🔴 同上。無くてもリンクは動くが、**表示回数が測れない** |
-| **`PUBLIC_AFB_HULU_BANNER`** | `https://www.afi-b.com/upload_image/8792-1500163686-3.gif` | 🔴 同上。**空にするとテキストリンクに戻る** |
-| **`PUBLIC_AFB_HULU_BANNER_SIZE`** | `728x90` | 🔴 **必須**（未設定だと 320x50 と誤って書かれ、画像が縦に潰れる） |
+| **`PUBLIC_AFB_HULU_LP`** | `https://t.afi-b.com/visit.php?a=G8792C-h298034g&p=U9922286` | ✅ **反映済み**（2026-09-16 に本番で実測。`/works/406` に `afi-b.com` と `data-slot="hulu-work"` を確認） |
+| **`PUBLIC_AFB_HULU_IMP`** | `https://t.afi-b.com/lead/G8792C/U9922286/h298034g` | ✅ **反映済み**（afb レポートに表示回数が出ている。[AFFILIATE 13-5](./docs/AFFILIATE.md) の掲出2日目の実測） |
+| **`PUBLIC_AFB_HULU_BANNER`** | `https://www.afi-b.com/upload_image/8792-1500163686-3.gif` | ✅ **反映済み。** 空にするとテキストリンクに戻る |
+| **`PUBLIC_AFB_HULU_BANNER_SIZE`** | `728x90` | ✅ **反映済み。必須**（未設定だと 320x50 と誤って書かれ、画像が縦に潰れる） |
 
 > 本数は 2026-09-13 のビルド実測（全960ページ・`tag=` の出現数。合計 8,768本）。
 > **既定ID `jetbike-22` のリンクは本番に0本**（同日に全ページで確認）。
