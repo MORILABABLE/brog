@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-15T03:22:19.567Z",
+  "updatedAt": "2026-09-16T04:33:52.168Z",
   "works": {
     "102": {
       "fetchedAt": "2026-09-13T14:23:26.113Z",
@@ -15,6 +15,60 @@
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.42d5f63d-ceb0-4a3d-b9c2-17c9914e3cae"
         }
       ]
+    },
+    "118": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70095139"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/shutter-island/umc.cmc.1n432wlu275a0640043zypfsj?playableId=tvs.sbd.9001%3A391938350"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "subscription",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0KUEJBI5KKASFJFEGJI1LRLV1K?ref_=atv_dp"
+        }
+      ]
+    },
+    "142": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0JBCX3ASAHJCDBBB2XPNEGML0Y?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/american-beauty/umc.cmc.16daqxpennfm6jm9nkrmtscp?playableId=tvs.sbd.9001%3A395632887"
+        }
+      ]
+    },
+    "182": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
     },
     "194": {
       "fetchedAt": "2026-09-08T12:42:35.675Z",
@@ -66,6 +120,33 @@
         }
       ]
     },
+    "219": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-terminator/umc.cmc.14nmbhqhdyj6b4dfol85fpoou?playableId=tvs.sbd.9001%3A1009764469"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0Q61CSJYTBUX7DEAVTBYYHEES5?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/1032625"
+        }
+      ]
+    },
     "282": {
       "fetchedAt": "2026-09-06T10:51:17.400Z",
       "services": [
@@ -91,6 +172,18 @@
             "subscription"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0JXM9K5QSXG0X1O6M4CHGIYACB?ref_=atv_dp"
+        }
+      ]
+    },
+    "287": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80113701"
         }
       ]
     },
@@ -133,6 +226,43 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/casino-royale/umc.cmc.1atgrgw4dcsk9mel3zi94yv8d?playableId=tvs.sbd.9001%3A561902712"
+        }
+      ]
+    },
+    "406": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "addon",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0GYYO7JLQ240CSD018QL5BQW9B?ref_=atv_dp"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-f43ffe63-2c96-4b6c-8fae-84d0d22d6466"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-amazing-spider-man/umc.cmc.1jielpphrkfkqh3zfll0un7iz?playableId=tvs.sbd.9001%3A567898311"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70208599"
         }
       ]
     },
@@ -405,6 +535,27 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/tenet/umc.cmc.198i48vdau0mtd8gtsdxjtz9w?playableId=tvs.sbd.9001%3A1538251548"
+        }
+      ]
+    },
+    "636": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/green-book/umc.cmc.gf6zybw1w8qoxt5z09zm6ng7?playableId=tvs.sbd.9001%3A1478702718"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0N0OIH7DFDKTXBR4B2ZV9PV3L0?ref_=atv_dp"
         }
       ]
     },
@@ -932,6 +1083,10 @@
         }
       ]
     },
+    "2294": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
+    },
     "2365": {
       "fetchedAt": "2026-09-13T14:23:26.113Z",
       "services": [
@@ -1072,6 +1227,22 @@
         }
       ]
     },
+    "3232": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
+    },
+    "3909": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60000453"
+        }
+      ]
+    },
     "3976": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1082,6 +1253,44 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/the-florida-project/umc.cmc.xji65u9og5s2mij32svpn5wy?playableId=tvs.sbd.9001%3A1434643624"
+        }
+      ]
+    },
+    "4064": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
+    },
+    "4443": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/fifty-shades-darker/umc.cmc.2fz05ph5k9mphoxw9669wbon0?playableId=tvs.sbd.9001%3A1266459281"
+        }
+      ]
+    },
+    "4694": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/mamma-mia-here-we-go-again/umc.cmc.40ozdvaogioees6xra3utsdmt?playableId=tvs.sbd.9001%3A1439265757"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0HOLW6KPTKHCA9UC7XNC42CJQ4?ref_=atv_dp"
         }
       ]
     },
@@ -1108,6 +1317,36 @@
         }
       ]
     },
+    "4901": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0TMDZD3H5YV7HS4J7RZLRY5ZN7?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-unbearable-weight-of-massive-talent/umc.cmc.1lth51nw6pb4yd1vq0u5012p9?playableId=tvs.sbd.9001%3A1690740039"
+        }
+      ]
+    },
+    "5182": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
+    },
+    "5346": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
+    },
     "5639": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1133,6 +1372,10 @@
           "link": "https://www.amazon.co.jp/gp/video/detail/0FFG94RRT21GNNUH9HQPO53T5X"
         }
       ]
+    },
+    "6216": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
     },
     "7082": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -1192,6 +1435,82 @@
         }
       ]
     },
+    "8487": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-garden-of-words/umc.cmc.6v366c7lqqo9gffg074b35w0c?playableId=tvs.sbd.9001%3A645899638"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70291121"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LQFR4AFTS257P5K530QYO35CY"
+        }
+      ]
+    },
+    "8561": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "free",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0ONAR23F2HHYCZKT9DRYKPFUWZ"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81144534"
+        }
+      ]
+    },
+    "8933": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0SY3QV0RYZVYXT7QNFOKJZ1IJW?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81172898"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/weathering-with-you/umc.cmc.28osol0odtehs17xasquys7c5?playableId=tvs.sbd.9001%3A1500709831"
+        }
+      ]
+    },
     "8936": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1211,6 +1530,10 @@
           "link": "https://www.netflix.com/title/80132306"
         }
       ]
+    },
+    "9279": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
     },
     "9308": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -1331,6 +1654,47 @@
         }
       ]
     },
+    "10450": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/last-holiday/umc.cmc.42ebt49vmc1yih4dx9h93g2tc?playableId=tvs.sbd.9001%3A391699535"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0JSU8O9YMXRJ35N6BU73XRRPJE?ref_=atv_dp"
+        }
+      ]
+    },
+    "10534": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0IMOXPJCPPP9ISOMF25W2T2GQM"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80228274"
+        }
+      ]
+    },
     "10877": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1444,6 +1808,28 @@
         },
         "localizedTitle": "機動戦士ガンダム 第08MS小隊"
       }
+    },
+    "14281": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "free",
+            "subscription",
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0O6NT8TFCJLW13888NCQU2PCB0"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81620000"
+        }
+      ]
     },
     "14723": {
       "fetchedAt": "2026-09-14T13:39:16.137Z",
@@ -1616,6 +2002,19 @@
         "localizedTitle": "機動戦士ガンダム0083 STARDUST MEMORY"
       }
     },
+    "16353": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0PMDV9LECCOGHNLU034GQWBZMD?ref_=atv_dp"
+        }
+      ]
+    },
     "16493": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
       "services": [
@@ -1723,6 +2122,14 @@
         }
       ]
     },
+    "20503": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
+    },
+    "20968": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
+    },
     "21464": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1783,6 +2190,27 @@
         },
         "localizedTitle": "機動戦士ガンダムΖΖ"
       }
+    },
+    "21814": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0QSVIUY39DB60JGK0ZYFR0FPOC?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81924827"
+        }
+      ]
     },
     "22464": {
       "fetchedAt": "2026-09-11T12:49:01.122Z",
@@ -1917,6 +2345,10 @@
           "link": "https://www.netflix.com/title/81781638"
         }
       ]
+    },
+    "25449": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": []
     },
     "26667": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -2119,6 +2551,34 @@
         }
       ]
     },
+    "39128": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/swat-under-siege/umc.cmc.7grlrel4uo1exclhdsvsmvgsi?playableId=tvs.sbd.9001%3A1282622925"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0JC95O6R6MLQ1NB28DMGE0BBE6?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81086887"
+        }
+      ]
+    },
     "40037": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -2184,6 +2644,26 @@
             "buy"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0LGWG5IJKH9XM4YAHZQUGAOD1L"
+        }
+      ]
+    },
+    "42382": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-man-standing-next/umc.cmc.pw4x1siy1cwb0lslhki2ytqj?playableId=tvs.sbd.9001%3A1690357085"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0KFHS4VVETRPSY6ZCEOMLJGEUG?ref_=atv_dp"
         }
       ]
     },
@@ -2582,6 +3062,19 @@
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
+    "69199": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-magic-hour/umc.cmc.31d8jl6129ydsmsabh2gzcnae?playableId=tvs.sbd.9001%3A1531008551"
+        }
+      ]
+    },
     "69303": {
       "fetchedAt": "2026-09-14T13:39:16.137Z",
       "services": [
@@ -2946,6 +3439,34 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/81416534"
+        }
+      ]
+    },
+    "105029": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/lost-paradise/umc.cmc.43wlhwgkf27oz30phko1cm3c5?playableId=tvs.sbd.9001%3A1030861471"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80075256"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0QKIDI7NSLFLVJGEFAH88HFRGA?ref_=atv_dp"
         }
       ]
     },
@@ -5095,6 +5616,26 @@
         "localizedTitle": "るろうに剣心 -明治剣客浪漫譚-"
       }
     },
+    "4029331": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0TQ0HYSFFKAO9W3UUIOMSTPUJ7?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81602830"
+        }
+      ]
+    },
     "4398675": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
       "services": [
@@ -5171,6 +5712,20 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/poor-things/umc.cmc.3mshuc064vnbpvdq7rl6d3lpf?playableId=tvs.sbd.9001%3A1728782964"
+        }
+      ]
+    },
+    "4807469": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.e8f89945-311a-4d95-b181-fafd95fef3ee"
         }
       ]
     },
@@ -5350,6 +5905,20 @@
         }
       ]
     },
+    "8847025": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "free"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RMTT2U912B62OTRVHW0E2FTZE"
+        }
+      ]
+    },
     "8847319": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": [
@@ -5359,6 +5928,55 @@
             "subscription"
           ],
           "link": "https://www.disneyplus.com/browse/entity-baebd23a-1e8e-441f-b097-aef885558aaa"
+        }
+      ]
+    },
+    "8860205": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/smile-2/umc.cmc.20bo6udebibgaphdpv5jtvosm?playableId=tvs.sbd.9001%3A1770875321"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0IPS3LGLTLF1OZJLBOTOANNV6B?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81978231"
+        }
+      ]
+    },
+    "8860253": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.21ee1ac6-e382-43f4-8939-0e76f98b6664"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81915938"
         }
       ]
     },
@@ -5602,6 +6220,34 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/82058584"
+        }
+      ]
+    },
+    "14626092": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81663325"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-f1a8e719-49f6-421b-a25b-70dc4eb2e610"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.5f678828-13ba-4d3f-ae1a-b2c6fdeea642"
         }
       ]
     },
@@ -6048,6 +6694,18 @@
             "subscription"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0I6AAWU2AVCUVYE289FBX6F1AB?ref_=atv_dp"
+        }
+      ]
+    },
+    "24604708": {
+      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0SNCIT0TOLTNVNZILAVZYO2GKN"
         }
       ]
     },
