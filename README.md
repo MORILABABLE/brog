@@ -12,6 +12,7 @@
 | **他ジャンルでブログを増やす** | **[docs/NEW-THEME.md](./docs/NEW-THEME.md)** |
 | **検索流入を増やす（施策と根拠）** | **[docs/GROWTH.md](./docs/GROWTH.md)** |
 | **読者がどこで落ちているか（GA4・Search Console の実測）** | **[docs/FUNNEL.md](./docs/FUNNEL.md)** |
+| 外部との提携で検索流入を伸ばす（調査・未着手） | [docs/PARTNERSHIPS.md](./docs/PARTNERSHIPS.md) |
 | **どの検索語を狙うか・新しい記事ジャンル（考察）** | **[docs/KEYWORDS.md](./docs/KEYWORDS.md)** |
 | **いま検索されている作品から主題を選ぶ（需要 × 在庫）** | **[docs/DEMAND.md](./docs/DEMAND.md)** |
 | **作品ページを実装する（設計）** | **[docs/WORK-PAGES.md](./docs/WORK-PAGES.md)** |

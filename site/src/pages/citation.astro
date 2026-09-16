@@ -1,0 +1,167 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { ATTRIBUTION, SITE } from '../config'
+import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../lib/events-data'
+
+/**
+ * 「引用・取材について」（2026-09-16 追加）。docs/PARTNERSHIPS.md の P-2。
+ *
+ * ■ 何のためのページか
+ * 記事・動画・SNS でこのサイトの数字や終了日を使いたい人が、
+ * **「出典にしてよいか」「どう書けばよいか」で止まらない**ようにするための1枚。
+ * 外部からの出典リンク（被リンク）を受け止める器で、P-3・P-4 はここを案内先にする。
+ *
+ * ■ 書いてあることの根拠（崩すときは根拠を見直すこと）
+ *   - **データそのもの（表・CSV・API）は渡さない。**
+ *     配信API規約 3節が「単体のデータ商品・API・データベースとして提供すること」と
+ *     「配信情報を第三者に提供することが主目的の形」を禁じている
+ *     （https://developers.movieofthenight.com/terms-and-conditions 。2026-09-16 に確認）
+ *   - **一覧の丸写しを断る**のも同じ理由。引用を許した結果、当サイトが
+ *     データの供給元として使われる形になるのを避ける
+ *   - **画像を「転載してよい」と書かない。** 同規約 5節で、ポスター等は
+ *     第三者の権利物であり、API提供元にも許諾を出す立場が無いと明記されている。
+ *     当サイトが誰かに利用を認められるものではない
+ *   - 「観測できた数」であって公式発表ではない、の書き分けは pages/stats.astro と同じ
+ *
+ * ■ /guide・/about との違い
+ *   /guide  … 読者が見て気になること（画像の見え方・一覧の使い方）
+ *   /about  … 誰が・どこから・どうやって作っているか
+ *   /citation … **サイトの外で使う人**に向けたお願いと窓口
+ * 取得元の説明は /about にあるので、ここでは繰り返さず渡す。
+ *
+ * ★ 入口は2つある。**片方だけ直さないこと。**
+ *   左の枠（components/LeftRail.astro の最下段・「はじめての方へ」の下）… 1200px以上で出る
+ *   フッターのリンク（components/Footer.astro）… 幅に関係なく出る
+ *
+ * ★ サービス名を手で書かない（pages/guide.astro と同じ決まり）。
+ */
+const title = '引用・取材について'
+const description =
+  `${SITE.name}に掲載している配信終了日や本数を、記事・動画・SNSで引用するときの出典の書き方と、` +
+  'お願いしていること、取材・お問い合わせの窓口をまとめています。'
+---
+
+<BaseLayout title={title} description={description}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a>
+  </nav>
+
+  <h1>{title}</h1>
+
+  <div class="prose">
+    <p>
+      {SITE.name}に掲載している<strong>配信終了日・配信開始日・本数</strong>は、
+      <strong>出典を明記していただければ、事前のご連絡なく引用していただけます。</strong
+      >記事・ブログ・動画・SNS のいずれも同じです。
+    </p>
+
+    <h2>出典の書き方</h2>
+    <p>次の3つの明示をお願いしています</p>
+    <ul>
+      <li><strong>サイト名</strong>（{SITE.name}）</li>
+      <li><strong>引用したページのURL</strong>（Webではリンク、動画では概要欄など）</li>
+      <li>
+        <strong>情報の基準日</strong>（各ページに「◯月◯日時点」と書いてある日付です）
+      </li>
+    </ul>
+    <blockquote>
+      <p>
+        出典：{SITE.name}「サービス別見放題の追加・削除一覧（毎月更新）」{SITE.url}/stats（◯年◯月◯日時点）
+      </p>
+    </blockquote>
+    <p class="note">
+      配信状況は公式サービスのリリースを元に随時更新しています。基準日を表示し、その時点での情報という明示をお願いしています。
+    </p>
+
+    <h2>数字を引用するときのお願い</h2>
+    <ul>
+      <li>
+        当サイトで用いる数字は<strong>リリース・配信情報の目視などで当サイトが確認した数</strong>であり、各サービスの公式発表ではありません。「◯◯が△本を削除」ではなく、<strong
+          >「{SITE.name}の集計では△本」</strong
+        >のように書いていただけると、読み手の誤解を防げます。
+      </li>
+      <li>
+        「集計中」と表示している月の数字は、随時更新によってその都度増減いたします。
+      </li>
+      <li>
+        当サイトでは「配信終了」という表示は、見放題サービスから外れることを指します。レンタルや購入では引き続き観られる場合があります。
+      </li>
+    </ul>
+
+    <h2>ご遠慮いただいていること</h2>
+    <ul>
+      <li>
+        <strong>一覧をまるごと、または大部分を転載すること。</strong
+        >作品名や日付を数件引用する、該当部分を引用する、といった範囲の使用でお願いします。
+      </li>
+      <li>
+        <strong>作品のポスターや画像を転載すること。</strong
+        >画像の権利は各作品の権利者にあり、当サイトから利用を認めることはできません。
+      </li>
+    </ul>
+    <p class="notice">
+      <strong>表のデータ（CSV など）をお渡しすることや、API としての提供はできません。</strong
+      >配信情報の一部は提供元の利用条件のもとで利活用しており、データそのものを第三者にお渡しすることは、提供元の規約において認められていません。
+    </p>
+
+    <h2>リンクについて</h2>
+    <p>
+      リンクは自由です。ご連絡も不要で、ページへ直接リンクしていただいてかまいません。
+    </p>
+
+    <h3>引用ページの一例</h3>
+    <ul>
+      <li>
+        サービス別配信数の変動：<a href="/stats">サービス別見放題の追加・削除一覧</a>
+      </li>
+      <li>
+        配信終了予定の一覧：
+        {
+          LEAVING_SERVICES.map((s, i) => (
+            <>
+              {i > 0 && '・'}
+              <a href={`/leaving/${s.key}`}>{s.label}</a>
+            </>
+          ))
+        }
+      </li>
+      <li>
+        新着配信の一覧：
+        {
+          ARRIVALS_SERVICES.map((s, i) => (
+            <>
+              {i > 0 && '・'}
+              <a href={`/arrivals/${s.key}`}>{s.label}</a>
+            </>
+          ))
+        }
+      </li>
+    </ul>
+
+    <h2>取材・お問い合わせ</h2>
+    <p>
+      集計の方法や数字の読み方についてのご質問、取材のご依頼は<a href="/contact">お問い合わせ</a
+      >からお寄せください。情報の取得元と記事の作り方は<a href="/about">運営者情報</a>に記載しています。
+    </p>
+
+    <p class="note">
+      配信情報の一部は
+      <a href={ATTRIBUTION.url} rel="noopener noreferrer" target="_blank"
+        >Streaming Availability API by Movie of the Night</a
+      >の提供です。
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  /* 補足の一文。本文と同じ大きさだと注記に見えないので一段落とす（pages/guide.astro と同じ） */
+  .note {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+</style>

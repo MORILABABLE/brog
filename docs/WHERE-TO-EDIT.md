@@ -186,7 +186,8 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                             ★ サービス名・日数は events-data.ts から出している。
                               手で書き足さないこと（説明だけ古くなるため）
     運営者情報・規約など   → site/src/pages/about.astro / privacy.astro / contact.astro
-    見放題の増減（統計）   → site/src/pages/stats.astro
+    サービス別見放題の追加・削除一覧（統計）
+      → site/src/pages/stats.astro
 
     全ページ共通の外枠（head・OGP・構造化データ）
       → site/src/layouts/BaseLayout.astro

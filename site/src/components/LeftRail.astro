@@ -44,26 +44,34 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
 
 /**
  * 一覧の**下**に置く固定ページ（2026-08-29 追加。2026-09-10 に最下段へ移動）。
- * 行き先は pages/guide.astro。
+ *   1. pages/guide.astro    … 【はじめての方へ】
+ *   2. pages/citation.astro … 【引用・取材の方へ】（2026-09-16 追加。docs/PARTNERSHIPS.md の P-2）
  *
  * 常設ページ（EVERGREEN_PAGES）と違って中身が入れ替わらないので、
  * lib/evergreen.ts には入れていない。**カードの体裁だけをそろえてある。**
+ *
+ * ★ **文字数に上限がある。** 枠の内側でサムネイルの右に使える幅は約130px
+ *   （下の `.tags` の計算）。
+ *   `lead` は折り返さない（`.stamp` が nowrap）ので **0.68rem で11字まで**、
+ *   `name` は左の補正0.4remを引いて **0.86rem で8字まで**が1行に入る。
+ *   超えると `lead` ははみ出し、`name` は2行になってカードが伸びる。
  */
-const GUIDE = {
-  href: '/guide',
-  /** カードの小さい行。この1枚だけカテゴリを持たないので、バッジの代わりに置く */
-  lead: '【はじめての方へ】',
-  /** カードの太い行。枠の見出しと同じ文言を繰り返さない長さにする */
-  name: '運営方針と活用法',
-} as const
-
-const guideIsCurrent = GUIDE.href === current
-/*
- * 現在地はリンクだけ外す（上の一覧と同じ扱い）。カードが1枚しかないので、
- * **外側のタグだけを差し替えて中身は1つに保つ。**
- * 分岐でカードごと書き分けると、片方だけ直したときに見た目がずれる。
- */
-const GuideTag = guideIsCurrent ? 'span' : 'a'
+const FIXED_PAGES = [
+  {
+    href: '/guide',
+    /** カードの小さい行。カテゴリを持たないので、バッジの代わりに置く */
+    lead: '【はじめての方へ】',
+    /** カードの太い行。枠の見出しと同じ文言を繰り返さない長さにする */
+    name: '運営方針と活用法',
+    thumb: { key: 'guide', src: '/guide-thumb.svg' },
+  },
+  {
+    href: '/citation',
+    lead: '【引用・取材の方へ】',
+    name: '出典の書き方',
+    thumb: { key: 'citation', src: '/citation-thumb.svg' },
+  },
+] as const
 
 /**
  * 3つ目の枠に出す人物の数（2026-08-30 追加）。
@@ -224,7 +232,7 @@ const peopleTotal = publishablePeople().length
 
   {/*
     ★ 左の列の**最下段**に置く枠（2026-08-29 追加。2026-09-10 に最上段からここへ移動）。
-      中身は1枚だけ。
+      中身は2枚（2026-09-16 に「引用・取材の方へ」を足した）。
 
     ■ なぜ最下段なのか
       この枠が伝えるのは
@@ -240,30 +248,44 @@ const peopleTotal = publishablePeople().length
 
     ■ 狭い画面では枠ごと消える
       1200px 未満ではこの枠も出ないので、**フッターにも同じリンクを置いてある**
-      （components/Footer.astro）。片方だけ消さないこと。
+      （components/Footer.astro）。片方だけ消さないこと。**2枚とも。**
   */}
   {/*
     ★ 見出し（.block-title）は**わざと出していない**（2026-08-31）。
       カードの太い行「運営方針と活用法」と同じことを二度言うだけで、
       枠の内側203pxでは2行に折り返して枠を無駄に伸ばしていた。
       **aria-label は残す。** 見出しが無いので、この枠の名前はこれだけになる。
+      2枚目を足したので、名前は2枚をまとめて呼べるものに変えた（2026-09-16）。
   */}
-  <nav class="block" aria-label="当サイトの運営方針および活用について">
+  <nav class="block" aria-label="当サイトについて">
     <ul class="cards">
-      <li>
-        <GuideTag
-          class:list={['rail-card', guideIsCurrent && 'is-current']}
-          href={guideIsCurrent ? undefined : GUIDE.href}
-          aria-current={guideIsCurrent ? 'page' : undefined}
-        >
-          {/* サムネイルの扱いは上の一覧と同じ。48px・角丸8で並びをそろえる */}
-          <Thumb image={serviceImage('guide')} src="/guide-thumb.svg" size={48} radius={8} />
-          <span class="body">
-            <span class="stamp">{GUIDE.lead}</span>
-            <span class="name">{GUIDE.name}</span>
-          </span>
-        </GuideTag>
-      </li>
+      {
+        FIXED_PAGES.map((p) => {
+          const isCurrent = p.href === current
+          /*
+           * 現在地はリンクだけ外す（上の一覧と同じ扱い）。
+           * **外側のタグだけを差し替えて中身は1つに保つ。**
+           * 分岐でカードごと書き分けると、片方だけ直したときに見た目がずれる。
+           */
+          const Tag = isCurrent ? 'span' : 'a'
+          return (
+            <li>
+              <Tag
+                class:list={['rail-card', isCurrent && 'is-current']}
+                href={isCurrent ? undefined : p.href}
+                aria-current={isCurrent ? 'page' : undefined}
+              >
+                {/* サムネイルの扱いは上の一覧と同じ。48px・角丸8で並びをそろえる */}
+                <Thumb image={serviceImage(p.thumb.key)} src={p.thumb.src} size={48} radius={8} />
+                <span class="body">
+                  <span class="stamp">{p.lead}</span>
+                  <span class="name">{p.name}</span>
+                </span>
+              </Tag>
+            </li>
+          )
+        })
+      }
     </ul>
   </nav>
 </aside>

@@ -20,7 +20,7 @@ import {
  * ■ 数字の性質を偽らない（重要）
  * ここに出るのは「**観測できた数**」であって「起きた数」ではない。
  *   - 収集を始めた月より前は出さない（観測していないので数えられない）
- *   - 進行中の月は「集計中」と明示する（月末まで増える）
+ *   - 進行中の月は「集計中」と明示する（月末まで変動する）
  * これを曖昧にすると、統計の体裁をした誤情報になる。
  */
 const { months, collectStart, dataAsOf } = loadMonthlyStats()
@@ -31,12 +31,12 @@ const description = latest
   : 'Netflix・Amazon Prime Video・Disney+・Apple TV+ の見放題ラインナップが月ごとに何本増えて何本減ったかの記録です。'
 ---
 
-<BaseLayout title="見放題の増減（毎月更新）" description={description}>
+<BaseLayout title="サービス別見放題の追加・削除一覧（毎月更新）" description={description}>
   <nav class="breadcrumb" aria-label="パンくず">
     <a href="/">ホーム</a>
   </nav>
 
-  <h1>見放題の増減</h1>
+  <h1>サービス別見放題の追加・削除一覧</h1>
 
   <p class="lead">
     Netflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスで、
@@ -121,12 +121,19 @@ const description = latest
         ごく短い期間だけ配信された作品は含まれないことがあります。
       </li>
       <li>
-        <strong>「集計中」の月は、月末に向けてまだ本数が増えます。</strong>
+        <strong>「集計中」の月は、月末に向けて本数が変動します。</strong>
       </li>
       <li>
         「削除」は見放題から外れたことを指します。レンタルや購入では引き続き観られる場合があります。
       </li>
       <li>Apple TV+ は日本での出入りが極端に少なく、0本が続くことがあります。</li>
+      {/*
+        ★ 引用されやすい数字が載っているのはこのページなので、書き方の案内をここにも置く
+          （2026-09-16。docs/PARTNERSHIPS.md の P-2）。
+      */}
+      <li>
+        記事や動画でこの数字を引用される場合は、<a href="/citation">引用・取材について</a>をご覧ください。
+      </li>
     </ul>
   </section>
 
