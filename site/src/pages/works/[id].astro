@@ -17,8 +17,11 @@ import {
   observationStart,
   publishableWorkPages,
   relatedWorks,
+  STOCK_HEADING,
   serviceCtaLabel,
   stateSentence,
+  stockAnswer,
+  stockNote,
   seriesArticleFor,
   workDescription,
   workHeadline,
@@ -137,6 +140,27 @@ function decorate(url: string) {
   const tagged = withAmazonTag(url, WORK_TAG)
   return { url: tagged, rel: relFor(tagged) }
 }
+
+/*
+ * 「いま見放題で観られるサービス」（lib/works.ts の stockAnswer）。
+ *
+ * ★ **状態行とは根拠が違う。** 上の行は変化ログ（いつ終わるか）、こちらは
+ *   在庫台帳（いまどこにあるか）。台帳に無い作品では `undefined` が返り、
+ *   **節そのものが出ない**（「ほかでは観られません」とは書かない）。
+ *   理由の全文は lib/works.ts の該当ブロック。
+ *
+ * ★ **枠は `stock`。`work` にも `find` にも入れない。**
+ *   `work` は状態行のボタン、`find` は答えを出せなかったときの逃げ先で、
+ *   ここは**答えそのもの**。在庫を埋めた施策（docs/FUNNEL.md 7-1-4）の効果は
+ *   この枠でしか読めない。**HTMLの `data-slot` とトラッキングIDを必ず揃えること。**
+ */
+const STOCK_TAG = amazonTagFor('stock')
+const stock = stockAnswer(w)
+const stockLinks = (stock?.services ?? []).map((x) => {
+  if (!x.url) return { label: x.label }
+  const url = withAmazonTag(x.url, STOCK_TAG)
+  return { label: x.label, url, rel: relFor(url) }
+})
 
 /*
  * 関連する常設ページ。**そのサービスのページが実在するときだけ出す。**
@@ -337,6 +361,39 @@ const jsonLd = {
         ))
       }
     </ul>
+
+    {
+      /*
+       * ★ **読者がいちばん知りたい1行。** 上の行は「終わる／終わった」で、
+       *   その次に来る問いは必ず「**では、どこで観るのか**」（docs/GROWTH.md 3-1）。
+       *   在庫台帳を持っている作品でだけ、その答えをここで返す。
+       * ★ **リンクにならない社がある。** `availabilityUrl()` は印と行き先が
+       *   食い違わない先しか返さない（Prime Video 以外は台帳の直リンクだけ）。
+       *   URLが無ければ**文字のまま**出す。Amazon へ振り替えないこと。
+       */
+      stock && (
+        <p class="stock">
+          <span class="badge" data-category="arrivals">
+            {STOCK_HEADING}
+          </span>
+          <span class="line">
+            {stockLinks.map((x, i) => (
+              <>
+                {i > 0 && <span class="sep">・</span>}
+                {x.url ? (
+                  <a href={x.url} rel={x.rel} target="_blank" data-slot="stock">
+                    {x.label}
+                  </a>
+                ) : (
+                  <strong>{x.label}</strong>
+                )}
+              </>
+            ))}
+          </span>
+          <span class="asof">{stockNote(stock)}</span>
+        </p>
+      )
+    }
   </section>
 
   {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
@@ -716,6 +773,36 @@ const jsonLd = {
   }
   .go:hover {
     opacity: 0.9;
+  }
+
+  /*
+   * 「見放題で配信中」の行。**状態行（.states li）と同じ枠に見せる**が、
+   * 根拠が違うので `.go` のボタンは置かない（lib/works.ts の注記）。
+   * 読者の目には「終わる話」の直後に「では、どこで」の答えが続く形になる。
+   */
+  .stock {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0.7rem 0 0;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-subtle);
+  }
+  .stock .line {
+    font-weight: 700;
+  }
+  .stock .sep {
+    color: var(--text-muted);
+    font-weight: 400;
+    margin: 0 0.15rem;
+  }
+  .stock .asof {
+    flex: 1 1 100%;
+    color: var(--text-muted);
+    font-size: 0.8rem;
   }
 
   /* --- 作品の情報 --- */

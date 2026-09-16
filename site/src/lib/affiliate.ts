@@ -87,6 +87,13 @@ export const AMAZON_SLOTS = [
   // ★ `avail` と混ぜないこと。あちらは行ごとの答え、こちらは**表全体の要約からの一手**で、
   //   押された意味が違う（表の直後に置いた施策が効いたかどうかの唯一の証拠）。
   'watch',
+  // 作品ページの「いま見放題で観られるサービス」（pages/works/[id].astro。2026-09-16）。
+  // ★ `avail` と混ぜないこと。あちらは**記事の表の行ごとの印**、こちらは
+  //   **作品ページ本体の答え**で、面も読者の位置も違う。
+  //   在庫を埋めた施策（docs/FUNNEL.md 7-1-4）が効いたかどうかは、この枠だけが答えられる。
+  // ★ rehype プラグインは出さないので astro.config.mjs 側には要らない
+  //   （`work` `rail` `prime` と同じ扱い）。
+  'stock',
 ] as const
 
 export type AmazonSlot = (typeof AMAZON_SLOTS)[number]

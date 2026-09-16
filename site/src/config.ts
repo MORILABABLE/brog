@@ -489,6 +489,15 @@ export const AMAZON_TAGS: AmazonTags = {
    */
   avail: import.meta.env.PUBLIC_AMAZON_TAG_AVAIL ?? '',
 
+  /**
+   * 作品ページの「いま見放題で観られるサービス」（`pages/works/[id].astro`）。
+   * ★ **`avail` と分ける。** あちらは記事の表の行ごとの印、こちらは作品ページ本体の答え。
+   *   在庫を埋めた施策（docs/FUNNEL.md 7-1-4）の効果は、この枠でしか読めない。
+   * ★ **`find` とも分ける。** あちらは**答えを出せなかったときの逃げ先**で、
+   *   こちらは**答えそのもの**。混ぜると施策の成否が分からなくなる。
+   */
+  stock: import.meta.env.PUBLIC_AMAZON_TAG_STOCK ?? '',
+
   /** 「他のサービスで探す」。作品ページと、記事の表の×だけの行 */
   find: import.meta.env.PUBLIC_AMAZON_TAG_FIND ?? '',
   /**

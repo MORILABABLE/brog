@@ -33,7 +33,8 @@ import {
   type RawEvent,
   type RawWork,
 } from './events-data'
-import { resolveUrl, workLinkByTitle } from './work-links'
+import { availabilityUrl, resolveUrl, workLinkByTitle } from './work-links'
+import { marksFor } from './availability'
 import { seriesRefFor } from './series-for-work'
 import { formatDate, isoDate } from '../utils/date'
 
@@ -310,6 +311,82 @@ export function serviceCtaLabel(s: WorkServiceState, url: string): string {
     ? 'Prime Videoでレンタル・購入を探す'
     : 'Prime Videoで探す'
 }
+
+// --- いま見放題で観られるサービス（在庫台帳・2026-09-16 追加）-------------------
+
+/*
+ * ■ このファイル冒頭の「**「配信中」と書かない**」と矛盾しないのか
+ *
+ * **しない。根拠が違う。** 冒頭の禁止は**変化ログ（`data/events`）から書くとき**の話で、
+ * 「`new` を観測して `removed` を観測していない」ことを在庫と読み替えないためにある。
+ *
+ * ここが読むのは**在庫台帳（`data/availability.json`）**で、
+ * 配信APIの `streamingOptions.jp[]` ＝ **その時点の在庫そのもの**。
+ * これがある作品に限っては「見放題で配信中」と言える
+ * （docs/SOURCES-UNEXT-HULU.md 4節の★・2026-09-05 に確定）。
+ *
+ * ★ **根拠が違うので、文も日付も分ける。** 状態行（`stateSentence`）は変化ログで
+ *   日付は `w.dataAsOf`、この行は在庫台帳で日付は台帳の `fetchedAt`。
+ *   **1つの文に混ぜないこと。** 混ぜた瞬間、どちらの根拠で言っているのか読めなくなる。
+ *
+ * ★ **未取得と0件を混同しない**（`pipeline/cli/availability.ts` 冒頭）。
+ *   台帳に無い作品・14日より古い作品は `marksFor()` が `undefined` を返す ＝
+ *   **「分からない」なので、行そのものを出さない。**
+ *   「ほかでは観られません」とは**絶対に書かない** — 在庫を持っているのは4社だけで、
+ *   U-NEXT・Hulu・DMM TV は調べていない（その答えは「他のサービスで探す」の節が持つ）。
+ */
+
+/** 在庫台帳が「いま見放題」と言っているサービス1件。 */
+export interface StockService {
+  service: string
+  label: string
+  /** 押せる送り先。**無ければ文字のまま**（`availabilityUrl()` と同じ規則） */
+  url?: string
+}
+
+export interface StockAnswer {
+  services: StockService[]
+  /** 在庫を取った日。**`w.dataAsOf` とは別物** */
+  fetchedAt: Date
+}
+
+/**
+ * 「では、どこで観られるのか」の答え。**台帳にあるときだけ返す。**
+ *
+ * ★ **状態行に出ている社は除く。** そこはもう「Netflixで9月30日に終了予定」と
+ *   言っている面で、同じ社をもう一度「見放題で配信中」と書くと
+ *   **同じページの中で2つの文が食い違って見える**（根拠は違うが読者には分からない）。
+ *   読者にとって新しい情報は「**状態行に出ていない社**でいま観られること」だけ。
+ *
+ * ★ **並びは `API_SERVICES` の順に固定する。** 台帳の順（APIの応答順）に任せると
+ *   作品ごとに入れ替わる。**紹介料の順に並べ替えてもいけない**（docs/AFFILIATE.md 7節）。
+ */
+export function stockAnswer(w: WorkPage, now = Date.now()): StockAnswer | undefined {
+  const found = marksFor(w.id, [w.title], now)
+  // ★ 未取得・期限切れ。**「分からない」なので何も出さない**（上の★）。
+  if (!found) return undefined
+
+  const shown = new Set(w.services.map((s) => s.service))
+  const services: StockService[] = []
+  for (const { key, label } of API_SERVICES) {
+    if (shown.has(key)) continue
+    if (found.marks.get(key) !== 'subscription') continue
+    services.push({ service: key, label, url: availabilityUrl(key, found.links.get(key), w.title) })
+  }
+  // 0件は「調べたが、状態行の社以外に見放題は無かった」。**それも書かない**（上の★）。
+  return services.length > 0 ? { services, fetchedAt: found.fetchedAt } : undefined
+}
+
+/** 在庫の行に添える日付。**状態行の `dataAsOf` と混ぜないための一文。** */
+export function stockNote(a: StockAnswer): string {
+  return `${formatDate(a.fetchedAt)}時点の配信状況です。`
+}
+
+/**
+ * 在庫の行の見出し。**ここも文言を1か所に集める**（このファイルの方針）。
+ * ★ 「配信中」と言い切れるのは在庫台帳を根拠にしているときだけ（上の長い注記）。
+ */
+export const STOCK_HEADING = '見放題で配信中'
 
 /**
  * 見出しに入れる日付。**今年なら年を落として「9月29日」にする。**
