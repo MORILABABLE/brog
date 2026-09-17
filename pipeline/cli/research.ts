@@ -83,8 +83,16 @@ export function queryVariants(title: string): string[] {
     .replace(/\s*[（(](?:見逃し配信|独占配信|字幕版|吹替版|\d{4})[）)]\s*$/, '')
     .replace(/\s*(?:シーズン|SEASON|Season|シリーズ)\s*[0-9０-９]+(?:\s*[~～-]\s*[0-9０-９]+)?\s*$/u, '')
     .replace(/\s*S[0-9０-９]+(?:\s*[~～-]\s*[0-9０-９]+)?\s*$/u, '')
+    // ★ 「第2期」「(第3期)」「総集篇」も本編の項目にまとまっている（2026-09-17 追加）。
+    //   U-NEXT の題名はこの形が多く、「ダンダダン 第2期」「怪獣８号 第２期」
+    //   「ワンパンマン(第3期)」が項目なしになって、記事で1文も書けなかった
+    .replace(/\s*[（(]\s*第\s*[0-9０-９]+\s*期\s*[）)]\s*$/u, '')
+    .replace(/\s*第\s*[0-9０-９]+\s*期\s*$/u, '')
+    .replace(/\s*総集[篇編]\s*$/u, '')
     .trim()
   add(trimmed)
+  // 全角の「！」「？」は Wikipedia の項目名では半角のことが多い（「野生のラスボスが現れた！」）
+  add(trimmed.replace(/！/g, '!').replace(/？/g, '?'))
   // 「◯◯ シーズン」まで落ちた形（「3月のライオン シーズンS1~2」→「3月のライオン」）
   const noSeasonWord = trimmed.replace(/\s*(?:シーズン|シリーズ|SEASON|Season)\s*$/u, '').trim()
   add(noSeasonWord)

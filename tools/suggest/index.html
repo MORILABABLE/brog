@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>サジェスト調査</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔎</text></svg>">
+<style>
+:root {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #efede7;
+  --text: #1f1d1a;
+  --muted: #6b675f;
+  --line: #dcd8cf;
+  --accent: #2f5d8a;
+  --accent-soft: #e3ecf5;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --bad: #a33b2b;
+  --bad-soft: #f8e3df;
+  --good: #2e6b3f;
+  --mark: #fff0a8;
+  --shape-until: #b5462f;
+  --shape-where: #2f6f8a;
+  --shape-from: #5d4a9a;
+  --shape-free: #6b6b1f;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161514;
+    --surface: #1f1e1c;
+    --surface-2: #2a2825;
+    --text: #ebe8e1;
+    --muted: #a39e94;
+    --line: #3a3733;
+    --accent: #8ab4dc;
+    --accent-soft: #23303d;
+    --warn: #e0a54a;
+    --warn-soft: #3a2e1b;
+    --bad: #e58a7a;
+    --bad-soft: #3b2420;
+    --good: #86c697;
+    --mark: #5a4d12;
+    --shape-until: #ee9a86;
+    --shape-where: #87c3dc;
+    --shape-from: #b9a8ec;
+    --shape-free: #cfcf7c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161514;
+  --surface: #1f1e1c;
+  --surface-2: #2a2825;
+  --text: #ebe8e1;
+  --muted: #a39e94;
+  --line: #3a3733;
+  --accent: #8ab4dc;
+  --accent-soft: #23303d;
+  --warn: #e0a54a;
+  --warn-soft: #3a2e1b;
+  --bad: #e58a7a;
+  --bad-soft: #3b2420;
+  --good: #86c697;
+  --mark: #5a4d12;
+  --shape-until: #ee9a86;
+  --shape-where: #87c3dc;
+  --shape-from: #b9a8ec;
+  --shape-free: #cfcf7c;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.6 system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+}
+header {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+header h1 { font-size: 18px; margin: 0; letter-spacing: .02em; }
+header p { margin: 0; color: var(--muted); font-size: 13px; }
+main {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  gap: 20px;
+  padding: 20px 24px 40px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  main { grid-template-columns: 1fr; padding: 16px; }
+  header { padding: 14px 16px; }
+}
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+}
+aside.panel { position: sticky; top: 16px; }
+@media (max-width: 860px) { aside.panel { position: static; } }
+
+label.field { display: block; font-weight: 600; font-size: 13px; margin: 0 0 6px; }
+.hint { color: var(--muted); font-size: 12px; font-weight: 400; }
+textarea, input[type="text"], select {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+textarea { min-height: 120px; resize: vertical; }
+textarea:focus, input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.group { margin-top: 14px; }
+.checks { display: flex; flex-direction: column; gap: 4px; }
+.checks label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.row { display: flex; gap: 6px; align-items: center; }
+.row input { flex: 1; }
+
+button {
+  font: inherit;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+button:hover { border-color: var(--accent); }
+button:disabled { opacity: .5; cursor: default; border-color: var(--line); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+button.small { padding: 2px 8px; font-size: 12px; }
+button.link { border: none; background: none; color: var(--accent); padding: 0 4px; }
+button.link:hover { text-decoration: underline; }
+
+.plan {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.plan.over { background: var(--bad-soft); color: var(--bad); }
+.plan details { margin-top: 6px; }
+.plan summary { cursor: pointer; color: var(--muted); }
+.plan ol { margin: 6px 0 0; padding-left: 22px; max-height: 180px; overflow: auto; }
+.actions { display: flex; gap: 8px; margin-top: 12px; }
+.actions .primary { flex: 1; }
+
+.progress { height: 3px; background: var(--surface-2); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+.progress > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+
+.stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
+.stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.stat span { color: var(--muted); font-size: 12px; }
+
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.tabs { display: flex; gap: 2px; background: var(--surface-2); padding: 3px; border-radius: 8px; }
+.tabs button { border: none; background: none; padding: 5px 12px; border-radius: 6px; }
+.tabs button[aria-selected="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--line); font-weight: 600; }
+.toolbar input[type="text"] { width: auto; flex: 1; min-width: 160px; padding: 5px 10px; }
+.spacer { flex: 1; }
+
+.chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip {
+  display: inline-block;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+button.chip { background: none; cursor: pointer; padding: 1px 9px; font-size: 12px; }
+button.chip[aria-pressed="true"] { background: currentColor; }
+button.chip[aria-pressed="true"] span { color: var(--surface); }
+.shape-until { color: var(--shape-until); }
+.shape-where { color: var(--shape-where); }
+.shape-from { color: var(--shape-from); }
+.shape-free { color: var(--shape-free); }
+.chip.muted { color: var(--muted); }
+.chip.warn { color: var(--warn); }
+.chip.bad { color: var(--bad); }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--surface); }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.ops { white-space: nowrap; text-align: right; }
+tr:hover td { background: var(--surface-2); }
+.cand { word-break: break-all; }
+.cand .added { font-weight: 700; }
+mark { background: var(--mark); color: inherit; border-radius: 2px; }
+.from { color: var(--muted); font-size: 12px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--bg); }
+.card h3 { font-size: 14px; margin: 0 0 6px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; word-break: break-all; }
+.card ol { margin: 0; padding-left: 22px; }
+.card li { padding: 1px 0; word-break: break-all; }
+.card .none { color: var(--muted); font-size: 12px; margin: 0; }
+.card .fail { color: var(--bad); font-size: 12px; margin: 0; }
+.sp { color: var(--muted); font-family: ui-monospace, monospace; }
+
+.empty { color: var(--muted); text-align: center; padding: 48px 12px; }
+.empty p { margin: 4px 0; }
+.note { font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.7; }
+.note b { color: var(--text); }
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: var(--bg); padding: 8px 16px; border-radius: 6px;
+  font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.toast.show { opacity: .92; }
+.error-box { background: var(--bad-soft); color: var(--bad); border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: 13px; }
+
+.sc { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 16px; }
+.switch { display: flex; gap: 10px; align-items: center; cursor: pointer; font-weight: 600; font-size: 13px; }
+.switch input {
+  appearance: none; flex: none; margin: 0; cursor: pointer;
+  width: 34px; height: 20px; border-radius: 999px; background: var(--line); position: relative; transition: background .15s;
+}
+.switch input::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--surface); transition: transform .15s;
+}
+.switch input:checked { background: var(--accent); }
+.switch input:checked::after { transform: translateX(14px); }
+.switch input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sc .row { margin-top: 8px; }
+.sc select { width: auto; flex: 1; padding: 4px 8px; }
+.sc-status { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.7; }
+.sc-status .warn { color: var(--warn); }
+.sc-status .bad { color: var(--bad); }
+select.compact { width: auto; padding: 2px 6px; font-size: 12px; }
+td.gsc, th.gsc { background: var(--accent-soft); }
+tr:hover td.gsc { background: var(--accent-soft); }
+td.gsc.none { color: var(--muted); }
+.check-inline { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; cursor: pointer; }
+.yes { color: var(--good); font-weight: 700; }
+</style>
+</head>
+<body>
+<header>
+  <h1>サジェスト調査</h1>
+  <p>候補は検索ボリュームではありません。分かるのは「その語形で検索されているか」だけです。</p>
+</header>
+
+<main>
+  <aside class="panel">
+    <label class="field" for="seeds">調べる語 <span class="hint">1行に1語</span></label>
+    <textarea id="seeds" spellcheck="false" placeholder="netflix 配信終了&#10;アニメ 配信終了&#10;u-next 配信終了"></textarea>
+
+    <div class="group">
+      <div class="field" style="font-weight:600;font-size:13px;margin-bottom:6px">展開</div>
+      <div class="checks">
+        <label><input type="checkbox" id="optRaw" checked> そのまま</label>
+        <label><input type="checkbox" id="optSpace" checked> 後ろに空白 <span class="hint">（次に打たれる語が出る）</span></label>
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="field" for="suffixes">後ろに付ける語 <span class="hint">カンマ区切り</span></label>
+      <div class="row">
+        <input type="text" id="suffixes" spellcheck="false" placeholder="いつまで, どこで">
+        <button type="button" class="small" id="presetShapes" title="問いの型（demand と同じ4つ）">問いの型</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="field" for="prefixes">前に付ける語 <span class="hint">カンマ区切り</span></label>
+      <div class="row">
+        <input type="text" id="prefixes" spellcheck="false" placeholder="netflix, アマプラ">
+        <button type="button" class="small" id="presetServices">サービス名</button>
+      </div>
+    </div>
+
+    <div class="plan" id="plan"></div>
+
+    <div class="actions">
+      <button type="button" class="primary" id="run">調べる</button>
+      <button type="button" id="stop" disabled>中止</button>
+    </div>
+    <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+    <div id="runError"></div>
+
+    <div class="sc">
+      <label class="switch"><input type="checkbox" id="gscOn" role="switch"> 自分の Search Console を重ねる</label>
+      <div class="row" id="gscControls" hidden>
+        <select id="gscDays" aria-label="期間"></select>
+        <button type="button" class="small" id="gscRefresh" title="サーバーの控え（1時間）を使わずに取り直す">取り直す</button>
+      </div>
+      <div class="sc-status" id="gscStatus"></div>
+    </div>
+
+    <div class="group">
+      <label class="field" for="history">履歴 <span class="hint">このブラウザだけに残る</span></label>
+      <select id="history"><option value="">—</option></select>
+    </div>
+
+    <p class="note" id="rules"></p>
+  </aside>
+
+  <section class="panel" aria-live="polite">
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="all" aria-selected="true">候補一覧</button>
+        <button type="button" role="tab" data-tab="words" aria-selected="false">隣に立つ語</button>
+        <button type="button" role="tab" data-tab="seeds" aria-selected="false">語ごと</button>
+        <button type="button" role="tab" data-tab="gsc" aria-selected="false" hidden>Search Console</button>
+      </div>
+      <input type="text" id="filter" placeholder="候補を絞り込む" spellcheck="false">
+      <div class="chips" id="shapeFilters"></div>
+    </div>
+    <div class="toolbar">
+      <span class="hint" id="shown"></span>
+      <label class="hint" id="sortWrap" hidden>並び
+        <select id="sort" class="compact">
+          <option value="count">出た語の数</option>
+          <option value="impr">表示回数（Search Console）</option>
+        </select>
+      </label>
+      <span class="spacer"></span>
+      <button type="button" class="small" id="copyTsv">TSVをコピー</button>
+      <button type="button" class="small" id="saveCsv">CSVを保存</button>
+      <button type="button" class="small" id="clear">結果を消す</button>
+    </div>
+    <div id="view"></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict'
+
+const SERVICE_PRESET = 'netflix, ネトフリ, アマプラ, プライムビデオ, u-next, ディズニープラス, hulu'
+const HISTORY_KEY = 'suggest-ui:history'
+const HISTORY_MAX = 15
+const GSC_KEY = 'suggest-ui:gsc'
+
+const $ = (id) => document.getElementById(id)
+const state = {
+  config: { maxSeeds: 40, intervalMs: 400, cacheTtlMs: 1800000, shapes: [], gscDays: [7, 28, 90] },
+  /** seed → { seed, candidates, shapes, error, cached, order } */
+  results: new Map(),
+  order: 0,
+  tab: 'all',
+  shapeFilter: new Set(),
+  controller: null,
+  sort: 'count',
+  /**
+   * 自分のサイトの Search Console。**OFF のあいだは問い合わせない。**
+   * index は「空白を除いて揃えた語」→ 表記ゆれをまとめた1行
+   */
+  gsc: { on: false, days: 28, loading: false, data: null, error: null, rows: [], index: new Map() },
+  gscOnlyMissing: false,
+}
+
+// --- 小さな道具 ---------------------------------------------------------------
+
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag)
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === undefined || v === null || v === false) continue
+    if (k.startsWith('on')) el.addEventListener(k.slice(2), v)
+    else if (k === 'class') el.className = v
+    else el.setAttribute(k, v === true ? '' : v)
+  }
+  for (const c of children.flat(Infinity)) {
+    if (c === undefined || c === null || c === false) continue
+    el.append(c instanceof Node ? c : document.createTextNode(String(c)))
+  }
+  return el
+}
+
+/** replaceChildren は null を「null」と描くので、空を飛ばして入れ替える */
+Element.prototype.fill = function (...children) {
+  this.replaceChildren(...children.flat(Infinity).filter((c) => c !== undefined && c !== null && c !== false))
+}
+
+function toast(message) {
+  const t = $('toast')
+  t.textContent = message
+  t.classList.add('show')
+  clearTimeout(toast.timer)
+  toast.timer = setTimeout(() => t.classList.remove('show'), 1600)
+}
+
+async function copyText(text, message) {
+  try {
+    await navigator.clipboard.writeText(text)
+    toast(message || 'コピーしました')
+  } catch {
+    toast('コピーできませんでした')
+  }
+}
+
+function parseList(text) {
+  return text.split(/[,、\n]/).map((s) => s.trim()).filter(Boolean)
+}
+
+/** 末尾の空白は見えないので記号で出す */
+function showSeed(seed) {
+  const m = seed.match(/^(.*?)(\s+)$/)
+  if (!m) return seed
+  return [m[1], h('span', { class: 'sp', title: '末尾に空白' }, '␣')]
+}
+
+function tokens(text) {
+  return text.toLowerCase().split(/\s+/).filter(Boolean)
+}
+
+/**
+ * 候補が**元の語に足した**問いの型。
+ * ★ 型の判定には「終了」も入っている（demand と同じ定義）。元の語が「配信終了」だと
+ *   全候補が「いつまで」になって何も言っていないので、元の語で既に当たる型は出さない。
+ */
+function shapesOf(candidate, seeds) {
+  return state.config.shapes.filter((s) => s.regex.test(candidate) && !seeds.some((seed) => s.regex.test(seed)))
+}
+
+function shapeChip(shape) {
+  return h('span', { class: `chip shape-${shape.key}` }, shape.label)
+}
+
+function readStore(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : fallback
+  } catch {
+    return fallback
+  }
+}
+
+function writeStore(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    // 保存できない環境（プライベートウィンドウ等）では履歴を持たないだけ
+  }
+}
+
+// --- 展開 -----------------------------------------------------------------------
+
+function expandSeeds() {
+  const bases = $('seeds').value.split('\n').map((s) => s.trim().replace(/\s{2,}/g, ' ')).filter(Boolean)
+  const suffixes = parseList($('suffixes').value)
+  const prefixes = parseList($('prefixes').value)
+  const out = []
+  for (const base of bases) {
+    if ($('optRaw').checked) out.push(base)
+    if ($('optSpace').checked) out.push(base + ' ')
+    for (const s of suffixes) out.push(`${base} ${s}`)
+    for (const p of prefixes) out.push(`${p} ${base}`)
+  }
+  return [...new Set(out)]
+}
+
+function renderPlan() {
+  const seeds = expandSeeds()
+  const plan = $('plan')
+  const fresh = seeds.filter((s) => !state.results.has(s) || state.results.get(s).error)
+  const seconds = Math.ceil((fresh.length * (state.config.intervalMs + 250)) / 1000)
+  const over = seeds.length > state.config.maxSeeds
+  plan.className = over ? 'plan over' : 'plan'
+  plan.fill(
+    h('div', null,
+      h('b', null, `${seeds.length} 語`),
+      over
+        ? ` — 1回は ${state.config.maxSeeds} 語までです。展開を減らしてください`
+        : seeds.length
+          ? ` ・ 新たに取得 ${fresh.length} 語・約 ${seconds} 秒`
+          : ' — 調べる語を入れてください',
+    ),
+    seeds.length
+      ? h('details', null,
+          h('summary', null, '展開した語を見る'),
+          h('ol', null, seeds.map((s) => h('li', null, showSeed(s)))),
+        )
+      : null,
+  )
+  $('run').disabled = !seeds.length || over || !!state.controller
+}
+
+// --- 取得 -----------------------------------------------------------------------
+
+async function run(seeds) {
+  if (state.controller) return
+  $('runError').fill()
+  if (!seeds.length) return
+  if (seeds.length > state.config.maxSeeds) {
+    $('runError').fill(h('div', { class: 'error-box' }, `1回は ${state.config.maxSeeds} 語までです`))
+    return
+  }
+  const controller = new AbortController()
+  state.controller = controller
+  $('stop').disabled = false
+  $('run').disabled = true
+  let done = 0
+  setBar(0, seeds.length)
+  try {
+    const res = await fetch('/api/suggest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seeds }),
+      signal: controller.signal,
+    })
+    if (!res.ok) throw new Error(await res.text())
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+    let buffer = ''
+    for (;;) {
+      const { value, done: finished } = await reader.read()
+      if (finished) break
+      buffer += decoder.decode(value, { stream: true })
+      let nl
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        const line = buffer.slice(0, nl)
+        buffer = buffer.slice(nl + 1)
+        if (!line.trim()) continue
+        const r = JSON.parse(line)
+        state.results.set(r.seed, { ...r, order: state.order++ })
+        done++
+        setBar(done, seeds.length)
+        render()
+      }
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      $('runError').fill(h('div', { class: 'error-box' }, e.message || String(e)))
+    }
+  } finally {
+    state.controller = null
+    $('stop').disabled = true
+    setTimeout(() => setBar(0, 1), 600)
+    renderPlan()
+    render()
+  }
+}
+
+function setBar(done, total) {
+  $('bar').style.width = total ? `${Math.round((done / total) * 100)}%` : '0'
+}
+
+function runFromForm() {
+  const seeds = expandSeeds()
+  if (!seeds.length) return
+  saveHistory()
+  run(seeds)
+}
+
+/** 候補を新しい語にして、そのまま＋次の語の2回だけ引く */
+function dig(candidate) {
+  run([...new Set([candidate, candidate + ' '])])
+}
+
+function addSeed(candidate) {
+  const ta = $('seeds')
+  const lines = ta.value.split('\n').map((s) => s.trim()).filter(Boolean)
+  if (!lines.includes(candidate)) lines.push(candidate)
+  ta.value = lines.join('\n')
+  renderPlan()
+  toast('調べる語に足しました')
+}
+
+// --- 集計 -----------------------------------------------------------------------
+
+function ordered() {
+  return [...state.results.values()].sort((a, b) => a.order - b.order)
+}
+
+/** 候補ごとにまとめる。同じ候補が複数の語から出たら1行 */
+function mergedCandidates() {
+  const map = new Map()
+  for (const r of ordered()) {
+    r.candidates.forEach((c, i) => {
+      const key = c.toLowerCase()
+      let row = map.get(key)
+      if (!row) {
+        row = { candidate: c, from: [], best: Infinity, first: map.size }
+        map.set(key, row)
+      }
+      row.from.push({ seed: r.seed, rank: i + 1 })
+      row.best = Math.min(row.best, i + 1)
+    })
+  }
+  return [...map.values()]
+}
+
+/** 候補に現れ、元の語には無い語。「◯◯の隣に何が打たれているか」 */
+function neighborWords(rows) {
+  const map = new Map()
+  for (const row of rows) {
+    const seedTokens = new Set(row.from.flatMap((f) => tokens(f.seed)))
+    for (const t of new Set(tokens(row.candidate))) {
+      if (seedTokens.has(t)) continue
+      let w = map.get(t)
+      if (!w) {
+        w = { word: t, count: 0, examples: [] }
+        map.set(t, w)
+      }
+      w.count++
+      if (w.examples.length < 4) w.examples.push(row.candidate)
+    }
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count || a.word.localeCompare(b.word, 'ja'))
+}
+
+function matchesFilter(text, seeds) {
+  const q = $('filter').value.trim().toLowerCase()
+  if (q && !q.split(/\s+/).every((part) => text.toLowerCase().includes(part))) return false
+  if (state.shapeFilter.size) {
+    const keys = shapesOf(text, seeds).map((s) => s.key)
+    if (![...state.shapeFilter].some((k) => keys.includes(k))) return false
+  }
+  return true
+}
+
+/** 絞り込みの語に色を付け、元の語に無い部分を太字にする */
+function highlight(candidate, seeds) {
+  const seedTokens = new Set(seeds.flatMap((s) => tokens(s)))
+  const q = tokens($('filter').value)
+  const parts = candidate.split(/(\s+)/)
+  return parts.map((part) => {
+    if (!part.trim()) return part
+    const added = !seedTokens.has(part.toLowerCase())
+    let node = part
+    const hit = q.find((x) => part.toLowerCase().includes(x))
+    if (hit) {
+      const i = part.toLowerCase().indexOf(hit)
+      node = h('span', null, part.slice(0, i), h('mark', null, part.slice(i, i + hit.length)), part.slice(i + hit.length))
+    }
+    return added ? h('span', { class: 'added' }, node) : node
+  })
+}
+
+// --- Search Console ---------------------------------------------------------------
+
+/**
+ * 語の突き合わせ用に揃える。Search Console は `五 等 分 の花嫁 netflix 配信 終了` のように
+ * 分かち書きで返すことがあるので、**空白を全部落として**比べる。
+ */
+function norm(text) {
+  return text.normalize('NFKC').toLowerCase().replace(/\s+/g, '')
+}
+
+/** 表記ゆれ（空白の入り方だけが違う語）を1行にまとめる。順位は表示回数で重み付け */
+function aggregateGsc(rows) {
+  const map = new Map()
+  for (const r of rows) {
+    const key = norm(r.query)
+    let a = map.get(key)
+    if (!a) {
+      a = { key, query: r.query, top: 0, variants: [], impressions: 0, clicks: 0, weighted: 0 }
+      map.set(key, a)
+    }
+    a.variants.push(r.query)
+    a.impressions += r.impressions
+    a.clicks += r.clicks
+    a.weighted += r.position * r.impressions
+    if (r.impressions > a.top) {
+      a.top = r.impressions
+      a.query = r.query
+    }
+  }
+  return [...map.values()]
+    .map((a) => ({ ...a, position: a.impressions ? a.weighted / a.impressions : 0 }))
+    .sort((a, b) => b.impressions - a.impressions)
+}
+
+function gscActive() {
+  return state.gsc.on && !!state.gsc.data
+}
+
+function gscOf(text) {
+  return gscActive() ? state.gsc.index.get(norm(text)) : undefined
+}
+
+async function loadGsc(refresh) {
+  state.gsc.loading = true
+  state.gsc.error = null
+  renderGscStatus()
+  try {
+    const res = await fetch(`/api/gsc?days=${state.gsc.days}${refresh ? '&refresh=1' : ''}`)
+    if (!res.ok) throw new Error(await res.text())
+    const json = await res.json()
+    if (!json.available) {
+      state.gsc.data = null
+      state.gsc.error = [json.apiError, json.fileError].filter(Boolean).join(' ／ ')
+    } else {
+      state.gsc.data = json
+      state.gsc.rows = aggregateGsc(json.rows)
+      state.gsc.index = new Map(state.gsc.rows.map((r) => [r.key, r]))
+    }
+  } catch (e) {
+    state.gsc.data = null
+    state.gsc.error = e.message || String(e)
+  } finally {
+    state.gsc.loading = false
+    renderGscStatus()
+    render()
+  }
+}
+
+function saveGscPrefs() {
+  writeStore(GSC_KEY, { on: state.gsc.on, days: state.gsc.days, sort: state.sort })
+}
+
+function renderGscStatus() {
+  const { on, loading, data, error } = state.gsc
+  $('gscControls').hidden = !on
+  document.querySelector('[data-tab="gsc"]').hidden = !on
+  if (!on && state.tab === 'gsc') {
+    state.tab = 'all'
+    syncTabs()
+  }
+
+  const status = $('gscStatus')
+  if (!on) return status.fill('OFF のあいだは Search Console に問い合わせません。')
+  if (loading) return status.fill('読み込み中…')
+  if (!data) return status.fill(h('span', { class: 'bad' }, `読めませんでした：${error || '理由不明'}`))
+
+  const named = data.rows.reduce((s, r) => s + r.impressions, 0)
+  const share = data.totalImpressions ? Math.round((named / data.totalImpressions) * 100) : null
+  status.fill(
+    h('div', null,
+      data.source === 'api' ? 'API' : '控えのファイル（data/analytics.json）',
+      `・${data.range.start}〜${data.range.end}`,
+      data.cached ? '・サーバーの控え' : '',
+    ),
+    h('div', null, `検索語 ${data.rows.length}（表記ゆれをまとめて ${state.gsc.rows.length}）・表示 ${named.toLocaleString()}`),
+    share !== null
+      ? h('div', null, `語が分かるのは表示全体の ${share}% だけ。残りは Google が伏せているので、「実績なし」は「検索されていない」ではない。`)
+      : null,
+    data.source === 'file' && data.apiError
+      ? h('div', { class: 'warn' }, `API を使えなかったので控えを表示しています（${data.apiError}）。期間の選択は効きません。`)
+      : null,
+  )
+}
+
+/** 候補の行に付ける Search Console の3列（完全一致・空白の違いは無視） */
+function gscCells(text) {
+  if (!gscActive()) return null
+  const g = gscOf(text)
+  if (!g) return [h('td', { class: 'num gsc none' }, '—'), h('td', { class: 'num gsc none' }, ''), h('td', { class: 'num gsc none' }, '')]
+  return [
+    h('td', { class: 'num gsc', title: g.variants.length > 1 ? `表記ゆれ ${g.variants.length} 語の合計\n${g.variants.join('\n')}` : null }, g.impressions.toLocaleString()),
+    h('td', { class: 'num gsc' }, g.clicks),
+    h('td', { class: 'num gsc' }, g.position.toFixed(1)),
+  ]
+}
+
+function gscHeads() {
+  if (!gscActive()) return null
+  return [
+    h('th', { class: 'gsc', title: '自分のサイトがこの語で検索結果に出た回数' }, '表示'),
+    h('th', { class: 'gsc' }, 'クリック'),
+    h('th', { class: 'gsc', title: '平均掲載順位' }, '順位'),
+  ]
+}
+
+// --- 描画 -----------------------------------------------------------------------
+
+function render() {
+  const results = ordered()
+  const rows = mergedCandidates()
+  const zero = results.filter((r) => !r.error && r.candidates.length === 0).length
+  const failed = results.filter((r) => r.error).length
+
+  $('stats').fill(
+    stat(results.length, '調べた語'),
+    stat(rows.length, '候補（重複なし）'),
+    stat(zero, '候補0件の語'),
+    failed ? stat(failed, '取得失敗', 'bad') : null,
+    gscActive() && rows.length ? stat(rows.filter((r) => gscOf(r.candidate)).length, '自サイトに表示実績のある候補', 'accent') : null,
+  )
+
+  // 並べ替えは候補一覧にしか効かない
+  $('sortWrap').hidden = !gscActive() || state.tab !== 'all'
+
+  const view = $('view')
+  if (state.tab === 'gsc') return renderGsc(view, results, rows)
+  if (!results.length) {
+    view.fill(
+      h('div', { class: 'empty' },
+        h('p', null, 'まだ何も調べていません。'),
+        h('p', null, '左に語を入れて「調べる」を押すと、Google が補う候補を集めます。'),
+      ),
+    )
+    $('shown').textContent = ''
+    return
+  }
+
+  if (state.tab === 'all') renderAll(view, rows)
+  else if (state.tab === 'words') renderWords(view, rows)
+  else renderSeeds(view, results)
+}
+
+function stat(value, label, tone) {
+  return h('div', { class: 'stat' }, h('b', { style: tone ? `color:var(--${tone})` : null }, value), h('span', null, label))
+}
+
+function renderAll(view, rows) {
+  const byImpressions = gscActive() && state.sort === 'impr'
+  const shown = rows
+    .filter((r) => matchesFilter(r.candidate, r.from.map((f) => f.seed)))
+    .sort((a, b) =>
+      (byImpressions ? (gscOf(b.candidate)?.impressions ?? -1) - (gscOf(a.candidate)?.impressions ?? -1) : 0) ||
+      b.from.length - a.from.length || a.best - b.best || a.first - b.first)
+  $('shown').textContent = `${shown.length} / ${rows.length} 件`
+  if (!shown.length) {
+    view.fill(h('div', { class: 'empty' }, h('p', null, '絞り込みに当たる候補がありません。')))
+    return
+  }
+  view.fill(
+    h('table', null,
+      h('thead', null, h('tr', null,
+        h('th', null, '候補'),
+        h('th', { title: 'この候補が出た語の数' }, '出た語'),
+        h('th', { title: 'Google の候補一覧での最高位置' }, '最高位'),
+        gscHeads(),
+        h('th', { title: '元の語には無く、候補で足された問い' }, '足された問い'),
+        h('th', null, ''),
+      )),
+      h('tbody', null, shown.map((r) => h('tr', null,
+        h('td', { class: 'cand' },
+          h('div', null, highlight(r.candidate, r.from.map((f) => f.seed))),
+          h('div', { class: 'from' }, r.from.map((f, i) => [i ? ' ／ ' : '', showSeed(f.seed), ` ${f.rank}位`])),
+        ),
+        h('td', { class: 'num' }, r.from.length),
+        h('td', { class: 'num' }, r.best),
+        gscCells(r.candidate),
+        h('td', null, h('div', { class: 'chips' }, shapesOf(r.candidate, r.from.map((f) => f.seed)).map(shapeChip))),
+        h('td', { class: 'ops' },
+          h('button', { type: 'button', class: 'small', title: 'この候補と、その後ろに空白を付けた2語を調べる', onclick: () => dig(r.candidate), disabled: !!state.controller }, '深掘り'),
+          ' ',
+          h('button', { type: 'button', class: 'small link', title: '調べる語に足す', onclick: () => addSeed(r.candidate) }, '＋'),
+          h('button', { type: 'button', class: 'small link', title: 'コピー', onclick: () => copyText(r.candidate) }, '⧉'),
+        ),
+      ))),
+    ),
+  )
+}
+
+function renderWords(view, rows) {
+  const words = neighborWords(rows.filter((r) => matchesFilter(r.candidate, r.from.map((f) => f.seed))))
+  $('shown').textContent = `${words.length} 語`
+  if (!words.length) {
+    view.fill(h('div', { class: 'empty' }, h('p', null, '元の語に無い語が候補に出ていません。')))
+    return
+  }
+  view.fill(
+    h('p', { class: 'hint', style: 'margin:0 0 8px' }, '候補に出てきて、元の語には無かった語。数は「その語を含む候補の数」。語を押すと候補一覧をその語で絞り込みます。'),
+    h('table', null,
+      h('thead', null, h('tr', null, h('th', null, '語'), h('th', null, '候補数'), h('th', null, '例'))),
+      h('tbody', null, words.map((w) => h('tr', null,
+        h('td', null, h('button', { type: 'button', class: 'link', onclick: () => { $('filter').value = w.word; setTab('all') } }, w.word)),
+        h('td', { class: 'num' }, w.count),
+        h('td', { class: 'from' }, w.examples.join(' ／ ')),
+      ))),
+    ),
+  )
+}
+
+function renderSeeds(view, results) {
+  $('shown').textContent = `${results.length} 語`
+  view.fill(
+    h('div', { class: 'cards' }, results.map((r) => {
+      const visible = r.candidates.map((c, i) => ({ c, rank: i + 1 })).filter((x) => matchesFilter(x.c, [r.seed]))
+      return h('div', { class: 'card' },
+        h('h3', null,
+          h('span', null, showSeed(r.seed)),
+          r.error ? h('span', { class: 'chip bad' }, '失敗')
+            : r.candidates.length ? h('span', { class: 'chip muted' }, `${r.candidates.length}件`)
+            : h('span', { class: 'chip warn' }, '0件'),
+          r.cached ? h('span', { class: 'chip muted', title: 'サーバーが覚えていた結果（取り直していない）' }, 'キャッシュ') : null,
+          h('span', { class: 'spacer' }),
+          h('button', { type: 'button', class: 'small link', title: '候補をまとめてコピー', onclick: () => copyText(r.candidates.join('\n')) }, '⧉'),
+        ),
+        r.error
+          ? h('p', { class: 'fail' }, `取得できませんでした（${r.error}）。0件とは違い、何の証拠にもなりません。`)
+          : !r.candidates.length
+            ? h('p', { class: 'none' }, '候補なし。需要ゼロとは言えないが、その語形が一般的でない証拠にはなる。')
+            : visible.length
+              ? h('ol', null, visible.map((x) => {
+                  const g = gscOf(x.c)
+                  return h('li', { value: x.rank },
+                    highlight(x.c, [r.seed]), ' ',
+                    h('span', { class: 'chips', style: 'display:inline-flex' },
+                      shapesOf(x.c, [r.seed]).map(shapeChip),
+                      g ? h('span', { class: 'chip', style: 'color:var(--accent)', title: '自分のサイトの Search Console' }, `表示 ${g.impressions}・${g.position.toFixed(1)}位`) : null,
+                    ),
+                  )
+                }))
+              : h('p', { class: 'none' }, '絞り込みに当たる候補がありません。'),
+      )
+    })),
+  )
+}
+
+/**
+ * 自分のサイトが実際に表示された語のうち、**調べた語の単語をすべて含むもの**。
+ * サジェストに出ていない語（＝Google は補わないが、実際には打たれている語形）が見える。
+ */
+function renderGsc(view, results, candidateRows) {
+  if (!state.gsc.on) return
+  if (!gscActive()) {
+    $('shown').textContent = ''
+    return view.fill(h('div', { class: 'empty' }, h('p', null, state.gsc.loading ? '読み込み中…' : '左の Search Console の欄を確認してください。')))
+  }
+
+  const fromResults = [...new Set(results.map((r) => r.seed.trim()))]
+  const bases = fromResults.length
+    ? fromResults
+    : $('seeds').value.split('\n').map((s) => s.trim()).filter(Boolean)
+  const baseTokens = bases.map((b) => tokens(b).map(norm)).filter((ts) => ts.length)
+  const suggested = new Set(candidateRows.map((r) => norm(r.candidate)))
+  const q = tokens($('filter').value).map(norm)
+
+  const related = state.gsc.rows
+    .filter((r) => !baseTokens.length || baseTokens.some((ts) => ts.every((t) => r.key.includes(t))))
+    .filter((r) => q.every((t) => r.key.includes(t)))
+    .filter((r) => !state.gscOnlyMissing || !suggested.has(r.key))
+
+  $('shown').textContent = `${related.length} 語`
+  view.fill(
+    h('div', { class: 'toolbar' },
+      h('span', { class: 'hint' },
+        baseTokens.length
+          ? `調べた語（${bases.length}語）の単語をすべて含む、自分のサイトの検索語。`
+          : 'まだ語を調べていないので、全検索語を表示回数順に出しています。',
+      ),
+      h('span', { class: 'spacer' }),
+      h('label', { class: 'check-inline' },
+        h('input', {
+          type: 'checkbox',
+          checked: state.gscOnlyMissing,
+          onchange: (e) => { state.gscOnlyMissing = e.target.checked; render() },
+        }),
+        'サジェストに出ていない語だけ',
+      ),
+    ),
+    related.length
+      ? h('table', null,
+          h('thead', null, h('tr', null,
+            h('th', null, '検索語'),
+            h('th', { class: 'gsc' }, '表示'),
+            h('th', { class: 'gsc' }, 'クリック'),
+            h('th', { class: 'gsc' }, '順位'),
+            h('th', { title: '今回調べたサジェストの候補に、同じ語（空白の違いは無視）があるか' }, 'サジェスト'),
+            h('th', null, ''),
+          )),
+          h('tbody', null, related.map((r) => h('tr', null,
+            h('td', { class: 'cand' },
+              h('div', null, r.query),
+              r.variants.length > 1 ? h('div', { class: 'from' }, `表記ゆれ ${r.variants.length} 語の合計：${r.variants.join(' ／ ')}`) : null,
+            ),
+            h('td', { class: 'num gsc' }, r.impressions.toLocaleString()),
+            h('td', { class: 'num gsc' }, r.clicks),
+            h('td', { class: 'num gsc' }, r.position.toFixed(1)),
+            h('td', null, suggested.has(r.key) ? h('span', { class: 'yes' }, '出た') : h('span', { class: 'hint' }, '—')),
+            h('td', { class: 'ops' },
+              h('button', { type: 'button', class: 'small', title: 'この語と、その後ろに空白を付けた2語を調べる', onclick: () => dig(r.query), disabled: !!state.controller }, '深掘り'),
+              ' ',
+              h('button', { type: 'button', class: 'small link', title: '調べる語に足す', onclick: () => addSeed(r.query) }, '＋'),
+            ),
+          ))),
+        )
+      : h('div', { class: 'empty' }, h('p', null, '当たる検索語がありません。'), h('p', null, '語が伏せられているだけの可能性があります（左の欄の割合を参照）。')),
+  )
+}
+
+function setTab(tab) {
+  state.tab = tab
+  syncTabs()
+  render()
+}
+
+function syncTabs() {
+  for (const b of document.querySelectorAll('[role="tab"]')) b.setAttribute('aria-selected', String(b.dataset.tab === state.tab))
+}
+
+function renderShapeFilters() {
+  $('shapeFilters').fill(...state.config.shapes.map((s) =>
+    h('button', {
+      type: 'button',
+      class: `chip shape-${s.key}`,
+      'aria-pressed': String(state.shapeFilter.has(s.key)),
+      title: `「${s.label}」を足した候補だけ出す`,
+      onclick: () => {
+        if (state.shapeFilter.has(s.key)) state.shapeFilter.delete(s.key)
+        else state.shapeFilter.add(s.key)
+        renderShapeFilters()
+        render()
+      },
+    }, h('span', null, s.label)),
+  ))
+}
+
+// --- 書き出し -------------------------------------------------------------------
+
+/** ★ Search Console の列は ON で読めているときだけ付く（OFF で書き出したファイルに実数を混ぜない） */
+function exportRows() {
+  const withGsc = gscActive()
+  const rows = [['語', '位置', '候補', '足された問い', ...(withGsc ? ['SC表示', 'SCクリック', 'SC順位'] : [])]]
+  const blank = withGsc ? ['', '', ''] : []
+  for (const r of ordered()) {
+    if (r.error) rows.push([r.seed, '', '', `取得失敗: ${r.error}`, ...blank])
+    else if (!r.candidates.length) rows.push([r.seed, '', '', '候補なし', ...blank])
+    r.candidates.forEach((c, i) => {
+      const g = gscOf(c)
+      rows.push([
+        r.seed, String(i + 1), c, shapesOf(c, [r.seed]).map((s) => s.label).join('・'),
+        ...(withGsc ? (g ? [String(g.impressions), String(g.clicks), g.position.toFixed(1)] : blank) : []),
+      ])
+    })
+  }
+  return rows
+}
+
+function csvCell(v) {
+  return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
+}
+
+// --- 履歴 -----------------------------------------------------------------------
+
+function saveHistory() {
+  const entry = {
+    seeds: $('seeds').value.trim(),
+    suffixes: $('suffixes').value.trim(),
+    prefixes: $('prefixes').value.trim(),
+    raw: $('optRaw').checked,
+    space: $('optSpace').checked,
+    at: new Date().toISOString(),
+  }
+  const list = readStore(HISTORY_KEY, []).filter((e) =>
+    !(e.seeds === entry.seeds && e.suffixes === entry.suffixes && e.prefixes === entry.prefixes))
+  list.unshift(entry)
+  writeStore(HISTORY_KEY, list.slice(0, HISTORY_MAX))
+  renderHistory()
+}
+
+function renderHistory() {
+  const list = readStore(HISTORY_KEY, [])
+  $('history').fill(
+    h('option', { value: '' }, list.length ? `${list.length} 件` : '—'),
+    ...list.map((e, i) => {
+      const d = new Date(e.at)
+      const when = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+      const first = e.seeds.split('\n')[0] || '（空）'
+      const more = e.seeds.split('\n').length - 1
+      return h('option', { value: String(i) }, `${when}  ${first}${more > 0 ? ` ほか${more}語` : ''}`)
+    }),
+  )
+}
+
+// --- 起動 -----------------------------------------------------------------------
+
+async function init() {
+  try {
+    const res = await fetch('/api/config')
+    const config = await res.json()
+    config.shapes = config.shapes.map((s) => ({ ...s, regex: new RegExp(s.pattern) }))
+    state.config = config
+  } catch {
+    $('runError').fill(h('div', { class: 'error-box' }, 'サーバーに繋がりません。npm run suggest:ui を起動してください。'))
+  }
+
+  $('rules').fill(
+    h('b', null, '叩き方の決まり'), '　',
+    `1回 ${state.config.maxSeeds} 語まで・${state.config.intervalMs / 1000} 秒間隔。`,
+    `同じ語は ${Math.round(state.config.cacheTtlMs / 60000)} 分間取り直しません（サーバーを止めると消えます）。`,
+    '「あ〜ん」を総当たりで付ける展開はありません。公式APIではない口なので、候補を絞ってから叩いてください。',
+  )
+
+  const prefs = readStore(GSC_KEY, {})
+  if (state.config.gscDays.includes(prefs.days)) state.gsc.days = prefs.days
+  state.gsc.on = prefs.on === true
+  state.sort = prefs.sort === 'impr' ? 'impr' : 'count'
+  $('gscOn').checked = state.gsc.on
+  $('sort').value = state.sort
+  $('gscDays').fill(...state.config.gscDays.map((d) => h('option', { value: String(d), selected: d === state.gsc.days }, `直近 ${d} 日`)))
+  $('gscOn').addEventListener('change', (e) => {
+    state.gsc.on = e.target.checked
+    saveGscPrefs()
+    if (state.gsc.on && !state.gsc.data) loadGsc(false)
+    renderGscStatus()
+    render()
+  })
+  $('gscDays').addEventListener('change', (e) => {
+    state.gsc.days = Number(e.target.value)
+    saveGscPrefs()
+    loadGsc(false)
+  })
+  $('gscRefresh').addEventListener('click', () => loadGsc(true))
+  $('sort').addEventListener('change', (e) => {
+    state.sort = e.target.value
+    saveGscPrefs()
+    render()
+  })
+  renderGscStatus()
+  if (state.gsc.on) loadGsc(false)
+
+  for (const id of ['seeds', 'suffixes', 'prefixes', 'optRaw', 'optSpace']) {
+    $(id).addEventListener('input', renderPlan)
+  }
+  $('seeds').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) runFromForm()
+  })
+  $('presetShapes').addEventListener('click', () => {
+    $('suffixes').value = state.config.shapes.map((s) => s.label).join(', ')
+    renderPlan()
+  })
+  $('presetServices').addEventListener('click', () => {
+    $('prefixes').value = SERVICE_PRESET
+    renderPlan()
+  })
+  $('run').addEventListener('click', runFromForm)
+  $('stop').addEventListener('click', () => state.controller?.abort())
+  $('filter').addEventListener('input', render)
+  for (const b of document.querySelectorAll('[role="tab"]')) b.addEventListener('click', () => setTab(b.dataset.tab))
+  $('copyTsv').addEventListener('click', () => copyText(exportRows().map((r) => r.join('\t')).join('\n'), 'TSVをコピーしました'))
+  $('saveCsv').addEventListener('click', () => {
+    const csv = '﻿' + exportRows().map((r) => r.map(csvCell).join(',')).join('\r\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+    const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')
+    h('a', { href: url, download: `suggest-${stamp}.csv` }).click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  })
+  $('clear').addEventListener('click', () => {
+    state.results.clear()
+    renderPlan()
+    render()
+  })
+  $('history').addEventListener('change', (e) => {
+    const entry = readStore(HISTORY_KEY, [])[Number(e.target.value)]
+    if (entry) {
+      $('seeds').value = entry.seeds
+      $('suffixes').value = entry.suffixes
+      $('prefixes').value = entry.prefixes
+      $('optRaw').checked = entry.raw
+      $('optSpace').checked = entry.space
+      renderPlan()
+    }
+    e.target.value = ''
+  })
+
+  renderShapeFilters()
+  renderHistory()
+  renderPlan()
+  render()
+}
+
+init()
+</script>
+</body>
+</html>

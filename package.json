@@ -35,7 +35,8 @@
     "retire": "tsx pipeline/cli/retire.ts",
     "unpublish": "tsx pipeline/cli/publish.ts",
     "publish": "tsx pipeline/cli/publish.ts --show",
-    "genres": "tsx pipeline/cli/genres.ts"
+    "genres": "tsx pipeline/cli/genres.ts",
+    "suggest:ui": "tsx tools/suggest/server.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

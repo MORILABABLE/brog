@@ -1,0 +1,88 @@
+---
+title: '【2026年9月】Netflixでアニメ17本が見放題配信終了予定｜リコリス・リコイルとその着せ替え人形は恋をする'
+description: '「リコリス・リコイル」「その着せ替え人形は恋をする」「からかい上手の高木さん」「はじめの一歩」など、アニメ17本がNetflixで9月19日から9月30日にかけて見放題配信を終了します。'
+pubDate: 2026-09-17
+category: 'leaving'
+genres: ['anime']
+tags: ['Netflix', '配信終了', '2026年9月']
+sources:
+  - label: '配信情報と作品画像は Streaming Availability API by Movie of the Night 提供'
+    url: 'https://www.movieofthenight.com/about/api'
+  - label: '作品タイトル（Wikidata・CC0）'
+    url: 'https://www.wikidata.org/'
+dataAsOf: 2026-09-17
+heroImage: '/heroes/2026-09-special-anime-netflix.webp'
+---
+Netflixの９月アニメ見放題終了タイトルについてお伝えします。記事配信記事作成時点（9月17日時点）で17本が見放題終了の対象です。
+
+9月19日の「はじめの一歩」9月26日の「リコリス・リコイル」、「その着せ替え人形は恋をする」と「からかい上手の高木さん」は9月30日が終了日となります。シリーズや名作を順に解説していきますので、チェックして気になる作品を観ておきましょう！
+
+## 「その着せ替え人形は恋をする」「からかい上手の高木さん」など恋愛もの6本が終了予定
+
+[![その着せ替え人形は恋をする（2022年）](/sections/posters/2026-09-special-anime-netflix-6fd32576-1.webp)](https://www.amazon.co.jp/s?k=%E3%81%9D%E3%81%AE%E7%9D%80%E3%81%9B%E6%9B%BF%E3%81%88%E4%BA%BA%E5%BD%A2%E3%81%AF%E6%81%8B%E3%82%92%E3%81%99%E3%82%8B&i=instant-video) [![からかい上手の高木さん（2018年）](/sections/posters/2026-09-special-anime-netflix-6fd32576-2.webp)](https://www.amazon.co.jp/s?k=%E3%81%8B%E3%82%89%E3%81%8B%E3%81%84%E4%B8%8A%E6%89%8B%E3%81%AE%E9%AB%98%E6%9C%A8%E3%81%95%E3%82%93&i=instant-video)
+
+| 終了日 | 作品 | 出演者 | サービス |
+| --- | --- | --- | --- |
+| 9月23日 | 義妹生活 | — | Netflix |
+| 9月24日 | 帝乃三姉妹は案外、チョロい。 | — | Netflix |
+| 9月26日 | 先輩はおとこのこ | — | Netflix |
+| 9月30日 | 負けヒロインが多すぎる！ | — | Netflix |
+| 9月30日 | その着せ替え人形は恋をする | — | Netflix |
+| 9月30日 | からかい上手の高木さん | — | Netflix |
+
+「その着せ替え人形は恋をする」は、雛人形職人の祖父のもとで人形作りに打ち込む男子高校生と、見た目はギャルでコスプレが大好きな少女が、衣装作りを通じて近づいていく物語です。作者は「人形のまち」として知られるさいたま市岩槻区の工房やコスプレイヤーのもとへ何度も取材に通っており、衣装を仕立てる工程や人形職人の仕事ぶりが細かく描かれます。原作の累計発行部数は1500万部を超え、テレビアニメは2025年にSeason 2まで作られました。
+
+「からかい上手の高木さん」は、中学校の同級生を毎回からかう高木さんと、仕返しを狙っては見破られる西片のやりとりを、1話に1つの出来事で描くラブコメディです。「◯◯さん系」と呼ばれる漫画の先駆けとされ、原作は第66回小学館漫画賞を受けています。2024年には実写のドラマと映画も作られました。
+
+同じ9月30日に終わる「負けヒロインが多すぎる！」は、恋に破れた側の女の子たちを主役に据えたA-1 Pictures制作の作品で、続編アニメの制作も決定しています。見逃しのないようにしましょう。
+
+## オリジナルアニメ「リコリス・リコイル」が終了予定
+
+[![リコリス・リコイル（2022年）](/sections/posters/2026-09-special-anime-netflix-00aea035-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%AA%E3%82%B3%E3%83%AA%E3%82%B9%E3%83%BB%E3%83%AA%E3%82%B3%E3%82%A4%E3%83%AB&i=instant-video)
+
+| 終了日 | 作品 | 出演者 | サービス |
+| --- | --- | --- | --- |
+| 9月26日 | リコリス・リコイル | — | Netflix |
+
+「リコリス・リコイル」は、犯罪を未然に防ぐ秘密組織のエージェント「リコリス」でありながら、和カフェ「リコリコ」の店員として働く2人の少女を描いた、A-1 Pictures制作のオリジナルアニメです。放送当時から根強い人気のある作品で、日常の場面やギャグが多い一方で人の命を扱う重い物語でもあり、主人公の一人である千束の明るい性格が話を深刻に傾けすぎない、と評価されています。
+本作は作画監督として数々の作品に関わってきた足立慎吾の初監督作で、ストーリー原案は『ベン・トー』のアサウラ、キャラデザには漫画家のいみぎむるが起用されました。放送後には舞台が2作上演され、新作アニメの制作も決まっています。見放題配信は9月26日までなので、それまでに観ておきましょう。
+
+## そのほかに終了予定の10本
+
+[![はじめの一歩（2000年）](/sections/posters/2026-09-special-anime-netflix-368a47ed-1.webp)](https://www.amazon.co.jp/s?k=%E3%81%AF%E3%81%98%E3%82%81%E3%81%AE%E4%B8%80%E6%AD%A9&i=instant-video) [![瑠璃の宝石（2025年）](/sections/posters/2026-09-special-anime-netflix-368a47ed-2.webp)](https://www.amazon.co.jp/s?k=%E7%91%A0%E7%92%83%E3%81%AE%E5%AE%9D%E7%9F%B3&i=instant-video)
+
+| 終了日 | 作品 | 出演者 | サービス |
+| --- | --- | --- | --- |
+| 9月19日 | はじめの一歩 | — | Netflix |
+| 9月20日 | 地縛少年花子くん | — | Netflix |
+| 9月21日 | 最強陰陽師の異世界転生記 | — | Netflix |
+| 9月22日 | 鬼灯の冷徹 | — | Netflix |
+| 9月26日 | 魔王軍最強の魔術師は人間だった | — | Netflix |
+| 9月29日 | 瑠璃の宝石 | — | Netflix |
+| 9月30日 | 信じていた仲間達にダンジョン奥地で殺されかけたがギフト『無限ガチャ』でレベル9999の仲間達を手に入れて元パーティーメンバーと世界に復讐&『ざまぁ!』します! | — | Netflix |
+| 9月30日 | トリリオンゲーム | — | Netflix |
+| 9月30日 | 異世界失格 | — | Netflix |
+| 9月30日 | かつて魔法少女と悪は敵対していた。 | — | Netflix |
+
+「はじめの一歩」は1989年から連載が続き、シリーズ累計1億部を突破する長寿ボクシングアニメです。主人公・幕ノ内一歩のボクシングの挑戦を描きます。「瑠璃の宝石」は、大学で鉱物学を学び高校の理科教員をしていた作者が、鉱物採集をもっと身近に感じてほしいと描いた漫画のアニメ化です。美少女高校生と大学生の交流も魅力の一つとなっています。
+
+## 他のサービスで探す
+
+※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+・U-NEXT の5サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
+
+主な作品の検索リンクです。取り扱いの有無は各サービスのページでご確認ください。
+
+- **リコリス・リコイル** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%AA%E3%82%B3%E3%83%AA%E3%82%B9%E3%83%BB%E3%83%AA%E3%82%B3%E3%82%A4%E3%83%AB) / [Hulu](https://www.hulu.jp/search?q=%E3%83%AA%E3%82%B3%E3%83%AA%E3%82%B9%E3%83%BB%E3%83%AA%E3%82%B3%E3%82%A4%E3%83%AB) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%AA%E3%82%B3%E3%83%AA%E3%82%B9%E3%83%BB%E3%83%AA%E3%82%B3%E3%82%A4%E3%83%AB)
+- **その着せ替え人形は恋をする** [U-NEXT](https://video.unext.jp/freeword?query=%E3%81%9D%E3%81%AE%E7%9D%80%E3%81%9B%E6%9B%BF%E3%81%88%E4%BA%BA%E5%BD%A2%E3%81%AF%E6%81%8B%E3%82%92%E3%81%99%E3%82%8B) / [Hulu](https://www.hulu.jp/search?q=%E3%81%9D%E3%81%AE%E7%9D%80%E3%81%9B%E6%9B%BF%E3%81%88%E4%BA%BA%E5%BD%A2%E3%81%AF%E6%81%8B%E3%82%92%E3%81%99%E3%82%8B) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%81%9D%E3%81%AE%E7%9D%80%E3%81%9B%E6%9B%BF%E3%81%88%E4%BA%BA%E5%BD%A2%E3%81%AF%E6%81%8B%E3%82%92%E3%81%99%E3%82%8B)
+- **からかい上手の高木さん** [U-NEXT](https://video.unext.jp/freeword?query=%E3%81%8B%E3%82%89%E3%81%8B%E3%81%84%E4%B8%8A%E6%89%8B%E3%81%AE%E9%AB%98%E6%9C%A8%E3%81%95%E3%82%93) / [Hulu](https://www.hulu.jp/search?q=%E3%81%8B%E3%82%89%E3%81%8B%E3%81%84%E4%B8%8A%E6%89%8B%E3%81%AE%E9%AB%98%E6%9C%A8%E3%81%95%E3%82%93) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%81%8B%E3%82%89%E3%81%8B%E3%81%84%E4%B8%8A%E6%89%8B%E3%81%AE%E9%AB%98%E6%9C%A8%E3%81%95%E3%82%93)
+- **はじめの一歩** [U-NEXT](https://video.unext.jp/freeword?query=%E3%81%AF%E3%81%98%E3%82%81%E3%81%AE%E4%B8%80%E6%AD%A9) / [Hulu](https://www.hulu.jp/search?q=%E3%81%AF%E3%81%98%E3%82%81%E3%81%AE%E4%B8%80%E6%AD%A9) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%81%AF%E3%81%98%E3%82%81%E3%81%AE%E4%B8%80%E6%AD%A9)
+- **負けヒロインが多すぎる！** [U-NEXT](https://video.unext.jp/freeword?query=%E8%B2%A0%E3%81%91%E3%83%92%E3%83%AD%E3%82%A4%E3%83%B3%E3%81%8C%E5%A4%9A%E3%81%99%E3%81%8E%E3%82%8B%EF%BC%81) / [Hulu](https://www.hulu.jp/search?q=%E8%B2%A0%E3%81%91%E3%83%92%E3%83%AD%E3%82%A4%E3%83%B3%E3%81%8C%E5%A4%9A%E3%81%99%E3%81%8E%E3%82%8B%EF%BC%81) / [DMM TV](https://tv.dmm.com/search/?keyword=%E8%B2%A0%E3%81%91%E3%83%92%E3%83%AD%E3%82%A4%E3%83%B3%E3%81%8C%E5%A4%9A%E3%81%99%E3%81%8E%E3%82%8B%EF%BC%81)
+- **鬼灯の冷徹** [U-NEXT](https://video.unext.jp/freeword?query=%E9%AC%BC%E7%81%AF%E3%81%AE%E5%86%B7%E5%BE%B9) / [Hulu](https://www.hulu.jp/search?q=%E9%AC%BC%E7%81%AF%E3%81%AE%E5%86%B7%E5%BE%B9) / [DMM TV](https://tv.dmm.com/search/?keyword=%E9%AC%BC%E7%81%AF%E3%81%AE%E5%86%B7%E5%BE%B9)
+- **地縛少年花子くん** [U-NEXT](https://video.unext.jp/freeword?query=%E5%9C%B0%E7%B8%9B%E5%B0%91%E5%B9%B4%E8%8A%B1%E5%AD%90%E3%81%8F%E3%82%93) / [Hulu](https://www.hulu.jp/search?q=%E5%9C%B0%E7%B8%9B%E5%B0%91%E5%B9%B4%E8%8A%B1%E5%AD%90%E3%81%8F%E3%82%93) / [DMM TV](https://tv.dmm.com/search/?keyword=%E5%9C%B0%E7%B8%9B%E5%B0%91%E5%B9%B4%E8%8A%B1%E5%AD%90%E3%81%8F%E3%82%93)
+- **トリリオンゲーム** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%88%E3%83%AA%E3%83%AA%E3%82%AA%E3%83%B3%E3%82%B2%E3%83%BC%E3%83%A0) / [Hulu](https://www.hulu.jp/search?q=%E3%83%88%E3%83%AA%E3%83%AA%E3%82%AA%E3%83%B3%E3%82%B2%E3%83%BC%E3%83%A0) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%88%E3%83%AA%E3%83%AA%E3%82%AA%E3%83%B3%E3%82%B2%E3%83%BC%E3%83%A0)
+
+## まとめ
+
+Netflixでは9月19日の「はじめの一歩」を皮切りに、9月30日までにアニメ17本の見放題配信が終わります。「リコリス・リコイル」は9月26日、「その着せ替え人形は恋をする」と「からかい上手の高木さん」は9月30日が終了日です。話数の多い作品ほど観終えるまでに時間がかかるので、終了日の早いものから予定に入れておきましょう。
+
+> 配信情報と作品画像は Streaming Availability API by Movie of the Night 提供

@@ -50,6 +50,11 @@ export interface SuggestResult {
   candidates: string[]
   /** 候補に現れた問いの型 */
   shapes: QuestionShapeKey[]
+  /**
+   * 取れなかった理由。**候補0件と取得失敗を区別するため**にある（tools/suggest の画面が使う）。
+   * ★ 0件は「その語形が一般的でない証拠」になるが、失敗（429 など）は何の証拠にもならない。
+   */
+  error?: string
 }
 
 /** 1語ぶんの候補を取る。**失敗しても落とさない**（確認のための道具なので） */
@@ -60,7 +65,7 @@ export async function fetchSuggest(seed: string): Promise<SuggestResult> {
       headers: { 'User-Agent': USER_AGENT },
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     })
-    if (!res.ok) return { seed, candidates: [], shapes: [] }
+    if (!res.ok) return { seed, candidates: [], shapes: [], error: `HTTP ${res.status}` }
     // ★ 明示的に UTF-8 でデコードする
     const text = new TextDecoder('utf-8').decode(new Uint8Array(await res.arrayBuffer()))
     const parsed = JSON.parse(text) as [string, string[]]
@@ -69,8 +74,8 @@ export async function fetchSuggest(seed: string): Promise<SuggestResult> {
       (s) => s.key,
     )
     return { seed, candidates, shapes }
-  } catch {
-    return { seed, candidates: [], shapes: [] }
+  } catch (e) {
+    return { seed, candidates: [], shapes: [], error: e instanceof Error ? e.message : String(e) }
   }
 }
 

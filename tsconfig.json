@@ -13,5 +13,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["pipeline/**/*.ts", "theme-packs/**/*.ts"]
+  "include": ["pipeline/**/*.ts", "theme-packs/**/*.ts", "tools/**/*.ts"]
 }

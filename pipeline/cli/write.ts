@@ -1422,7 +1422,15 @@ function pickRecipe(types: ArticleType[]): Recipe {
   const noun = variantNoun(type)
   const picked = arg(vFlag)
   if (!type.variants?.length) {
-    if (picked) throw new Error(`記事タイプ ${type.id} は${noun}で分かれていません（--${vFlag} は不要）`)
+    /*
+     * ★ 区分を持たない記事タイプでも、**同じ名前のフラグを自分で宣言していれば**それは区分ではなく
+     *   絞り込み（`special --genre anime`）。ここで弾くと宣言したフラグが一度も届かない
+     *   （2026-09-17 まで実際にそうなっていた）。値は collectFlags が拾っている。
+     */
+    const declaredHere = type.flags?.some((f) => f.name === vFlag)
+    if (picked && !declaredHere) {
+      throw new Error(`記事タイプ ${type.id} は${noun}で分かれていません（--${vFlag} は不要）`)
+    }
     return { type, flags: declared }
   }
 

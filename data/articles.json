@@ -33,6 +33,35 @@
       "writtenAt": "2026-09-05"
     },
     {
+      "slug": "2026-09-special-anime-netflix",
+      "typeId": "special",
+      "targetMonth": "2026-09",
+      "flags": {
+        "kind": "expiring",
+        "topic": "アニメ",
+        "slug": "anime-netflix",
+        "service": "netflix",
+        "genre": "anime"
+      },
+      "category": "leaving",
+      "writtenAt": "2026-09-17"
+    },
+    {
+      "slug": "2026-09-special-japanese-anime-u-next",
+      "typeId": "special",
+      "targetMonth": "2026-09",
+      "flags": {
+        "kind": "expiring",
+        "topic": "日本のアニメ",
+        "slug": "japanese-anime-u-next",
+        "match": "^(?!.*(舞台|ミュージカル|LIVE|イベント|すとぷり))",
+        "service": "u-next",
+        "genre": "anime"
+      },
+      "category": "leaving",
+      "writtenAt": "2026-09-17"
+    },
+    {
       "slug": "2026-09-special-warner-anime-u-next",
       "typeId": "special",
       "targetMonth": "2026-09",
@@ -190,5 +219,5 @@
       "writtenAt": "2026-09-15"
     }
   ],
-  "updatedAt": "2026-09-15T03:38:14.055Z"
+  "updatedAt": "2026-09-17T13:49:24.007Z"
 }

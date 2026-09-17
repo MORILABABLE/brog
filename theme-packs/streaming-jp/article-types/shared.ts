@@ -961,7 +961,56 @@ export function styleIssues(md: string): VerifyIssue[] {
     })
   }
 
+  for (const miss of headlineWorksNotInProse(text)) {
+    issues.push({
+      level: 'warn',
+      message:
+        `見出し「${clip(miss.heading, 40)}」に出した「${miss.work}」が、その節の解説に出てきません` +
+        '（templates/writing.md 11節）。見出しに入れた作品は節の中心作として書きます。' +
+        '書く材料が無いなら、見出しから外して表に任せてください。',
+    })
+  }
+
   return issues
+}
+
+/** 見出しの「」を数えない節。作品の解説を書く場所ではない */
+const NON_COMMENTARY_HEADING = /他のサービスで探す|まとめ|出演者|対象作品|全終了作品/
+
+/**
+ * 見出しの「」に入れた作品のうち、**その節の地の文に1度も出てこないもの**。
+ *
+ * ■ なぜ見るか（2026-09-17 の添削・U-NEXT 日本のアニメ）
+ * 見出しに「ダンダダン 第2期」「怪獣８号 第２期」を立てて、解説は別の2作だけを書いた。
+ * 読者は見出しの作品を読みに来るので、それは節を丸ごと取り違えたことになる。
+ *
+ * ★ 数えるのは地の文だけ。表の行（`|` 始まり）と見出しそのものは除く。
+ *   表には必ず題名があるので、含めると常に「出てくる」ことになる。
+ */
+export function headlineWorksNotInProse(md: string): { heading: string; work: string }[] {
+  const out: { heading: string; work: string }[] = []
+  let heading: string | undefined
+  let prose: string[] = []
+  const flush = () => {
+    if (!heading || NON_COMMENTARY_HEADING.test(heading)) return
+    const body = prose.join('\n')
+    for (const m of heading.matchAll(/「([^「」]+)」/g)) {
+      const work = m[1]!
+      if (!body.includes(work)) out.push({ heading, work })
+    }
+  }
+  for (const line of md.split('\n')) {
+    const h = line.match(/^#{2,3}\s+(.+)$/)
+    if (h) {
+      flush()
+      heading = h[1]!
+      prose = []
+      continue
+    }
+    if (!line.trim().startsWith('|')) prose.push(line)
+  }
+  flush()
+  return out
 }
 
 /** その月の作品名（邦題と原題の両方）。検査の除外リストに使う。 */

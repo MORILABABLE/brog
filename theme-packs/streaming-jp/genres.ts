@@ -165,6 +165,17 @@ function fromAnnouncementCategory(work: Work): GenreKey | undefined {
  * `mainGenreName` より作品に近い）。
  */
 function fromSourceGenres(work: Work): GenreKey | undefined {
+  const key = sourceGenreKey(work)
+  // ★ **海外のアニメーションは洋画**（冒頭の「海外アニメの扱い」）。
+  //   U-NEXT は「アニメ」の棚に海外作品も置くので、棚の名前だけで決めると
+  //   リック・アンド・モーティやアドベンチャー・タイムがアニメ記事に載る
+  //   （2026-09-17 実測で69作）。作品詳細の制作国（`meta.country`）で振り直す。
+  //   日本を含む共同制作（「日本/中国」）は振り直さない。
+  if (key === 'anime' && madeOnlyOverseas(work)) return 'western'
+  return key
+}
+
+function sourceGenreKey(work: Work): GenreKey | undefined {
   for (const name of work.genres) {
     const hit = SOURCE_GENRES[name]
     if (hit) return hit
@@ -172,6 +183,17 @@ function fromSourceGenres(work: Work): GenreKey | undefined {
   const main = work.meta.mainGenreName
   if (typeof main === 'string' && SOURCE_GENRES[main]) return SOURCE_GENRES[main]
   return fromAnnouncementCategory(work)
+}
+
+/**
+ * 収集元が制作国を持っていて、そこに日本が無いか。制作国が無ければ false（決めない）。
+ * ★ **アニメの振り直しにだけ使う。** 制作国の付いたドキュメンタリー等を洋画に入れるかは
+ *   別の判断で、ここでは広げない（判定不能のまま記事に出さない、が冒頭の方針）。
+ */
+function madeOnlyOverseas(work: Work): boolean {
+  const country = work.meta.country
+  if (typeof country !== 'string' || !country.trim()) return false
+  return !country.split('/').map((c) => c.trim()).includes('日本')
 }
 
 /** 作品のジャンル。判定できなければ undefined（記事に出さない）。 */
