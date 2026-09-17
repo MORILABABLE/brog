@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+# ★ Cloudflare の「メールアドレス難読化」が作るリンク先（2026-09-17）。
+#   /contact の mailto リンクを Cloudflare が配信時に /cdn-cgi/l/email-protection#… へ書き換え、
+#   Googlebot がそれを辿ると 404 になる（Search Console の「見つかりませんでした（404）」に出た）。
+#   難読化はメールアドレスの収集対策として残したいので、クロールだけ止める。
+#   ★ /cdn-cgi/ 全体は止めないこと。/cdn-cgi/scripts/ にアドレスを表示するスクリプトがあり、
+#     止めると Google がページを描画するときに読めなくなる。
+#   経緯は docs/INDEXING.md 1節。
+Disallow: /cdn-cgi/l/
 
 Sitemap: https://mihoudairader.com/sitemap-index.xml
