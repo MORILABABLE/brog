@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content'
 import { ARCHIVE, SITE, CATEGORY_HUBS, SERVICE_HUBS } from '../config'
 import { archiveMonths } from '../lib/archive'
 import PostSearch from './PostSearch.astro'
+import { hubServiceHref } from '../lib/evergreen'
 
 /**
  * ★ メニューは CATEGORIES ではなく **CATEGORY_HUBS** から作る。
@@ -12,6 +13,8 @@ import PostSearch from './PostSearch.astro'
  * ■ 2段のメニュー（2026-08-27）
  * `serviceMenu: true` のハブ（配信終了済み・予定／新着配信）は、
  * **押すとサービス名が開く**。選ぶと `/category/<ハブ>/<サービス>` へ飛ぶ。
+ * ★ **カレンダーのある社は、同じ向きの配信カレンダーへ直接飛ぶ**（2026-09-17）。
+ *   Netflix の「配信終了済み・予定」→ `/leaving/netflix`。行き先の決め方は lib/evergreen.ts の `hubServiceHref`。
  * 読者は「終了まわりを見たい」の次に必ず「どのサービスか」を選ぶので、
  * その2手目をメニューの中で済ませる。
  * 開いた先の一番上に「すべて見る」を置いてあるので、
@@ -29,9 +32,9 @@ import PostSearch from './PostSearch.astro'
  * ★ **「監督・出演者」をここから外した。** 記事はほぼすべてが月次なのに
  *   月で辿る道が1本も無く、枠1つぶんの価値はこちらのほうが高いと判断した
  *   （理由は config.ts の ARCHIVE）。人物ページへの入口は
- *   **左の枠（LeftRail.astro）とフッター（Footer.astro）が持つ。**
- *   左の枠は 1200px 未満で消えるので、**フッターの行を消さないこと**
- *   （消すと狭い画面から人物ページへ入れなくなる）。
+ *   **フッター（Footer.astro）が持つ。** 左の枠（LeftRail.astro）にもあったが、
+ *   2026-09-17 に出すのをやめた（`SHOW_PEOPLE`）。**フッターの行を消さないこと**
+ *   （消すと作品ページの人名リンク以外から人物ページへ入れなくなる）。
  *
  * ■ 並びは**すべて左詰めの1行**（2026-08-30 に変更）
  * サイト名 → メニュー → 検索窓 の順に左から詰める。
@@ -103,7 +106,7 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
                 <ul>
                   {SERVICE_HUBS.map((s) => (
                     <li>
-                      <a href={`/category/${h.slug}/${s.slug}`}>{s.label}</a>
+                      <a href={hubServiceHref(h.slug, s.slug)}>{s.label}</a>
                     </li>
                   ))}
                 </ul>

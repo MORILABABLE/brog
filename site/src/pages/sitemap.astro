@@ -9,14 +9,7 @@ import {
   SITE,
 } from '../config'
 import { archiveMonths, servicesIn } from '../lib/archive'
-import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../lib/events-data'
-import {
-  CALENDAR_PAGES,
-  EVERGREEN_PAGES,
-  calendarSummary,
-  evergreenSummary,
-  evergreenTitle,
-} from '../lib/evergreen'
+import { EVERGREEN_PAGES, evergreenSummary, evergreenTitle, hubServiceIsCalendar } from '../lib/evergreen'
 import { serviceHasContent, serviceSection } from '../lib/service-pages'
 import { publishablePeople } from '../lib/people'
 import { STATE_CATEGORY, STATE_LABEL, STATE_ORDER_KEYS, publishableWorkPages } from '../lib/works'
@@ -66,12 +59,6 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
 
 const evergreen = EVERGREEN_PAGES.map((page) => ({ page, ...evergreenSummary(page) }))
 
-/*
- * 配信カレンダー（2026-09-07 追加）。サービス1社1枚。
- * ★ **上の常設ページとは別に数える。** 中身は同じデータだが別のURLで、
- *   左の枠（LeftRail.astro）が指しているのはこちら。
- */
-const calendars = CALENDAR_PAGES.map((page) => ({ page, ...calendarSummary(page) }))
 
 // --- 一覧ページ（カテゴリ / サービス）------------------------------------------
 
@@ -87,7 +74,8 @@ const categoryPages = CATEGORY_HUBS.map((h) => ({
  * （pages/category/[category]/[service].astro と同じ判定を使う）。
  */
 const categoryServicePages = SERVICE_MENU_HUBS.flatMap((hub) =>
-  SERVICE_HUBS.map((service) => ({
+  // ★ カレンダーのある社のページは作っていない（転送した・2026-09-17）。上の「配信カレンダー」に載る
+  SERVICE_HUBS.filter((service) => !hubServiceIsCalendar(hub.slug, service.slug)).map((service) => ({
     href: `/category/${hub.slug}/${service.slug}`,
     label: `${service.label}の${hub.label}`,
     hasContent: serviceHasContent(serviceSection(posts, service, hub.includes)),
@@ -169,7 +157,6 @@ const total =
   fixedPages.length +
   people.length +
   evergreen.length +
-  calendars.length +
   posts.length +
   categoryPages.length +
   categoryServicePages.length +
@@ -242,30 +229,11 @@ const description = `${SITE.name}の全ページ一覧です。作品ページ${
   </section>
 
   <section>
-    <h2>配信カレンダー<span class="count">{calendars.length}</span></h2>
+    <h2>配信カレンダー<span class="count">{evergreen.length}</span></h2>
     <p class="lead">
-      サービス1社につき1枚。終了予定と新着を1枚にまとめ、
-      先頭に月の升目を置いている（2026-09-07 追加）。
-      <strong>左の枠が指しているのはこちら。</strong>
-      下の「常設の作品一覧」は種類ごとの一覧で、こちらとは別のURLとして残してある。
+      サービス1社につき2枚（終了側・新着側）。収集のたびに中身が入れ替わります。記事と違って古くなりません。
+      2026-09-17 に、それまでの「終了予定」「新着」「カレンダー」の3種類をこの2枚にまとめた。
     </p>
-    <ul>
-      {
-        calendars.map((c) => (
-          <li>
-            <a href={c.page.href}>{evergreenTitle(c.page.titleBase, c.dataAsOf)}</a>
-            <span class="meta">
-              終了{c.leaving}本・新着{c.arrivals}本
-            </span>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
-
-  <section>
-    <h2>常設の作品一覧<span class="count">{evergreen.length}</span></h2>
-    <p class="lead">収集のたびに中身が入れ替わります。記事と違って古くなりません。</p>
     <ul>
       {
         evergreen.map((e) => (

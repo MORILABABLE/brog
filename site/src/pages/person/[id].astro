@@ -5,7 +5,7 @@ import AmazonCta from '../../components/AmazonCta.astro'
 import { ATTRIBUTION } from '../../config'
 import { personIsIndexable, personPage, publishablePeople } from '../../lib/people'
 import type { Person } from '../../lib/people'
-import { STATE_CATEGORY, STATE_LABEL } from '../../lib/works'
+import { STATE_CATEGORY, stateBadge } from '../../lib/works'
 import { formatDate, isoDate } from '../../utils/date'
 
 /**
@@ -172,6 +172,13 @@ const jsonLd = {
           {
             p.works.map((x) => {
               const s = x.work.services[0]!
+              /*
+               * ★ バッジは `stateBadge()` を通す（2026-09-17）。以前は `STATE_LABEL` を
+               *   そのまま出していて、予定日を過ぎた作品がすべて「終了予定日を経過」だった。
+               *   在庫台帳で確かめると大半は延長で、**この表の約1割が実態と食い違っていた**
+               *   （lib/works.ts の `passedCheck` の注記）。
+               */
+              const badge = stateBadge(x.work, s)
               return (
                 <tr>
                   <th scope="row">
@@ -181,8 +188,8 @@ const jsonLd = {
                   <td>{x.work.year ? `${x.work.year}年` : '—'}</td>
                   <td>{roleLabel(x.roles)}</td>
                   <td class="state">
-                    <span class="badge" data-category={STATE_CATEGORY[x.work.state]}>
-                      {STATE_LABEL[x.work.state]}
+                    <span class="badge" data-category={badge.category}>
+                      {badge.label}
                     </span>
                     <span class="when">
                       {s.label}・<time datetime={isoDate(s.at)}>{formatDate(s.at)}</time>

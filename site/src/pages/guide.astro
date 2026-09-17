@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { SITE } from '../config'
-import { ARRIVALS_SERVICES, ARRIVALS_WINDOW_DAYS, LEAVING_SERVICES } from '../lib/events-data'
+import { ARRIVALS_SERVICES, ARRIVALS_WINDOW_DAYS, CALENDAR_SERVICES, LEAVING_SERVICES } from '../lib/events-data'
 
 /**
  * 「当サイトの運営方針および活用について」（2026-08-29 追加）。
@@ -9,7 +9,7 @@ import { ARRIVALS_SERVICES, ARRIVALS_WINDOW_DAYS, LEAVING_SERVICES } from '../li
  * ■ 何のためのページか
  * 読者に3つのことを先に伝えるための1枚。
  *   1. **画像が作品のものでないことがある理由**（提供元から画像が来ない作品は汎用画像になる）
- *   2. **左の枠「新着配信・終了一覧」の使い方**（カレンダーと検索欄があること）
+ *   2. **左の枠「配信カレンダー」の使い方**（カレンダーと検索欄があること。2026-09-17 に改名）
  *   3. **「シリーズ配信」の読み方と但し書き**（2026-09-05 追加）
  * 「画像が無い」を欠落として見せるのではなく、**方針として説明する**のがこのページの用。
  *
@@ -39,6 +39,7 @@ const description =
 
 const leavingLabels = LEAVING_SERVICES.map((s) => s.label).join('・')
 const arrivalsLabels = ARRIVALS_SERVICES.map((s) => s.label).join('・')
+const calendarLabels = CALENDAR_SERVICES.map((s) => s.label).join('・')
 ---
 
 <BaseLayout title={title} description={description}>
@@ -82,16 +83,18 @@ const arrivalsLabels = ARRIVALS_SERVICES.map((s) => s.label).join('・')
       2つ。ジャンル別（アニメ・洋画・邦画など）とサービス別（Amazon Prime Video・Netflix など）にまとめています。
     </p>
 
-    <h3>「新着配信・終了一覧」でまとめて確かめる</h3>
+    <h3>「配信カレンダー」でまとめて確かめる</h3>
     <p>
-      画面の左に「<strong>新着配信・終了一覧</strong>」を設けています。こちらは<strong>随時更新されるサービス別の一覧</strong>です。
+      画面の左（スマホではメニューの「配信終了済み・予定」「新着配信」からサービスを選んだ先）に
+      「<strong>配信カレンダー</strong>」を設けています。こちらは<strong>随時更新されるサービス別の一覧</strong>で、
+      ページ上部の「サービス」「表示」を押すと、サービスと種類を切り替えられます。
     </p>
     <ul>
       <li>
-        <strong>配信終了予定</strong>……終了日が告知されている作品（{leavingLabels}）
+        <strong>配信終了</strong>……終了日が告知されている作品（{leavingLabels}）と、前月以降に見放題配信の終了を確認した作品（{calendarLabels}）
       </li>
       <li>
-        <strong>新着配信</strong>……直近{ARRIVALS_WINDOW_DAYS}日間に見放題配信が始まった作品（{
+        <strong>新着・配信予定</strong>……各サービスの告知にもとづく配信開始予定と、直近{ARRIVALS_WINDOW_DAYS}日間に見放題配信が始まった作品（{
           arrivalsLabels
         }）
       </li>

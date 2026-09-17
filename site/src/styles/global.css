@@ -114,6 +114,21 @@
   --cal-leaving-bg: #fdeaea;
   --cal-arrivals: #1a5fd0;
   --cal-arrivals-bg: #e8f0fe;
+  /*
+   * ★ 升目の印は4種類を**別々の色で塗る**（2026-09-17・運用者の指定）。
+   *   それまでは「これから＝薄い塗り／過去＝枠線だけ」で同じ色系統を使っていたが、
+   *   小さい升目の中では見分けが付かなかった。
+   *
+   *     終（終了予定）… --cal-leaving 赤      済（終了済み）… --cal-ended グレー
+   *     予（配信予定）… --cal-arrivals 青     新（新着）    … --cal-new 緑
+   *
+   *   1ページに出るのは「終と済」か「予と新」の2つだけなので、赤と緑が隣り合うことはない。
+   *   印の文字色は --cal-on（塗りの上に載る色）。白文字とのコントラスト比:
+   *   赤 5.6:1 / 青 5.8:1 / グレー 6.0:1 / 緑 5.1:1。
+   */
+  --cal-ended: #5f6368;
+  --cal-new: #1b7f3b;
+  --cal-on: #ffffff;
 
   /*
    * 表の中の配信状況ラベル（plugins/rehype-availability.ts が出す枠）の色。
@@ -190,6 +205,10 @@
     --cal-leaving-bg: #3a1f1e;
     --cal-arrivals: #6ea8fe;
     --cal-arrivals-bg: #17233a;
+    /* 塗りが明るくなるので、印の文字は地の色（暗）にする。赤 7.9:1 / 青 7.8:1 / グレー 8.4:1 / 緑 10.2:1 */
+    --cal-ended: #a4aeba;
+    --cal-new: #6fd394;
+    --cal-on: #0f1216;
 
     color-scheme: dark;
   }

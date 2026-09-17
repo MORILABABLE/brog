@@ -279,8 +279,8 @@ export const LEAVING_SERVICES = [
  * 升目の `終14` として1画面目に出るので、表の先頭を月末に使う必要がない。
  * 表の先頭は「いちばん急いで確かめるべき日」に戻せる。
  *
- * ★ ページ側の説明文（pages/leaving/[service].astro と
- *   pages/calendar/[service].astro）も**必ず一緒に直すこと。**
+ * ★ ページ側の説明文（components/ServiceCalendarPage.astro の節の `note`）も
+ *   **必ず一緒に直すこと。**
  *   並びと説明文が食い違うと、読者はどちらも信用しなくなる。
  * ★ **`nearest`（最も近い終了日）は先頭**になった。
  *   以前は末尾だったので `groups.at(-1)` を書いていた箇所がある。
@@ -336,8 +336,8 @@ const ARRIVALS_WINDOW_DAYS = 60
  * 古い順だと**いちばん要らない2か月前が毎回いちばん上**に来ていた。
  * 升目を今月から先だけにした判断（lib/calendar.ts）と同じ理由（2026-09-07）。
  *
- * ★ ページ側の説明文（pages/arrivals/[service].astro と
- *   pages/calendar/[service].astro）も**必ず一緒に直すこと。**
+ * ★ ページ側の説明文（components/ServiceCalendarPage.astro の節の `note`）も
+ *   **必ず一緒に直すこと。**
  */
 export function loadArrivals(service: string): WorkListData {
   const since = Date.now() - ARRIVALS_WINDOW_DAYS * 86400000
@@ -359,11 +359,22 @@ export { ARRIVALS_WINDOW_DAYS }
 // --- 配信カレンダー -----------------------------------------------------------
 
 /**
- * 配信カレンダー（`/calendar/<サービス>`）を作るサービス。
+ * 配信カレンダーを作るサービス。**`/leaving/<サービス>` と `/arrivals/<サービス>` の両方を作る。**
  *
- * **終了予定か新着のどちらかを持つ社**を機械的に拾う。手で並べない。
- * 実データでは Netflix / Amazon Prime Video / Disney+ の3社になる
- * （Apple TV+ は `expiring` も `new` も出ないので落ちる）。
+ * ■ 2026-09-17 に形を変えた
+ * それまでは `/leaving`（終了予定だけ）・`/arrivals`（新着だけ）・`/calendar`（両方）の3種類で、
+ * `/leaving` は終了予定を持つ2社にしか無かった。いまは
+ *
+ *   /leaving/<サービス>  … 終了予定（これから）＋ 終了済み（前月から）
+ *   /arrivals/<サービス> … 配信開始予定（これから）＋ 新着（直近60日）
+ *
+ * の2枚を、この一覧の**全社に**作る。ページの上の切り替えで行き来する（components/CalendarPicker.astro）。
+ * `/calendar/<サービス>` は `/leaving/<サービス>` へ転送した（public/_redirects）。
+ *
+ * **新着を持つ社**を機械的に拾う。手で並べない。実データでは Netflix / Amazon Prime Video / Disney+ の3社
+ * （Apple TV+ は `new` が1件しか無いので `ARRIVALS_SERVICES` に入っていない）。
+ * ★ Disney+ は終了予定を返さない（`LEAVING_SERVICES` に無い）。
+ *   `/leaving/disney-plus` は**終了済みだけ**のページになる（運用者の判断・2026-09-17）。
  *
  * ★ **並びは `API_SERVICES` の定義順。**
  *   紹介料の高いサービスを上に置かないと決めてある（docs/AFFILIATE.md 7節・
@@ -373,20 +384,135 @@ export { ARRIVALS_WINDOW_DAYS }
  * ★ 上の2つ（LEAVING_SERVICES / ARRIVALS_SERVICES）より**後ろ**に置くこと。
  *   const は上から評価されるので、前に出すと空配列になる。
  */
-export const CALENDAR_SERVICES = API_SERVICES.filter(
-  (s) =>
-    LEAVING_SERVICES.some((l) => l.key === s.key) ||
-    ARRIVALS_SERVICES.some((a) => a.key === s.key),
+export const CALENDAR_SERVICES = API_SERVICES.filter((s) =>
+  ARRIVALS_SERVICES.some((a) => a.key === s.key),
 )
 
-/** そのサービスが終了予定の一覧を持っているか（カレンダーの節の出し分けに使う） */
-export function hasLeaving(service: string): boolean {
+/** その社にカレンダー（`/leaving` と `/arrivals` の2枚）があるか */
+export function hasCalendar(service: string): boolean {
+  return CALENDAR_SERVICES.some((s) => s.key === service)
+}
+
+/** その社が終了予定（これから）を持っているか。**無い社は `/leaving` が終了済みだけになる** */
+export function hasExpiring(service: string): boolean {
   return LEAVING_SERVICES.some((s) => s.key === service)
 }
 
-/** そのサービスが新着の一覧を持っているか */
-export function hasArrivals(service: string): boolean {
-  return ARRIVALS_SERVICES.some((s) => s.key === service)
+/**
+ * カレンダーに載せる過去の記録（終了済み・新着の升目）の起点。**前月1日（JST）。**
+ *
+ * ■ なぜ前月から
+ * 升目は「前月・今月・翌月」を切り替えて見せる（components/EventCalendar.astro）。
+ * 月末の終了は翌月の頭に「先月末に何が消えたか」として確かめに来られる（実測で8月31日に
+ * 終了予定の54%が集中した・docs/KEYWORDS.md 3-1）ので、今月だけでは足りない。
+ * 2か月より前は、升目にも表にも出さない（本文が際限なく伸びる）。
+ */
+export function calendarPastStart(now = Date.now()): Date {
+  const jst = new Date(now + JST_OFFSET_MINUTES * 60_000)
+  const y = jst.getUTCFullYear()
+  const m = jst.getUTCMonth() // 0始まり。前月は m - 1（Date.UTC が年をまたいで繰り下げる）
+  return new Date(Date.UTC(y, m - 1, 1) - JST_OFFSET_MINUTES * 60_000)
+}
+
+/** きょう（JST）の0時。**「これから」の判定に使う**（その日のうちは「これから」に残す） */
+function jstTodayStart(now = Date.now()): number {
+  const jst = new Date(now + JST_OFFSET_MINUTES * 60_000)
+  return Date.UTC(jst.getUTCFullYear(), jst.getUTCMonth(), jst.getUTCDate()) - JST_OFFSET_MINUTES * 60_000
+}
+
+/**
+ * 指定サービスで**見放題の終了を観測した**作品を、終了日の新しい順（きょうに近い順）に返す。
+ * 範囲は `calendarPastStart()` から今まで。
+ *
+ * ★ **終了のあとに見放題へ戻った作品は外す。** 同じサービスで `removed` より後に `new` を
+ *   観測していれば、いまは終了済みではない（実測で「消えたあとに戻った作品」がある・
+ *   docs/KEYWORDS.md 3-1）。外さないと「終了した作品」の表に配信中の作品が混ざる。
+ * ★ 並びは `loadLeaving` の上に書いた「きょうに近い順」の規則のまま。
+ */
+export function loadEnded(service: string): WorkListData {
+  const since = calendarPastStart().getTime()
+  const now = Date.now()
+  const all = readAll().filter((e) => e.service === service && e.at)
+  const returned = new Map<string, number>()
+  for (const e of all) {
+    if (e.kind !== 'new') continue
+    const key = String(e.work.id)
+    returned.set(key, Math.max(returned.get(key) ?? 0, Date.parse(e.at!)))
+  }
+  const events = all.filter((e) => {
+    if (e.kind !== 'removed') return false
+    const at = Date.parse(e.at!)
+    if (at < since || at > now) return false
+    return (returned.get(String(e.work.id)) ?? 0) <= at
+  })
+  const latest = latestPerWork(events)
+  return {
+    works: latest
+      .map(toRow)
+      .sort((a, b) => b.at.getTime() - a.at.getTime() || a.title.localeCompare(b.title, 'ja')),
+    dataAsOf: asOf(latest),
+  }
+}
+
+/**
+ * 指定サービスで**見放題配信が始まる予定**の作品を、配信開始日の近い順に返す。
+ *
+ * ■ 出どころは各社の告知（docs/ANNOUNCEMENTS.md）
+ * 配信APIの `upcoming` は日本では0件なので、`collect:announce` が各社の
+ * 翌月ラインナップの告知から取り込んだ `kind: "upcoming"` だけを読む。
+ * **取っているのは作品名・日付・区分の事実だけ**（紹介文と画像は取っていない）。
+ *
+ * ★ **きょう以降だけ。** 開始日を過ぎたものは、配信APIが `new` として拾えば新着の表に出る。
+ *   過ぎた予定を残すと「始まる予定」と「始まった」が同じ作品で2行になる。
+ * ★ 告知は月末にまとめて出る（Prime Video は前月末・Netflix は随時）。
+ *   **月の後半は翌月ぶんがまだ無く、件数が少ないのが正常。**
+ * ★ 日付の無い告知（「近日」など）は載せない。升目に置けない。
+ */
+export function loadUpcoming(service: string): WorkListData {
+  const today = jstTodayStart()
+  const events = readAll().filter(
+    (e) => e.kind === 'upcoming' && e.service === service && e.at && Date.parse(e.at) >= today,
+  )
+  const latest = latestPerWork(events)
+  return {
+    works: latest
+      .map(toRow)
+      .sort((a, b) => a.at.getTime() - b.at.getTime() || a.title.localeCompare(b.title, 'ja')),
+    dataAsOf: asOf(latest),
+  }
+}
+
+/**
+ * 告知の出どころ（docs/ANNOUNCEMENTS.md 3節の表）。**イベントに告知のURLが入っていないときだけ使う。**
+ *
+ * ★ Netflix の告知は `meta` に告知のURLを持たない（新作情報ページは随時更新の1ページで、
+ *   月ごとのURLが無いため）。出典を空にすると「どこの情報か」が書かれないので、ここで補う。
+ */
+const ANNOUNCEMENT_PAGES: Record<string, { publisher: string; url: string }> = {
+  netflix: { publisher: 'Netflix 新作情報', url: 'https://about.netflix.com/ja/new-to-watch' },
+}
+
+/**
+ * 配信開始予定の出典（告知のページ）。**ページの「出典」に並べる。**
+ * 同じ告知から何件取り込んでいても1行にする。
+ */
+export function upcomingSources(service: string): { publisher: string; url: string }[] {
+  const today = jstTodayStart()
+  const seen = new Map<string, string>()
+  let withoutUrl = false
+  for (const e of readAll()) {
+    if (e.kind !== 'upcoming' || e.service !== service || !e.at || Date.parse(e.at) < today) continue
+    const url = e.work.meta?.['announcementUrl']
+    const publisher = e.work.meta?.['publisher']
+    if (typeof url !== 'string') {
+      withoutUrl = true
+      continue
+    }
+    if (!seen.has(url)) seen.set(url, typeof publisher === 'string' ? publisher : url)
+  }
+  const fallback = ANNOUNCEMENT_PAGES[service]
+  if (withoutUrl && fallback && !seen.has(fallback.url)) seen.set(fallback.url, fallback.publisher)
+  return [...seen].map(([url, publisher]) => ({ publisher, url }))
 }
 
 // --- 定点観測（月次の出入り） -------------------------------------------------

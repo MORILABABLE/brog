@@ -81,19 +81,26 @@ export interface PrimeAd {
  * ★ **作品名を書かない。** 「この作品が観られます」と読ませないため。
  *   訴求しているのは会員特典であって、個別の作品の在庫ではない。
  */
-type Stance = 'upcoming' | 'arrivals' | 'leaving' | 'calendar'
+type Stance = 'upcoming' | 'arrivals' | 'leaving' | 'leavingWithEnded' | 'arrivalsWithUpcoming'
 
 const COPY: Record<Stance, { lead: string }> = {
   /*
-   * 配信カレンダー（`/calendar/prime-video`）。**終了予定と新着が同じ面に並ぶ。**
+   * 配信カレンダーの終了側（`/leaving/prime-video`）。**終了予定と終了済みが同じ面に並ぶ**（2026-09-17）。
    *
-   * ★ `leaving` や `arrivals` の文言を流用してはいけない。
-   *   どちらも「このページの作品は〜です」と**面の全部**について名乗る書き方で、
-   *   2種類が混ざったページで使うと、片方について嘘になる。
-   *   ここは「並んでいます」と書いて、2種類あることを先に言う。
+   * ★ `leaving` の文言を流用してはいけない。「このページの作品は〜終了予定日が公表されているもの」と
+   *   **面の全部**について名乗る書き方で、終了済みの作品について嘘になる。
+   * ★ **終了した作品は会員でも見放題で観られない**ことを、括弧で必ず添える。
+   *   添えないと「会員になれば終了した作品も観られる」と読める（上の「出してよい面」の線）。
    */
-  calendar: {
-    lead: 'このページには、Amazon Prime Video で見放題配信の終了予定日が公表されている作品と、見放題配信が始まった作品が並んでいます。見放題の作品は、Amazonプライム会員なら追加料金なしで観られます。',
+  leavingWithEnded: {
+    lead: 'このページには、Amazon Prime Video で見放題配信の終了予定日が公表されている作品と、見放題配信が終了した作品が並んでいます。見放題の作品は、Amazonプライム会員なら追加料金なしで観られます（終了した作品は見放題の対象外です）。',
+  },
+  /*
+   * 配信カレンダーの新着側（`/arrivals/prime-video`）。**新着と配信開始予定が同じ面に並ぶ**（2026-09-17）。
+   * ★ 配信開始前の作品は、会員でもまだ観られない。括弧で必ず添える。
+   */
+  arrivalsWithUpcoming: {
+    lead: 'このページには、Amazon Prime Video で見放題配信が始まった作品と、始まる予定の作品が並んでいます。見放題の作品は、Amazonプライム会員なら追加料金なしで観られます（配信開始前の作品は、始まるまで観られません）。',
   },
   upcoming: {
     lead: 'このページの作品は、Amazon Prime Video で見放題配信が始まる予定のものです。見放題の作品は、Amazonプライム会員なら追加料金なしで観られます。',
@@ -144,18 +151,15 @@ export interface PrimeAdInput {
   /** ページのカテゴリ */
   category?: CategorySlug
   /**
-   * 配信カレンダー（`/calendar/<サービス>`）から呼ぶときだけ `true`。
+   * 配信カレンダー（`/leaving/<サービス>`）に**終了済みの作品も並んでいる**とき `true`（2026-09-17）。
    *
-   * ★ カレンダーは**終了予定と新着が同居する面**で、カテゴリを1つに決められない。
-   *   `category` を渡すと、渡さなかったほうの作品について文言が嘘になる。
-   *   専用の文言（`COPY.calendar`）に切り替えるための印。
-   *
-   * ★ **`ended` は混ざらない。** カレンダーが読むのは
-   *   `loadLeaving()`（これから終了する＝まだ観られる）と
-   *   `loadArrivals()`（見放題に入った）の2つだけ（lib/events-data.ts）。
-   *   終了済みを足したくなったら、この枠を出す条件から見直すこと。
+   * ★ `category: 'leaving'` と一緒に渡す。終了予定が1本も無い面（終了済みだけ）では
+   *   **この枠を出さない**こと（呼び出し側が `primeAd` を呼ばない）。
+   *   終わった作品しか並んでいない面で会員を勧めると、上の「出してよい面」の線を越える。
    */
-  calendar?: boolean
+  alsoEnded?: boolean
+  /** 配信カレンダー（`/arrivals/<サービス>`）に**配信開始予定の作品も並んでいる**とき `true` */
+  alsoUpcoming?: boolean
 }
 
 /**
@@ -171,8 +175,7 @@ export function primeAd(input: PrimeAdInput): PrimeAd | null {
   if (!tag) return null
 
   const category = input.category
-  // カレンダーはカテゴリを持たない面。中身は leaving と arrivals だけなので条件を満たす
-  if (!input.calendar && (!category || !OK_CATEGORIES.includes(category))) return null
+  if (!category || !OK_CATEGORIES.includes(category)) return null
 
   // 主題が Prime Video であること。常設ページはキー、記事はタグで判定する。
   const isPrime = input.service === PRIME_KEY || (input.tags ?? []).includes(PRIME_LABEL)
@@ -187,13 +190,16 @@ export function primeAd(input: PrimeAdInput): PrimeAd | null {
 
   // ★ 配信開始「予定」は arrivals の中に混じっている（記事タイプが同じカテゴリを使う）。
   //   「始まった」と書くと予定日前の作品を観られると読ませるので、タグで分ける。
-  const stance: Stance = input.calendar
-    ? 'calendar'
-    : category === 'leaving'
-      ? 'leaving'
-      : (input.tags ?? []).includes(UPCOMING_TAG)
-        ? 'upcoming'
-        : 'arrivals'
+  const stance: Stance =
+    category === 'leaving'
+      ? input.alsoEnded
+        ? 'leavingWithEnded'
+        : 'leaving'
+      : input.alsoUpcoming
+        ? 'arrivalsWithUpcoming'
+        : (input.tags ?? []).includes(UPCOMING_TAG)
+          ? 'upcoming'
+          : 'arrivals'
 
   return { url: primeTrialUrl(tag), lead: COPY[stance].lead, action: ACTION, note: NOTE }
 }

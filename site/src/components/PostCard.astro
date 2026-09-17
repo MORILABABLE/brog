@@ -7,8 +7,18 @@ import type { CollectionEntry } from 'astro:content'
 
 interface Props {
   post: CollectionEntry<'posts'>
+  /**
+   * 題名の見出しレベル。既定は `h2`。
+   *
+   * ★ 上に節の見出し（h2）を置くページでは `3` を渡す（2026-09-17 追加）。
+   *   配信カレンダーの「◯◯の配信終了済み・予定の記事」（components/ServiceCalendarPage.astro）がそれ。
+   *   h2 の節の中に h2 のカードが並ぶと、読み上げの見出しの木が崩れる。
+   */
+  headingLevel?: 2 | 3
 }
-const { post } = Astro.props
+const { post, headingLevel = 2 } = Astro.props
+/* 動的なタグ名は**大文字で始まる変数**にしないと Astro が要素として書き出さない（WorkTable.astro と同じ） */
+const Heading = headingLevel === 3 ? 'h3' : 'h2'
 const cat = CATEGORIES[post.data.category]
 /*
  * ジャンルは**全記事が名乗る**（2026-09-15）。入っているものを全部出すので
@@ -40,7 +50,7 @@ const genres = genreBadges(post.data)
       {genres.map((label) => <span class="badge genre">{label}</span>)}
       <time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time>
     </div>
-    <h2><a href={`/posts/${post.id}`}>{post.data.title}</a></h2>
+    <Heading class="title"><a href={`/posts/${post.id}`}>{post.data.title}</a></Heading>
     <p class="desc">{post.data.description}</p>
   </div>
 </article>
@@ -65,18 +75,19 @@ const genres = genreBadges(post.data)
     font-size: 0.82rem;
     color: var(--text-muted);
   }
-  h2 {
+  /* 見出しレベルが変わっても見た目は同じ（`headingLevel`）。タグではなくクラスで当てる */
+  .title {
     margin: 0.5rem 0 0.4rem;
     padding: 0;
     border: none;
     font-size: 1.15rem;
     line-height: 1.5;
   }
-  h2 a {
+  .title a {
     color: var(--text);
     text-decoration: none;
   }
-  h2 a:hover {
+  .title a:hover {
     color: var(--accent);
     text-decoration: underline;
   }

@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
 import { CATEGORY_HUBS, SERVICE_HUBS, SITE } from '../../config'
+import { hubServiceHref } from '../../lib/evergreen'
 
 /**
  * ★ 生成するのは**ハブ1つにつき1ページ**（カテゴリ1つにつき1ページではない）。
@@ -63,7 +64,7 @@ const empty = posts.length === 0
     hub.serviceMenu && (
       <nav class="services" aria-label="サービスで絞り込む">
         {SERVICE_HUBS.map((s) => (
-          <a class="service" href={`/category/${hub.slug}/${s.slug}`}>
+          <a class="service" href={hubServiceHref(hub.slug, s.slug)}>
             {s.label}
           </a>
         ))}

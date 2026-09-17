@@ -1,20 +1,13 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro'
-import AffiliateNotice from '../../components/AffiliateNotice.astro'
-import AmazonCta from '../../components/AmazonCta.astro'
-import WorkTable from '../../components/WorkTable.astro'
-import WorkSearch from '../../components/WorkSearch.astro'
-import EventCalendar from '../../components/EventCalendar.astro'
-import { ATTRIBUTION, CATEGORIES, EVERGREEN_BADGE, SITE } from '../../config'
-import { formatDate } from '../../utils/date'
-import { buildCalendar } from '../../lib/calendar'
-import { ARRIVALS_SERVICES, LEAVING_SERVICES, groupByDate, loadLeaving } from '../../lib/events-data'
-import { evergreenTitle, evergreenTitleBase } from '../../lib/evergreen'
-import PrimeCta from '../../components/PrimeCta.astro'
-import { primeAd } from '../../lib/prime-ad'
+import { getCollection } from 'astro:content'
+import ServiceCalendarPage from '../../components/ServiceCalendarPage.astro'
+import { CALENDAR_SERVICES } from '../../lib/events-data'
 
 /**
- * 常設ページ「◯◯で配信終了予定の作品」。
+ * 配信カレンダー（終了側）「◯◯で見放題配信が終了する作品一覧・カレンダー」。
+ *
+ * 中身は components/ServiceCalendarPage.astro（`/arrivals/<サービス>` と共有）。
+ * **ここで持つのは作るページの一覧だけ。**
  *
  * 月次記事は公開時点のスナップショットで月をまたぐと古くなるが、
  * このページはURLが固定で `collect` のたびに中身だけが入れ替わる。
@@ -24,232 +17,20 @@ import { primeAd } from '../../lib/prime-ad'
  *   Prime Video は終了の11日前にしか終了予定を出さないため、
  *   月次記事はどう頑張っても月後半分を落とす（HANDOVER.md の落とし穴）。
  *   ここは収集のたびに追従するので、そこが埋まる。
+ *
+ * ★ 作るのは**カレンダーのある全社**（2026-09-17 から Disney+ を含む）。
+ *   Disney+ は終了予定を返さないので、**終了済みだけ**のページになる（lib/events-data.ts の CALENDAR_SERVICES）。
  */
-export function getStaticPaths() {
-  return LEAVING_SERVICES.map((s) => ({
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft)
+  return CALENDAR_SERVICES.map((s) => ({
     params: { service: s.key },
-    props: { label: s.label },
+    props: { label: s.label, posts },
   }))
 }
 
 const { service } = Astro.params
-const { label } = Astro.props
-
-const { works, dataAsOf } = loadLeaving(service!)
-const groups = groupByDate(works)
-/*
- * ★ `loadLeaving` は**終了日の近い順**（2026-09-07 に遅い順から戻した）。
- *   `groupByDate` は渡された順を保つので、束も近い順に並ぶ。
- *   **いちばん近い終了日は先頭**（以前は末尾で `groups.at(-1)` だった）。
- */
-const nearest = groups[0]
-
-/*
- * 作品検索の説明文。**カレンダーの見出しの右と、升目が出ないときの単独置きで同じ文字列を使う。**
- * 2か所に書くと、同じページの中で検索窓の名前が食い違う。
- */
-const SEARCH_LABEL = '終了予定の作品を探す'
-
-/*
- * ページ先頭の升目（2026-09-07 追加）。**このページの中身と同じ配列を渡す。**
- * 別の絞り込みを掛けると、点いているのに飛び先が無い日ができる。
- *
- * ★ 新着には空配列を渡す。このページは終了予定だけの面なので、
- *   青い印は1つも出ず、凡例も赤の1行だけになる（EventCalendar 側で出し分け）。
- * ★ 行き先は `#`。表がこのページに1つしかないので、日付見出しの id は
- *   `2026-09-30` のような日付そのもの（WorkTable の既定）。頭は要らない。
- * ★ 描くのは**今月から先だけ**（lib/calendar.ts）。
- */
-const calendar = buildCalendar(works, [])
-
-/*
- * タイトルの末尾に基準日を出す（`…作品一覧【9月1日更新】`）。
- * 常設ページは公開日を持たず中身だけが入れ替わるので、
- * **いつ更新した一覧なのかを必ず添える**（2026-08-25）。
- * 頭ではなく後ろに置くのは 2026-09-06 の変更（理由は lib/evergreen.ts の
- * `evergreenTitle`。検索結果で先頭が日付だと CTR が落ちていた）。
- * **素のタイトルも組み立ても lib/evergreen.ts の1か所。ここで文字列を作らないこと。**
- */
-const title = evergreenTitle(evergreenTitleBase('leaving', label), dataAsOf)
-
-/*
- * 本文のCTA。**Prime Video の面だけ行き先が変わる。**
- * このページは「終了予定＝まだ見放題で観られる作品」が並ぶので、
- * プライム会員の訴求が事実と噛み合う唯一の種類の面になる。
- * 判断は lib/prime-ad.ts の1か所。ここでは出し分けるだけ。
- */
-const primeSlot = primeAd({ service, category: 'leaving' })
-const description =
-  works.length > 0
-    ? `${label}で見放題配信が終了する予定の作品${works.length}本を、終了日の近い順にまとめています。最も近い終了日は${formatDate(nearest!.date)}です。`
-    : `${label}で見放題配信が終了する予定の作品を終了日の近い順にまとめています。現在、終了予定として取得できている作品はありません。`
+const { label, posts } = Astro.props
 ---
 
-<BaseLayout title={title} description={description}>
-  <nav class="breadcrumb" aria-label="パンくず">
-    <a href="/">ホーム</a> ›
-    <a href="/category/leaving">配信終了予定</a>
-  </nav>
-
-  {/*
-    ★ 見出しの直上に置いていたサービス画像（LeadImage）を**外した**（2026-09-07）。
-      あれは汎用の絵（再生記号）で、作品でもサービスのロゴでもない。
-      本文幅いっぱいの帯を占めるわりに読者に渡すものが無く、
-      **本命のカレンダーと表を画面の外へ押し下げていた。**
-      ★ カードのサムネイル（Thumb.astro）としては**残してある。**
-        一覧の中で行を見分ける手掛かりになっており、そちらは用がある。
-      戻すときは `LeadImage` を import して `<LeadImage image={serviceImage(service!)} alt="" />`。
-  */}
-  <h1>{title}</h1>
-
-  {/*
-    ★ 記事ページ（pages/posts/[...slug].astro）の `.meta` と同じ位置・同じ形。
-      **違いはバッジだけ**にしてある。記事は「公開 ◯月◯日」が並び、
-      ここは「随時更新」が並ぶ。並べて比べれば種類の違いが一目で分かる。
-      ★ バッジの下に置いていた説明の1行（「配信データをサービスごとに…」）は
-        **撤去した**（2026-09-09）。読ませる文字を減らして本題の升目を上げる判断。
-        3枚（終了予定・新着・カレンダー）とも同じ扱いにすること。
-  */}
-  <div class="meta">
-    <span class="badge" data-category={CATEGORIES.leaving.slug}>{CATEGORIES.leaving.label}</span>
-    <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
-  </div>
-
-  <AffiliateNotice />
-
-  {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
-  <p class="notice">
-    {
-      dataAsOf ? (
-        <>
-          配信情報は <strong>{formatDate(dataAsOf)}時点</strong>のものです。
-        </>
-      ) : (
-        <>配信情報の取得時刻が不明です。</>
-      )
-    }
-    {label}の都合により変更される場合があります。ご視聴前に公式サイトでご確認ください。
-  </p>
-
-  {/*
-    配信カレンダー。**冒頭文より上**に置く（2026-09-07）。
-    このページに来た読者がまず知りたいのは「今月のいつ消えるのか」で、
-    それに1画面で答えるのが升目の役目。件数の文と検索窓はその下でよい。
-  */}
-  {calendar.hasEvents && (
-    <EventCalendar
-      months={calendar.months}
-      leavingPrefix="#"
-      arrivalsPrefix="#"
-      searchLabel={SEARCH_LABEL}
-    />
-  )}
-
-  {
-    works.length === 0 ? (
-      <p class="empty">
-        現在、{label}で終了予定として取得できている作品はありません。
-        {label === 'Amazon Prime Video'
-          ? 'Prime Video は終了の約11日前にならないと終了予定が出ないため、時期によっては空になります。'
-          : 'しばらくしてから再度ご確認ください。'}
-      </p>
-    ) : (
-      <>
-        {/*
-          ★ 件数と並び順の冒頭文（「32本が終了予定です。…」）は**撤去した**（2026-09-09）。
-            件数は升目の月見出し（「終了32本」）が、日付は表の見出しが持っている。
-          ★ 作品検索は**カレンダーの見出しの右**へ移した（EventCalendar の searchLabel）。
-            升目が出ない時期だけ、ここに単独で置く。**2つ出さないこと**
-            （WorkSearch のスクリプトはページに1つある前提）。
-        */}
-        {!calendar.hasEvents && (
-          <div class="search-head">
-            <WorkSearch label={SEARCH_LABEL} />
-          </div>
-        )}
-        <WorkTable groups={groups} dateNoun="終了" service={service!} />
-      </>
-    )
-  }
-
-  {primeSlot ? <PrimeCta service={service} category="leaving" /> : <AmazonCta category="leaving" />}
-
-  <section class="sources">
-    <h2>出典</h2>
-    <ul>
-      <li>
-        <a href={ATTRIBUTION.url} rel="noopener noreferrer" target="_blank">
-          {ATTRIBUTION.text}
-        </a>
-      </li>
-      <li>
-        <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">
-          作品タイトル（Wikidata・CC0）
-        </a>
-      </li>
-    </ul>
-  </section>
-
-  <p class="related">
-    ほかの常設ページ:
-    {
-      LEAVING_SERVICES.filter((s) => s.key !== service).map((s) => (
-        <a href={`/leaving/${s.key}`}>{s.label}の終了予定</a>
-      ))
-    }
-    <a href={`/arrivals/${service}`}>{label}の新着配信</a>
-    {/*
-      ★ 終了と新着を1枚にまとめたページ（2026-09-07 追加）。
-        左の枠からは外してあるので、**サイト内でここが主な入口**。
-        消すと孤立ページになる。
-    */}
-    {ARRIVALS_SERVICES.some((s) => s.key === service) && (
-      <a href={`/calendar/${service}`}>{label}の終了・新着をまとめて見る</a>
-    )}
-    <a href="/stats">サービス別見放題の追加・削除一覧</a>
-  </p>
-
-  <p class="site-note">
-    このページの配信記録は Netflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスぶんです
-    （{SITE.name}が追いかけている U-NEXT は記事でのみ扱っており、このページには入っていません）。
-    「他で探す」のリンクは各サービスの検索結果に飛ぶだけで、
-    配信の有無を保証するものではありません。
-  </p>
-</BaseLayout>
-
-<style>
-  .breadcrumb {
-    margin: 1.4rem 0 1rem;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-  }
-  /* 記事ページの .meta と同じ値。**ずらさないこと**（並べて比べる前提の形なので） */
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.7rem 1rem;
-    font-size: 0.84rem;
-    color: var(--text-muted);
-  }
-  .empty {
-    margin: 1.5rem 0;
-    color: var(--text-muted);
-  }
-  .sources h2 {
-    font-size: 1rem;
-  }
-  .sources ul {
-    padding-left: 1.2rem;
-    font-size: 0.86rem;
-  }
-  .related a {
-    margin-left: 0.7rem;
-  }
-  .site-note {
-    margin-top: 2rem;
-    font-size: 0.8rem;
-    line-height: 1.8;
-    color: var(--text-muted);
-  }
-</style>
+<ServiceCalendarPage direction="leaving" service={service!} label={label} posts={posts} />

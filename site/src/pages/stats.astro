@@ -2,12 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { ATTRIBUTION, SITE } from '../config'
 import { formatDate } from '../utils/date'
-import {
-  ARRIVALS_SERVICES,
-  LEAVING_SERVICES,
-  formatMonth,
-  loadMonthlyStats,
-} from '../lib/events-data'
+import { CALENDAR_SERVICES, formatMonth, loadMonthlyStats } from '../lib/events-data'
 
 /**
  * 定点観測「配信の出入り」。
@@ -150,8 +145,8 @@ const description = latest
 
   <p class="related">
     作品ごとの一覧:
-    {LEAVING_SERVICES.map((s) => <a href={`/leaving/${s.key}`}>{s.label}の終了予定</a>)}
-    {ARRIVALS_SERVICES.map((s) => <a href={`/arrivals/${s.key}`}>{s.label}の新着</a>)}
+    {CALENDAR_SERVICES.map((s) => <a href={`/leaving/${s.key}`}>{s.label}の配信終了</a>)}
+    {CALENDAR_SERVICES.map((s) => <a href={`/arrivals/${s.key}`}>{s.label}の新着・配信予定</a>)}
   </p>
 </BaseLayout>
 

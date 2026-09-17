@@ -1,8 +1,18 @@
 /**
- * 常設ページの一覧。**左の枠とカテゴリページの両方がここを読む。**
+ * 常設ページ（配信カレンダー）の一覧。**左の枠・サービス別ページ・メニューがここを読む。**
  *
  * ページを増やす・減らす・並べ替えるときはこのファイルだけを直せばよい。
- * 表示の形は使う側（LeftRail / EvergreenCard）が決める。
+ * 表示の形は使う側（LeftRail / EvergreenCard / Header）が決める。
+ *
+ * ■ 2026-09-17 に形を変えた（docs/WHERE-TO-EDIT.md の「配信カレンダー」）
+ * サービスごとに2枚。**両方ともカレンダーで、ページの上の切り替え（CalendarPicker）で行き来する。**
+ *
+ *   /leaving/<サービス>  … 終了予定（これから）＋ 終了済み（前月から）
+ *   /arrivals/<サービス> … 配信開始予定（これから）＋ 新着（直近60日）
+ *
+ * それまでの `/calendar/<サービス>`（両方を1枚にしたページ）は `/leaving/<サービス>` へ、
+ * ヘッダーのメニューの行き先だった `/category/<ハブ>/<サービス>` は、
+ * カレンダーのある社について同じ向きのカレンダーへ転送した（public/_redirects）。
  *
  * ★ `/stats`（サービス別見放題の追加・削除一覧）はここに入れていない。
  *   読者にとって用途が伝わりにくく、記事の並びに混ぜると浮くため
@@ -10,16 +20,22 @@
  *   常設ページ下部の関連リンクから辿れる（＝孤立ページにはしない）。
  */
 import {
-  ARRIVALS_SERVICES,
   CALENDAR_SERVICES,
-  LEAVING_SERVICES,
-  hasArrivals,
-  hasLeaving,
+  hasCalendar,
+  hasExpiring,
   loadArrivals,
+  loadEnded,
   loadLeaving,
+  loadUpcoming,
 } from './events-data'
 import { formatDate } from '../utils/date'
 import type { CategorySlug } from '../config'
+
+/**
+ * カレンダーの向き。URL の頭（`/leaving` `/arrivals`）と同じ文字列で、
+ * **カテゴリ（バッジの色）とも同じ文字列**（config.ts の CATEGORIES）。
+ */
+export type CalendarDirection = Extract<CategorySlug, 'leaving' | 'arrivals'>
 
 export interface EvergreenPage {
   href: string
@@ -34,8 +50,8 @@ export interface EvergreenPage {
    */
   titleBase: string
   /** カテゴリバッジ。styles/global.css の .badge[data-category] と対応する。 */
-  category: CategorySlug
-  /** サムネイルのキー。src/assets/services/<キー>.png を探す。 */
+  category: CalendarDirection
+  /** サムネイルのキー。src/assets/services/<キー>.png を探す。**サービスキーでもある** */
   thumbKey: string
   /** サービス表示名 */
   label: string
@@ -47,6 +63,8 @@ export interface EvergreenPage {
    *   1行に収まる名前をここに持たせて並びを保つ。
    */
   shortLabel: string
+  /** 中身の呼び名。「◯◯を12本、カレンダーと一覧にまとめています」の ◯◯ */
+  contents: string
 }
 
 /** 表示名 → 左の枠で使う短い名前 */
@@ -54,109 +72,91 @@ const SHORT_LABELS: Record<string, string> = {
   'Amazon Prime Video': 'Prime Video',
 }
 
-function shortOf(label: string): string {
+export function shortOf(label: string): string {
   return SHORT_LABELS[label] ?? label
 }
 
 /**
  * 常設ページの素のタイトル。**ここが唯一の定義。**
  *
- * ★ 以前は `EVERGREEN_PAGES` と `pages/leaving/[service].astro` の**両方**に
- *   同じ文字列が書いてあった。ページ側を直して一覧側を直し忘れると、
- *   **同じページがカードと見出しで別の名前を名乗る。** 関数にして口を1つにした。
+ * ★ 以前は `EVERGREEN_PAGES` とページの**両方**に同じ文字列が書いてあった。
+ *   ページ側を直して一覧側を直し忘れると、**同じページがカードと見出しで別の名前を名乗る。**
  *
  * ★ **「見放題」を落とさないこと。** レンタル・購入と区別する言葉がここにしかない
  *   （記事タイトルの決まりと同じ理由。templates/naming.md）。
+ *
+ * ■ 「一覧」を残して「カレンダー」を足した（2026-09-17）
+ * `/leaving/netflix` は「◯◯ netflix 配信終了」で表示を集めている面（docs/FUNNEL.md 4-1）。
+ * **検索で当たっている先頭の言葉は変えず**、後ろに「カレンダー」を足して
+ * 「netflix 配信終了 カレンダー」の語形にも当てる（docs/KEYWORDS.md 2-2）。
+ *
+ * ★ 終了予定を持たない社（Disney+）は「終了した」と過去形にする。
+ *   中身が終了済みだけなのに「終了する作品」と名乗ると、未来の予定があるように読める。
  */
-export function evergreenTitleBase(category: CategorySlug, label: string): string {
-  return category === 'leaving'
-    ? `${label}で見放題配信が終了する作品一覧`
-    : // ★ 「最近」は入れない。いつ時点かは evergreenTitle() が後ろに付ける。
-      //   「最近」と書いたまま日付を添えると、日付が古いときに矛盾して見える。
-      `${label}で見放題になった作品一覧`
+export function evergreenTitleBase(direction: CalendarDirection, service: string, label: string): string {
+  if (direction === 'leaving') {
+    return hasExpiring(service)
+      ? `${label}で見放題配信が終了する作品一覧・カレンダー`
+      : `${label}で見放題配信が終了した作品一覧・カレンダー`
+  }
+  // ★ 「最近」は入れない。いつ時点かは evergreenTitle() が後ろに付ける。
+  return `${label}の見放題 新着・配信予定の作品一覧・カレンダー`
 }
 
+function contentsOf(direction: CalendarDirection, service: string): string {
+  if (direction === 'arrivals') return '配信開始予定と新着'
+  return hasExpiring(service) ? '配信終了予定と終了した作品' : '見放題が終了した作品'
+}
+
+function pageOf(direction: CalendarDirection, s: { key: string; label: string }): EvergreenPage {
+  return {
+    href: `/${direction}/${s.key}`,
+    titleBase: evergreenTitleBase(direction, s.key, s.label),
+    category: direction,
+    thumbKey: s.key,
+    label: s.label,
+    shortLabel: shortOf(s.label),
+    contents: contentsOf(direction, s.key),
+  }
+}
+
+/** 常設ページ全部。**サービスの定義順**（紹介料で並べ替えない・events-data.ts の CALENDAR_SERVICES） */
 export const EVERGREEN_PAGES: EvergreenPage[] = [
-  ...LEAVING_SERVICES.map((s) => ({
-    href: `/leaving/${s.key}`,
-    titleBase: evergreenTitleBase('leaving', s.label),
-    category: 'leaving' as CategorySlug,
-    thumbKey: s.key,
-    label: s.label,
-    shortLabel: shortOf(s.label),
-  })),
-  ...ARRIVALS_SERVICES.map((s) => ({
-    href: `/arrivals/${s.key}`,
-    titleBase: evergreenTitleBase('arrivals', s.label),
-    category: 'arrivals' as CategorySlug,
-    thumbKey: s.key,
-    label: s.label,
-    shortLabel: shortOf(s.label),
-  })),
+  ...CALENDAR_SERVICES.map((s) => pageOf('leaving', s)),
+  ...CALENDAR_SERVICES.map((s) => pageOf('arrivals', s)),
 ]
 
-// --- 配信カレンダー -----------------------------------------------------------
-//
-// 2026-09-07 追加。**サービス1社につき1枚**の常設ページで、
-// 終了予定（`/leaving/…`）と新着（`/arrivals/…`）を1枚にまとめ、
-// 先頭に月の升目を置く（components/EventCalendar.astro）。
-//
-// ■ 左の枠が指すのはこちら（LeftRail.astro）
-// カード5枚（終了2＋新着3）を**3枚**に畳むための入れ替え。
-// 読者にとって「Netflix の終了予定」と「Netflix の新着」は
-// **同じ関心の裏表**で、別々のカードにする理由が無かった。
-//
-// ■ ★ 従来の5ページは**消していない**
-// `/leaving/netflix` は単体で表示115件（サイト最多）の面で、
-// タイトルの直し（docs/FUNNEL.md 7-2）を 2026-09-06 に入れたばかり。
-// **効果を測る前にURLを畳むと、測り直せなくなる。**
-// カレンダーは足すだけにして、5ページはそのまま残してある。
-// 畳むと決めたら public/_redirects に301を2行足せばよい（それだけで済む形にしてある）。
-
-export interface CalendarPage {
-  href: string
-  /** ★ 素で画面に出さない。`evergreenTitle()` を通して基準日を添える（上と同じ決まり） */
-  titleBase: string
-  thumbKey: string
-  label: string
-  shortLabel: string
-}
-
 /**
- * 配信カレンダーの素のタイトル。**ここが唯一の定義。**
+ * 左の枠のカード。**サービス1社につき1枚**（2026-09-17）。
  *
- * ★ **`/leaving/<サービス>` のタイトルと言葉をずらしてある。**
- *   あちらは `Netflixで見放題配信が終了する作品一覧` で、
- *   狙っている検索語は「netflix 配信終了予定」。
- *   同じ言葉で始めると自社の2ページが同じ語で競合する（共食い）ので、
- *   こちらは「カレンダー」を主語にして別の探し方に当てる。
- *
- * ★ **「見放題」を落とさないこと。** レンタル・購入と区別する言葉がここにしかない
- *   （常設ページと同じ理由。templates/naming.md）。
+ * 行き先は `/leaving/<サービス>`。新着・配信予定へはページの上の切り替えで移る。
+ * ★ 2026-09-07 に一度「サービス1枚」に畳んで戻した経緯がある（LeftRail.astro）。
+ *   そのときはカードの外に「終了予定／新着」のリンクをぶら下げる必要があって見た目が悪かった。
+ *   **いまは切り替えをページの中（CalendarPicker）が持つ**ので、カードにぶら下げるものが無い。
  */
-export function calendarTitleBase(label: string): string {
-  return `${label}の見放題カレンダー`
-}
+export const CALENDAR_CARDS = CALENDAR_SERVICES.map((s) => pageOf('leaving', s))
 
-export const CALENDAR_PAGES: CalendarPage[] = CALENDAR_SERVICES.map((s) => ({
-  href: `/calendar/${s.key}`,
-  titleBase: calendarTitleBase(s.label),
-  thumbKey: s.key,
-  label: s.label,
-  shortLabel: shortOf(s.label),
-}))
-
-/** 指定カテゴリの常設ページだけを返す */
-export function evergreenFor(category: CategorySlug): EvergreenPage[] {
-  return EVERGREEN_PAGES.filter((p) => p.category === category)
-}
-
-/**
- * 指定サービスの常設ページだけを返す。サービス別まとめページ（/service/…）で使う。
- * ★ `thumbKey` がサービスキー。href から切り出さないこと（形が変わると壊れる）。
- */
+/** 指定サービスの常設ページだけを返す。サービス別まとめページ（/service/…）で使う。 */
 export function evergreenForService(service: string): EvergreenPage[] {
   return EVERGREEN_PAGES.filter((p) => p.thumbKey === service)
+}
+
+/**
+ * ヘッダーのメニューなどで、ハブ×サービスを押したときの行き先。
+ *
+ * ★ **カレンダーのある社は、同じ向きのカレンダーへ直接送る**（2026-09-17）。
+ *   `/category/<ハブ>/<サービス>` は転送してあるので、そこを指したままでも着くが、
+ *   **転送を1回挟む内部リンクを残さない**（クロールの無駄・計測の参照元がずれる）。
+ * ★ カレンダーの無い社（U-NEXT）は従来どおり記事の一覧へ。
+ */
+export function hubServiceHref(hub: string, service: string): string {
+  if ((hub === 'leaving' || hub === 'arrivals') && hasCalendar(service)) return `/${hub}/${service}`
+  return `/category/${hub}/${service}`
+}
+
+/** そのハブ×サービスが**記事一覧ではなくカレンダー**になっているか（生成の出し分けに使う） */
+export function hubServiceIsCalendar(hub: string, service: string): boolean {
+  return hubServiceHref(hub, service) !== `/category/${hub}/${service}`
 }
 
 // --- 鮮度の見せ方 -----------------------------------------------------------
@@ -164,36 +164,21 @@ export function evergreenForService(service: string): EvergreenPage[] {
 // 常設ページは公開日を持たない。`collect` のたびに中身だけが入れ替わるので、
 // 読者から見ると「いつの情報か分からないページ」になりやすい。
 // そこで**基準日を必ず添える**。組み立てはこの2つの関数だけが行う
-// （ページ・カード・左の枠でずれると、同じページが別の日付を名乗ることになる）。
+// （ページ・カードでずれると、同じページが別の日付を名乗ることになる）。
 
 /**
- * 常設ページのタイトル。`Netflixで見放題配信が終了する作品一覧【9月1日更新】`
+ * 常設ページのタイトル。`Netflixで見放題配信が終了する作品一覧・カレンダー【9月1日更新】`
  *
  * `<title>` と `<h1>`、一覧カードの見出しはすべてこれを使う。
  * 基準日が取れないときだけ、日付なしのタイトルに落ちる。
  *
  * ■ 2026-09-06 に、日付を**頭から後ろへ移した**（docs/FUNNEL.md 4-1）
  * 変更前は `【2026年9月1日時点】Netflixで配信終了予定の作品一覧`。
- * 実測でこうなっていた:
+ * スマホの検索結果は全角30文字前後で切れるので、頭に日付を置くと
+ * サービス名も「終了」も後ろへ押し出されていた。
  *
- *     /leaving/netflix   表示115件（サイト最多）・クリック2件・**CTR 1.7%**・8.1位
- *
- * 8.1位でこのCTRは順位相応（3〜5%）を大きく下回る。原因は先頭の12文字。
- *
- *   1. **スマホの検索結果は全角30文字前後で切れる。** 頭に日付を置くと、
- *      読者が最初に読むのが「2026年9月1日時点」になり、
- *      **サービス名も「終了」も後ろへ押し出される**
- *   2. 9月中旬に見た読者にとって「9月1日時点」は**古い情報に見える。**
- *      鮮度を出すつもりの表示が、逆に働いていた
- *
- * ★ **「時点」ではなく「更新」。** 同じ日付でも、
- *   「時点」は情報の古さを、「更新」は手入れの新しさを名乗る。
- *   左の枠（`evergreenStamp`）が最初から「更新」だったので、そちらに揃えた。
- *
- * ★ **年を落とす。** 常設ページの基準日は必ず直近の収集日で、
- *   年をまたいだ日付にはならない（またぐ前に収集が走る）。
- *   作品ページの見出し（lib/works.ts の `headlineDate`）は
- *   過去の日付を名乗ることがあるので、あちらは年を残している。
+ * ★ **「時点」ではなく「更新」。** 「時点」は情報の古さを、「更新」は手入れの新しさを名乗る。
+ * ★ **年を落とす。** 常設ページの基準日は必ず直近の収集日で、年をまたいだ日付にはならない。
  */
 export function evergreenTitle(titleBase: string, dataAsOf: Date | null): string {
   if (!dataAsOf) return titleBase
@@ -201,63 +186,42 @@ export function evergreenTitle(titleBase: string, dataAsOf: Date | null): string
   return `${titleBase}【${md}更新】`
 }
 
-/*
- * ★ `evergreenStamp()`（左の枠に出していた `【2026年8月25日更新】`）は
- *   **2026-09-15 に消した。** 枠のカードには「随時更新」のバッジを立て、
- *   日付はリンク先の見出し（上の `evergreenTitle`）だけが出す形にした。
- *   経緯は components/LeftRail.astro の該当箇所。
- */
-
 /**
- * 常設ページ1枚ぶんの件数と基準日。
+ * 常設ページ1枚ぶんの中身。**ページとカードが同じものを読む。**
  *
- * 左の枠は全ページで描画されるので、同じ集計が何度も走る。
- * `events-data` 側で読み込みはキャッシュ済みだが、集計もここで持っておく。
+ * ★ 基準日は2つの一覧のうち**新しいほう**。片方だけを見ると、
+ *   片方が空のサービス（Disney+ の終了予定など）で日付が付かなくなる。
  */
-const summaries = new Map<string, { count: number; dataAsOf: Date | null }>()
-
-export function evergreenSummary(page: EvergreenPage): { count: number; dataAsOf: Date | null } {
-  const hit = summaries.get(page.href)
-  if (hit) return hit
-
-  const key = page.href.split('/').pop()!
-  const data = page.category === 'leaving' ? loadLeaving(key) : loadArrivals(key)
-  const summary = { count: data.works.length, dataAsOf: data.dataAsOf }
-  summaries.set(page.href, summary)
-  return summary
+export interface CalendarContent {
+  /** これから（終了予定 / 配信開始予定）。**持たない社は null**（空配列と区別する） */
+  future: ReturnType<typeof loadLeaving> | null
+  /** 過去（終了済み / 新着） */
+  past: ReturnType<typeof loadLeaving>
+  dataAsOf: Date | null
 }
 
-/**
- * 配信カレンダー1枚ぶんの件数と基準日。
- *
- * ★ **基準日は2つの一覧のうち新しいほう。** 片方だけを見ると、
- *   終了予定が0件のサービス（Disney+）で日付が付かなくなる。
- *
- * 左の枠は全ページで描画されるので、上の `evergreenSummary` と同じく
- * 集計をここで持っておく。
- */
-const calendarSummaries = new Map<
-  string,
-  { leaving: number; arrivals: number; dataAsOf: Date | null }
->()
+const contents = new Map<string, CalendarContent>()
 
-export function calendarSummary(page: CalendarPage): {
-  leaving: number
-  arrivals: number
-  dataAsOf: Date | null
-} {
-  const hit = calendarSummaries.get(page.href)
+export function calendarContent(direction: CalendarDirection, service: string): CalendarContent {
+  const key = `${direction}/${service}`
+  const hit = contents.get(key)
   if (hit) return hit
 
-  const service = page.thumbKey
-  const lv = hasLeaving(service) ? loadLeaving(service) : { works: [], dataAsOf: null }
-  const ar = hasArrivals(service) ? loadArrivals(service) : { works: [], dataAsOf: null }
-  const dates = [lv.dataAsOf, ar.dataAsOf].filter((d): d is Date => d !== null)
-  const summary = {
-    leaving: lv.works.length,
-    arrivals: ar.works.length,
+  const future =
+    direction === 'leaving' ? (hasExpiring(service) ? loadLeaving(service) : null) : loadUpcoming(service)
+  const past = direction === 'leaving' ? loadEnded(service) : loadArrivals(service)
+  const dates = [future?.dataAsOf, past.dataAsOf].filter((d): d is Date => Boolean(d))
+  const out: CalendarContent = {
+    future,
+    past,
     dataAsOf: dates.length > 0 ? new Date(Math.max(...dates.map((d) => d.getTime()))) : null,
   }
-  calendarSummaries.set(page.href, summary)
-  return summary
+  contents.set(key, out)
+  return out
+}
+
+/** 常設ページ1枚ぶんの件数と基準日（カード用）。 */
+export function evergreenSummary(page: EvergreenPage): { count: number; dataAsOf: Date | null } {
+  const c = calendarContent(page.category, page.thumbKey)
+  return { count: (c.future?.works.length ?? 0) + c.past.works.length, dataAsOf: c.dataAsOf }
 }

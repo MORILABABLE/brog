@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { ATTRIBUTION, SITE } from '../config'
-import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../lib/events-data'
+import { CALENDAR_SERVICES } from '../lib/events-data'
 
 /**
  * 「引用・取材について」（2026-09-16 追加）。docs/PARTNERSHIPS.md の P-2。
@@ -115,9 +115,9 @@ const description =
         サービス別配信数の変動：<a href="/stats">サービス別見放題の追加・削除一覧</a>
       </li>
       <li>
-        配信終了予定の一覧：
+        配信終了（予定・終了済み）の一覧とカレンダー：
         {
-          LEAVING_SERVICES.map((s, i) => (
+          CALENDAR_SERVICES.map((s, i) => (
             <>
               {i > 0 && '・'}
               <a href={`/leaving/${s.key}`}>{s.label}</a>
@@ -126,9 +126,9 @@ const description =
         }
       </li>
       <li>
-        新着配信の一覧：
+        新着・配信予定の一覧とカレンダー：
         {
-          ARRIVALS_SERVICES.map((s, i) => (
+          CALENDAR_SERVICES.map((s, i) => (
             <>
               {i > 0 && '・'}
               <a href={`/arrivals/${s.key}`}>{s.label}</a>

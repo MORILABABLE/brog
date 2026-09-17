@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
 import EvergreenCard from '../../components/EvergreenCard.astro'
 import { SERVICE_HUBS, SERVICE_MENU_HUBS, SITE } from '../../config'
+import { hubServiceHref } from '../../lib/evergreen'
 import { serviceHasContent, serviceSection } from '../../lib/service-pages'
 
 /**
@@ -76,7 +77,7 @@ const description =
   <nav class="hubs" aria-label="カテゴリで絞り込む">
     {
       SERVICE_MENU_HUBS.map((h) => (
-        <a class="hub" href={`/category/${h.slug}/${hub.slug}`}>
+        <a class="hub" href={hubServiceHref(h.slug, hub.slug)}>
           {hub.label}の{h.label}
         </a>
       ))

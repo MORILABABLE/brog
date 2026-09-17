@@ -33,7 +33,7 @@ import {
   type RawEvent,
   type RawWork,
 } from './events-data'
-import { availabilityUrl, resolveUrl, workLinkByTitle } from './work-links'
+import { amazonSearchUrl, availabilityUrl, resolveUrl, workLinkByTitle } from './work-links'
 import { marksFor } from './availability'
 import { seriesRefFor } from './series-for-work'
 import { formatDate, isoDate } from '../utils/date'
@@ -135,8 +135,12 @@ const API_SERVICE_KEYS = new Set<string>(API_SERVICES.map((s) => s.key))
 export type WorkState = 'leaving' | 'passed' | 'ended' | 'started'
 
 /**
- * 状態の短い名前（バッジ・見出し用）。
- * ★ 作品ページとサイトマップの両方が使う。**文字列を各ページに散らさない。**
+ * 状態の短い名前（見出し用）。
+ * ★ サイトマップの束の見出しが使う。**文字列を各ページに散らさない。**
+ * ★ **読者に出すバッジはこれを直接使わないこと。** `stateBadge()` を通す。
+ *   `passed` の「終了予定日を経過」は、在庫台帳で確かめると**ほとんどが延長**だった
+ *   （2026-09-17 の実測・`passedCheck()` の注記）。バッジだけを見た読者には
+ *   「終わった」と読めるので、作品ページと人物ページでは確かめた結果で言い分ける。
  */
 export const STATE_LABEL: Record<WorkState, string> = {
   leaving: '終了予定',
@@ -302,14 +306,16 @@ export function workDescription(w: WorkPage): string {
  *   Amazon に飛ぶ。2026-09-06 の実測で **517枚中248枚**がその状態だった。
  *
  * ★ 引数に URL を取るのはそのため。**呼び出し側が実際に張る URL を渡すこと。**
+ * ★ `check` は `passed` のときの在庫の確かめ（`passedCheck()`）。
+ *   **予定日後も見放題だと確かめた作品に「レンタル・購入を探す」と出さない**（2026-09-17）。
+ *   バッジが「予定日後も見放題」なのにボタンが「レンタル・購入」では、同じ行が食い違う。
  */
-export function serviceCtaLabel(s: WorkServiceState, url: string): string {
+export function serviceCtaLabel(s: WorkServiceState, url: string, check?: PassedCheck): string {
   const toAmazon = /(^|\.)amazon\.co\.jp$/.test(hostOf(url) ?? '')
   if (!toAmazon) return `${s.label}で見る`
   // 見放題が終わっているなら、Amazon で探せるのはレンタル・購入。
-  return s.state === 'ended' || s.state === 'passed'
-    ? 'Prime Videoでレンタル・購入を探す'
-    : 'Prime Videoで探す'
+  const over = s.state === 'ended' || (s.state === 'passed' && check?.result !== 'extended')
+  return over ? 'Prime Videoでレンタル・購入を探す' : 'Prime Videoで探す'
 }
 
 // --- いま見放題で観られるサービス（在庫台帳・2026-09-16 追加）-------------------
@@ -387,6 +393,122 @@ export function stockNote(a: StockAnswer): string {
  * ★ 「配信中」と言い切れるのは在庫台帳を根拠にしているときだけ（上の長い注記）。
  */
 export const STOCK_HEADING = '見放題で配信中'
+
+// --- 終了予定日を過ぎた作品の確かめ（在庫台帳・2026-09-17 追加）------------------
+
+/*
+ * ■ 何が起きていたか
+ * `passed` は「終了予定日が過去で、終了（`removed`）を観測していない」状態で、
+ * バッジは「終了予定日を経過」と出していた。**読者には「終わった」と読める。**
+ * 在庫台帳（`data/availability.json`）と突き合わせると、実態は違った。
+ *
+ *   実測（2026-09-17・passed 37件のうち台帳のある16件）
+ *     予定日より後に取った在庫で、まだ見放題      13件（ミッション:インポッシブル5本・トランスフォーマー5本など）
+ *     予定日より後に取った在庫で、見放題が無い     2件（アメリカン・ビューティー・パウ・パトロール／Netflix）
+ *     在庫を取ったのが予定日より前（何も言えない）  1件
+ *
+ * **「経過」の大半は延長で、残りは終了の取りこぼし**（変化ログが `removed` を出さなかった）。
+ * 人物ページでは955行中90行がこの表示で、左の枠の先頭（トム・クルーズ）は12本中7本だった。
+ *
+ * ■ 状態（`WorkState`）は変えない
+ * `passed` のまま、**表示の言い分けだけ**をする。状態は変化ログから決まるもので、
+ * 見出し・並び順・カテゴリの行き先（work-hub-article.ts）がそれに依っている。
+ * 在庫台帳は14日で古くなる（`MAX_AGE_DAYS`）ので、状態まで動かすと
+ * **台帳の鮮度に合わせてページの見出しが行き来する**ことになる。
+ *
+ * ★ **文を混ぜない**（上の「根拠が違うので、文も日付も分ける」）。
+ *   状態行の `stateSentence()` は変化ログの文のまま残し、確かめた結果は
+ *   **別の文に、台帳の日付を付けて**続ける（`passedNote()`）。
+ */
+
+/**
+ * 在庫を取ったのが予定日から何日以上あとなら、その在庫で「予定日のあと」を語ってよいか。
+ *
+ * ★ 0 にしないこと。配信APIの在庫は数時間〜1日遅れて追いつくことがあり、
+ *   予定日の直後に取った在庫は、終わった作品をまだ見放題として返しうる。
+ *   **延長していないのに「予定日後も見放題」と書く**のがいちばん困るので、余裕を取る。
+ *   実測の15件（同じ日に取った1件を除く）は予定日の2.5〜34日後の在庫で、2日なら全部拾える。
+ */
+const PASSED_CHECK_MARGIN_DAYS = 2
+
+export interface PassedCheck {
+  /**
+   * `extended` … 予定日より後に取った在庫で、そのサービスにまだ見放題がある
+   * `lapsed`   … 予定日より後に取った在庫で、そのサービスに見放題が無い（レンタル・購入のみ／取り扱いなし）
+   */
+  result: 'extended' | 'lapsed'
+  /** 在庫を取った日。**状態行の日付（`s.at`・`w.dataAsOf`）とは別物** */
+  fetchedAt: Date
+}
+
+/**
+ * 終了予定日を過ぎた（`passed`）サービス1件を、在庫台帳で確かめる。
+ * **言えることが無ければ `undefined`**（＝未確認）。
+ *
+ * ★ `undefined` を「終わった」にも「続いている」にも読み替えないこと。
+ *   台帳に無い・14日より古い・予定日より前に取った、のどれも**何も言っていない**。
+ * ★ 目視で見放題を取り下げた組み合わせ（`marksFor` の `unknown`）も未確認に倒す。
+ *   `marksFor` が「× にしない」と決めているのと同じ理由。
+ */
+export function passedCheck(
+  w: WorkPage,
+  s: WorkServiceState,
+  now = Date.now(),
+): PassedCheck | undefined {
+  if (s.state !== 'passed') return undefined
+  const found = marksFor(w.id, [w.title], now)
+  if (!found) return undefined
+  if (found.fetchedAt.getTime() < s.at.getTime() + PASSED_CHECK_MARGIN_DAYS * 86_400_000) {
+    return undefined
+  }
+  const mark = found.marks.get(s.service)
+  if (mark === 'unknown') return undefined
+  // ★ 台帳にそのサービスの行が無いのは「その社では取り扱いなし」。
+  //   台帳に**作品が**無いこと（上の `found` が無い）とは別で、こちらは調べた結果。
+  return { result: mark === 'subscription' ? 'extended' : 'lapsed', fetchedAt: found.fetchedAt }
+}
+
+/**
+ * 読者に出すバッジ。**状態の名前（`STATE_LABEL`）の代わりにこれを使う。**
+ * `passed` だけ、確かめた結果で文言と色を変える。他の状態は `STATE_LABEL` のまま。
+ */
+export function stateBadge(
+  w: WorkPage,
+  s: WorkServiceState,
+  now = Date.now(),
+): { label: string; category: CategorySlug } {
+  if (s.state !== 'passed') return { label: STATE_LABEL[s.state], category: STATE_CATEGORY[s.state] }
+  const check = passedCheck(w, s, now)
+  if (check?.result === 'extended') return { label: '予定日後も見放題', category: 'leaving' }
+  // 見放題が無いことを確かめた。**色は終了済みに揃える**（読者の行動は「どこで観るか」に移っている）
+  if (check?.result === 'lapsed') return { label: '見放題の終了を確認', category: 'ended' }
+  return { label: '予定日後は未確認', category: 'leaving' }
+}
+
+/**
+ * 状態行のボタンの送り先。**見放題が無いと確かめた行だけ、終了済みと同じ逃げ先へ送る。**
+ *
+ * ★ `s.url` は変化ログから決まる（`resolveUrl`）。`passed` は種別が `expiring` なので
+ *   **そのサービスの作品ページ**を指したままになり、見放題の終了を確かめた Netflix の作品で
+ *   「見放題の終了を確認」の隣に「Netflixで見る」が並んでいた（2026-09-17・2件）。
+ *   `resolveUrl` が `removed` を Amazon の検索に落とすのと同じ規則をここで当てる。
+ * ★ 文言は `serviceCtaLabel()` が**この戻り値のURLから**決める。呼び出し側は必ずこれを通したURLを渡すこと。
+ */
+export function serviceUrl(w: WorkPage, s: WorkServiceState, check?: PassedCheck): string {
+  return check?.result === 'lapsed' ? amazonSearchUrl(w.title) : s.url
+}
+
+/**
+ * 状態行の後ろに続ける1文。**`passed` のときだけ呼ぶ。**
+ * 根拠（在庫台帳）が状態行と違うので、**日付も台帳のものを名乗る。**
+ */
+export function passedNote(check: PassedCheck | undefined): string {
+  if (!check) return '予定日のあとも見放題が続いているかは、まだ確認できていません。'
+  const d = formatDate(check.fetchedAt)
+  return check.result === 'extended'
+    ? `${d}時点でも見放題の対象でした。`
+    : `${d}時点で見放題の対象ではなくなっていました。`
+}
 
 /**
  * 見出しに入れる日付。**今年なら年を落として「9月29日」にする。**
@@ -1269,6 +1391,14 @@ export function relatedWorks(w: WorkPage): RelatedGroup[] {
     return out
   }
 
+  /*
+   * 関連作品の注記（`2006年・終了済み`）。**状態はバッジと同じ言い方にする**（`stateBadge`）。
+   * ★ `STATE_LABEL` を直接使わないこと。予定日を過ぎた作品が「終了予定日を経過」と出て、
+   *   在庫台帳で延長を確かめた作品まで終わったように読める（2026-09-17 に直した）。
+   */
+  const yearAndState = (x: WorkPage) =>
+    [x.year ? `${x.year}年` : '', stateBadge(x, x.services[0]!).label].filter(Boolean).join('・')
+
   const head = w.services[0]!
 
   /*
@@ -1290,9 +1420,7 @@ export function relatedWorks(w: WorkPage): RelatedGroup[] {
   const seriesSlug = seriesRefFor(w.title)?.slug
   if (seriesSlug) {
     const mates = (idx.bySeries.get(seriesSlug) ?? []).slice().sort(byNotability)
-    const items = take(mates, SAME_SERIES_LIMIT, (x) =>
-      [x.year ? `${x.year}年` : '', STATE_LABEL[x.state]].filter(Boolean).join('・'),
-    )
+    const items = take(mates, SAME_SERIES_LIMIT, yearAndState)
     if (items.length > 0) {
       groups.push({ heading: `${seriesRefFor(w.title)?.topic ?? ''}の作品`, items })
     }
@@ -1303,7 +1431,7 @@ export function relatedWorks(w: WorkPage): RelatedGroup[] {
     const items = take(
       (idx.byDirector.get(director) ?? []).slice().sort(byNotability),
       SAME_DIRECTOR_LIMIT,
-      (x) => [x.year ? `${x.year}年` : '', STATE_LABEL[x.state]].filter(Boolean).join('・'),
+      yearAndState,
     )
     if (items.length > 0) {
       groups.push({ heading: `${director}が監督した作品`, items })
@@ -1336,12 +1464,10 @@ export function relatedWorks(w: WorkPage): RelatedGroup[] {
      * ★ 読者にとっても筋が通る枠にしてある。終了済みの作品を見ている読者には
      *   「同じころに終わった同じジャンルの作品」で、終了予定の作品を見ている読者には
      *   「そのサービスで最近終わったもの」になる。
-     * ★ **「観られます」と書かない。** 状態は `STATE_LABEL` から出す（下の note）。
+     * ★ **「観られます」と書かない。** 状態は `stateBadge` から出す（下の note）。
      */
     const ended = ringSlice(idx.byGenreEnded.get(`${head.service} ${genre}`) ?? [], w, SAME_GENRE_LIMIT)
-    const endedItems = take(ended, SAME_GENRE_LIMIT, (x) =>
-      [x.year ? `${x.year}年` : '', STATE_LABEL[x.state]].filter(Boolean).join('・'),
-    )
+    const endedItems = take(ended, SAME_GENRE_LIMIT, yearAndState)
     if (endedItems.length > 0) {
       groups.push({ heading: `${head.label}で見放題配信が終了した${genre}作品`, items: endedItems })
     }
@@ -1402,7 +1528,7 @@ export function relatedWorks(w: WorkPage): RelatedGroup[] {
     const anyItems = take(
       ringSlice(idx.byGenreAny.get(w.genres[0]) ?? [], w, SAME_GENRE_LIMIT),
       SAME_GENRE_LIMIT,
-      (x) => [x.year ? `${x.year}年` : '', STATE_LABEL[x.state]].filter(Boolean).join('・'),
+      yearAndState,
     )
     if (anyItems.length > 0) {
       groups.push({ heading: `${w.genres[0]}の作品`, items: anyItems })

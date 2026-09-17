@@ -1,0 +1,502 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import AffiliateNotice from './AffiliateNotice.astro'
+import AmazonCta from './AmazonCta.astro'
+import CalendarPicker from './CalendarPicker.astro'
+import EventCalendar from './EventCalendar.astro'
+import PostCard from './PostCard.astro'
+import PrimeCta from './PrimeCta.astro'
+import WorkSearch from './WorkSearch.astro'
+import WorkTable from './WorkTable.astro'
+import { ATTRIBUTION, CATEGORIES, CATEGORY_HUBS, EVERGREEN_BADGE, SERVICE_HUBS, SITE } from '../config'
+import { buildCalendar, type CalendarKind } from '../lib/calendar'
+import {
+  ARRIVALS_WINDOW_DAYS,
+  calendarPastStart,
+  groupByDate,
+  upcomingSources,
+  type WorkRow,
+} from '../lib/events-data'
+import {
+  calendarContent,
+  evergreenTitle,
+  evergreenTitleBase,
+  type CalendarDirection,
+} from '../lib/evergreen'
+import { primeAd } from '../lib/prime-ad'
+import { isPosterThumb, workLinkById } from '../lib/work-links'
+import { serviceSection, type PostEntry } from '../lib/service-pages'
+import { formatDate } from '../utils/date'
+
+interface Props {
+  direction: CalendarDirection
+  /** サービスキー（`netflix` など） */
+  service: string
+  /** サービス表示名 */
+  label: string
+  /** 公開中の記事全部。このサービス×向きの記事だけをここで拾う */
+  posts: PostEntry[]
+}
+
+const { direction, service, label, posts } = Astro.props
+
+/**
+ * 配信カレンダーのページ本体。**`/leaving/<サービス>` と `/arrivals/<サービス>` が共有する。**
+ *
+ * ■ 2026-09-17 に1つの部品にまとめた
+ * それまでは pages/leaving/[service].astro と pages/arrivals/[service].astro が
+ * ほぼ同じ250行をそれぞれ持ち、「同じ形にすること」と注意書きで縛っていた。
+ * 2枚が同じ形（切り替え → 升目 → 記事 → これからの表 → 過去の表）になったので、部品を1つにした。
+ *
+ * ■ 1ページに並ぶもの
+ *
+ *   /leaving/<サービス>   これから＝終了予定（loadLeaving）   過去＝終了済み（loadEnded・前月から）
+ *   /arrivals/<サービス>  これから＝配信開始予定（loadUpcoming） 過去＝新着（loadArrivals・直近60日）
+ *
+ * ★ **「これから」を先に置く。** 読者の用は「次に何が起きるか」で、過去の記録はその後。
+ *   並びの規則（きょうに近い順）は lib/events-data.ts の `loadLeaving` の上に1つだけ書いてある。
+ *
+ * ■ 検索から来るページでもある（ここを崩さないこと）
+ * `/leaving/netflix` は「◯◯ netflix 配信終了」で表示を集めている（docs/FUNNEL.md 4-1）。
+ * **表（作品名の並び）が検索に当たっている本文**なので、升目だけのページにしない。
+ * タイトルも「一覧」を残して「カレンダー」を足しただけ（lib/evergreen.ts）。
+ *
+ * ■ 絶対に守ること
+ * **「配信中」と書かない。** 新着は「始まった記録」、配信開始予定は「告知された予定」、
+ * 終了済みは「終了を確認した記録」。どれも**いま観られるか**は言っていない（下の注記）。
+ */
+
+const content = calendarContent(direction, service)
+const futureWorks: WorkRow[] = content.future?.works ?? []
+const pastWorks: WorkRow[] = content.past.works
+const since = calendarPastStart()
+const isPrime = service === 'prime-video'
+
+interface Section {
+  kind: CalendarKind
+  /** 升目の行き先の頭と、表の見出しの id の頭。**必ず同じ文字列**（EventCalendar の kinds） */
+  prefix: string
+  heading: string
+  note: string
+  /** 0件のときに表の代わりに出す文 */
+  empty: string
+  dateNoun: string
+  works: WorkRow[]
+  /** この社はこの種類のデータを持たない（表の代わりに理由を出す） */
+  unavailable?: string
+}
+
+/*
+ * 節の定義。**文言はここに集める。** 2枚のページで言い回しがずれないように。
+ */
+const future: Section =
+  direction === 'leaving'
+    ? {
+        kind: 'leaving',
+        prefix: 'leaving-',
+        heading: '見放題配信が終了する予定',
+        note:
+          '終了日の近い順（きょうに近い日付が上）に並べています。' +
+          (isPrime
+            ? 'Prime Video は終了の約11日前にならないと終了予定が出ないため、先の日付ほど件数が少なくなります。'
+            : ''),
+        empty:
+          `現在、${label}で終了予定として取得できている作品はありません。` +
+          (isPrime
+            ? 'Prime Video は終了の約11日前にならないと終了予定が出ないため、時期によっては空になります。'
+            : 'しばらくしてから再度ご確認ください。'),
+        dateNoun: '終了',
+        works: futureWorks,
+        /*
+         * ★ Disney+ は配信データが終了予定を返さない（events-data.ts の LEAVING_SERVICES）。
+         *   「0件です」と書くと**観測できていないだけ**のことを、無いことのように見せてしまう。
+         *   節ごと消すと「終了予定」で探しに来た読者に理由が伝わらないので、理由を書く。
+         */
+        unavailable:
+          content.future === null
+            ? `${label}の終了予定日は、当サイトが使っている配信データに含まれないため載せていません。終了を確認した作品は下の一覧にあります。`
+            : undefined,
+      }
+    : {
+        kind: 'upcoming',
+        prefix: 'upcoming-',
+        heading: '見放題配信が始まる予定',
+        note: '各サービスの告知（翌月の配信ラインナップなど）から、配信開始日の近い順に並べています。予定は変更・延期されることがあります。',
+        empty: `現在、${label}の配信開始予定として取り込めている告知はありません。翌月ぶんの告知は、例月の月末ごろに出ます。`,
+        dateNoun: '配信予定',
+        works: futureWorks,
+      }
+
+const past: Section =
+  direction === 'leaving'
+    ? {
+        kind: 'ended',
+        prefix: 'ended-',
+        heading: '見放題配信が終了した作品',
+        note: `${formatDate(since)}以降に終了を確認した作品を、終了日の新しい順（きょうに近い日付が上）に並べています。`,
+        empty: `${formatDate(since)}以降に、${label}で見放題配信の終了を確認した作品はありません。`,
+        dateNoun: '終了',
+        works: pastWorks,
+      }
+    : {
+        kind: 'arrivals',
+        prefix: 'arrivals-',
+        heading: '最近見放題になった作品',
+        note: `直近${ARRIVALS_WINDOW_DAYS}日間ぶんを、配信開始日の新しい順（直近のものが上）に並べています。`,
+        empty: `直近${ARRIVALS_WINDOW_DAYS}日間に、${label}で見放題配信が始まった作品は取得できていません。`,
+        dateNoun: '追加',
+        works: pastWorks,
+      }
+
+const sections = [future, past]
+
+/*
+ * 升目。**渡すのは表に出しているのと同じ配列**（lib/calendar.ts）。
+ * 別の絞り込みを掛けると、点いているのに飛び先が無い日ができる。
+ */
+const calendar = buildCalendar(
+  sections.map((s) => ({ kind: s.kind, works: s.works })),
+  /*
+   * 升目に敷く作品の絵（2026-09-17 追加・運用者の指定）。
+   * **表の行に出しているサムネイルと同じもの**（components/WorkTable.astro の `primary`）。
+   * 「日にちを押すと作品の一覧へ移動します」という案内文の代わりに、
+   * 升目そのものに作品が見えていれば、押すと作品に行けることが伝わる。
+   * ★ ジャンルの汎用画像は使わない（`isPosterThumb`）。同じ絵が升目に並ぶだけになる。
+   */
+  (w) => {
+    const thumb = workLinkById(w.workId, service)?.thumb
+    return isPosterThumb(thumb) ? thumb : undefined
+  },
+)
+const hasRows = futureWorks.length + pastWorks.length > 0
+
+/*
+ * 作品検索の説明文。**カレンダーの見出しの右と、升目が出ないときの単独置きで同じ文字列を使う。**
+ * ★ 表は2つあるが、検索窓は**1つで両方に当たる**（WorkSearch は文書内の `[data-work-row]` を全部見る）。
+ */
+const SEARCH_LABEL = 'この一覧から作品を探す'
+
+/*
+ * タイトルの末尾に基準日を出す（`…作品一覧・カレンダー【9月14日更新】`）。
+ * **素のタイトルも組み立ても lib/evergreen.ts の1か所。ここで文字列を作らないこと。**
+ */
+const title = evergreenTitle(evergreenTitleBase(direction, service, label), content.dataAsOf)
+
+const nearest = futureWorks[0]
+const description =
+  direction === 'leaving'
+    ? content.future === null
+      ? `${label}で${formatDate(since)}以降に見放題配信が終了した作品${pastWorks.length}本を、カレンダーと一覧で確認できます。`
+      : futureWorks.length > 0
+        ? `${label}で見放題配信が終了する予定の作品${futureWorks.length}本（最も近い終了日は${formatDate(nearest!.at)}）と、${formatDate(since)}以降に終了した作品${pastWorks.length}本を、カレンダーと一覧で確認できます。`
+        : `${label}で見放題配信が終了する予定の作品と、${formatDate(since)}以降に終了した作品${pastWorks.length}本を、カレンダーと一覧で確認できます。現在、終了予定として取得できている作品はありません。`
+    : futureWorks.length > 0
+      ? `${label}で見放題配信が始まる予定の作品${futureWorks.length}本と、直近${ARRIVALS_WINDOW_DAYS}日間に見放題になった作品${pastWorks.length}本を、カレンダーと一覧で確認できます。`
+      : `${label}で直近${ARRIVALS_WINDOW_DAYS}日間に見放題になった作品${pastWorks.length}本を、カレンダーと一覧で確認できます。`
+
+/*
+ * このサービス×向きの記事（2026-09-17 追加）。
+ *
+ * ★ ヘッダーのメニューの行き先だった `/category/<ハブ>/<サービス>` を、このページへ転送した。
+ *   あのページが持っていた**記事の一覧をここで引き継ぐ**（転送した先で記事が見つからない、を作らない）。
+ *   ハブの中身（終了＝配信終了予定と終了済み／新着）は config.ts の CATEGORY_HUBS が決める。
+ */
+const hub = CATEGORY_HUBS.find((h) => h.slug === direction)!
+const serviceHub = SERVICE_HUBS.find((s) => s.slug === service)
+const allArticles = serviceHub ? serviceSection(posts, serviceHub, hub.includes).posts : []
+/*
+ * ★ **新しい5本まで。** 升目と表のあいだに置くので、全部並べると表が遠くなる
+ *   （実測: Prime Video の新着側で14本）。残りは「すべて見る」から
+ *   サービス別まとめ（/service/<サービス>・カテゴリ問わず全部の記事）へ送る。
+ */
+const ARTICLES_SHOWN = 5
+const articles = allArticles.slice(0, ARTICLES_SHOWN)
+
+/*
+ * 本文のCTA。**Prime Video の面だけ行き先が変わる**（判断と文言は lib/prime-ad.ts の1か所）。
+ *
+ * ★ **「これから」（終了予定）が1本も無い終了側では出さない。** 終わった作品しか並ばない面で
+ *   会員を勧めると、prime-ad.ts の「出してよい面」の線を越える。
+ * ★ 新着側は、新着が1本も無く配信予定だけのときは出さない（文言が「始まった作品」を前提にする）。
+ */
+const primeProps =
+  direction === 'leaving'
+    ? futureWorks.length > 0
+      ? { service, category: 'leaving' as const, alsoEnded: pastWorks.length > 0 }
+      : null
+    : pastWorks.length > 0
+      ? { service, category: 'arrivals' as const, alsoUpcoming: futureWorks.length > 0 }
+      : null
+const primeSlot = primeProps ? primeAd(primeProps) : null
+
+/* 配信開始予定の出典（告知のページ）。**取り込んだ告知があるときだけ並べる** */
+const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ? upcomingSources(service) : []
+---
+
+<BaseLayout title={title} description={description}>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a> ›
+    <a href={`/category/${hub.slug}`}>{hub.label}</a>
+  </nav>
+
+  {/*
+    ★ 見出しの直上に置いていたサービス画像（LeadImage）は**外してある**（2026-09-07）。
+      汎用の絵（再生記号）で、本命のカレンダーと表を画面の外へ押し下げていた。
+      カードのサムネイル（Thumb.astro）としては残してある。
+  */}
+  <h1>{title}</h1>
+
+  {/*
+    ★ 記事ページ（pages/posts/[...slug].astro）の `.meta` と同じ位置・同じ形。
+      **違いはバッジだけ**にしてある。記事は「公開 ◯月◯日」が並び、ここは「随時更新」が並ぶ。
+    ★ 終了側は、終了予定と終了済みの**両方があるときはバッジも2つ**。
+      片方だけ出すと、出さなかったほうの作品が載っていることが伝わらない。
+  */}
+  <div class="meta">
+    {
+      direction === 'leaving' ? (
+        <>
+          {futureWorks.length > 0 && (
+            <span class="badge" data-category={CATEGORIES.leaving.slug}>
+              {CATEGORIES.leaving.label}
+            </span>
+          )}
+          {pastWorks.length > 0 && (
+            <span class="badge" data-category={CATEGORIES.ended.slug}>
+              {CATEGORIES.ended.label}
+            </span>
+          )}
+        </>
+      ) : (
+        <span class="badge" data-category={CATEGORIES.arrivals.slug}>
+          {CATEGORIES.arrivals.label}
+        </span>
+      )
+    }
+    <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
+  </div>
+
+  <AffiliateNotice />
+
+  {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
+  <p class="notice">
+    {
+      content.dataAsOf ? (
+        <>
+          配信情報は <strong>{formatDate(content.dataAsOf)}時点</strong>のものです。
+        </>
+      ) : (
+        <>配信情報の取得時刻が不明です。</>
+      )
+    }
+    {label}の都合により変更される場合があります。ご視聴前に公式サイトでご確認ください。
+  </p>
+
+  {
+    calendar.hasEvents ? (
+      <EventCalendar
+        months={calendar.months}
+        buildMonth={calendar.buildMonth}
+        kinds={sections.map((s) => ({ kind: s.kind, prefix: `#${s.prefix}` }))}
+        searchLabel={hasRows ? SEARCH_LABEL : undefined}
+      >
+        {/*
+          ★ 切り替え（サービス／表示）は**「配信カレンダー」の見出しの直下**に置く（2026-09-17・運用者の指定）。
+            それまでは見出しの上（配信情報の注意書きの下）にあり、カレンダーを操作する部品だと読みにくかった。
+        */}
+        <CalendarPicker slot="picker" service={service} direction={direction} />
+      </EventCalendar>
+    ) : (
+      /*
+       * ★ 升目が出ない時期は、切り替えと検索窓を単独で置く。
+       *   切り替えは**必ず出す**（ほかのサービス・表示へ移る道がここにしか無い）。
+       *   検索窓は**2つ出さないこと**（WorkSearch のスクリプトはページに1つある前提）。
+       */
+      <>
+        <CalendarPicker service={service} direction={direction} />
+        {hasRows && (
+          <div class="search-head">
+            <WorkSearch label={SEARCH_LABEL} />
+          </div>
+        )}
+      </>
+    )
+  }
+
+  {
+    articles.length > 0 && (
+      <section class="articles" aria-labelledby="articles-title">
+        <h2 id="articles-title">
+          {label}の{hub.label}の記事
+        </h2>
+        {/*
+          ★ **記事カード（PostCard）で出す**（2026-09-17・運用者の指定）。
+            最初は題名と日付の行だけにしていたが、トップや記事一覧と同じ見出し画像つきのカードでないと、
+            ほかの一覧と同じ記事だと分かりにくい。節の見出しが h2 なので、カードの題名は h3 に下げる。
+        */}
+        {articles.map((p) => (
+          <PostCard post={p} headingLevel={3} />
+        ))}
+        {allArticles.length > ARTICLES_SHOWN && (
+          <p class="more">
+            <a href={`/service/${service}`}>{label}の記事をすべて見る</a>
+          </p>
+        )}
+      </section>
+    )
+  }
+
+  {
+    sections.map((s) => (
+      <section class="block" id={s.kind}>
+        <h2>{s.heading}</h2>
+        {s.unavailable ? (
+          <p class="block-note">{s.unavailable}</p>
+        ) : s.works.length === 0 ? (
+          <p class="empty">{s.empty}</p>
+        ) : (
+          <>
+            <p class="block-note">{s.note}</p>
+            <WorkTable
+              groups={groupByDate(s.works)}
+              dateNoun={s.dateNoun}
+              service={service}
+              idPrefix={s.prefix}
+              headingLevel={3}
+            />
+          </>
+        )}
+      </section>
+    ))
+  }
+
+  {
+    primeSlot && primeProps ? (
+      <PrimeCta {...primeProps} />
+    ) : (
+      <AmazonCta category={direction} />
+    )
+  }
+
+  <section class="sources">
+    <h2>出典</h2>
+    <ul>
+      <li>
+        <a href={ATTRIBUTION.url} rel="noopener noreferrer" target="_blank">
+          {ATTRIBUTION.text}
+        </a>
+      </li>
+      <li>
+        <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">
+          作品タイトル（Wikidata・CC0）
+        </a>
+      </li>
+      {
+        announcementSources.map((a) => (
+          <li>
+            <a href={a.url} rel="noopener noreferrer" target="_blank">
+              配信開始予定：{a.publisher}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <p class="related">
+    関連:
+    <a href="/stats">サービス別見放題の追加・削除一覧</a>
+  </p>
+
+  <p class="site-note">
+    {
+      direction === 'leaving' ? (
+        <>
+          「見放題配信が終了した作品」に載せているのは<strong>終了を確認した記録</strong>で、
+          その後に見放題へ戻っている場合があります。
+        </>
+      ) : (
+        <>
+          「見放題配信が始まる予定」は<strong>各サービスの告知にもとづく予定</strong>で、変更・延期されることがあります。
+          「最近見放題になった作品」に載せているのは<strong>配信が始まった記録</strong>で、
+          その後に配信が終了している場合があります。
+        </>
+      )
+    }
+    このページの配信記録は Netflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスぶんです
+    （{SITE.name}が追いかけている U-NEXT は記事でのみ扱っており、このページには入っていません）。
+    「他で探す」のリンクは各サービスの検索結果に飛ぶだけで、
+    配信の有無を保証するものではありません。
+  </p>
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    margin: 1.4rem 0 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  /* 記事ページの .meta と同じ値。**ずらさないこと**（並べて比べる前提の形なので） */
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.7rem 1rem;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+  }
+  .empty {
+    margin: 0.4rem 0 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  /*
+   * 記事の一覧。カードは PostCard の見た目のまま。
+   * ★ 升目と表のあいだに置くので、枚数は `ARTICLES_SHOWN`（5本）で止めてある。
+   */
+  .articles {
+    margin-top: 1.8rem;
+  }
+  .articles h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  .articles .more {
+    margin: 0.3rem 0 0;
+    font-size: 0.84rem;
+  }
+  /*
+   * 節（これから / 過去）。**カレンダーから飛んでくる先の入れ物。**
+   * 節の頭に余白を入れて、前の節の表と地続きに見えないようにする。
+   */
+  .block {
+    margin-top: 2.2rem;
+  }
+  .block h2 {
+    margin-bottom: 0.2rem;
+    /* ページ内リンクで直接飛ばれることがある。ヘッダーに潜らせない */
+    scroll-margin-top: 6rem;
+  }
+  .block-note {
+    margin: 0 0 0.8rem;
+    font-size: 0.84rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+  .sources h2 {
+    font-size: 1rem;
+  }
+  .sources ul {
+    padding-left: 1.2rem;
+    font-size: 0.86rem;
+  }
+  .related a {
+    margin-left: 0.7rem;
+  }
+  .site-note {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+</style>

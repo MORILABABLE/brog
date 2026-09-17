@@ -55,8 +55,8 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                                           （記事の `2026年9月` タグだけを見る。pubDate は使わない）
                          行き先         → /archive/<月> と /archive/<月>/<サービス>
                          ★ 2026-09-05 に「監督・出演者」から入れ替えた。
-                           人物ページの入口は**左の枠とフッター**が持つ
-                           （左の枠は 1200px 未満で消えるので、
+                           人物ページの入口は**フッター**が持つ
+                           （左の枠からは 2026-09-17 に外した。
                              **フッターの `/person` の行を消さないこと**）
       並び             → サイト名だけ左、メニューと検索窓は右
                          （Header.astro の .inner / .brand）
@@ -70,22 +70,33 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
       ★ 狭い画面では枠ごと消えるので、フッターにも同じリンクがある
         （Footer.astro）。**片方だけ消さないこと**
 
-    左の枠（中段）＝ 常設枠（「新着配信・終了一覧」・カード5枚）
+    左の枠（中段）＝「配信カレンダー」・カード3枚（サービス1社1枚・2026-09-17）
       見た目・並び        → site/src/components/LeftRail.astro
-      何を並べるか        → site/src/lib/evergreen.ts の EVERGREEN_PAGES
-      カードの見出し・日付 → site/src/lib/evergreen.ts の evergreenTitle / evergreenStamp
-      ★ 2026-09-07 に一度3枚（配信カレンダー）へ畳んで**5枚に戻した**。
-        畳むとカードの外に小さいリンクがぶら下がって見た目が悪くなる
-        （リンクの中にリンクは置けないため）。
-        **日付から入る役目は、5ページの中に入れた升目が持っている**
+      何を並べるか        → site/src/lib/evergreen.ts の CALENDAR_CARDS（行き先は /leaving/<サービス>）
 
-    左の枠（下段）＝「監督・出演者から探す」
+    配信カレンダー（/leaving/<サービス> ・ /arrivals/<サービス>）… 2026-09-17 に作り直した
+      ページ本体（2枚で共有）  → site/src/components/ServiceCalendarPage.astro
+      作るサービス            → site/src/lib/events-data.ts の CALENDAR_SERVICES
+      中身の読み込み          → site/src/lib/events-data.ts
+                                 loadLeaving（終了予定）/ loadEnded（終了済み・前月から）
+                                 loadUpcoming（配信開始予定・各社の告知）/ loadArrivals（新着・60日）
+      タイトル・件数          → site/src/lib/evergreen.ts の evergreenTitleBase / calendarContent
+      上の切り替え（サービス／表示） → site/src/components/CalendarPicker.astro
+      升目と月の切り替え      → site/src/components/EventCalendar.astro（組み立ては lib/calendar.ts）
+      メニューの行き先        → site/src/lib/evergreen.ts の hubServiceHref
+                                 （カレンダーのある社はカテゴリ一覧を挟まず直接カレンダーへ）
+      転送                    → site/public/_redirects（/calendar/* と /category/<ハブ>/<3社>）
+      ★ /calendar/<サービス> は廃止。/category/<ハブ>/<Netflix・Prime・Disney+> は生成せず転送。
+        U-NEXT はカレンダーを作らない（docs/UNEXT.md）ので記事一覧のまま
+      ★ Disney+ は終了予定を返さないので、/leaving/disney-plus は終了済みだけ
+
+    左の枠（下段）＝「監督・出演者から探す」 … **2026-09-17 から出していない**
+      出す・出さない      → site/src/components/LeftRail.astro の SHOW_PEOPLE（true で戻る。戻す目安もそこ）
       枠と並び            → site/src/components/LeftRail.astro の RAIL_PEOPLE（出す人数）
       誰を出すか          → site/src/lib/people.ts の topPeople()（作品の多い順・全ページ固定）
       一覧ページ          → site/src/pages/person.astro（/person）
-      ★ 狭い画面では枠ごと消えるので、**フッターにも同じリンクがある**
-        （Footer.astro）。ヘッダーから外した 2026-09-05 以降、
-        狭い画面ではフッターが唯一の入口。**片方だけ消さないこと**
+      ★ 人物ページへの入口は**フッター**（Footer.astro）。ヘッダーから外した 2026-09-05 以降は
+        狭い画面で、左の枠から外した 2026-09-17 以降はすべての画面で、フッターが唯一の入口
 
     本文カード（白い箱）
       幅・角丸・余白 → site/src/styles/global.css の .content-card と --max-width

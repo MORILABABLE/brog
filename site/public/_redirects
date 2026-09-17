@@ -16,3 +16,26 @@
 #   （2026-09-leaving-netflix 36本 / 2026-09-leaving-prime-video 30本）。
 #   行き先を片方の記事にすると、もう片方を読者が見つけられない。ハブへ送る。
 /posts/2026-09-leaving  /category/leaving  301
+
+# ★ 配信カレンダーを「サービス × 向き」の2枚にまとめた（2026-09-17）。
+#   /leaving/<サービス> … 終了予定＋終了済み ／ /arrivals/<サービス> … 配信開始予定＋新着
+#   （中身は site/src/components/ServiceCalendarPage.astro、理由は site/src/lib/evergreen.ts の冒頭）
+#
+# 1. 終了と新着を1枚にしていたカレンダー（noindex・サイト内の入口は2か所だけだった）。
+#    役目は2枚のカレンダーが引き継いだ。終了側へ送る（ページ上のタブで新着側へ移れる）。
+/calendar/netflix  /leaving/netflix  301
+/calendar/prime-video  /leaving/prime-video  301
+/calendar/disney-plus  /leaving/disney-plus  301
+
+# 2. ヘッダーのメニューの行き先だったカテゴリ×サービスの記事一覧。
+#    カレンダーのある3社だけ、同じ向きのカレンダーへ送る。記事の一覧はカレンダーのページが引き継いでいる。
+#    ★ /category/leaving/netflix は /leaving/netflix と同じ検索語で表示を分け合っていた（2026-09-17 の実測）。
+#    ★ U-NEXT はカレンダーを作らない（docs/UNEXT.md）ので、/category/*/u-next は転送しない。
+#    ★ ページの生成は止めてある（site/src/pages/category/[category]/[service].astro の getStaticPaths）。
+#      **カレンダーのある社を増やしたら、ここにも2行足すこと。**
+/category/leaving/netflix  /leaving/netflix  301
+/category/leaving/prime-video  /leaving/prime-video  301
+/category/leaving/disney-plus  /leaving/disney-plus  301
+/category/arrivals/netflix  /arrivals/netflix  301
+/category/arrivals/prime-video  /arrivals/prime-video  301
+/category/arrivals/disney-plus  /arrivals/disney-plus  301

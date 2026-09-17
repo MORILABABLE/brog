@@ -1,88 +1,109 @@
 ---
 import WorkSearch from './WorkSearch.astro'
-import type { CalendarMonth } from '../lib/calendar'
+import type { CalendarKind, CalendarMonth } from '../lib/calendar'
 
 interface Props {
   months: CalendarMonth[]
+  /** ビルド時点の今月（`lib/calendar.ts` の `buildMonth`）。スクリプトが動かないときの最初の月 */
+  buildMonth: string
   /**
-   * 「終了」の升目を押したときの行き先の頭。`#leaving-` のような文字列。
+   * このページに出す種類と、升目を押したときの行き先の頭（`#leaving-` など）。
    * 後ろに `2026-09-30`（`isoDate()` の形）が付く。
    *
-   * ★ **同じページの中に飛ばすなら `#` から始める。** 別ページへ送るなら
-   *   `/leaving/netflix#leaving-` のように書けば、この部品は何も変えずに使える。
+   * ★ 行き先の頭は、下の表（WorkTable）の `idPrefix` と**必ず同じ文字列**にすること。
+   *   片方だけ変えると升目を押しても何も起きない。
+   * ★ 渡す順は問わない。凡例と印は下の `ORDER`（過去 → これから）で並べ直す。
    */
-  leavingPrefix: string
-  /** 「新着」の升目を押したときの行き先の頭 */
-  arrivalsPrefix: string
+  kinds: { kind: CalendarKind; prefix: string }[]
   /**
    * 作品検索（WorkSearch.astro）の説明文。**渡したページだけ検索窓が出る。**
    *
    * 検索窓は「配信カレンダー」の見出しと同じ行の右端に置く（2026-09-09）。
-   * 以前は本文の冒頭文の右に居たが、その冒頭文を撤去したため、
-   * **見出しの行の空きが検索窓の置き場**になった。
    *
    * ★ 検索窓はページに1つだけ。WorkSearch のスクリプトは
    *   `[data-work-search]` を1つしか見ないので、同じページで2回出さないこと。
-   * ★ 升目が出ない時期（新着が今月に1件も無い月後半など）は
-   *   この部品ごと描かれない。**そのときはページ側が単独で置く**
+   * ★ 升目が出ない時期はこの部品ごと描かれない。**そのときはページ側が単独で置く**
    *   （styles/global.css の `.search-head`）。
    */
   searchLabel?: string
 }
 
-const { months, leavingPrefix, arrivalsPrefix, searchLabel } = Astro.props
-
-/*
- * どちらの種類が実際に点いているか。**凡例の出し分けに使う。**
- *
- * ★ 常設ページ（/leaving/… /arrivals/…）は片方しか渡さない。
- *   そこで「見放題に入った日」の凡例まで出すと、**1つも無い印の説明**が並び、
- *   読者は「青い日がどこかにあるはず」と探すことになる。
- */
-const hasLeaving = months.some((m) => m.leaving > 0)
-const hasArrivals = months.some((m) => m.arrivals > 0)
+const { months, buildMonth, kinds, searchLabel } = Astro.props
 
 /**
- * 月の升目。常設ページ（カレンダー）の先頭に置く。
+ * 種類ごとの印と言葉。**ここ1か所に置く。**
+ *
+ * ■ 1文字の印（`chip`）と色（2026-09-17 に色を4つに分けた・運用者の指定）
+ *   済 … 見放題が終了した（過去）          グレー（--cal-ended）
+ *   終 … 見放題が終了する予定（これから）  赤    （--cal-leaving）
+ *   新 … 見放題に入った（過去）            緑    （--cal-new）
+ *   予 … 見放題が始まる予定（これから）    青    （--cal-arrivals）
+ *
+ * ★ それまでは「赤／青の2系統で、これからは薄い塗り・過去は枠線だけ」だった。
+ *   **小さい升目の中では見分けが付かない**と運用者から指摘があり、4つとも別の色で塗りつぶした。
+ *   1ページに出るのは「済と終」か「新と予」の2つだけなので、赤と緑が並ぶことはない。
+ * ★ 色だけに意味を持たせない（styles/global.css の :root と同じ決まり）。
+ *   升目には必ず**1文字の印と本数**を出す。色は速く読むための補助。
+ */
+const KIND: Record<
+  CalendarKind,
+  { chip: string; legend: string; sum: string; spoken: string; cls: string }
+> = {
+  ended: { chip: '済', legend: '見放題が終了した日', sum: '終了', spoken: '見放題終了', cls: 'ed' },
+  leaving: { chip: '終', legend: '見放題が終了する日', sum: '終了予定', spoken: '見放題終了予定', cls: 'lv' },
+  arrivals: { chip: '新', legend: '見放題に入った日', sum: '新着', spoken: '見放題開始', cls: 'ar' },
+  upcoming: { chip: '予', legend: '見放題が始まる予定の日', sum: '配信予定', spoken: '見放題開始予定', cls: 'up' },
+}
+
+/**
+ * 凡例・月の合計・1日に2種類ある日の印を並べる順。**過去が左（上）、これからが右（下）。**
+ * 暦と同じ向き（左から右へ時間が進む）にそろえる（2026-09-17・運用者の指定）。
+ */
+const ORDER: CalendarKind[] = ['ended', 'leaving', 'arrivals', 'upcoming']
+const byOrder = (a: { kind: CalendarKind }, b: { kind: CalendarKind }) =>
+  ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind)
+
+const ordered = [...kinds].sort(byOrder)
+
+/*
+ * 凡例に出すのは**実際に点いている種類だけ**。
+ * 1つも無い印の説明を並べると、読者はその印をどこかで探すことになる。
+ */
+const shown = ordered.filter((k) => months.some((m) => (m.sums[k.kind] ?? 0) > 0))
+const prefixOf = new Map(kinds.map((k) => [k.kind, k.prefix]))
+
+/**
+ * 月の升目。常設ページ（`/leaving/<サービス>` `/arrivals/<サービス>`）の先頭に置く。
  *
  * ■ 何のためにあるか
  * 一覧は上から読ませる作りなので、「今月の終わりに何本消えるのか」を
  * 知りたい読者は**スクロールしないと分からない**。
  * 升目にすると、点いている日が一目で分かり、そこから本文へ直接飛べる。
  *
- * ■ 置いてあるところ（3種類）
- *   /leaving/<サービス>  … 終了予定だけ（赤）。行き先は同じページの日付見出し
- *   /arrivals/<サービス> … 新着だけ（青）。同上
- *   /calendar/<サービス> … 両方。id が衝突するので行き先に頭を付ける
- * **片方しか渡されない使い方が主**なので、凡例は中身を見て出し分ける（下の hasLeaving/hasArrivals）。
+ * ■ 押せる日には**作品の絵を敷く**（2026-09-17・運用者の指定）
+ * それまでは凡例の横に「日にちを押すと作品の一覧へ移動します」と書いていた。
+ * **文字で説明するより、升目に作品が見えているほうが「押せば作品に行ける」と伝わる。**
+ * その日でいちばん評価の高い作品のポスターを敷き、日付と印を上に重ねる（lib/calendar.ts の `thumb`）。
+ * ポスターの無い日は、印の色の帯を付けた押せるタイルにする。
  *
- * ■ 描くのは今月から先だけ
- * 過去の月は描かない（lib/calendar.ts の `buildCalendar`）。
- * 読者の用は「今月のいつ始まって、いつ終わるのか」で、
- * 過去2か月ぶんの升目は本文を押し下げるだけだった（2026-09-07）。
+ * ■ 1か月ずつ切り替える
+ * 前月・今月・翌月（イベントがあればその先も）を持ち、**見せるのは1か月だけ**。
+ * ★ **スクリプトが動かない環境では全部の月が並ぶ。** 隠すのはスクリプトの仕事で、
+ *   HTML の時点では何も隠していない（升目が1つも見えない事故を起こさない）。
+ * ★ 隠れている月の絵は読み込まれない（`loading="lazy"` と `hidden`）。
+ *
+ * ■ 「きょう」の印は読者の画面で付ける
+ * ビルドは週2回なので、ビルド時の日付で印を付けると数日ずれる。
+ * JST のきょうをスクリプトで求めて、`data-date` が一致する升目の日付を丸で囲む。
  *
  * ■ 押せるのは点いている日だけ
  * 何も無い日をリンクにすると、押しても何も起きないマスが大半になる。
- * 件数が 0 の日は文字だけにして、押せないことを見た目で示す。
- *
- * ■ 色だけに意味を持たせない（styles/global.css の :root と同じ決まり）
- * 升目には**「終」「新」の1文字と本数**を必ず出す。
- * 色覚特性のある読者・印刷・モノクロ表示では色が届かないため、
- * 赤と青は「速く読むための補助」であって、意味の担い手ではない。
- *
- * ■ なぜ赤なのか（カテゴリバッジのアンバーではなく）
- * バッジの色は「記事の種類」を表す分類の色で、こちらは**危険信号**。
- * 軸が違うので同じ色にする理由が無く、同じ画面に並んでも競合しない
- * （カレンダーの升目と記事カードのバッジが隣り合うことはない）。
- * 色の定義は styles/global.css の `--cal-leaving` / `--cal-arrivals`。
  *
  * ■ 升目そのものは JavaScript を使わない
- * 升目はただのページ内リンク。読者の入力に反応する必要が無いので、
- * 素の `<a href="#...">` で足りる。
- * ★ 見出しの行に置く作品検索（WorkSearch.astro）だけはJSを使う。
- *   あちらは読者の入力に反応する機能なので避けられない（部品側に閉じている）。
+ * 升目はただのページ内リンク。素の `<a href="#...">` で足りる。
+ * ★ スクリプトが担うのは「月の切り替え」と「きょうの印」だけ。
  * ★ 飛んだ先が固定ヘッダーに隠れないよう、見出し側に `scroll-margin-top` が要る
- *   （components/WorkTable.astro の `.day h2`）。**片方だけ直さないこと。**
+ *   （components/WorkTable.astro の `.day-title`）。**片方だけ直さないこと。**
  */
 
 /** 曜日の見出し。日曜始まり（日本の暦の並び）。 */
@@ -105,125 +126,220 @@ function spoken(iso: string): string {
   </div>
 
   {/*
-    凡例と使い方。**1行にまとめる**（2026-09-09）。
-    ★ 色の説明ではなく、升目に出る文字の説明として書く。
-      「赤い日」と書くと、色が届かない読者に何も伝わらない。
-    ★ 使い方の1文は凡例の**右に間を空けて**続ける。
-      別の段落に落とすと、升目の前に小さい文字の行が2本並んで読みにくかった。
+    ★ 見出しの直下に差し込む部品（2026-09-17）。配信カレンダーのページでは
+      サービス／表示の切り替え（components/CalendarPicker.astro）が入る。
   */}
-  <p class="legend">
-    {hasLeaving && <span class="key lv"><span class="chip">終</span>見放題が終了する日</span>}
-    {hasArrivals && <span class="key ar"><span class="chip">新</span>見放題に入った日</span>}
-    <span class="how">日にちをクリックして作品を確認できます</span>
-  </p>
+  <slot name="picker" />
 
-  <div class="months">
-    {
-      months.map((m) => (
-        <table class="month">
-          <caption>
-            <span class="month-name">{m.label}</span>
-            <span class="month-sum">
-              {m.leaving > 0 && <span class="sum lv">終了{m.leaving}本</span>}
-              {m.arrivals > 0 && <span class="sum ar">新着{m.arrivals}本</span>}
-              {m.leaving === 0 && m.arrivals === 0 && <span class="sum none">なし</span>}
+  <div class="pager" data-cal data-build-month={buildMonth}>
+    {/*
+      操作の行。**月の切り替えと凡例を同じ行に並べる**（2026-09-17・運用者の指定）。
+      幅が足りなければ凡例が下の行へ落ちる（スマホ）。
+    */}
+    <div class="toolbar">
+      {/*
+        月の切り替え。**スクリプトが動いたときだけ出す**（`hidden` を外すのはスクリプト）。
+        動かない環境では全部の月が並ぶので、ボタンは要らない。
+      */}
+      <div class="nav" data-cal-nav hidden>
+        <button type="button" class="nav-btn" data-cal-step="-1">‹ 前の月</button>
+        <button type="button" class="nav-btn" data-cal-home>今月</button>
+        <button type="button" class="nav-btn" data-cal-step="1">次の月 ›</button>
+      </div>
+      {/*
+        凡例。**升目に出る印と同じ形・同じ色で並べる。**
+        ★ 色の説明ではなく、升目に出る文字の説明として書く。
+        ★ 「日にちを押すと作品の一覧へ移動します」は**撤去した**（2026-09-17）。
+          押せることは升目の絵とタイルの見た目で伝える（上の「押せる日には作品の絵を敷く」）。
+      */}
+      <p class="legend">
+        {
+          shown.map((k) => (
+            <span class:list={['key', KIND[k.kind].cls]}>
+              <span class="chip">{KIND[k.kind].chip}</span>
+              {KIND[k.kind].legend}
             </span>
-          </caption>
-          <thead>
-            <tr>
-              {WEEKDAYS.map((w) => (
-                <th scope="col">{w}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {m.weeks.map((week) => (
+          ))
+        }
+      </p>
+    </div>
+    <div class="months">
+      {
+        months.map((m) => (
+          <table class="month" data-month={m.key}>
+            <caption>
+              <span class="month-name">{m.label}</span>
+              <span class="month-sum">
+                {shown
+                  .filter((k) => (m.sums[k.kind] ?? 0) > 0)
+                  .map((k) => (
+                    <span class:list={['sum', KIND[k.kind].cls]}>
+                      {KIND[k.kind].sum}
+                      {m.sums[k.kind]}本
+                    </span>
+                  ))}
+                {Object.keys(m.sums).length === 0 && <span class="sum none">なし</span>}
+              </span>
+            </caption>
+            <thead>
               <tr>
-                {week.map((d) => {
-                  /* 前後の月の埋め草。日付を持たないので中身も入れない */
-                  if (!d) return <td class="pad" />
+                {WEEKDAYS.map((w) => (
+                  <th scope="col">{w}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {m.weeks.map((week) => (
+                <tr>
+                  {week.map((d) => {
+                    /* 前後の月の埋め草。日付を持たないので中身も入れない */
+                    if (!d) return <td class="pad" />
 
-                  const both = d.leaving > 0 && d.arrivals > 0
-                  const cls = ['cell', d.isToday && 'is-today']
+                    const hits = ordered.filter((k) => (d.counts[k.kind] ?? 0) > 0)
 
-                  /*
-                   * 何も無い日。**押せない見た目にする。**
-                   * 「きょう」だけは印を残す（現在地が消えると暦が読めない）。
-                   */
-                  if (d.leaving === 0 && d.arrivals === 0) {
+                    /* 何も無い日。**押せない見た目にする。** */
+                    if (hits.length === 0) {
+                      return (
+                        <td>
+                          <span class="cell is-empty" data-date={d.iso}>
+                            <span class="num">{d.day}</span>
+                          </span>
+                        </td>
+                      )
+                    }
+
+                    /*
+                     * その日の作品の絵。**飾りなので alt は空**（読み上げは下の aria-label が担う）。
+                     * ★ 幅と高さを書く。書かないと絵が届くまで升目の中身がずれる。
+                     */
+                    const img = d.thumb && (
+                      <img class="cell-img" src={d.thumb} alt="" width="48" height="72" loading="lazy" decoding="async" />
+                    )
+                    const cls = ['cell', 'is-hit', d.thumb ? 'has-img' : 'no-img']
+
+                    /*
+                     * 1種類だけの日（実データはほぼこれ。これからの種類は未来、過去の種類は過去にしか出ない）。
+                     * **升目まるごとをリンクにする。** 指で押す的が升目いっぱいになる。
+                     */
+                    if (hits.length === 1) {
+                      const k = hits[0]!.kind
+                      const n = d.counts[k]!
+                      return (
+                        <td>
+                          <a
+                            class:list={[...cls, KIND[k].cls]}
+                            data-date={d.iso}
+                            href={`${prefixOf.get(k)}${d.iso}`}
+                            aria-label={`${spoken(d.iso)} ${KIND[k].spoken}${n}本の一覧へ移動`}
+                          >
+                            {img}
+                            <span class="num">{d.day}</span>
+                            <span class="marks" aria-hidden="true">
+                              <span class:list={['mark', KIND[k].cls]}>
+                                <span class="chip">{KIND[k].chip}</span>
+                                {n}
+                              </span>
+                            </span>
+                          </a>
+                        </td>
+                      )
+                    }
+
+                    /*
+                     * 2種類ある日（きょうに「終了した」と「終了する」が重なるなど）。
+                     * **行き先が2つあるので升目そのものはリンクにしない**
+                     * （リンクの中にリンクは置けない）。印を過去 → これからの順に縦に積む。
+                     */
                     return (
                       <td>
-                        <span class:list={[...cls, 'is-empty']}>
+                        <span class:list={[...cls, 'is-multi', KIND[hits[0]!.kind].cls]} data-date={d.iso}>
+                          {img}
                           <span class="num">{d.day}</span>
-                          {d.isToday && <span class="visually-hidden">きょう</span>}
+                          <span class="marks">
+                            {hits.map(({ kind: k }) => (
+                              <a
+                                class:list={['mark', KIND[k].cls]}
+                                href={`${prefixOf.get(k)}${d.iso}`}
+                                aria-label={`${spoken(d.iso)} ${KIND[k].spoken}${d.counts[k]}本の一覧へ移動`}
+                              >
+                                <span class="chip" aria-hidden="true">
+                                  {KIND[k].chip}
+                                </span>
+                                <span aria-hidden="true">{d.counts[k]}</span>
+                              </a>
+                            ))}
+                          </span>
                         </span>
                       </td>
                     )
-                  }
-
-                  /*
-                   * 片方だけの日（実データはほぼこれ。新着は過去・終了は未来にしか出ない）。
-                   * **升目まるごとをリンクにする。** 指で押す的が升目いっぱいになる。
-                   */
-                  if (!both) {
-                    const lv = d.leaving > 0
-                    const n = lv ? d.leaving : d.arrivals
-                    return (
-                      <td>
-                        <a
-                          class:list={[...cls, 'is-hit', lv ? 'lv' : 'ar']}
-                          href={`${lv ? leavingPrefix : arrivalsPrefix}${d.iso}`}
-                          aria-label={`${spoken(d.iso)} 見放題${lv ? '終了' : '開始'}${n}本の一覧へ移動`}
-                        >
-                          <span class="num">{d.day}</span>
-                          {d.isToday && <span class="visually-hidden">きょう</span>}
-                          <span class="mark" aria-hidden="true">
-                            <span class="chip">{lv ? '終' : '新'}</span>
-                            {n}
-                          </span>
-                        </a>
-                      </td>
-                    )
-                  }
-
-                  /*
-                   * 両方ある日。**行き先が2つあるので升目そのものはリンクにしない**
-                   * （リンクの中にリンクは置けない）。
-                   * 実データでは起きにくいが、収集の巡り合わせで起こりうる。
-                   */
-                  return (
-                    <td>
-                      <span class:list={[...cls, 'is-hit', 'is-both']}>
-                        <span class="num">{d.day}</span>
-                        {d.isToday && <span class="visually-hidden">きょう</span>}
-                        <a
-                          class="mark lv"
-                          href={`${leavingPrefix}${d.iso}`}
-                          aria-label={`${spoken(d.iso)} 見放題終了${d.leaving}本の一覧へ移動`}
-                        >
-                          <span class="chip" aria-hidden="true">終</span>
-                          <span aria-hidden="true">{d.leaving}</span>
-                        </a>
-                        <a
-                          class="mark ar"
-                          href={`${arrivalsPrefix}${d.iso}`}
-                          aria-label={`${spoken(d.iso)} 見放題開始${d.arrivals}本の一覧へ移動`}
-                        >
-                          <span class="chip" aria-hidden="true">新</span>
-                          <span aria-hidden="true">{d.arrivals}</span>
-                        </a>
-                      </span>
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ))
-    }
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ))
+      }
+    </div>
   </div>
 </section>
+
+<script>
+  /**
+   * 月の切り替えと「きょう」の印。**升目の中身には触らない。**
+   *
+   * ★ きょうは **JST** で決める。読者の端末が海外の時刻でも、
+   *   升目の日付（JST で切ってある・lib/calendar.ts）と揃えるため。
+   * ★ 最初に見せる月は「読者のきょうの月」。描いた範囲に無ければビルド時の今月、
+   *   それも無ければ先頭の月。
+   */
+  const JST_MS = 9 * 60 * 60 * 1000
+  const today = new Date(Date.now() + JST_MS).toISOString().slice(0, 10)
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-cal]')) {
+    const tables = Array.from(root.querySelectorAll<HTMLTableElement>('table[data-month]'))
+    if (tables.length === 0) continue
+
+    for (const cell of root.querySelectorAll<HTMLElement>(`[data-date="${today}"]`)) {
+      cell.classList.add('is-today')
+      const note = document.createElement('span')
+      note.className = 'visually-hidden'
+      note.textContent = 'きょう'
+      cell.append(note)
+    }
+
+    const keys = tables.map((t) => t.dataset.month ?? '')
+    const home = [today.slice(0, 7), root.dataset.buildMonth ?? ''].find((k) => keys.includes(k)) ?? keys[0]!
+    let index = keys.indexOf(home)
+
+    const nav = root.querySelector<HTMLElement>('[data-cal-nav]')
+    const prev = root.querySelector<HTMLButtonElement>('[data-cal-step="-1"]')
+    const next = root.querySelector<HTMLButtonElement>('[data-cal-step="1"]')
+    const homeBtn = root.querySelector<HTMLButtonElement>('[data-cal-home]')
+
+    const show = () => {
+      tables.forEach((t, i) => (t.hidden = i !== index))
+      if (prev) prev.disabled = index === 0
+      if (next) next.disabled = index === tables.length - 1
+      if (homeBtn) homeBtn.disabled = keys[index] === home
+    }
+
+    root.classList.add('is-paged')
+    if (nav) nav.hidden = false
+    prev?.addEventListener('click', () => {
+      index = Math.max(0, index - 1)
+      show()
+    })
+    next?.addEventListener('click', () => {
+      index = Math.min(tables.length - 1, index + 1)
+      show()
+    })
+    homeBtn?.addEventListener('click', () => {
+      index = keys.indexOf(home)
+      show()
+    })
+    show()
+  }
+</script>
 
 <style>
   .calendar {
@@ -233,7 +349,6 @@ function spoken(iso: string): string {
    * 見出しと作品検索を1行に並べる。
    * ★ `baseline`。検索窓は入力欄の下に件数の行（WorkSearch の `.status`）を
    *   持つぶん背が高いので、`center` にすると**見出しの文字が入力欄より下がる。**
-   *   文字の下端どうしで揃えると、見出しと窓が1行に見える。
    * ★ 幅が足りなければ検索窓が下へ落ちる（スマホ）。
    */
   .head {
@@ -249,13 +364,44 @@ function spoken(iso: string): string {
     font-size: 1.05rem;
   }
 
-  /* --- 凡例と使い方（1行） --- */
+  /*
+   * 種類ごとの色。**この変数1つで、凡例・印・月の合計・タイルの帯が揃う。**
+   * 値の意味とコントラスト比は styles/global.css の --cal-*。
+   */
+  .ed {
+    --kind: var(--cal-ended);
+  }
+  .lv {
+    --kind: var(--cal-leaving);
+  }
+  .ar {
+    --kind: var(--cal-new);
+  }
+  .up {
+    --kind: var(--cal-arrivals);
+  }
+
+  /* --- 凡例（1行） --- */
+  /*
+   * 月の切り替えと凡例の行。**ボタンのすぐ右に凡例を続ける。**
+   * ★ 左右に振り分けない（`space-between` にしない）。升目は幅を抑えてあるので、
+   *   凡例だけが本文の右端へ離れて、カレンダーから浮いて見えた（2026-09-17 の実測）。
+   * ★ 狭い画面（スマホ）では1行に収まらず、凡例が下の行へ落ちる（`flex-wrap`）。
+   */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.45rem 1.4rem;
+    margin: 0 0 0.6rem;
+  }
   .legend {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.3rem 1rem;
-    margin: 0 0 0.7rem;
+    margin: 0;
     font-size: 0.8rem;
     line-height: 1.6;
     color: var(--text-muted);
@@ -263,47 +409,72 @@ function spoken(iso: string): string {
   .key {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-  }
-  /* 凡例との間を .legend の gap より広く取る（説明の役割が違うため） */
-  .how {
-    padding-left: 0.7rem;
-    font-size: 0.78rem;
+    gap: 0.35rem;
   }
 
   /*
-   * 「終」「新」の1文字。**升目の中と凡例で同じ形にする。**
-   * 凡例で見た印と升目の印が違って見えると、対応を読み取れない。
+   * 1文字の印。**升目の中と凡例で同じ形にする。**
+   * 凡例では印だけの丸、升目では本数と一緒に丸の中に入る（`.mark`）。
    */
-  .chip {
+  .key .chip {
     display: inline-block;
-    min-width: 1.05em;
-    padding: 0 0.1em;
-    border-radius: 3px;
-    font-size: 0.68rem;
+    min-width: 1.5em;
+    padding: 0 0.3em;
+    border-radius: 999px;
+    background: var(--kind);
+    color: var(--cal-on);
+    font-size: 0.72rem;
     font-weight: 700;
-    line-height: 1.5;
+    line-height: 1.6;
     text-align: center;
-  }
-  .lv .chip {
-    background: var(--cal-leaving-bg);
-    color: var(--cal-leaving);
-  }
-  .ar .chip {
-    background: var(--cal-arrivals-bg);
-    color: var(--cal-arrivals);
   }
 
   /* --- 月の並び --- */
   /*
-   * ★ `auto-fill`。`auto-fit` にすると、3か月目が1つだけ残った行で
-   *   本文幅いっぱい（736px）に伸び、**月ごとに升目の大きさが変わる。**
-   *   空の列を残す auto-fill なら、余った月も同じ幅のまま置かれる。
+   * ★ `auto-fill`。`auto-fit` にすると、最後の月が1つだけ残った行で
+   *   本文幅いっぱいに伸び、**月ごとに升目の大きさが変わる。**
+   * ★ スクリプトが動いたら（`.pager.is-paged`）1か月ずつ見せるので、格子をやめて1列にする。
    */
   .months {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
     gap: 1rem;
+  }
+  .is-paged .months {
+    display: block;
+  }
+  /* 月の切り替えのボタン */
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .nav[hidden] {
+    display: none;
+  }
+  .nav-btn {
+    padding: 0.25rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .nav-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .nav-btn:disabled {
+    cursor: default;
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+  .nav-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
   }
 
   .month {
@@ -311,6 +482,13 @@ function spoken(iso: string): string {
     border-collapse: collapse;
     /* 7列を必ず等幅にする。中身の文字数で列幅が動くと暦に見えない */
     table-layout: fixed;
+  }
+  /*
+   * 1か月ずつ見せるときは、升目が本文幅いっぱいに伸びすぎないように抑える。
+   * ★ 絵を敷くようになったので、升目1つが縦長（3:4）になる。幅を広げると縦にも伸びるので、ここで止める。
+   */
+  .is-paged .month {
+    max-width: 28rem;
   }
   caption {
     /* 表の外に出る見出し。左寄せにして本文の流れに合わせる */
@@ -325,26 +503,22 @@ function spoken(iso: string): string {
   .month-sum {
     margin-left: 0.5rem;
     font-size: 0.72rem;
-    font-weight: 400;
+    font-weight: 700;
   }
   .sum + .sum {
     margin-left: 0.4rem;
   }
-  .sum.lv {
-    color: var(--cal-leaving);
-  }
-  .sum.ar {
-    color: var(--cal-arrivals);
+  .sum {
+    color: var(--kind);
   }
   .sum.none {
+    font-weight: 400;
     color: var(--text-muted);
   }
 
   /*
    * 曜日の見出し。**日曜を赤・土曜を青にしない。**
-   * 暦の慣習ではそうなっているが、このカレンダーでは
-   * 赤＝終了・青＝新着に意味を割り当てている。曜日にも同じ色を使うと、
-   * 「赤い日」が2つの意味を持つことになる。
+   * このカレンダーでは色を印の種類に割り当てている。
    */
   thead th {
     padding: 0.1rem 0;
@@ -353,84 +527,143 @@ function spoken(iso: string): string {
     color: var(--text-muted);
   }
   td {
-    padding: 1px;
+    padding: 2px;
     text-align: center;
     vertical-align: top;
   }
 
+  /*
+   * 升目。**縦長（3:4）にそろえる**（2026-09-17）。
+   * ポスター（2:3）を敷いたときに絵として読める最小の形。空の日も同じ形にして暦の格子を保つ。
+   */
   .cell {
+    position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.1rem;
-    /*
-     * 升目の高さ。**数字1行＋印1行が入る最小**にしてある。
-     * 3か月ぶん並ぶので、1マスを大きくすると本文が画面2つぶん下へ落ちる。
-     */
-    min-height: 2.5rem;
-    padding: 0.15rem 0.1rem;
+    justify-content: space-between;
+    aspect-ratio: 3 / 4;
+    padding: 0.18rem;
     border: 1px solid transparent;
     border-radius: 6px;
+    overflow: hidden;
     text-decoration: none;
     color: var(--text-muted);
   }
   .num {
-    font-size: 0.76rem;
+    position: relative;
+    z-index: 1;
+    align-self: flex-start;
+    min-width: 1.45em;
+    padding: 0 0.15em;
+    border-radius: 999px;
+    font-size: 0.74rem;
     font-weight: 400;
-    line-height: 1.25;
+    line-height: 1.45;
+    text-align: center;
   }
-  /* 押せる升目は数字も本文色にして、空の日との差を色以外でも出す */
+
+  /*
+   * 押せる日。**押せるものに見える形にする**（影と、押したときの沈み）。
+   * 何も無い日（`.is-empty`）は地のまま・影なしで、差が一目で分かる。
+   */
   .cell.is-hit {
     background: var(--bg-subtle);
     border-color: var(--border);
     color: var(--text);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease;
   }
   .cell.is-hit .num {
     font-weight: 700;
   }
   a.cell:hover,
-  .is-both:hover {
+  .is-multi:hover {
+    transform: translateY(-2px);
     border-color: var(--accent);
+    box-shadow: 0 4px 10px rgb(0 0 0 / 0.28);
+  }
+  a.cell:active {
+    transform: translateY(0);
   }
   a.cell:focus-visible,
   .mark:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 1px;
   }
-  /* きょう。輪郭で示す（色は意味に使い切っているので使わない） */
-  .cell.is-today {
-    border-color: var(--text-muted);
-    border-style: dashed;
-  }
-  .cell.is-hit.is-today {
-    border-style: solid;
-    box-shadow: 0 0 0 1px var(--text-muted);
+  /* 絵の無い日は、下辺に印の色の帯を付けて「中身のある日」だと分からせる */
+  .cell.no-img {
+    border-bottom: 3px solid var(--kind);
   }
 
-  /* 升目の中の印。「終14」「新5」 */
+  /*
+   * 作品の絵。升目いっぱいに敷き、上下を暗くして日付と印を読めるようにする。
+   * ★ 暗くする膜は `::after`。絵（先に並ぶ）の上、日付と印（z-index: 1）の下に来る。
+   */
+  .cell-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+  .cell.has-img::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0.55),
+      rgb(0 0 0 / 0) 38%,
+      rgb(0 0 0 / 0) 50%,
+      rgb(0 0 0 / 0.65)
+    );
+    pointer-events: none;
+  }
+  .cell.has-img .num {
+    color: #fff;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
+  }
+
+  /* 升目の中の印。「終14」を1つの丸に入れて、種類の色で塗る */
+  .marks {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
   .mark {
     display: inline-flex;
     align-items: center;
-    gap: 0.1rem;
-    font-size: 0.68rem;
+    gap: 0.05rem;
+    padding: 0 0.3em;
+    border-radius: 999px;
+    background: var(--kind);
+    color: var(--cal-on);
+    font-size: 0.66rem;
     font-weight: 700;
-    line-height: 1.4;
+    line-height: 1.5;
     /* 「終」「1」「4」で折り返させない */
     white-space: nowrap;
     text-decoration: none;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
   }
-  .cell.lv .mark,
-  a.mark.lv {
-    color: var(--cal-leaving);
-  }
-  .cell.ar .mark,
-  a.mark.ar {
-    color: var(--cal-arrivals);
-  }
-  /* 両方ある日は印が2つ縦に並ぶ。升目が縦に伸びるのは許す（数が少ないため） */
-  .is-both {
-    gap: 0.05rem;
+
+  /*
+   * きょう。**日付の数字を丸で囲む**（絵を敷いた升目でも見えるように、枠線ではなく数字側に付ける）。
+   * ★ クラスは**スクリプトが付ける**（ビルド時の日付は読者のきょうと数日ずれるため）。
+   * ★ 色は種類に使っていないアクセント色。
+   */
+  .cell.is-today .num {
+    background: var(--accent);
+    /* ダークではアクセントが明るくなるので、文字は地の色に倒す（--cal-on と同じ切り替え） */
+    color: var(--cal-on);
+    font-weight: 700;
+    text-shadow: none;
   }
 
   /*
@@ -438,12 +671,14 @@ function spoken(iso: string): string {
    * ここを縮めると「終14」が読めなくなり、カレンダーの用が消える。
    */
   @media (max-width: 24rem) {
+    td {
+      padding: 1px;
+    }
     .cell {
-      min-height: 2.3rem;
-      padding: 0.1rem 0;
+      padding: 0.12rem;
     }
     .num {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
     }
   }
 </style>

@@ -4,6 +4,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'
 import PostCard from '../../../components/PostCard.astro'
 import EvergreenCard from '../../../components/EvergreenCard.astro'
 import { SERVICE_HUBS, SERVICE_MENU_HUBS, SITE } from '../../../config'
+import { hubServiceHref, hubServiceIsCalendar } from '../../../lib/evergreen'
 import { serviceHasContent, serviceIsIndexable, serviceSection } from '../../../lib/service-pages'
 
 /**
@@ -29,6 +30,11 @@ import { serviceHasContent, serviceIsIndexable, serviceSection } from '../../../
  *   （実測で /service/<サービス> と最大96%重複）。根拠は
  *   lib/service-pages.ts の `serviceIsIndexable()`。
  *
+ * ★ **カレンダーのある社（Netflix / Prime Video / Disney+）のページは作らない**（2026-09-17）。
+ *   同じ向きの配信カレンダー（/leaving/<サービス> /arrivals/<サービス>）へ転送してあり
+ *   （public/_redirects）、記事の一覧もカレンダーのページが引き継いでいる。
+ *   残るのはカレンダーを作れない社（U-NEXT）だけ。判定は lib/evergreen.ts の `hubServiceIsCalendar`。
+ *
  * ★ 親の /category/<ハブ> は 1つ上の [category].astro が出している。
  *   URLの形（/category/leaving/netflix）を変えるときは、
  *   ヘッダーのメニューとこのファイルの両方を直すこと。
@@ -37,7 +43,7 @@ export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
 
   return SERVICE_MENU_HUBS.flatMap((hub) =>
-    SERVICE_HUBS.map((service) => ({
+    SERVICE_HUBS.filter((service) => !hubServiceIsCalendar(hub.slug, service.slug)).map((service) => ({
       params: { category: hub.slug, service: service.slug },
       props: {
         hub,
@@ -102,7 +108,7 @@ const description =
             {s.label}
           </span>
         ) : (
-          <a class="service" href={`/category/${hub.slug}/${s.slug}`}>
+          <a class="service" href={hubServiceHref(hub.slug, s.slug)}>
             {s.label}
           </a>
         ),

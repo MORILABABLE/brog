@@ -8,19 +8,22 @@ import AfbCta from '../../components/AfbCta.astro'
 import DemandShelf from '../../components/DemandShelf.astro'
 import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
-import { ARRIVALS_SERVICES, LEAVING_SERVICES } from '../../lib/events-data'
+import { hasCalendar } from '../../lib/events-data'
 import { amazonVideoLink, otherServiceLinks } from '../../lib/search-links'
 import { seriesRefFor } from '../../lib/series-for-work'
 import { hubArticleFor } from '../../lib/work-hub-article'
 import {
   HISTORY_LABEL,
   STATE_CATEGORY,
-  STATE_LABEL,
   observationStart,
+  passedCheck,
+  passedNote,
   publishableWorkPages,
   relatedWorks,
   STOCK_HEADING,
   serviceCtaLabel,
+  serviceUrl,
+  stateBadge,
   stateSentence,
   stockAnswer,
   stockNote,
@@ -166,16 +169,14 @@ const stockLinks = (stock?.services ?? []).map((x) => {
 
 /*
  * 関連する常設ページ。**そのサービスのページが実在するときだけ出す。**
- * LEAVING_SERVICES / ARRIVALS_SERVICES に無いサービス（Apple TV+ など）へ
- * 機械的にリンクを組むと 404 になる。
+ * カレンダーの無いサービス（Apple TV+ など）へ機械的にリンクを組むと 404 になる。
+ * ★ 2026-09-17 から、カレンダーのある社は終了側・新着側の**両方**を持つ（Disney+ にも終了側がある）。
  */
 const related = w.services.flatMap((s) => {
   const out: { href: string; label: string }[] = []
-  if (LEAVING_SERVICES.some((x) => x.key === s.service)) {
-    out.push({ href: `/leaving/${s.service}`, label: `${s.label}の終了予定一覧` })
-  }
-  if (ARRIVALS_SERVICES.some((x) => x.key === s.service)) {
-    out.push({ href: `/arrivals/${s.service}`, label: `${s.label}の新着配信` })
+  if (hasCalendar(s.service)) {
+    out.push({ href: `/leaving/${s.service}`, label: `${s.label}の配信終了カレンダー` })
+    out.push({ href: `/arrivals/${s.service}`, label: `${s.label}の新着・配信予定カレンダー` })
   }
   return out
 })
@@ -371,32 +372,38 @@ const jsonLd = {
   <section class="status" aria-label="配信状況">
     <ul class="states">
       {
-        w.services.map((s) => (
-          <li>
-            <span class="badge" data-category={STATE_CATEGORY[s.state]}>
-              {STATE_LABEL[s.state]}
-            </span>
-            <span class="line">
-              <strong>{s.label}</strong>で
-              <time datetime={isoDate(s.at)}>{stateSentence(s)}</time>
-            </span>
-            {/*
-              ★ 文言は**リンク先**から決める（works.ts の serviceCtaLabel）。
-                見放題が終わった作品は Amazon の検索に落ちるので、
-                状態から「{s.label}で見る」と組むと**Netflix と書いてある広告リンクが
-                Amazon に飛ぶ**。2026-09-06 の実測で 517枚中248枚がその状態だった。
-            */}
-            <a
-              class="go"
-              href={decorate(s.url).url}
-              rel={decorate(s.url).rel}
-              target="_blank"
-              data-slot="work"
-            >
-              {serviceCtaLabel(s, decorate(s.url).url)}
-            </a>
-          </li>
-        ))
+        w.services.map((s) => {
+          /*
+           * ★ 終了予定日を過ぎた（`passed`）行だけ、在庫台帳で確かめた結果を使う（2026-09-17）。
+           *   バッジは確かめた結果で言い分け、状態行の文はそのまま残して、
+           *   **確かめた結果は別の文で、台帳の日付を付けて**続ける
+           *   （lib/works.ts の `passedCheck` の注記。根拠の違う文を混ぜない）。
+           */
+          const check = passedCheck(w, s)
+          const badge = stateBadge(w, s)
+          const go = decorate(serviceUrl(w, s, check))
+          return (
+            <li>
+              <span class="badge" data-category={badge.category}>
+                {badge.label}
+              </span>
+              <span class="line">
+                <strong>{s.label}</strong>で
+                <time datetime={isoDate(s.at)}>{stateSentence(s)}</time>
+                {s.state === 'passed' && <span class="check">{passedNote(check)}</span>}
+              </span>
+              {/*
+                ★ 文言は**リンク先**から決める（works.ts の serviceCtaLabel）。
+                  見放題が終わった作品は Amazon の検索に落ちるので、
+                  状態から「{s.label}で見る」と組むと**Netflix と書いてある広告リンクが
+                  Amazon に飛ぶ**。2026-09-06 の実測で 517枚中248枚がその状態だった。
+              */}
+              <a class="go" href={go.url} rel={go.rel} target="_blank" data-slot="work">
+                {serviceCtaLabel(s, go.url, check)}
+              </a>
+            </li>
+          )
+        })
       }
     </ul>
 
@@ -825,6 +832,15 @@ const jsonLd = {
     flex: 1 1 14rem;
     font-size: 0.95rem;
     line-height: 1.7;
+  }
+  /*
+   * 終了予定日を過ぎた行の、在庫台帳で確かめた結果（2026-09-17）。
+   * **状態行の文とは根拠が違う**ので、改行して一段小さく続ける（`.stock .asof` と同じ扱い）。
+   */
+  .line .check {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--text-muted);
   }
   .go {
     flex: none;

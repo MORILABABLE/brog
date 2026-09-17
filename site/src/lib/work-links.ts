@@ -240,7 +240,7 @@ export function resolveThumb(work: RawWork, service?: string): string | undefine
  * その作品そのもののポスターか（ジャンルの汎用画像ではないか）。
  * 同じ題名の作品が2つあるときに、どちらを表に残すかの判定に使う（`put`）。
  */
-function isPosterThumb(thumb?: string): boolean {
+export function isPosterThumb(thumb?: string): boolean {
   // 汎用画像は `genre-*.webp`（`scripts/genre-art.mjs` の `genreThumbName`）
   return !!thumb && !thumb.startsWith(`${THUMB_BASE}/genre-`)
 }

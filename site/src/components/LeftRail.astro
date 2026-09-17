@@ -1,16 +1,15 @@
 ---
 import Thumb from './Thumb.astro'
-import { CATEGORIES, EVERGREEN_BADGE } from '../config'
-import { EVERGREEN_PAGES } from '../lib/evergreen'
+import { EVERGREEN_BADGE } from '../config'
+import { CALENDAR_CARDS } from '../lib/evergreen'
 import { serviceImage } from '../lib/images'
 import { publishablePeople, topPeople } from '../lib/people'
 
 /**
- * 本文の**左**の余白に置く枠。上から順に3つ。
- *   1. 新着配信・終了一覧（常設ページの一覧。2026-08-27 に
- *      「最新の配信終了・配信開始一覧」から改称）
- *   2. 監督・出演者から探す（人物ページへの導線。2026-08-30 追加）
- *   3. 当サイトの運営方針および活用について（1枚だけ。行き先は pages/guide.astro）
+ * 本文の**左**の余白に置く枠。上から順に3つ（2つ目は出していない）。
+ *   1. 配信カレンダー（サービス1社1枚。2026-09-17 に「新着配信・終了一覧」の5枚から改めた）
+ *   2. 監督・出演者から探す … **2026-09-17 から出していない**（下の `SHOW_PEOPLE`）
+ *   3. 当サイトの運営方針および活用について（行き先は pages/guide.astro ほか）
  * ★ **3 は最下段へ移した**（2026-09-10）。それまでは最上段に置いて
  *   「画像が汎用画像のことがある理由」と「一覧に検索欄があること」を
  *   先に伝えていたが、探すための枠（1・2）を上に寄せる並びに変えた。
@@ -33,10 +32,9 @@ import { publishablePeople, topPeople } from '../lib/people'
  *
  * ■ 出す条件
  * 画面幅 75rem(1200px) 以上（styles/global.css の `.layout`）。
- * **狭い画面では枠ごと消える**ので、常設ページへの導線は
- * カテゴリ×サービスのページ（/category/<ハブ>/<サービス>）にも置いてある。
- * そちらが狭い画面での入口で、ヘッダーのメニューから2手で辿り着く
- * （2026-08-27。それまではカテゴリのハブに常設カードを並べていた）。
+ * **狭い画面では枠ごと消える。** 常設ページ（配信カレンダー）への入口は
+ * ヘッダーのメニューで、サービスを選ぶと**カレンダーへ直接**飛ぶ（2026-09-17・lib/evergreen.ts の
+ * `hubServiceHref`）。それまではカテゴリ×サービスの記事一覧を1枚挟んでいた。
  */
 
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
@@ -86,6 +84,28 @@ const FIXED_PAGES = [
  */
 const RAIL_PEOPLE = 6
 
+/**
+ * 「監督・出演者から探す」の枠を出すか。**2026-09-17 に false にした（運用者の指定）。**
+ *
+ * ■ なぜ外したか（2026-09-17 の実測・GA4 と Search Console）
+ *   - 枠から人物ページへ移った閲覧は **0**。作品ページの人名リンク（3,667本）からも 0
+ *   - 人物ページ全体で PV 1（Yahoo 検索から1回）、一覧 `/person` は 0
+ *   - 検索対象の53枚のうち37枚はインデックス済みなのに、表示15回・クリック0
+ *   - そもそもこの枠が見えるのは 1200px 以上の画面だけで、セッションの19%
+ *   しかも枠の先頭（トム・クルーズ）は12本中7本が「終了予定日を経過」で、
+ *   実態と食い違う表示をいちばん目立つ場所に出していた（lib/works.ts の `passedCheck`）。
+ *
+ * ■ 人物ページは残す
+ * **ページも、作品ページからの人名リンクも、フッターの「監督・出演者」も消していない。**
+ * 外したのはこの枠だけ。狭い画面ではもともとフッターが唯一の入口だった。
+ *
+ * ★ **戻すときはこの値を true にするだけでよい。** 枠の中身・見た目は下にそのまま残してある。
+ *   戻す目安は「人物ページに検索からのクリックが付き始めた」こと
+ *   （`npm run analytics` の「ページの種類別」で `/person/*` のクリック）。
+ *   戻したら components/Footer.astro と Header.astro の人物ページの注記も直すこと。
+ */
+const SHOW_PEOPLE = false
+
 /*
  * ■ 一度3枚（サービス1社1枚の配信カレンダー）に畳んで、**5枚に戻した**（2026-09-07）
  *
@@ -97,8 +117,13 @@ const RAIL_PEOPLE = 6
  * 読者が得たかったもの（日付から入る）は各ページが持っているので、
  * この枠は従来どおり「どの一覧へ行くか」だけを担えばよい。
  *
- * ★ `/calendar/<サービス>`（終了と新着を1枚にまとめたページ）は**残してあるが、
- *   この枠からは外した。** 行き先は各常設ページの末尾の関連リンクだけ。
+ * ■ そして2026-09-17 に、**サービス1社1枚（3枚）に畳み直した**
+ * 常設ページを「サービス × 向き」の2枚（`/leaving/<サービス>` `/arrivals/<サービス>`）にし、
+ * **向きの切り替えをページの上の切り替え**（components/CalendarPicker.astro）に持たせた。
+ * 上に書いた「カードの外にリンクがぶら下がる」問題は、切り替えがページの中にあるので起きない。
+ * カードの行き先は終了側（`/leaving/<サービス>`）。`/calendar/<サービス>` は転送した。
+ * ★ 実測（2026-09-17）でこの枠からの遷移は0だった（1200px以上の画面にしか出ないため）。
+ *   枠の形より、ヘッダーのメニューと検索からの入口のほうが効いている。
  */
 
 const railPeople = topPeople(RAIL_PEOPLE)
@@ -106,18 +131,18 @@ const peopleTotal = publishablePeople().length
 ---
 
 <aside class="left-rail">
-  <nav class="block" aria-label="新着配信・終了一覧">
-    <p class="block-title">新着配信・終了一覧</p>
+  <nav class="block" aria-label="配信カレンダー">
+    <p class="block-title">配信カレンダー</p>
     {/*
       枠の中身ではなく、**リンク先で何ができるか**を伝える一文。
       ★ 升目（EventCalendar.astro）も検索窓（WorkSearch.astro）も、
         あるのは各カードの**リンク先**であって、この枠ではない。
         文面を変えるときも「この枠で探せる」と読める書き方にしないこと。
     */}
-    <p class="block-note">カレンダーと検索で探せます</p>
+    <p class="block-note">終了・新着・配信予定を日付で探せます</p>
     <ul class="cards">
       {
-        EVERGREEN_PAGES.map((p) => {
+        CALENDAR_CARDS.map((p) => {
           const isCurrent = p.href === current
           /*
            * ★ **更新日（`【2026年9月14日更新】`）は外した**（2026-09-15）。
@@ -155,9 +180,14 @@ const peopleTotal = publishablePeople().length
                     styles/global.css の .badge.evergreen。
                 */}
                 <span class="tags">
-                  <span class="badge" data-category={p.category}>
-                    {CATEGORIES[p.category].label}
-                  </span>
+                  {/*
+                    ★ 2026-09-17 からカードはサービス1社1枚で、終了も新着も持つ。
+                      カテゴリ（「配信終了予定」など）を名乗れないので「カレンダー」と出す。
+                      色は既定のバッジ（styles/global.css の .badge）。
+                      ★ **文字数の上限に注意。**「カレンダー」5字＋「随時更新」4字＝9字で、
+                        下の .tags の計算（10字まで）に収まる。「配信カレンダー」（7字）は入らない。
+                  */}
+                  <span class="badge">カレンダー</span>
                   <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
                 </span>
                 <span class="name">{p.shortLabel}</span>
@@ -195,9 +225,11 @@ const peopleTotal = publishablePeople().length
       人物には絵が無い（Wikidata から取っているのは名前だけ）。
       48pxのタイルに頭文字だけを6つ並べても手掛かりにならず、
       枠が縦に伸びるだけになる。**名前と本数の行にする。**
+
+    ★ **2026-09-17 から出していない**（`SHOW_PEOPLE`）。中身は戻せるように残してある。
   */}
   {
-    railPeople.length > 0 && (
+    SHOW_PEOPLE && railPeople.length > 0 && (
       <nav class="block" aria-label="監督・出演者から探す">
         <p class="block-title">監督・出演者から探す</p>
         <p class="block-note">作品の多い順</p>
