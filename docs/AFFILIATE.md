@@ -153,6 +153,7 @@
 | `poster` | `PUBLIC_AMAZON_TAG_POSTER` | 記事本文の節ごとの作品ポスター | 204 | 204 |
 | `avail` | `PUBLIC_AMAZON_TAG_AVAIL` | 表の在庫行の ○ / △（「ここで観られる」という答え） | 70 | 181 |
 | 🆕 **`stock`** | `PUBLIC_AMAZON_TAG_STOCK` | **作品ページの「見放題で配信中」の行**（2026-09-16 追加。[FUNNEL 7-1-4](./FUNNEL.md)）。`avail` の作品ページ版で、`find`（答えを出せなかったときの逃げ先）とは逆の**答えそのもの** | 13 | 34 |
+| 🆕 **`cover`** | `PUBLIC_AMAZON_TAG_COVER` | **作品ページの見出しの横のポスター**（2026-09-17 追加）。**Prime Video に在庫があると分かっている作品だけ**リンクになり、残りは絵だけ（`works.ts` の `coverLink()`）。Amazon 以外へは送らない | 78 | 78 |
 | **`prime`** | `PUBLIC_AMAZON_TAG_PRIME` | **プライム無料体験の専用リンク**（`PrimeCta`） | **11** | 11 |
 | `body` | `PUBLIC_AMAZON_TAG_BODY` | 本文のその他のリンク | **0** | 37 |
 

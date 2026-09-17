@@ -331,9 +331,11 @@ export function serviceCtaLabel(s: WorkServiceState, url: string, check?: Passed
  * これがある作品に限っては「見放題で配信中」と言える
  * （docs/SOURCES-UNEXT-HULU.md 4節の★・2026-09-05 に確定）。
  *
- * ★ **根拠が違うので、文も日付も分ける。** 状態行（`stateSentence`）は変化ログで
+ * ★ **根拠が違うので、文を分ける。** 状態行（`stateSentence`）は変化ログで
  *   日付は `w.dataAsOf`、この行は在庫台帳で日付は台帳の `fetchedAt`。
  *   **1つの文に混ぜないこと。** 混ぜた瞬間、どちらの根拠で言っているのか読めなくなる。
+ * ★ 日付は**行に添えない**（2026-09-17・運用者の指定）。基準日の注意書きが
+ *   2つの日付の古いほうを名乗る（下の `noticeAsOf()`）。
  *
  * ★ **未取得と0件を混同しない**（`pipeline/cli/availability.ts` 冒頭）。
  *   台帳に無い作品・14日より古い作品は `marksFor()` が `undefined` を返す ＝
@@ -383,9 +385,19 @@ export function stockAnswer(w: WorkPage, now = Date.now()): StockAnswer | undefi
   return services.length > 0 ? { services, fetchedAt: found.fetchedAt } : undefined
 }
 
-/** 在庫の行に添える日付。**状態行の `dataAsOf` と混ぜないための一文。** */
-export function stockNote(a: StockAnswer): string {
-  return `${formatDate(a.fetchedAt)}時点の配信状況です。`
+/**
+ * ページの基準日（「配信情報は○月○日時点のものです」）。
+ *
+ * ★ 以前は在庫の行の下に「○月○日時点の配信状況です。」を添えていたが、
+ *   すぐ下の基準日の注意書きと同じことを2度言う形になっていたので外した
+ *   （2026-09-17・運用者の指定）。
+ * ★ その代わり、在庫の行を出すページでは**古いほうの日付**を名乗る。
+ *   変化ログ（`dataAsOf`）と在庫台帳（`fetchedAt`）は取った日が違い、
+ *   在庫のほうが古いページもある（2026-09-17 の実測で32枚中1枚）。
+ *   新しいほうを名乗ると、在庫の行を**実際より新しい情報**に見せてしまう。
+ */
+export function noticeAsOf(w: WorkPage, stock?: StockAnswer): Date {
+  return stock && stock.fetchedAt.getTime() < w.dataAsOf.getTime() ? stock.fetchedAt : w.dataAsOf
 }
 
 /**
@@ -496,6 +508,54 @@ export function stateBadge(
  */
 export function serviceUrl(w: WorkPage, s: WorkServiceState, check?: PassedCheck): string {
   return check?.result === 'lapsed' ? amazonSearchUrl(w.title) : s.url
+}
+
+// --- 見出しの横のポスター（2026-09-17 追加）-------------------------------------
+
+/*
+ * ■ 何のためにあるか
+ * 作品ページの上部は 状態行 → 記事への導線 → afb の枠 → 棚 と続き、
+ * **この作品の絵は「作品の情報」まで出てこない**（棚には他の作品のポスターが先に並ぶ）。
+ * 検索から来た読者が「探していた作品か」を確かめる手がかりが見出しの文字しか無かった。
+ * 「作品の情報」の大きいポスターはそのまま残し、見出しの横に小さく同じ絵を出す。
+ *
+ * ■ リンクにするのは、Prime Video に在庫があると分かっている作品だけ
+ * 絵を押して Amazon に着いたのに作品が無い、を起こさない。根拠は2つで、どちらかがあればよい。
+ *   1. 在庫台帳（14日以内）で Prime Video に見放題・レンタル・購入・チャンネルのどれかがある
+ *   2. 状態行で Prime Video の見放題がまだ終わっていない（終了予定・配信開始・予定日後も見放題）
+ * どちらも無ければ `undefined` ＝ **絵だけ出す。** Amazon の検索に落とさない —
+ * 状態行のボタンや「他のサービスで探す」と違い、絵は「探す」と断ってから押させる形にならない。
+ *
+ * ★ **Amazon 以外へは送らない。** Hulu は作品単位の訴求が禁止（docs/AFFILIATE.md 13-1）、
+ *   U-NEXT は LP 以外の成果が却下（12-1）、Netflix・Disney+・Apple TV+ は提携先が無い。
+ */
+export interface CoverLink {
+  /** tag= を付ける前のURL。呼び出し側で `withAmazonTag()` を通す */
+  url: string
+  /** 行き先の言い方。「「作品名」を{label}」の形で読み上げ名に使う */
+  label: string
+}
+
+const PRIME_VIDEO = 'prime-video'
+
+export function coverLink(w: WorkPage, now = Date.now()): CoverLink | undefined {
+  const found = marksFor(w.id, [w.title], now)
+  const mark = found?.marks.get(PRIME_VIDEO)
+  if (found && (mark === 'subscription' || mark === 'paid')) {
+    return {
+      // Prime Video には必ずURLが返る（app.primevideo.com なら検索に落ちる）
+      url: availabilityUrl(PRIME_VIDEO, found.links.get(PRIME_VIDEO), w.title)!,
+      label: mark === 'subscription' ? 'Prime Videoで探す' : 'Prime Videoでレンタル・購入などを探す',
+    }
+  }
+
+  const row = w.services.find((s) => s.service === PRIME_VIDEO)
+  if (!row) return undefined
+  const stillOn =
+    row.state === 'leaving' ||
+    row.state === 'started' ||
+    passedCheck(w, row, now)?.result === 'extended'
+  return stillOn ? { url: row.url, label: 'Prime Videoで探す' } : undefined
 }
 
 /**

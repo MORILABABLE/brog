@@ -94,6 +94,10 @@ export const AMAZON_SLOTS = [
   // ★ rehype プラグインは出さないので astro.config.mjs 側には要らない
   //   （`work` `rail` `prime` と同じ扱い）。
   'stock',
+  // 作品ページの見出しの横のポスター（pages/works/[id].astro。2026-09-17）。
+  // ★ `poster` と混ぜないこと。あちらは**記事本文の節ポスター**で、面も読者の位置も違う。
+  //   rehype プラグインは出さないので astro.config.mjs 側には要らない。
+  'cover',
 ] as const
 
 export type AmazonSlot = (typeof AMAZON_SLOTS)[number]

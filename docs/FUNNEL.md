@@ -426,13 +426,17 @@ npm run availability -- --ids 14281,10534,118,…   # 1件1リクエスト。--m
 
 ```
 [終了予定]  Netflix で 2026年9月30日に見放題配信が終了する予定です   [Netflixで見る]
-[見放題で配信中]  Amazon Prime Video ・ Disney+
-                  2026年9月16日時点の配信状況です。
+[見放題で配信中]  [Amazon Prime Video ↗] [Disney+ ↗]
 ```
+
+> **2026-09-17 に見た目を変えた（運用者の指定）。** サービスは「・」で繋いだ文字リンクから
+> **輪郭のボタン**に替え、行の下の「○月○日時点の配信状況です。」を外した。
+> 日付は下の基準日の注意書きが受け持ち、在庫の日付のほうが古いページでは**古いほうを名乗る**
+> （`works.ts` の `noticeAsOf()`。実測で32枚中1枚）。
 
 | 触ったもの | 何を足したか |
 |---|---|
-| `lib/works.ts` | `stockAnswer()` / `stockNote()` / `STOCK_HEADING`。**文言はここに集める**（このファイルの方針） |
+| `lib/works.ts` | `stockAnswer()` / `STOCK_HEADING`（2026-09-17 に `stockNote()` を外し `noticeAsOf()` に替えた）。**文言はここに集める**（このファイルの方針） |
 | `pages/works/[id].astro` | 状態行の直後に描く。`data-slot="stock"` |
 | `lib/affiliate.ts` / `config.ts` | 枠 `stock` を追加（`PUBLIC_AMAZON_TAG_STOCK`） |
 

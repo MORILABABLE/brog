@@ -5,6 +5,7 @@ import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import AmazonCta from '../../components/AmazonCta.astro'
 import Thumb from '../../components/Thumb.astro'
 import AfbCta from '../../components/AfbCta.astro'
+import WorkCover from '../../components/WorkCover.astro'
 import DemandShelf from '../../components/DemandShelf.astro'
 import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
@@ -13,6 +14,7 @@ import { amazonVideoLink, otherServiceLinks } from '../../lib/search-links'
 import { seriesRefFor } from '../../lib/series-for-work'
 import { hubArticleFor } from '../../lib/work-hub-article'
 import {
+  coverLink,
   HISTORY_LABEL,
   STATE_CATEGORY,
   observationStart,
@@ -25,8 +27,8 @@ import {
   serviceUrl,
   stateBadge,
   stateSentence,
+  noticeAsOf,
   stockAnswer,
-  stockNote,
   seriesArticleFor,
   workDescription,
   workHeadline,
@@ -166,6 +168,30 @@ const stockLinks = (stock?.services ?? []).map((x) => {
   const url = withAmazonTag(x.url, STOCK_TAG)
   return { label: x.label, url, rel: relFor(url) }
 })
+
+/*
+ * 小さいポスター（2026-09-17・components/WorkCover.astro）。**絵は `w.poster` があれば必ず出し、
+ * リンクは Prime Video に在庫があると分かっている作品だけに付ける。**
+ * 判定と、Amazon 以外へ送らない理由は lib/works.ts の `coverLink()`。
+ *
+ * ■ 置き場所
+ *   リンクあり … **Prime Video の状態行の、バッジの左**（運用者の指定）。
+ *                行き先の Prime Video と、その行の「終了予定」などが隣り合う。
+ *                Prime Video の行が無い作品（在庫台帳だけが根拠）は見出しの横。
+ *   リンクなし … 見出しの横。
+ * ★ **Prime Video 以外の行に置かないこと。** 「Netflixで終了予定」の隣の絵が
+ *   Amazon に飛ぶと、行と行き先が食い違う。
+ *
+ * ★ 枠は `cover`。`work`（状態行）とも `poster`（記事の節ポスター）とも分ける。
+ */
+const COVER_TAG = amazonTagFor('cover')
+const coverTarget = w.poster ? coverLink(w) : undefined
+const coverUrl = coverTarget ? withAmazonTag(coverTarget.url, COVER_TAG) : undefined
+const cover =
+  coverTarget && coverUrl
+    ? { url: coverUrl, rel: relFor(coverUrl), name: `「${w.title}」を${coverTarget.label}` }
+    : undefined
+const coverRow = cover ? w.services.findIndex((s) => s.service === 'prime-video') : -1
 
 /*
  * 関連する常設ページ。**そのサービスのページが実在するときだけ出す。**
@@ -364,7 +390,15 @@ const jsonLd = {
     <a href={`/category/${hub.slug}`}>{hub.label}</a>
   </nav>
 
-  <h1>{title}</h1>
+  {/*
+    ★ 絵が状態行に移らない作品だけ、**見出しの横に小さく出す**（上の `coverRow` の注記）。
+      作品の情報の大きいポスターはそのまま残す（同じ画像なので読み込みは1回）。
+    ★ **PR 表記はこの直下のまま動かさない**（docs/AFFILIATE.md 5-5）。
+  */}
+  <div class="head">
+    {w.poster && coverRow < 0 && <WorkCover src={w.poster} link={cover} />}
+    <h1>{title}</h1>
+  </div>
 
   <AffiliateNotice />
 
@@ -372,7 +406,7 @@ const jsonLd = {
   <section class="status" aria-label="配信状況">
     <ul class="states">
       {
-        w.services.map((s) => {
+        w.services.map((s, i) => {
           /*
            * ★ 終了予定日を過ぎた（`passed`）行だけ、在庫台帳で確かめた結果を使う（2026-09-17）。
            *   バッジは確かめた結果で言い分け、状態行の文はそのまま残して、
@@ -382,8 +416,8 @@ const jsonLd = {
           const check = passedCheck(w, s)
           const badge = stateBadge(w, s)
           const go = decorate(serviceUrl(w, s, check))
-          return (
-            <li>
+          const body = (
+            <>
               <span class="badge" data-category={badge.category}>
                 {badge.label}
               </span>
@@ -401,7 +435,20 @@ const jsonLd = {
               <a class="go" href={go.url} rel={go.rel} target="_blank" data-slot="work">
                 {serviceCtaLabel(s, go.url, check)}
               </a>
+            </>
+          )
+          /*
+           * ★ リンクになるポスターは Prime Video の行の左に置く（上の `coverRow`）。
+           *   バッジ・文・ボタンは右の列にまとめ、**行の中の並び方は他の行と同じ**にする
+           *   （スマホでは右の列の中で折り返す）。
+           */
+          return i === coverRow && w.poster ? (
+            <li class="with-cover">
+              <WorkCover src={w.poster} link={cover} />
+              <div class="row-body">{body}</div>
             </li>
+          ) : (
+            <li>{body}</li>
           )
         })
       }
@@ -416,34 +463,42 @@ const jsonLd = {
        *   食い違わない先しか返さない（Prime Video 以外は台帳の直リンクだけ）。
        *   URLが無ければ**文字のまま**出す。Amazon へ振り替えないこと。
        */
+      /*
+       * ★ **サービスはボタンの形で並べる**（2026-09-17・運用者の指定）。
+       *   文字リンクを「・」で繋いでいた頃は、上の行の塗りのボタンと比べて
+       *   押せるものに見えなかった。塗りにはせず輪郭だけにして、上の行のボタンより一段弱くする。
+       * ★ **ロゴは使わない。** サービス名は文字のまま（docs/APPEARANCE.md の商標の注意）。
+       * ★ 日付の一文は置かない。下の注意書きが古いほうの日付を名乗る（works.ts の `noticeAsOf()`）。
+       */
       stock && (
-        <p class="stock">
+        <div class="stock">
           <span class="badge" data-category="arrivals">
             {STOCK_HEADING}
           </span>
-          <span class="line">
-            {stockLinks.map((x, i) => (
-              <>
-                {i > 0 && <span class="sep">・</span>}
+          <ul class="stock-services">
+            {stockLinks.map((x) => (
+              <li>
                 {x.url ? (
-                  <a href={x.url} rel={x.rel} target="_blank" data-slot="stock">
+                  <a class="stock-service" href={x.url} rel={x.rel} target="_blank" data-slot="stock">
                     {x.label}
+                    <svg class="ext" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+                      <path d="M4.5 2.5h5v5M9.5 2.5 3 9" />
+                    </svg>
                   </a>
                 ) : (
-                  <strong>{x.label}</strong>
+                  <span class="stock-service is-plain">{x.label}</span>
                 )}
-              </>
+              </li>
             ))}
-          </span>
-          <span class="asof">{stockNote(stock)}</span>
-        </p>
+          </ul>
+        </div>
       )
     }
   </section>
 
   {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
   <p class="notice">
-    配信情報は<strong>{formatDate(w.dataAsOf)}時点</strong>のものです。
+    配信情報は<strong>{formatDate(noticeAsOf(w, stock))}時点</strong>のものです。
     その後の配信状況は各サービスの都合で変わることがあります。ご視聴前に公式サイトでご確認ください。
   </p>
 
@@ -760,6 +815,21 @@ const jsonLd = {
   }
 
   /*
+   * --- 見出しと、横のポスター（components/WorkCover.astro）---
+   * h1 の下の余白は PR 表記の margin-top（1rem）が受け持つので、ここでは 0 にする。
+   */
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .head h1 {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+  }
+
+  /*
    * --- シリーズ記事への導線 ---
    *
    * ★ **広告の枠（.status の `.go` や AmazonCta）と見た目を分ける。**
@@ -828,6 +898,22 @@ const jsonLd = {
     border-radius: var(--radius);
     background: var(--bg-subtle);
   }
+  /*
+   * Prime Video の行にポスターを置いたとき。絵を左の列に固定し、
+   * バッジ・文・ボタンは右の列の中で**他の行と同じ規則で**折り返す。
+   */
+  .states li.with-cover {
+    flex-wrap: nowrap;
+    gap: 0.9rem;
+  }
+  .row-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+  }
   .line {
     flex: 1 1 14rem;
     font-size: 0.95rem;
@@ -835,7 +921,7 @@ const jsonLd = {
   }
   /*
    * 終了予定日を過ぎた行の、在庫台帳で確かめた結果（2026-09-17）。
-   * **状態行の文とは根拠が違う**ので、改行して一段小さく続ける（`.stock .asof` と同じ扱い）。
+   * **状態行の文とは根拠が違う**ので、改行して一段小さく続ける。
    */
   .line .check {
     display: block;
@@ -872,18 +958,47 @@ const jsonLd = {
     border-radius: var(--radius);
     background: var(--bg-subtle);
   }
-  .stock .line {
+  /* スマホではバッジの下に1段で並ぶ（状態行の `.line` と同じ 14rem で折り返す） */
+  .stock-services {
+    flex: 1 1 14rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* 上の行の `.go`（塗り）と同じ角丸で、輪郭だけにして一段弱く見せる */
+  .stock-service {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.9rem;
     font-weight: 700;
+    line-height: 1.4;
+    text-decoration: none;
   }
-  .stock .sep {
-    color: var(--text-muted);
-    font-weight: 400;
-    margin: 0 0.15rem;
+  a.stock-service:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
   }
-  .stock .asof {
-    flex: 1 1 100%;
+  .stock-service .ext {
+    flex: none;
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* リンクにできない社。形は揃え、押せないことだけ分かるようにする */
+  .stock-service.is-plain {
+    border-color: var(--border);
     color: var(--text-muted);
-    font-size: 0.8rem;
   }
 
   /* --- 作品の情報 --- */
