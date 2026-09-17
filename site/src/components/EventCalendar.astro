@@ -127,9 +127,9 @@ function spoken(iso: string): string {
 
   {/*
     ★ 見出しの直下に差し込む部品（2026-09-17）。配信カレンダーのページでは
-      サービス／表示の切り替え（components/CalendarPicker.astro）が入る。
+      サービス／表示の切り替え（CalendarPicker.astro）と、種類・ジャンルの絞り込み（CalendarFilter.astro）が入る。
   */}
-  <slot name="picker" />
+  <slot name="controls" />
 
   <div class="pager" data-cal data-build-month={buildMonth}>
     {/*
@@ -173,12 +173,15 @@ function spoken(iso: string): string {
                 {shown
                   .filter((k) => (m.sums[k.kind] ?? 0) > 0)
                   .map((k) => (
-                    <span class:list={['sum', KIND[k.kind].cls]}>
+                    <span class:list={['sum', KIND[k.kind].cls]} data-sum-kind={k.kind}>
                       {KIND[k.kind].sum}
-                      {m.sums[k.kind]}本
+                      <span class="n">{m.sums[k.kind]}</span>本
                     </span>
                   ))}
-                {Object.keys(m.sums).length === 0 && <span class="sum none">なし</span>}
+                {/* 絞り込みで全部0本になったときもスクリプトがこれを出す */}
+                <span class="sum none" data-sum-none hidden={Object.keys(m.sums).length > 0}>
+                  なし
+                </span>
               </span>
             </caption>
             <thead>
@@ -235,9 +238,9 @@ function spoken(iso: string): string {
                             {img}
                             <span class="num">{d.day}</span>
                             <span class="marks" aria-hidden="true">
-                              <span class:list={['mark', KIND[k].cls]}>
+                              <span class:list={['mark', KIND[k].cls]} data-kind={k}>
                                 <span class="chip">{KIND[k].chip}</span>
-                                {n}
+                                <span class="n">{n}</span>
                               </span>
                             </span>
                           </a>
@@ -259,13 +262,14 @@ function spoken(iso: string): string {
                             {hits.map(({ kind: k }) => (
                               <a
                                 class:list={['mark', KIND[k].cls]}
+                                data-kind={k}
                                 href={`${prefixOf.get(k)}${d.iso}`}
                                 aria-label={`${spoken(d.iso)} ${KIND[k].spoken}${d.counts[k]}本の一覧へ移動`}
                               >
                                 <span class="chip" aria-hidden="true">
                                   {KIND[k].chip}
                                 </span>
-                                <span aria-hidden="true">{d.counts[k]}</span>
+                                <span class="n" aria-hidden="true">{d.counts[k]}</span>
                               </a>
                             ))}
                           </span>
@@ -651,6 +655,35 @@ function spoken(iso: string): string {
     white-space: nowrap;
     text-decoration: none;
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+  }
+
+  /* 絞り込み（CalendarFilter.astro）で0本になった印。.mark の display 指定に負けないよう明示する */
+  .mark[hidden] {
+    display: none;
+  }
+
+  /*
+   * 絞り込み（CalendarFilter.astro）で、その日の作品が**1本も残らなかった**升目。
+   * ★ 升目ごと消さない。暦の形が崩れて日付が読めなくなる。
+   * ★ **何も無い日（`.is-empty`）と同じ見た目にして、押せなくする。**
+   *   最初は薄いタイルで残したが、絞り込むと灰色のタイルが升目いっぱいに並んで見づらかった（2026-09-17）。
+   */
+  .cell.is-filtered {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  .cell.is-filtered .num {
+    font-weight: 400;
+  }
+  .cell.is-filtered .cell-img,
+  .cell.is-filtered .marks {
+    display: none;
+  }
+  .cell.is-filtered::after {
+    content: none;
   }
 
   /*

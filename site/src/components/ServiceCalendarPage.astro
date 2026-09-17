@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AffiliateNotice from './AffiliateNotice.astro'
 import AmazonCta from './AmazonCta.astro'
+import CalendarFilter from './CalendarFilter.astro'
 import CalendarPicker from './CalendarPicker.astro'
 import EventCalendar from './EventCalendar.astro'
 import PostCard from './PostCard.astro'
@@ -21,10 +22,10 @@ import {
   calendarContent,
   evergreenTitle,
   evergreenTitleBase,
+  posterOf,
   type CalendarDirection,
 } from '../lib/evergreen'
 import { primeAd } from '../lib/prime-ad'
-import { isPosterThumb, workLinkById } from '../lib/work-links'
 import { serviceSection, type PostEntry } from '../lib/service-pages'
 import { formatDate } from '../utils/date'
 
@@ -163,10 +164,7 @@ const calendar = buildCalendar(
    * 升目そのものに作品が見えていれば、押すと作品に行けることが伝わる。
    * ★ ジャンルの汎用画像は使わない（`isPosterThumb`）。同じ絵が升目に並ぶだけになる。
    */
-  (w) => {
-    const thumb = workLinkById(w.workId, service)?.thumb
-    return isPosterThumb(thumb) ? thumb : undefined
-  },
+  posterOf(service),
 )
 const hasRows = futureWorks.length + pastWorks.length > 0
 
@@ -303,8 +301,12 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
         {/*
           ★ 切り替え（サービス／表示）は**「配信カレンダー」の見出しの直下**に置く（2026-09-17・運用者の指定）。
             それまでは見出しの上（配信情報の注意書きの下）にあり、カレンダーを操作する部品だと読みにくかった。
+          ★ その下に絞り込み（種類／ジャンル）。スクリプトが動かない環境では絞り込みは出ない。
         */}
-        <CalendarPicker slot="picker" service={service} direction={direction} />
+        <Fragment slot="controls">
+          <CalendarPicker service={service} direction={direction} />
+          <CalendarFilter />
+        </Fragment>
       </EventCalendar>
     ) : (
       /*
@@ -314,6 +316,7 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
        */
       <>
         <CalendarPicker service={service} direction={direction} />
+        {hasRows && <CalendarFilter />}
         {hasRows && (
           <div class="search-head">
             <WorkSearch label={SEARCH_LABEL} />
@@ -357,6 +360,10 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
         ) : (
           <>
             <p class="block-note">{s.note}</p>
+            {/* 絞り込み（CalendarFilter.astro）で1本も残らなかったときだけ出す */}
+            <p class="empty" data-filter-empty hidden>
+              選んだ種類・ジャンルに当てはまる作品はありません。
+            </p>
             <WorkTable
               groups={groupByDate(s.works)}
               dateNoun={s.dateNoun}

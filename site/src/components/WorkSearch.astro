@@ -258,9 +258,20 @@ const { label } = Astro.props
     }
 
     /** いま選んでいる該当の行へ飛ぶ。**ここだけがページを動かす** */
+    /**
+     * 飛ぶ先の行が**たたまれたシリーズの中**なら開く（WorkTable.astro の `.series-more`）。
+     * 開かないと行が表示されておらず、scrollIntoView が効かない。
+     */
+    function reveal(row: HTMLElement) {
+      if (!row.classList.contains('series-more')) return
+      const toggle = row.closest('tbody')?.querySelector<HTMLInputElement>('[data-series-toggle]')
+      if (toggle && !toggle.checked) toggle.checked = true
+    }
+
     function go() {
       const target = hits[active]
       if (!target) return
+      reveal(target)
       moved = true
       open = false
       paint()
@@ -296,8 +307,14 @@ const { label } = Astro.props
 
     function search() {
       const query = normalizeForSearch(input!.value)
+      /*
+       * ★ 配信カレンダーの絞り込み（CalendarFilter.astro）で隠した行は候補にしない（2026-09-17）。
+       *   飛んでも表示されていない行へは移動できない。
+       */
       hits =
-        query === '' ? [] : rows.filter((row) => (row.dataset.workText ?? '').includes(query))
+        query === ''
+          ? []
+          : rows.filter((row) => !row.hidden && (row.dataset.workText ?? '').includes(query))
       active = 0
       // 打ち直したら「まだ飛んでいない」状態に戻す
       moved = false
@@ -323,6 +340,7 @@ const { label } = Astro.props
       active = (active + delta + hits.length) % hits.length
       paintRows()
       paintStatus()
+      reveal(hits[active]!)
       hits[active]!.scrollIntoView({ behavior: jump, block: 'center', inline: 'nearest' })
     }
 

@@ -3,7 +3,8 @@ import { amazonTagFor } from '../config'
 import { relFor, withAmazonTag } from '../lib/affiliate'
 import { normalizeForSearch } from '../lib/normalize'
 import { amazonVideoLink, otherServiceLinks } from '../lib/search-links'
-import { workLinkById } from '../lib/work-links'
+import { isPosterThumb, workLinkById } from '../lib/work-links'
+import { seriesRefFor, type SeriesRef } from '../lib/series-for-work'
 import { tableDestination } from '../lib/work-destination'
 import { formatDate, isoDate } from '../utils/date'
 import type { WorkRow } from '../lib/events-data'
@@ -130,6 +131,55 @@ function searchText(title: string, originalTitle?: string): string {
 function whenLabel(date: Date): string {
   return `${formatDate(date).replace(/^\d+年/, '')}${dateNoun}`
 }
+
+/**
+ * 同じ日に同じシリーズが**この本数以上**並んだら、1行にたたむ（2026-09-17 追加）。
+ *
+ * ■ なぜたたむか
+ * 実測（2026-09-17）で、1日に同じシリーズがまとめて入る・消える日がある。
+ *   /leaving/netflix       9月1日 「名探偵コナン」劇場版 29本・9月30日 「ハリー・ポッター」11本
+ *   /arrivals/prime-video  9月11日 「仮面ライダー」22本
+ * 同じ題名の行が何十行も続くと、その日のほかの作品が画面の外へ押し出される。
+ *
+ * ★ **3本から。** 2本をたたんでも1行しか減らず、開く手間のほうが大きい。
+ * ★ シリーズの判定は**シリーズ記事の作品名の条件**（lib/series-for-work.ts）だけを使う。
+ *   題名の前方一致などで新しく判定を作らない（「劇場版 ◯◯」が別の作品と束ねられる）。
+ */
+const SERIES_MIN = 3
+
+interface Segment {
+  series?: SeriesRef
+  works: WorkRow[]
+}
+
+/**
+ * 1日ぶんの行を「ふつうの行の塊」と「シリーズの塊」に分ける。**表の並び（題名順）は保つ。**
+ * シリーズの塊は、その日の最初の1本の位置に置く。塊の中は**評価の高い1本が先頭**で、
+ * たたんでいる間はその1本だけが見える（残りは元の並び）。
+ */
+function segmentsOf(works: WorkRow[]): Segment[] {
+  const refs = works.map((w) => seriesRefFor(w.title))
+  const counts = new Map<string, number>()
+  for (const r of refs) if (r) counts.set(r.slug, (counts.get(r.slug) ?? 0) + 1)
+
+  const out: Segment[] = []
+  const done = new Set<string>()
+  works.forEach((w, i) => {
+    const ref = refs[i]
+    if (ref && (counts.get(ref.slug) ?? 0) >= SERIES_MIN) {
+      if (done.has(ref.slug)) return
+      done.add(ref.slug)
+      const members = works.filter((_, j) => refs[j]?.slug === ref.slug)
+      const lead = members.reduce((best, m) => ((m.rating ?? 0) > (best.rating ?? 0) ? m : best), members[0]!)
+      out.push({ series: ref, works: [lead, ...members.filter((m) => m !== lead)] })
+      return
+    }
+    const last = out.at(-1)
+    if (last && !last.series) last.works.push(w)
+    else out.push({ works: [w] })
+  })
+  return out
+}
 ---
 
 {
@@ -138,7 +188,8 @@ function whenLabel(date: Date): string {
       <Heading class="day-title" id={`${idPrefix}${isoDate(g.date)}`}>
         <time datetime={isoDate(g.date)}>{formatDate(g.date)}</time>
         <span class="count">
-          {g.works.length}本{dateNoun}
+          {/* 本数は配信カレンダーの絞り込み（CalendarFilter.astro）が書き換える */}
+          <span data-day-count>{g.works.length}</span>本{dateNoun}
         </span>
       </Heading>
       <div class="table-wrap">
@@ -151,68 +202,104 @@ function whenLabel(date: Date): string {
               <th scope="col">他で探す</th>
             </tr>
           </thead>
-          <tbody>
-            {g.works.map((w) => (
-              /*
-                data-work-* は作品検索（WorkSearch.astro）が読む。消さないこと。
-                  text … 突き合わせ用のならし済み文字列（表に出す文字ではない）
-                  title / when … **候補の一覧に出す文字**。行のセルから拾うと
-                    「（原題: …）」やサムネイルまで混ざるので、別に焼き込む
-              */
-              <tr
-                data-work-row
-                data-work-text={searchText(w.title, w.originalTitle)}
-                data-work-title={w.title}
-                data-work-when={whenLabel(g.date)}
-              >
-                <th scope="row">
-                  {(() => {
-                    const p = primary(w)
-                    const name = (
-                      <span class="work-name">
-                        {w.title}
-                        {w.originalTitle && (
-                          <span class="original">（原題: {w.originalTitle}）</span>
-                        )}
+          {/*
+            ★ 塊ごとに <tbody> を分ける（1つの表に <tbody> は何本あってもよい）。
+              シリーズの塊だけ開閉の見出し行を持つ。
+            ★ 行の data-type / data-genre / data-rating / data-poster は**配信カレンダーの絞り込み**
+              （components/CalendarFilter.astro）が読む。消さないこと。
+          */}
+          {segmentsOf(g.works).map((seg) => (
+            <tbody class:list={[seg.series && 'series']} data-series={seg.series?.slug}>
+              {seg.series && (
+                /*
+                 * シリーズの見出し行。**押すと残りが開く。**
+                 * ★ JavaScript を使わない。チェックボックスの状態を CSS（`:has`）で読んで行を出し入れする。
+                 *   `:has` を知らない古いブラウザでは**全部の行が開いたまま**になる（隠れて見えない、は起きない）。
+                 * ★ 本数（data-series-count / data-series-rest）は絞り込みが書き換える。
+                 */
+                <tr class="series-head">
+                  <th colspan="4" scope="rowgroup">
+                    <label class="series-label">
+                      <input type="checkbox" class="series-toggle" data-series-toggle />
+                      <span class="series-name">{seg.series.topic}</span>
+                      <span class="series-count">
+                        <span data-series-count>{seg.works.length}</span>本
                       </span>
-                    )
-                    /* 送り先が決まらなければリンクにしない。文字だけの行に戻る。 */
-                    if (!p) return name
-                    return (
-                      <a class="work-link" href={p.url} rel={p.rel} target={p.target} data-slot="table">
-                        {p.thumb && (
-                          <img
-                            class="work-thumb"
-                            src={p.thumb}
-                            alt=""
-                            width={THUMB.w}
-                            height={THUMB.h}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        )}
-                        {name}
-                      </a>
-                    )
+                      <span class="series-open">
+                        ほか<span data-series-rest>{seg.works.length - 1}</span>本を表示
+                      </span>
+                      <span class="series-close">たたむ</span>
+                    </label>
+                    <a class="series-article" href={`/posts/${seg.series.slug}`}>
+                      まとめ記事
+                    </a>
+                  </th>
+                </tr>
+              )}
+              {seg.works.map((w, i) => (
+                <tr
+                  class:list={[seg.series && i > 0 && 'series-more']}
+                  data-work-row
+                  data-work-text={searchText(w.title, w.originalTitle)}
+                  data-work-title={w.title}
+                  data-work-when={whenLabel(g.date)}
+                  data-type={w.type ?? ''}
+                  data-genre={w.genre ?? ''}
+                  data-rating={w.rating ?? 0}
+                  data-poster={(() => {
+                    const t = primary(w)?.thumb
+                    return isPosterThumb(t) ? t : undefined
                   })()}
-                </th>
-                <td>{w.year ? `${w.year}年` : '—'}</td>
-                <td>{w.rating ? `${w.rating}/100` : '—'}</td>
-                <td class="links">
-                  {/* 幅を抑えるための入れ物。理由は下の .links-inner を参照 */}
-                  <span class="links-inner">
-                    {[...otherServiceLinks(w.title), amazonVideoLink(w.title)]
-                      .map(decorate)
-                      .map((l) => (
-                        <a href={l.url} rel={l.rel} target="_blank">
-                          {l.label}
+                >
+                  <th scope="row">
+                    {(() => {
+                      const p = primary(w)
+                      const name = (
+                        <span class="work-name">
+                          {w.title}
+                          {w.originalTitle && (
+                            <span class="original">（原題: {w.originalTitle}）</span>
+                          )}
+                        </span>
+                      )
+                      /* 送り先が決まらなければリンクにしない。文字だけの行に戻る。 */
+                      if (!p) return name
+                      return (
+                        <a class="work-link" href={p.url} rel={p.rel} target={p.target} data-slot="table">
+                          {p.thumb && (
+                            <img
+                              class="work-thumb"
+                              src={p.thumb}
+                              alt=""
+                              width={THUMB.w}
+                              height={THUMB.h}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          )}
+                          {name}
                         </a>
-                      ))}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+                      )
+                    })()}
+                  </th>
+                  <td>{w.year ? `${w.year}年` : '—'}</td>
+                  <td>{w.rating ? `${w.rating}/100` : '—'}</td>
+                  <td class="links">
+                    {/* 幅を抑えるための入れ物。理由は下の .links-inner を参照 */}
+                    <span class="links-inner">
+                      {[...otherServiceLinks(w.title), amazonVideoLink(w.title)]
+                        .map(decorate)
+                        .map((l) => (
+                          <a href={l.url} rel={l.rel} target="_blank">
+                            {l.label}
+                          </a>
+                        ))}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          ))}
         </table>
       </div>
     </section>
@@ -345,5 +432,79 @@ function whenLabel(date: Date): string {
   .links a:hover {
     border-color: var(--accent);
     background: var(--accent-soft);
+  }
+  /*
+   * シリーズの塊（2026-09-17 追加）。**見出し行を押すと、たたんでいた行が開く。**
+   *
+   * ★ 開閉は CSS だけ。チェックボックス（`.series-toggle`）が外れている塊では、
+   *   先頭の1本以外（`.series-more`）を隠す。`:has` を知らないブラウザではこの規則が効かず、
+   *   **全部開いたまま**になる（隠れたまま戻せない、は起きない）。
+   * ★ 絞り込み（CalendarFilter.astro）が効いているときは、見えている行の先頭が `.series-more` を外される。
+   */
+  tbody.series:has(.series-toggle:not(:checked)) tr.series-more {
+    display: none;
+  }
+  .series-head th {
+    padding: 0.45rem 0.6rem;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+  .series-label {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.2rem 0.6rem;
+    cursor: pointer;
+  }
+  /* チェックボックスそのものは見せない（押す的は見出し全体）。キーボードでは届く */
+  .series-toggle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  .series-label:has(.series-toggle:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .series-name {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .series-count {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  /* 「ほか10本を表示」「たたむ」。押せることが分かるボタンの形にする */
+  .series-open,
+  .series-close {
+    padding: 0.05rem 0.6rem;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .series-label:hover .series-open,
+  .series-label:hover .series-close {
+    background: var(--accent-soft);
+  }
+  .series-close {
+    display: none;
+  }
+  .series-toggle:checked ~ .series-open {
+    display: none;
+  }
+  .series-toggle:checked ~ .series-close {
+    display: inline;
+  }
+  .series-article {
+    margin-left: 0.8rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
   }
 </style>

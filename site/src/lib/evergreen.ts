@@ -28,7 +28,10 @@ import {
   loadLeaving,
   loadUpcoming,
 } from './events-data'
-import { formatDate } from '../utils/date'
+import { formatDate, isoDate } from '../utils/date'
+import type { CalendarKind } from './calendar'
+import type { WorkRow } from './events-data'
+import { isPosterThumb, workLinkById } from './work-links'
 import type { CategorySlug } from '../config'
 
 /**
@@ -224,4 +227,61 @@ export function calendarContent(direction: CalendarDirection, service: string): 
 export function evergreenSummary(page: EvergreenPage): { count: number; dataAsOf: Date | null } {
   const c = calendarContent(page.category, page.thumbKey)
   return { count: (c.future?.works.length ?? 0) + c.past.works.length, dataAsOf: c.dataAsOf }
+}
+
+// --- 升目とポスター（ページ・トップ・カードで共有）--------------------------------
+
+/**
+ * 作品のポスター（`/thumbs/<作品ID>.webp`・96×144）を引く関数。**表の行のサムネイルと同じもの**
+ * （components/WorkTable.astro の `primary`）。
+ * ★ ジャンルの汎用画像は返さない（`isPosterThumb`）。升目やカードに同じ絵が並ぶだけになる。
+ */
+export function posterOf(service: string): (w: WorkRow) => string | undefined {
+  return (w) => {
+    const thumb = workLinkById(w.workId, service)?.thumb
+    return isPosterThumb(thumb) ? thumb : undefined
+  }
+}
+
+/**
+ * 升目に載せる種類と作品。**種類の名前がそのまま行き先の頭になる**（`leaving` → `#leaving-2026-09-30`）。
+ * 並びは「これから → 過去」（ページの表の並びと同じ）。
+ */
+export function calendarSeries(
+  direction: CalendarDirection,
+  service: string,
+): { kind: CalendarKind; works: WorkRow[] }[] {
+  const c = calendarContent(direction, service)
+  return direction === 'leaving'
+    ? [
+        { kind: 'leaving', works: c.future?.works ?? [] },
+        { kind: 'ended', works: c.past.works },
+      ]
+    : [
+        { kind: 'upcoming', works: c.future?.works ?? [] },
+        { kind: 'arrivals', works: c.past.works },
+      ]
+}
+
+/**
+ * 配信カレンダーのカードに出す絵（2026-09-17 追加・運用者の指定）。
+ *
+ * ■ 何を選ぶか
+ * そのカレンダーの**今月**の作品を、日付の早い順（同じ日は評価の高い順）に並べ、
+ * **アニメ**の中で最初にポスターのある作品。アニメが1本も無ければ（ポスターが無ければ）全ジャンルから同じ順で選ぶ。
+ * どれも無ければ undefined（カードは従来の汎用画像 `src/assets/services/<キー>` に戻る）。
+ *
+ * ★ アニメを先に見るのは**見栄えのため**（運用者の判断）。アニメのポスターは小さく切り抜いても絵が読める。
+ * ★ 収集のたびに変わる。月が替わると、翌月の最初の作品に移る。
+ * ★ 小さいサムネイル（96×144）を使う。左の枠は**全ページに出る**ので、大きいポスター（480×720・約37KB）は使わない。
+ */
+export function calendarThumb(direction: CalendarDirection, service: string): string | undefined {
+  const month = isoDate(new Date()).slice(0, 7)
+  const poster = posterOf(service)
+  const rows = calendarSeries(direction, service)
+    .flatMap((s) => s.works)
+    .filter((w) => isoDate(w.at).slice(0, 7) === month)
+    .sort((a, b) => a.at.getTime() - b.at.getTime() || (b.rating ?? 0) - (a.rating ?? 0))
+  const pick = (list: WorkRow[]) => list.map(poster).find((t): t is string => Boolean(t))
+  return pick(rows.filter((w) => w.genre === 'anime')) ?? pick(rows)
 }

@@ -1,0 +1,289 @@
+---
+import { GENRE_HUBS } from '../config'
+
+/**
+ * 配信カレンダーの絞り込み（2026-09-17 追加・運用者の指定）。**種類とジャンルで、ページの中の行を隠す。**
+ *
+ *   ［すべて｜映画｜TVシリーズ］　［すべて｜アニメ｜洋画｜邦画］
+ *
+ * ■ docs/GROWTH.md 4節「全作品を横断する絞り込み・並べ替えUIはやらない」との関係
+ * **これはそれに当たらない**（4節の注記に同じことを書いてある）。
+ *   - 絞るのは**このページに描いてある行だけ**。新しい作品を1件も引いてこない
+ *   - 検索窓（WorkSearch）と同じく、行を隠す・出すだけで、ページに出ている以上の情報を足さない
+ *   - サービスをまたがない（1ページ＝1サービス×1向き）
+ * ★ 別のページの作品まで引いてくる形（全サービス横断の絞り込みなど）に広げるときは、4節を読み直すこと。
+ *
+ * ■ 何を書き換えるか（下のスクリプト）
+ *   表の行（data-type / data-genre）→ 日ごとの本数 → シリーズの塊の本数 → 升目の本数とポスター → 月の合計
+ * ★ **升目は消さない。** 0本になった日は、何も無い日と同じ見た目にして押せなくする（EventCalendar.astro の `.is-filtered`）。
+ * ★ 条件は URL に残す（`?type=movie&genre=anime`）。共有したときも同じ表示になり、
+ *   上の切り替え（サービス／表示）で別のページへ移っても条件を引き継ぐ。
+ *
+ * ■ スクリプトが動かない環境では**この部品ごと出さない**（`hidden`）
+ * 押しても何も起きないボタンを並べないため。表は全部出ている。
+ *
+ * ★ ジャンルは判定できない作品がある（実測で1〜2割。lib/work-genre.ts）。ジャンルで絞っている間は出ない。
+ *   その本数を注記で出していたが、**運用者の指定で外した**（2026-09-17）。
+ *
+ * ■ 見た目は**控えめにする**（2026-09-17・運用者の指定）
+ * 「種類」「ジャンル」の見出しは付けず、ボタンだけを小さく並べる。
+ * 主役は上の切り替え（サービス／表示）と升目で、絞り込みはその補助。
+ * ★ 見出しを外したぶん、読み上げでは組ごとの `aria-label`（「種類で絞り込む」など）が名前になる。
+ */
+const TYPES = [
+  { value: '', label: 'すべて' },
+  { value: 'movie', label: '映画' },
+  /*
+   * ★ 「シリーズ」とだけ書かない。表の中の「「ハリー・ポッター」シリーズ」の塊（同じ作品群）と
+   *   取り違える。配信APIの `series` は連続もの（ドラマ・アニメの各話もの・番組）なので「TVシリーズ」。
+   */
+  { value: 'series', label: 'TVシリーズ' },
+]
+
+/* 並びとラベルはジャンルの定義（config.ts の GENRE_HUBS）に揃える。記事のバッジと同じ言い方 */
+const GENRES_SHOWN = [{ value: '', label: 'すべて' }, ...GENRE_HUBS.map((g) => ({ value: g.slug, label: g.label }))]
+
+const GROUPS = [
+  { key: 'type', name: '種類', options: TYPES },
+  { key: 'genre', name: 'ジャンル', options: GENRES_SHOWN },
+]
+---
+
+<div class="filter" data-cal-filter hidden>
+  {
+    GROUPS.map((g) => (
+      <div class="group" role="group" aria-label={`${g.name}で絞り込む`}>
+        <span class="seg">
+          {g.options.map((o) => (
+            <button type="button" class="seg-btn" data-filter={g.key} data-value={o.value} aria-pressed={o.value === ''}>
+              {o.label}
+            </button>
+          ))}
+        </span>
+      </div>
+    ))
+  }
+</div>
+
+<script>
+  type Key = 'type' | 'genre'
+
+  const root = document.querySelector<HTMLElement>('[data-cal-filter]')
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('tr[data-work-row]'))
+
+  if (root && rows.length > 0) {
+    const VALID: Record<Key, string[]> = {
+      type: ['movie', 'series'],
+      genre: ['anime', 'western', 'japanese'],
+    }
+    const state: Record<Key, string> = { type: '', genre: '' }
+    const params = new URLSearchParams(location.search)
+    for (const key of Object.keys(VALID) as Key[]) {
+      const v = params.get(key) ?? ''
+      state[key] = VALID[key].includes(v) ? v : ''
+    }
+
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-filter]'))
+    root.hidden = false
+
+    /** 要素の中の数字を書き換える */
+    const setNum = (scope: Element, selector: string, n: number) => {
+      const el = scope.matches(selector) ? scope : scope.querySelector(selector)
+      if (el) el.textContent = String(n)
+    }
+
+    /**
+     * 升目の絵を、見えている行の中で**いちばん評価の高い作品**のポスターに差し替える。
+     * ビルド時の選び方（lib/calendar.ts）と同じ規則。
+     * ★ 作る img には升目と同じ `data-astro-cid-*` を写す。写さないと部品の CSS が当たらない。
+     */
+    const setPoster = (cell: HTMLElement, candidates: HTMLElement[]) => {
+      let best: HTMLElement | undefined
+      for (const r of candidates) {
+        if (!r.dataset.poster) continue
+        if (!best || Number(r.dataset.rating) > Number(best.dataset.rating)) best = r
+      }
+      let img = cell.querySelector<HTMLImageElement>('img.cell-img')
+      if (!best) {
+        if (img) img.hidden = true
+        cell.classList.remove('has-img')
+        cell.classList.add('no-img')
+        return
+      }
+      if (!img) {
+        img = document.createElement('img')
+        img.className = 'cell-img'
+        img.alt = ''
+        img.width = 48
+        img.height = 72
+        img.loading = 'lazy'
+        img.decoding = 'async'
+        for (const attr of Array.from(cell.attributes)) {
+          if (attr.name.startsWith('data-astro-cid')) img.setAttribute(attr.name, '')
+        }
+        cell.prepend(img)
+      }
+      img.hidden = false
+      if (img.getAttribute('src') !== best.dataset.poster) img.src = best.dataset.poster!
+      cell.classList.add('has-img')
+      cell.classList.remove('no-img')
+    }
+
+    const apply = () => {
+      for (const b of buttons) {
+        b.setAttribute('aria-pressed', String(state[b.dataset.filter as Key] === b.dataset.value))
+      }
+
+      // 1. 行
+      for (const r of rows) {
+        const okType = !state.type || r.dataset.type === state.type
+        const okGenre = !state.genre || r.dataset.genre === state.genre
+        r.hidden = !(okType && okGenre)
+      }
+
+      // 2. シリーズの塊。見えている先頭の1本だけを、たたんでいる間も出す
+      for (const tbody of document.querySelectorAll<HTMLElement>('tbody.series')) {
+        const members = Array.from(tbody.querySelectorAll<HTMLElement>('tr[data-work-row]'))
+        const visible = members.filter((m) => !m.hidden)
+        tbody.hidden = visible.length === 0
+        for (const m of members) m.classList.toggle('series-more', m !== visible[0])
+        setNum(tbody, '[data-series-count]', visible.length)
+        setNum(tbody, '[data-series-rest]', Math.max(0, visible.length - 1))
+      }
+
+      // 3. 日ごとの表
+      const visibleByDay = new Map<string, HTMLElement[]>()
+      for (const day of document.querySelectorAll<HTMLElement>('section.day')) {
+        const visible = Array.from(day.querySelectorAll<HTMLElement>('tr[data-work-row]')).filter((r) => !r.hidden)
+        day.hidden = visible.length === 0
+        setNum(day, '[data-day-count]', visible.length)
+        const id = day.querySelector<HTMLElement>('.day-title')?.id
+        if (id) visibleByDay.set(id, visible)
+      }
+
+      // 4. 節（これから／過去）ごとに、1本も残らなければそう書く
+      for (const block of document.querySelectorAll<HTMLElement>('section.block')) {
+        const days = Array.from(block.querySelectorAll<HTMLElement>('section.day'))
+        const empty = block.querySelector<HTMLElement>('[data-filter-empty]')
+        if (empty && days.length > 0) empty.hidden = days.some((d) => !d.hidden)
+      }
+
+      // 5. 升目。行き先の見出しの id から、その日の見えている行を引く
+      for (const cell of document.querySelectorAll<HTMLElement>('[data-cal] .cell.is-hit')) {
+        const links = cell.matches('a')
+          ? [cell as HTMLAnchorElement]
+          : Array.from(cell.querySelectorAll<HTMLAnchorElement>('a.mark'))
+        let total = 0
+        const candidates: HTMLElement[] = []
+        for (const a of links) {
+          const visible = visibleByDay.get((a.getAttribute('href') ?? '').slice(1)) ?? []
+          total += visible.length
+          candidates.push(...visible)
+          const mark = a.matches('.mark') ? a : a.querySelector<HTMLElement>('.mark')
+          if (mark) setNum(mark, '.n', visible.length)
+          if (a !== cell) a.hidden = visible.length === 0
+        }
+        cell.classList.toggle('is-filtered', total === 0)
+        if (cell.matches('a')) {
+          if (total === 0) cell.setAttribute('tabindex', '-1')
+          else cell.removeAttribute('tabindex')
+        }
+        setPoster(cell, candidates)
+      }
+
+      // 6. 月の合計
+      for (const table of document.querySelectorAll<HTMLElement>('[data-cal] table[data-month]')) {
+        let all = 0
+        for (const sum of table.querySelectorAll<HTMLElement>('[data-sum-kind]')) {
+          let n = 0
+          for (const mark of table.querySelectorAll<HTMLElement>(`.mark[data-kind="${sum.dataset.sumKind}"]`)) {
+            if (mark.hidden || mark.closest('.is-filtered')) continue
+            n += Number(mark.querySelector('.n')?.textContent ?? 0)
+          }
+          setNum(sum, '.n', n)
+          sum.hidden = n === 0
+          all += n
+        }
+        const none = table.querySelector<HTMLElement>('[data-sum-none]')
+        if (none) none.hidden = all > 0
+      }
+
+      // 7. URL と、上の切り替え（サービス／表示）の行き先に条件を残す
+      const q = new URLSearchParams(location.search)
+      for (const key of Object.keys(state) as Key[]) {
+        if (state[key]) q.set(key, state[key])
+        else q.delete(key)
+      }
+      const query = q.toString() ? `?${q}` : ''
+      history.replaceState(null, '', `${location.pathname}${query}${location.hash}`)
+      for (const a of document.querySelectorAll<HTMLAnchorElement>('nav.picker a.option')) {
+        a.dataset.baseHref ??= a.getAttribute('href') ?? ''
+        a.setAttribute('href', `${a.dataset.baseHref}${query}`)
+      }
+    }
+
+    for (const b of buttons) {
+      b.addEventListener('click', () => {
+        state[b.dataset.filter as Key] = b.dataset.value ?? ''
+        apply()
+      })
+    }
+
+    // ★ 条件が付いて来たときだけ最初に当てる。付いていなければビルドした表示のまま（何も書き換えない）
+    if (state.type || state.genre) apply()
+  }
+</script>
+
+<style>
+  /*
+   * 種類とジャンルの2組。**切り替え（サービス／表示）の下、月送りの上**に置く。
+   * ★ **控えめにする**（運用者の指定）。小さく、選んでいないボタンは枠線も文字も薄い。
+   *   選んでいるボタンも塗りつぶさず、薄い地にアクセント色の文字（上の切り替えより目立たせない）。
+   * 狭い画面では2組が縦に並ぶ（`flex-wrap`）。
+   */
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.9rem;
+    margin: 0 0 0.8rem;
+  }
+  .filter[hidden] {
+    display: none;
+  }
+  .group {
+    display: inline-flex;
+    align-items: center;
+  }
+  .seg {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+  }
+  .seg-btn {
+    padding: 0 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.72rem;
+    line-height: 1.8;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .seg-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .seg-btn[aria-pressed='true'] {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .seg-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>

@@ -6,6 +6,7 @@ import AffiliateNotice from '../components/AffiliateNotice.astro'
 import AmazonCta from '../components/AmazonCta.astro'
 import SeriesShelf from '../components/SeriesShelf.astro'
 import DemandShelf from '../components/DemandShelf.astro'
+import TopCalendar from '../components/TopCalendar.astro'
 import { SITE } from '../config'
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
@@ -91,6 +92,15 @@ const latest = posts.slice(0, LATEST)
     ★ 候補が0件のあいだは HTML を1バイトも出さない。
   */}
   <DemandShelf />
+
+  {/*
+    「配信カレンダー」のカード（2026-09-17 追加・運用者の指定）。**狭い画面（1200px 未満）でしか出ない。**
+    1200px 以上では左の枠（LeftRail.astro）が同じカードを出す（中身は CalendarCards.astro で共有）。
+
+    ★ **2つの棚（シリーズ配信・終了が近い作品）より下、記事一覧より上。**
+      シリーズ配信の棚と同じ形（横に流すカード）。3つの棚の並びは「シリーズ → 終了が近い作品 → 配信カレンダー」。
+  */}
+  <TopCalendar />
 
   {
     posts.length === 0 ? (

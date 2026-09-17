@@ -20,6 +20,8 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { isPublishable } from './excluded'
 import { fillJapaneseTitle } from './work-title'
+import { workGenre } from './work-genre'
+import type { GenreSlug } from '../config'
 
 /** サイトの基準タイムゾーン。theme.yaml の utc_offset_minutes と揃える。 */
 const JST_OFFSET_MINUTES = 9 * 60
@@ -199,6 +201,13 @@ export interface WorkRow {
   year?: number
   rating?: number
   at: Date
+  /**
+   * 映画かシリーズか（配信APIの `type`）。**配信カレンダーの絞り込みに使う**（2026-09-17）。
+   * 値が入っていない作品は undefined（絞り込みでは「すべて」のときだけ出る）。
+   */
+  type?: 'movie' | 'series'
+  /** ジャンル（アニメ / 洋画 / 邦画）。判定の規則は lib/work-genre.ts。判定できなければ undefined */
+  genre?: GenreSlug
 }
 
 function toRow(e: RawEvent): WorkRow {
@@ -213,6 +222,8 @@ function toRow(e: RawEvent): WorkRow {
     // rating は 0 が「評価なし」を意味する。0 のまま出すと最低評価に見える。
     rating: e.work.rating ? e.work.rating : undefined,
     at: new Date(e.at as string),
+    type: e.work.type === 'movie' || e.work.type === 'series' ? e.work.type : undefined,
+    genre: workGenre(e.work),
   }
 }
 

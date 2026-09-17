@@ -12,7 +12,7 @@ const { service, direction } = Astro.props
 /**
  * 配信カレンダーの切り替え。**サービスと表示（終了／新着）を、開いて選ぶ。**
  *
- *   ［サービス　Netflix ▾］［表示　配信終了 ▾］
+ *   ［Netflix ▾］［配信終了 ▾］
  *
  * ■ 2026-09-17 にタブから作り替えた（運用者の指定）
  * 最初はサービス3つ・表示2つのタブを全部並べていた。**押せる丸が5つ並ぶだけで、
@@ -56,18 +56,19 @@ const PICKS = [
       <details class="pick" data-menu data-pick={p.key}>
         {/*
           ★ **押せる部品に見せる**（2026-09-17・運用者の指定）。
-            太い枠・下の影・右端の丸い矢印の3つで「ここを押すと選べる」を伝える。
-            名前（サービス／表示）は小さく上、いま選んでいる値は太く下。
+            枠・下の影・右端の丸い矢印の3つで「ここを押すと選べる」を伝える。
+          ★ 「サービス」「表示」の名前は**画面に出さない**（運用者の指定）。読み上げにだけ残す。
+            値（「Netflix」「配信終了」）だけで何を選ぶ部品か分かる。
         */}
         <summary>
           <span class="pick-text">
-            <span class="pick-name">{p.name}</span>
+            <span class="visually-hidden">{p.name}：</span>
             <span class="pick-value" data-direction={p.key === 'direction' ? direction : undefined}>
               {p.current.label}
             </span>
           </span>
           <span class="pick-arrow" aria-hidden="true">
-            <svg viewBox="0 0 12 12" width="12" height="12">
+            <svg viewBox="0 0 12 12" width="10" height="10">
               <path d="M2.5 4.5 6 8l3.5-3.5" />
             </svg>
           </span>
@@ -105,8 +106,9 @@ const PICKS = [
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
-    max-width: 30rem;
-    margin: 0.2rem 0 0.9rem;
+    max-width: 26rem;
+    /* 下の絞り込みのボタンと詰まって見えないよう、影のぶん（2px）を足して空ける */
+    margin: 0.2rem 0 0.85rem;
   }
   .pick {
     position: relative;
@@ -118,13 +120,17 @@ const PICKS = [
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    min-height: 3rem;
-    padding: 0.35rem 0.45rem 0.35rem 0.8rem;
-    border: 2px solid var(--accent);
-    border-radius: 12px;
+    /*
+     * ★ 2026-09-17 に一回り小さくした（運用者の指定）。3rem・枠2px・影3px では
+     *   下の絞り込みのボタンに食い込んで見えた。
+     */
+    min-height: 2.4rem;
+    padding: 0.2rem 0.3rem 0.2rem 0.75rem;
+    border: 1.5px solid var(--accent);
+    border-radius: 10px;
     background: var(--bg);
     /* 下にだけ影を落として「押せる台」に見せる。押している間は沈める（:active） */
-    box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 35%, transparent);
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 30%, transparent);
     cursor: pointer;
     transition:
       background-color 0.12s ease,
@@ -138,8 +144,8 @@ const PICKS = [
     background: var(--accent-soft);
   }
   summary:active {
-    transform: translateY(2px);
-    box-shadow: 0 1px 0 color-mix(in srgb, var(--accent) 35%, transparent);
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--accent) 30%, transparent);
   }
   .pick[open] > summary {
     background: var(--accent-soft);
@@ -154,11 +160,6 @@ const PICKS = [
     min-width: 0;
     line-height: 1.3;
   }
-  /* 「サービス」「表示」。選んでいる値より弱く見せる */
-  .pick-name {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-  }
   /*
    * いま選んでいる値。**ここがこの部品の主役**（何を見ているかを1目で分からせる）。
    * 表示の値だけ、升目の印と同じ系統の色にする（赤＝終わる側・青＝始まる側）。
@@ -167,7 +168,7 @@ const PICKS = [
    */
   .pick-value {
     overflow: hidden;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--text);
     text-overflow: ellipsis;
@@ -184,8 +185,8 @@ const PICKS = [
     flex: none;
     display: grid;
     place-items: center;
-    width: 1.7rem;
-    height: 1.7rem;
+    width: 1.4rem;
+    height: 1.4rem;
     border-radius: 999px;
     background: var(--accent);
     color: var(--cal-on);

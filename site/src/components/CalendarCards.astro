@@ -1,0 +1,198 @@
+---
+import Thumb from './Thumb.astro'
+import { EVERGREEN_BADGE } from '../config'
+import { CALENDAR_CARDS, calendarThumb } from '../lib/evergreen'
+import { serviceImage } from '../lib/images'
+
+interface Props {
+  /**
+   * いま開いているページのパス（`.html` と末尾の `/` を落としたもの）。
+   * 一致したカードだけリンクを外して `aria-current` を付ける。**並びは変えない。**
+   */
+  current?: string
+}
+
+const { current = '' } = Astro.props
+
+/**
+ * 配信カレンダーのカード（サービス1社1枚）。**左の枠とトップページが同じものを出す。**
+ *
+ *   左の枠（LeftRail.astro）     … 1200px 以上。紺の地の上
+ *   トップ（TopCalendar.astro）  … 1200px 未満。白いカードの上
+ *
+ * ■ 2026-09-17 に LeftRail.astro から切り出した
+ * スマホのトップにも同じカードを出すことになったため（運用者の指定）。
+ * 最初はトップにカレンダーそのもの（升目）を埋め込んだが、**運用者が意図していたのはこのカード**だった。
+ *
+ * ★ カードの枠（`.rail-card`・`.body`・`.name`）の値は、左の枠の下段の固定ページのカード
+ *   （LeftRail.astro の FIXED_PAGES）と**同じ値**にしてある。片方だけ変えると、左の枠で段差が出る。
+ */
+---
+
+<ul class="cards">
+  {
+    CALENDAR_CARDS.map((p) => {
+      const isCurrent = p.href === current
+      /*
+       * ★ **カードの絵は、そのカレンダーの今月の作品のポスター**（2026-09-17・運用者の指定）。
+       *   選び方は lib/evergreen.ts の `calendarThumb`（今月の早い日付のアニメ → 無ければ全ジャンル）。
+       *   ポスターが1枚も無い月だけ、従来の汎用画像（src/assets/services/<キー>）に戻る。
+       */
+      const poster = calendarThumb(p.category, p.thumbKey)
+      /*
+       * ★ **更新日（`【2026年9月14日更新】`）は外した**（2026-09-15）。
+       *   2026-08-25 に「いつ時点の一覧か」を伝えるために入れたものだが、
+       *   その役目は隣に立てた「随時更新」のバッジが引き取った。
+       *   日付そのものはリンク先の見出し（`evergreenTitle()`）が必ず出しており、
+       *   カード3行のうち1行を使って枠の外で先に言う必要が無い。
+       *   **書き戻さないこと。**戻すならバッジとどちらかにする。
+       */
+      const Inner = (
+        <>
+          {/*
+            ★ サムネイルは **Thumb.astro に任せる**（2026-08-28）。
+              以前はここで自前に <Image width={48} height={48}> を書いていたが、
+              等倍の48pxしか出さないので高精細画面でぼやけていた
+              （画像が無く頭文字だったころは誰も気づけなかった）。
+              Thumb は表示サイズの2倍を書き出す。記事カード・追従枠と同じ部品。
+              画像が無いときのタイルもカテゴリ色にそろう（それが Thumb の設計）。
+          */}
+          <Thumb
+            image={poster ? undefined : serviceImage(p.thumbKey)}
+            src={poster}
+            category={p.category}
+            size={48}
+            radius={8}
+            initial={p.label.charAt(0)}
+          />
+          <span class="body">
+            {/*
+              ★ **カテゴリと「随時更新」を1行に並べる**（2026-09-15 追加）。
+                この枠に並んでいるのは常設ページだけなのに、カードには
+                カテゴリバッジしか無く、記事カード（PostCard）と同じ見た目だった。
+                一覧の中の常設カード（EvergreenCard）には最初から付いているので、
+                **同じものへの入口なのに枠と一覧で名乗りが違う**状態になっていた。
+                文言と理由は config.ts の EVERGREEN_BADGE、色は
+                styles/global.css の .badge.evergreen。
+            */}
+            <span class="tags">
+              {/*
+                ★ 2026-09-17 からカードはサービス1社1枚で、終了も新着も持つ。
+                  カテゴリ（「配信終了予定」など）を名乗れないので「カレンダー」と出す。
+                  色は既定のバッジ（styles/global.css の .badge）。
+                  ★ **文字数の上限に注意。**「カレンダー」5字＋「随時更新」4字＝9字で、
+                    下の .tags の計算（10字まで）に収まる。「配信カレンダー」（7字）は入らない。
+              */}
+              <span class="badge">カレンダー</span>
+              <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
+            </span>
+            <span class="name">{p.shortLabel}</span>
+          </span>
+        </>
+      )
+      return (
+        <li>
+          {/* 現在地は消さずに、リンクだけ外す。並びを崩さないため */}
+          {isCurrent ? (
+            <span class="rail-card is-current" aria-current="page">
+              {Inner}
+            </span>
+          ) : (
+            <a class="rail-card" href={p.href}>
+              {Inner}
+            </a>
+          )}
+        </li>
+      )
+    })
+  }
+</ul>
+
+<style>
+  .cards {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  /*
+   * カード1枚。**値は LeftRail.astro の .rail-card と同じ**（上の★）。
+   * 高さ 79px の根拠（右の枠のカードと横の線を揃える）も LeftRail.astro の注記。
+   */
+  .rail-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 79px;
+    padding: 0.45rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+  }
+  a.rail-card:hover {
+    border-color: var(--accent);
+  }
+  /* 現在地。押せないことが分かる見た目にする（項目自体は消さない） */
+  .rail-card.is-current {
+    background: var(--bg-subtle);
+    border-color: var(--accent);
+  }
+  /* サムネイルの見た目は Thumb.astro が持つ。ここで上書きしないこと。 */
+  .body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+  /*
+   * バッジ2枚を**1行に収めるための寸法**（2026-09-15）。
+   *
+   * ■ 使える幅（枠がいちばん狭い1200px。それ未満では枠ごと消える）
+   *   列232px − 枠の横padding 28.8 ＝ カード203.2px
+   *   − 枠線2 − カードの横padding 14.4 − サムネ48 − すきま8 ＝ **約130px**
+   *
+   * ■ 要る幅
+   *   「配信終了予定」6字 ＋ 「随時更新」4字 ＝ 10字。日本語は1字＝1em なので
+   *   0.62rem（9.92px）で約99px。バッジの横padding（0.26rem×2×2枚）と
+   *   すきま3.2px を足して**約119px**。**余りは約11px（9%）。**
+   *
+   * ★ **既定の0.76remでも0.68remでも入らない**（それぞれ約143px／約133px要る）。
+   *   縮めるのは**この枠だけ**。一覧の中のカード（PostCard / EvergreenCard）は
+   *   本文幅736pxの中にあるので、既定のまま3枚でも4枚でも並ぶ。
+   * ★ 9%の余りは**フォントの実装差のため**に空けてある。
+   *   最初 0.62rem で計算どおり詰めたら Chromium では1行に入ったのに、
+   *   Edge では「配信終了予定」の2枚だけ2行になった（2026-09-15 の実測）。
+   *   字の幅は環境で数%動く。**詰め直すときはここまで削らないこと。**
+   * ★ それでも折り返しは許してある（`flex-wrap`）。読者がブラウザの
+   *   最小文字サイズを上げていることもある。はみ出すより2行になるほうがよい。
+   */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .badge {
+    font-size: 0.62rem;
+    padding: 0.05rem 0.26rem;
+  }
+  /* 枠線の1pxぶん padding を引く。引かないと隣のバッジより2px高くなる */
+  .badge.evergreen {
+    padding: calc(0.05rem - 1px) calc(0.26rem - 1px);
+  }
+  /* サービス名を左に 0.4rem 寄せる補正。理由は LeftRail.astro の .name の注記 */
+  .name {
+    padding-left: 0.4rem;
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+  }
+  a.rail-card:hover .name {
+    color: var(--accent);
+  }
+</style>

@@ -71,8 +71,14 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
         （Footer.astro）。**片方だけ消さないこと**
 
     左の枠（中段）＝「配信カレンダー」・カード3枚（サービス1社1枚・2026-09-17）
-      見た目・並び        → site/src/components/LeftRail.astro
+      カードの中身・見た目 → site/src/components/CalendarCards.astro（トップのスマホ表示と共有）
+      枠                  → site/src/components/LeftRail.astro
       何を並べるか        → site/src/lib/evergreen.ts の CALENDAR_CARDS（行き先は /leaving/<サービス>）
+      カードの絵          → site/src/lib/evergreen.ts の calendarThumb（今月の早い日付のアニメのポスター → 無ければ全ジャンル → 無ければ src/assets/services/ の汎用画像）
+
+    トップの「配信カレンダー」（1200px 未満だけ・2026-09-17）
+      棚                  → site/src/components/TopCalendar.astro（シリーズ配信の棚と同じ形。絵の選び方は calendarThumb）
+      置き場所            → site/src/pages/index.astro（2つの棚の下、最新記事の上）
 
     配信カレンダー（/leaving/<サービス> ・ /arrivals/<サービス>）… 2026-09-17 に作り直した
       ページ本体（2枚で共有）  → site/src/components/ServiceCalendarPage.astro
@@ -82,6 +88,9 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                                  loadUpcoming（配信開始予定・各社の告知）/ loadArrivals（新着・60日）
       タイトル・件数          → site/src/lib/evergreen.ts の evergreenTitleBase / calendarContent
       上の切り替え（サービス／表示） → site/src/components/CalendarPicker.astro
+      絞り込み（種類／ジャンル）      → site/src/components/CalendarFilter.astro（ジャンル判定は lib/work-genre.ts・pipeline の classify と同じ規則）
+      シリーズの折りたたみ            → site/src/components/WorkTable.astro の SERIES_MIN（3本以上）と segmentsOf
+                                         （判定はシリーズ記事の作品名の条件＝lib/series-for-work.ts）
       升目と月の切り替え      → site/src/components/EventCalendar.astro（組み立ては lib/calendar.ts）
       メニューの行き先        → site/src/lib/evergreen.ts の hubServiceHref
                                  （カレンダーのある社はカテゴリ一覧を挟まず直接カレンダーへ）

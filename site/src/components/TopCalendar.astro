@@ -1,0 +1,167 @@
+---
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import Thumb from './Thumb.astro'
+import { EVERGREEN_BADGE } from '../config'
+import { CALENDAR_CARDS, calendarThumb } from '../lib/evergreen'
+import { serviceImage } from '../lib/images'
+
+/**
+ * トップページの「配信カレンダー」の棚（2026-09-17 追加・運用者の指定）。**狭い画面（1200px 未満）でしか出ない。**
+ *
+ * ■ 何を出すか
+ * **左の枠と同じ、サービス1社1枚のカード**（行き先は /leaving/<サービス>）を、
+ * **シリーズ配信の棚（SeriesShelf.astro）と同じ見た目**で横に流す。
+ * 広い画面では左の枠（LeftRail.astro → CalendarCards.astro）にこのカードがあるが、
+ * **狭い画面では左の枠ごと消える**ので、トップから配信カレンダーへ辿る道がヘッダーのメニューしか無かった。
+ *
+ * ★ 経緯（2026-09-17）。最初は升目（カレンダーそのもの）を埋め込み、次に左の枠のカードを縦に積んだ。
+ *   **運用者が意図していたのは、ほかの棚と同じ形のカード**だった。形を変えるときはほかの棚と揃えること。
+ *
+ * ■ 絵
+ * 選び方は左の枠と同じ（lib/evergreen.ts の `calendarThumb`：今月の早い日付のアニメ → 無ければ全ジャンル）。
+ * ★ 棚のカードは132pxあるので、**作品ページ用の大きいポスター（480×720）があればそちらを使う。**
+ *   小さいサムネイル（96×144）では引き伸ばしになる。3枚だけで、しかもトップの狭い画面だけなので重さは許容する。
+ *   ポスターが1枚も無い月は、従来の汎用画像（src/assets/services/<キー>）。
+ *
+ * ■ 1200px 以上では出さない
+ * SeriesShelf.astro と同じしきい値（styles/global.css の `.layout` の裏返し）。**片方だけ動かさないこと。**
+ */
+/**
+ * 大きいポスター（`public/posters/<作品ID>.webp`）があればそのパス。**ファイルの有無で決める。**
+ * ★ 作品ページ（lib/works.ts の `poster`）経由で引かないこと。作品ページを作らない作品でも
+ *   ポスターのファイルはある（実測: Disney+ の「マイホームヒーロー」）。
+ * ★ ビルドは site/ で走るが、念のため直上からも探す（lib/works.ts の `findUpPublic` と同じ事情）。
+ */
+function largePoster(thumb: string | undefined): string | undefined {
+  const id = thumb?.match(/\/thumbs\/([^/]+)\.webp$/)?.[1]
+  if (!id) return undefined
+  const dirs = [join(process.cwd(), 'public', 'posters'), join(process.cwd(), 'site', 'public', 'posters')]
+  return dirs.some((dir) => existsSync(join(dir, `${id}.webp`))) ? `/posters/${id}.webp` : undefined
+}
+
+const cards = CALENDAR_CARDS.map((p) => {
+  const thumb = calendarThumb(p.category, p.thumbKey)
+  return { ...p, poster: largePoster(thumb) ?? thumb }
+})
+---
+
+<nav class="shelf" aria-label="配信カレンダー">
+  <div class="head">
+    {/*
+      ★ 見出しは <p>。**<h2> にしない**（トップの見出し階層は h1 → 各記事の h2。SeriesShelf.astro と同じ）。
+        枠の名前は nav の aria-label が持つ。
+    */}
+    <p class="title">配信カレンダー</p>
+  </div>
+
+  <ul class="track">
+    {
+      cards.map((c) => (
+        <li>
+          <a class="card" href={c.href}>
+            <Thumb
+              image={c.poster ? undefined : serviceImage(c.thumbKey)}
+              src={c.poster}
+              category={c.category}
+              size={132}
+            />
+            {/* 左の枠のカードと同じ名乗り（CalendarCards.astro）。幅が足りなければ2行に折り返す */}
+            <span class="tags">
+              <span class="badge">カレンダー</span>
+              <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
+            </span>
+            <span class="name">{c.label}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  /* ★ 1200px 以上では出さない（上の注記）。SeriesShelf.astro の .shelf と同じしきい値 */
+  @media (min-width: 75rem) {
+    .shelf {
+      display: none;
+    }
+  }
+
+  /* --- ここから下は SeriesShelf.astro / DemandShelf.astro と同じ値。ずらさないこと。 --- */
+  .shelf {
+    margin: 0.2rem 0 0.9rem;
+  }
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 0.55rem;
+  }
+  .title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  /* 横に流す帯。**スクロールするのはこの中だけ**（body は overflow-x: hidden） */
+  .track {
+    display: flex;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0 0 0.35rem;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+  .track > li {
+    flex: none;
+    scroll-snap-align: start;
+  }
+  /* スマホだけ左右の余白を打ち消して画面の端まで流す（`--content-pad` は global.css。直値を書かない） */
+  @media (max-width: 47rem) {
+    .track {
+      margin-inline: calc(var(--content-pad, 0rem) * -1);
+      padding-inline: var(--content-pad, 0rem);
+    }
+  }
+  /* カードの幅は絵と同じ 8.25rem＝132px */
+  .card {
+    display: block;
+    width: 8.25rem;
+    text-decoration: none;
+  }
+  /* --- ここまで同じ値 --- */
+
+  /*
+   * バッジ2枚（「カレンダー」「随時更新」）。**シリーズ配信の棚のバッジと同じ大きさ**で、
+   * 132px に並べると余りが数pxしか無いので、足りない環境では2行に折り返す（はみ出させない）。
+   */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    margin-top: 0.45rem;
+  }
+  .badge {
+    font-size: 0.68rem;
+    padding: 0.05rem 0.45rem;
+  }
+  /* 枠線の1pxぶん padding を引く。引かないと隣のバッジより2px高くなる */
+  .badge.evergreen {
+    padding: calc(0.05rem - 1px) calc(0.45rem - 1px);
+  }
+  .name {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  a.card:hover .name {
+    color: var(--accent);
+  }
+</style>
