@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-16T07:05:52.222Z",
-  "asOf": "2026-09-16",
+  "generatedAt": "2026-09-17T01:26:52.146Z",
+  "asOf": "2026-09-17",
   "note": "npm run demand -- --picks が書く。手で編集しない。需要の数字は入れない（並び順だけが需要を反映する）。読む側は site/src/lib/demand-picks.ts。",
   "picks": [
     {
@@ -15,7 +15,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -34,21 +34,7 @@
         "2026-09-upcoming-prime-video-western"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
-    },
-    {
-      "workIds": [
-        "SID0209496"
-      ],
-      "title": "大追跡～警視庁ＳＳＢＣ強行犯係～",
-      "answer": "until",
-      "deadline": "2026-09-30T14:59:00.000Z",
-      "services": [
-        "u-next"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -62,7 +48,21 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
+    },
+    {
+      "workIds": [
+        "SID0209496"
+      ],
+      "title": "大追跡～警視庁ＳＳＢＣ強行犯係～",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:00.000Z",
+      "services": [
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -79,7 +79,7 @@
         "kamen-rider"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -95,21 +95,23 @@
         "2026-09-leaving-u-next"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
-        "7539981"
+        "136"
       ],
-      "title": "美味しんぼ",
-      "answer": "until",
-      "deadline": "2026-10-05T14:59:59.000Z",
+      "title": "タイタニック",
+      "answer": "ended",
+      "endedAt": "2026-08-16T14:43:23.000Z",
       "services": [
-        "netflix"
+        "prime-video"
       ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "covered": [
+        "2026-08-leaving"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -126,7 +128,23 @@
         "2026-08-arrivals-prime-video"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
+    },
+    {
+      "workIds": [
+        "63173"
+      ],
+      "title": "それでもボクはやってない",
+      "answer": "ended",
+      "endedAt": "2026-08-14T15:07:39.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [
+        "2026-08-leaving"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -141,7 +159,7 @@
         "2026-08-arrivals-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -156,7 +174,7 @@
         "kamen-rider"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -169,7 +187,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -185,7 +203,7 @@
         "2026-08-arrivals-prime-video"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -201,20 +219,7 @@
         "2026-08-arrivals-prime-video"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
-    },
-    {
-      "workIds": [
-        "4039143"
-      ],
-      "title": "どうする家康",
-      "answer": "where",
-      "services": [
-        "netflix"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -227,7 +232,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -240,7 +245,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -253,7 +258,20 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
+    },
+    {
+      "workIds": [
+        "4039143"
+      ],
+      "title": "どうする家康",
+      "answer": "where",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -266,7 +284,23 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
+    },
+    {
+      "workIds": [
+        "520"
+      ],
+      "title": "HUNTER×HUNTER",
+      "answer": "ended",
+      "endedAt": "2026-08-13T19:19:02.000Z",
+      "services": [
+        "disney-plus"
+      ],
+      "covered": [
+        "2026-08-ended"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -279,7 +313,23 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
+    },
+    {
+      "workIds": [
+        "25030469"
+      ],
+      "title": "攻殻機動隊 THE GHOST IN THE SHELL",
+      "answer": "ended",
+      "endedAt": "2026-08-06T09:53:11.000Z",
+      "services": [
+        "disney-plus"
+      ],
+      "covered": [
+        "2026-08-ended"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -295,7 +345,7 @@
         "2026-08-arrivals-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     },
     {
       "workIds": [
@@ -312,52 +362,8 @@
         "2026-09-upcoming-prime-video-western"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
-    },
-    {
-      "workIds": [
-        "24604708"
-      ],
-      "title": "しあわせは食べて寝て待て",
-      "answer": "where",
-      "services": [
-        "netflix"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
-    },
-    {
-      "workIds": [
-        "9884318"
-      ],
-      "title": "不適切にもほどがある!",
-      "answer": "where",
-      "services": [
-        "prime-video"
-      ],
-      "covered": [
-        "2026-08-arrivals-japanese",
-        "2026-08-arrivals-prime-video"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
-    },
-    {
-      "workIds": [
-        "168462"
-      ],
-      "title": "容疑者 室井慎次",
-      "answer": "where",
-      "services": [
-        "prime-video"
-      ],
-      "covered": [
-        "2026-08-arrivals-prime-video"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-16"
+      "lastSeen": "2026-09-17"
     }
   ],
-  "notifiedSignature": ""
+  "notifiedSignature": "ONE PIECE"
 }
