@@ -8,9 +8,28 @@
  * また読者のアクセスがそのまま提供元のCDN帯域（無料枠 1GB/月）を食う。
  *
  * そこで「ビルド時に1回だけ取得して変換し、自分のドメインから出す」方式を
- * 提供元に照会し、**2026-08-25 に許諾を得た**（回答: "Yes, you can."）。
+ * 提供元に照会し、**2026-08-25 に可の回答を得た**（回答: "Yes, you can."）。
  * 併せて「画像は最低でも6ヶ月ごとに取り直すこと」を推奨された。
  *   → 取り直しの手順は `npm run refresh:images`（docs/APPEARANCE.md 11節）
+ * ★ これは**API規約上の可否**であって、ポスターの著作権の許諾ではない（現行規約5節）。
+ *
+ * ■ 取得した画像はビルドをまたいで持ち続ける（2026-09-17〜）
+ * 現行規約6節が「手元に保存して使い続けること」「契約終了後も使うこと」を認めている。
+ * そこで**署名付きURLが失効しても、手元に画像があれば掲載を続ける**（`original()`）。
+ * 6ヶ月ごとの取り直しは残す（`MAX_AGE_DAYS`）。取り直せなかったときだけ手元の画像を使う。
+ *
+ * ★ **置き場所は環境で変わる**（`cacheDirOf()`）。
+ *   Cloudflare Pages のビルドは毎回まっさらで、以前は**ビルドのたびに全ポスターを取り直していた**
+ *   （2026-09-17 時点で千枚前後・50〜90MB／回の推定。無料プランの帯域は月1GB＝規約7節）。
+ *   Pages の「ビルドキャッシュ」が Astro 用に持ち越す `node_modules/.astro` の中に置くことで、
+ *   **取得は新しく出てきた作品のぶんだけ**になる。
+ *   キャッシュは「7日間読まれないと消える」。消えても今までと同じ（取り直す）に戻るだけ。
+ *
+ * ■ 権利者から掲載停止の連絡が来たら — `data/poster-removed.json`
+ * 作品IDを足してコミットする。**次のビルドで手元の画像も消え、その作品は汎用画像に戻る。**
+ * 記事に焼き込まれた参照は `images` ワークフロー（make-sections --write）が翌朝差し替える。
+ * 急ぐなら `cd site && npm run sections -- --write` を手で流してコミットする。
+ * 全部を消すときは `npm run posters:purge`（下の `purge()`）。
  *
  * ■ 絶対に落ちないこと
  * 取得は必ず失敗しうる（URL失効・CDN障害・オフライン・ビルド環境の制限）。
@@ -19,10 +38,10 @@
  * 画像が1枚欠けただけで Cloudflare のビルドが落ちる、という作りにはしない。
  *
  * ■ 取得したものを git に入れない理由
- * 提供元には「ビルドごとに取得する」と説明して許諾を得ており、
- * 規約上は契約終了後に画像を使えない。リポジトリに入れると
- * **git の履歴から消えなくなる。** ローカルのキャッシュ（.image-cache/）は
- * 開発中に同じ画像を何度も落とさないためだけのもので、消しても動く。
+ * ポスターの著作権は各作品の権利者にあり、**掲載停止の連絡が来たら消せる必要がある**
+ * （規約5節も、提供元から通知があれば速やかに消すことを求めている）。
+ * リポジトリに入れると **git の履歴から消えなくなる。** しかもこのリポジトリは公開なので、
+ * 入れた時点で画像を第三者に配ることにもなる。キャッシュは消しても動く（取り直すだけ）。
  */
 import sharp from 'sharp'
 import { createHash } from 'node:crypto'
@@ -32,9 +51,55 @@ import { join } from 'node:path'
 /**
  * キャッシュを作り直す間隔（日）。
  * 提供元の推奨「最低でも6ヶ月ごと」に合わせてある。**これより長くしないこと。**
- * Cloudflare のビルドは毎回まっさらなので、実際に効くのは手元の開発時だけ。
+ * 過ぎたものは取り直しに行き、**取れなければ手元の画像を使い続ける**（`original()`）。
  */
 export const MAX_AGE_DAYS = 180
+
+/**
+ * 取得した元画像の置き場所。
+ *
+ * - **Cloudflare Pages のビルド**（`CF_PAGES` が立つ）… `site/node_modules/.astro/poster-cache`。
+ *   Pages のビルドキャッシュが Astro 用に持ち越すディレクトリなので、次のビルドに残る
+ * - **それ以外**（手元・GitHub Actions）… `site/.image-cache`。
+ *   `images` ワークフローはこちらを actions/cache に載せている（.github/workflows/images.yml）
+ *
+ * ★ `npm run build:fresh` / `dev:fresh`（scripts/clear-cache.mjs）は `node_modules/.astro` を消す。
+ *   **Pages のビルドコマンドをそちらに変えると、毎回全部を取り直す状態に戻る。**
+ * ★ どちらも git には入れない（node_modules と .image-cache は .gitignore 済み）。
+ *   このリポジトリは公開で、掲載停止の連絡が来たら消せる必要がある。
+ */
+export function cacheDirOf(repoDir) {
+  return process.env.CF_PAGES
+    ? join(repoDir, 'site', 'node_modules', '.astro', 'poster-cache')
+    : join(repoDir, 'site', '.image-cache')
+}
+
+/** 掲載をやめた作品の台帳。`data/` にあり、git に入れる */
+export const REMOVED_NAME = 'poster-removed.json'
+
+/**
+ * 掲載をやめた作品IDの集合。ファイルが無ければ空。
+ *
+ * 形式: `{ "works": { "<作品ID>": { "at": "YYYY-MM-DD", "reason": "…" } } }`
+ * 作品IDは画像URLの `/show/<ID>/` と同じもの（作品ページ `/works/<ID>` とも同じ）。
+ */
+export function loadRemoved(repoDir) {
+  try {
+    const json = JSON.parse(readFileSync(join(repoDir, 'data', REMOVED_NAME), 'utf8'))
+    return new Set(Object.keys(json.works ?? {}))
+  } catch {
+    return new Set()
+  }
+}
+
+/** 画像URLから作品IDを抜く（`…/show/<ID>/poster/…`）。読めなければ undefined */
+export function workIdOfImage(url) {
+  try {
+    return /\/show\/([^/]+)\//.exec(new URL(url).pathname)?.[1]
+  } catch {
+    return undefined
+  }
+}
 
 /** 署名付きURLの残り日数がこれを下回ったら警告する（取り直しの催促） */
 const WARN_EXPIRY_DAYS = 60
@@ -271,13 +336,17 @@ export class PosterCache {
   downloaded = 0
   reused = 0
   failed = 0
+  /** `data/poster-removed.json` に載っていて出さなかった枚数 */
+  removed = 0
   bytes = 0
+  #removedIds
   /** 失効が近い／切れている作品名。実行の最後にまとめて出す */
   expiring = []
 
   constructor(repoDir, { force = false } = {}) {
-    this.#dir = join(repoDir, 'site', '.image-cache')
+    this.#dir = cacheDirOf(repoDir)
     this.#indexPath = join(this.#dir, 'index.json')
+    this.#removedIds = loadRemoved(repoDir)
     this.force = force
     mkdirSync(this.#dir, { recursive: true })
     try {
@@ -315,6 +384,15 @@ export class PosterCache {
     const key = this.#keyOf(url)
     const file = join(this.#dir, `${key}.img`)
     const entry = this.#index[key]
+
+    // 掲載をやめた作品。手元の画像も消す（持ち越しているキャッシュに残さない）
+    const id = workIdOfImage(url)
+    if (id && this.#removedIds.has(id)) {
+      rmSync(file, { force: true })
+      delete this.#index[key]
+      this.removed++
+      return null
+    }
 
     if (!this.#stale(entry) && existsSync(file)) {
       this.reused++
@@ -412,11 +490,13 @@ export class PosterCache {
   /** 実行のあとに1度呼ぶ。帯域の消費と、取り直しが要るかを出す。 */
   report() {
     this.save()
-    if (this.downloaded || this.reused || this.failed) {
+    if (this.downloaded || this.reused || this.failed || this.removed) {
       const mb = (this.bytes / 1024 / 1024).toFixed(2)
       console.log(
         `  画像: 取得${this.downloaded}枚 (${mb}MB) / キャッシュ${this.reused}枚` +
-          (this.failed ? ` / 失敗${this.failed}枚` : ''),
+          (this.failed ? ` / 失敗${this.failed}枚` : '') +
+          (this.removed ? ` / 掲載停止${this.removed}枚` : '') +
+          `（置き場所: ${this.#dir.replace(/\\/g, '/').replace(/^.*\/site\//, 'site/')}）`,
       )
     }
 
@@ -467,10 +547,19 @@ export function posterLink(title) {
 
 /**
  * 取得済みの画像をすべて消す。
- * **APIの契約を終了したときは必ず実行すること**（規約上、契約終了後は画像を使えない）。
+ *
+ * 使うのは**ポスターの掲載そのものをやめるとき**（権利上の理由など）。
+ * ★ 2026-09-17 までは「契約終了時に必ず実行」としていたが、現行規約6節で
+ *   契約終了後も保持・使用してよいことになった。**提供元から削除の通知が来たら**実行する（5節）。
+ * ★ 手元で消せるのは手元の置き場所だけ。Cloudflare Pages 側のキャッシュ
+ *   （`node_modules/.astro/poster-cache`）は、Pages の管理画面で
+ *   **ビルドキャッシュを削除**してから再デプロイすること。
  */
 export function purge(repoDir) {
-  const dir = join(repoDir, 'site', '.image-cache')
-  rmSync(dir, { recursive: true, force: true })
-  return dir
+  const dirs = [
+    join(repoDir, 'site', '.image-cache'),
+    join(repoDir, 'site', 'node_modules', '.astro', 'poster-cache'),
+  ]
+  for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
+  return dirs.join('\n  ')
 }

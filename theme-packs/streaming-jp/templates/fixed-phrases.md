@@ -792,7 +792,7 @@ APIが返すのは**その時点の在庫**であって、**未来の予定で�
 
 ## attribution
 
-> 配信情報は Streaming Availability API by Movie of the Night 提供
+> 配信情報と作品画像は Streaming Availability API by Movie of the Night 提供
 
 <!--
 Streaming Availability API から集めた記事の末尾に置く。API利用規約上の義務。

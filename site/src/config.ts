@@ -59,9 +59,16 @@ export const CARD_IMAGE = { width: 1200, height: 630 } as const
 /**
  * 配信情報の提供元表記。API利用規約で必須。
  * サイトフッターと各記事の両方に表示する義務がある。
+ *
+ * ★ **「作品画像」を外さないこと**（2026-09-17 に足した）。
+ *   現行の規約4節は、配信情報と画像の**両方**を表示するなら両方の提供元を書くよう求めている
+ *   （https://developers.movieofthenight.com/terms-and-conditions ）。
+ *   作品ページ・記事・表にポスターを出しているので、このサイトは「両方」に当たる。
+ *   公開済みの記事の frontmatter（sources の label）は旧文言のままだが、
+ *   同じページのフッターにこの文言が出るので条件は満たす（4節「見える場所に置けばよい」）。
  */
 export const ATTRIBUTION = {
-  text: '配信情報は Streaming Availability API by Movie of the Night 提供',
+  text: '配信情報と作品画像は Streaming Availability API by Movie of the Night 提供',
   url: 'https://www.movieofthenight.com/about/api',
 } as const
 

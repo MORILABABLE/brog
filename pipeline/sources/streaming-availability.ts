@@ -8,8 +8,10 @@
  *   TERMS.md: "The API User can use the data provided for commercial purposes."
  *
  * ■ 帰属表示の義務
- * 記事・サイトに「配信情報は Streaming Availability API by Movie of the Night 提供」
+ * 記事・サイトに「配信情報と作品画像は Streaming Availability API by Movie of the Night 提供」
  * の旨とリンクを表示する必要がある。ATTRIBUTION 定数を使うこと。
+ * ★ 「作品画像」は 2026-09-17 に足した。規約4節が、配信情報と画像の両方を出すなら
+ *   両方を書くよう求めているため（site/src/config.ts の ATTRIBUTION と揃えること）。
  *
  * ■ /changes を使う理由
  * 配信の開始・終了が専用エンドポイントで取れるため、全カタログを毎日走査して
@@ -30,7 +32,7 @@ const BASE = 'https://api.movieofthenight.com/v4'
 
 /** 帰属表示。サイトフッターと各記事に必須。 */
 export const ATTRIBUTION = {
-  text: '配信情報は Streaming Availability API by Movie of the Night 提供',
+  text: '配信情報と作品画像は Streaming Availability API by Movie of the Night 提供',
   url: 'https://www.movieofthenight.com/about/api',
 } as const
 
