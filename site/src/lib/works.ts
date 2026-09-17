@@ -998,9 +998,19 @@ function monthlyFeatured(): Map<string, SeriesArticle> {
  *
  * ★ **`noindex` で逃げない。** 通らないものはページ自体を作らない。
  *   作らなければサイトマップにも載らず、リンクを張らない工夫も要らない。
+ *
+ * ★ **「終了日を言える」は履歴でも見る**（2026-09-17）。
+ *   それまでは `services`（いまの状態）だけで判定していたため、
+ *   **一度終了して同じサービスで配信が再開した作品**は、状態が `started` に戻った時点で
+ *   ページごと消えていた。Google がすでに登録していたページが 404 になり、
+ *   Search Console の「見つかりませんでした（404）」に出た
+ *   （実例: `/works/1942` 新感染 8/3終了→9/2再開、`/works/5460157` 9/11再開。
+ *   どちらも検索に表示されていた）。
+ *   再開した作品こそ「いつまで観られる？」の答えが変わった作品で、履歴の節が一番生きる。
  */
 export function isWorkPagePublishable(w: WorkPage): boolean {
-  const tellsEndDate = w.services.some((s) => s.state !== 'started')
+  const tellsEndDate =
+    w.services.some((s) => s.state !== 'started') || w.history.some((h) => h.kind !== 'new')
   const namesPeople = w.directors.length > 0 || w.cast.length > 0
   // ★ 「人の名前」は緩めない。**どちらの入口でも要る**（上の表の2段目）。
   return (tellsEndDate || seriesFeatured().has(w.id)) && namesPeople

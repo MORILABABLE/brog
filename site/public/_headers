@@ -6,3 +6,19 @@
 # 画像を追加すると効いてくる（最適化後の webp もここに入る）。
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
+
+# ★ CSS と JS は検索結果に載せるものではないので noindex を明示する（2026-09-17）。
+#   付けないと、Google がページの描画のために取りに来た CSS・JS が
+#   Search Console の「クロール済み - インデックス未登録」に数えられ、
+#   本物の未登録ページと見分けにくくなる。付けると「noindex タグによって除外」に移る。
+#   ★ **描画には影響しない。** noindex は索引に入れるかどうかの指示で、
+#     Googlebot は引き続き CSS・JS を取得してページを描画する。
+#     robots.txt で Disallow にするのとは別物なので、**そちらには絶対にしないこと**
+#     （描画できなくなり、ページの評価が落ちる）。
+#   ★ 画像（/_astro/*.webp）には付けない。サービスのサムネイルは画像検索に出てよい。
+#   上の /_astro/* と両方に当たり、ヘッダーは合算される（Cloudflare Pages の仕様）。
+/_astro/*.css
+  X-Robots-Tag: noindex
+
+/_astro/*.js
+  X-Robots-Tag: noindex
