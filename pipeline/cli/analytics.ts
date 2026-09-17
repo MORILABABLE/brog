@@ -263,7 +263,7 @@ const SLOT_NOTE: Record<string, string> = {
   rail: '右の追従枠（1200px以上）',
   table: '表の作品名リンク',
   poster: '記事本文の節ポスター',
-  cover: '作品ページの見出しの横のポスター（Prime Video に在庫がある作品だけ）',
+  cover: '作品ページの Prime Video の行の中のポスター（在庫がある作品だけ）',
   body: '記事本文の地の文のリンク',
   prime: 'Amazonプライムの無料体験（専用リンク・500円/件）',
   // afb の枠は **広告主 + 位置** で持つ（2026-09-14）。

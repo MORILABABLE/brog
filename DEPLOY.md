@@ -343,7 +343,7 @@ LinkSwitch は `*.pages.dev` では自分で無効化するので、Preview に�
 | `PUBLIC_AMAZON_TAG_WORK` | `jetbike-work-22` | ✅ 反映済み（591本） |
 | `PUBLIC_AMAZON_TAG_AVAIL` | `jetbike-avail-22` | ✅ 反映済み（70本） |
 | 🆕 **`PUBLIC_AMAZON_TAG_STOCK`** | **`jetbike-stock-22`** | 🔴 **未作成。** 作品ページの「見放題で配信中」（2026-09-16 追加・34本中13本が Amazon）。**アソシエイト・セントラルでこのIDを作ってから**、`site/.env` と Pages の両方に入れる |
-| 🆕 **`PUBLIC_AMAZON_TAG_COVER`** | **`jetbike-cover-22`**（案） | 🔴 **未作成。** 作品ページの見出しの横のポスター（2026-09-17 追加・78本）。作るまでは既定IDに落ちる。**アソシエイト・セントラルでこのIDを作ってから**、`site/.env` と Pages の両方に入れる |
+| 🆕 **`PUBLIC_AMAZON_TAG_COVER`** | **`jetbike-cover-22`**（案） | 🔴 **未作成。** 作品ページの Prime Video の行の中のポスター（2026-09-17 追加・39本）。作るまでは既定IDに落ちる。**アソシエイト・セントラルでこのIDを作ってから**、`site/.env` と Pages の両方に入れる |
 | `PUBLIC_AMAZON_TAG_PRIME` | `prime022-22` | ✅ 反映済み（11本） |
 | `PUBLIC_AMAZON_TAG_BODY` | `jetbike-body-22` | ⬜ Amazonリンクが0本なので本番HTMLでは確認できない |
 | **`PUBLIC_AFB_HULU_LP`** | `https://t.afi-b.com/visit.php?a=G8792C-h298034g&p=U9922286` | ✅ **反映済み**（2026-09-16 に本番で実測。`/works/406` に `afi-b.com` と `data-slot="hulu-work"` を確認） |

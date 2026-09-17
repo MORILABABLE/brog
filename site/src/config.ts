@@ -505,7 +505,7 @@ export const AMAZON_TAGS: AmazonTags = {
    */
   stock: import.meta.env.PUBLIC_AMAZON_TAG_STOCK ?? '',
   /**
-   * 作品ページの見出しの横のポスター（`pages/works/[id].astro`・2026-09-17）。
+   * 作品ページの Prime Video の行の中のポスター（`pages/works/[id].astro`・2026-09-17）。
    * ★ **`poster` と分ける。** あちらは記事本文の節ポスター。
    *   上部に絵を出した施策が効いたかどうかは、この枠だけが答えられる。
    */

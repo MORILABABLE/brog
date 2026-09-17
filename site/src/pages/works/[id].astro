@@ -174,13 +174,13 @@ const stockLinks = (stock?.services ?? []).map((x) => {
  * リンクは Prime Video に在庫があると分かっている作品だけに付ける。**
  * 判定と、Amazon 以外へ送らない理由は lib/works.ts の `coverLink()`。
  *
- * ■ 置き場所
- *   リンクあり … **Prime Video の状態行の、バッジの左**（運用者の指定）。
- *                行き先の Prime Video と、その行の「終了予定」などが隣り合う。
- *                Prime Video の行が無い作品（在庫台帳だけが根拠）は見出しの横。
- *   リンクなし … 見出しの横。
- * ★ **Prime Video 以外の行に置かないこと。** 「Netflixで終了予定」の隣の絵が
- *   Amazon に飛ぶと、行と行き先が食い違う。
+ * ■ 置き場所（運用者の指定・2026-09-17）。**どの作品ページでも配信状況の行の左に置く**
+ *   Prime Video の行があり、リンクになる … **その行の枠の中、バッジの左**。
+ *                                          行き先の Prime Video と、その行の「終了予定」などが隣り合う。
+ *   それ以外                            … **行の枠の外、左に1枚**（`sideCover`）。**リンクにしない。**
+ * ★ **枠の外の絵をリンクにしないこと。** Prime Video の行が無い作品（在庫台帳だけが根拠）でも、
+ *   隣に並ぶのは「Netflixで終了予定」などの行で、押して Amazon に着くと行と行き先が食い違う。
+ *   Prime Video の在庫は「見放題で配信中」のボタンと「他のサービスで探す」が受け持つ。
  *
  * ★ 枠は `cover`。`work`（状態行）とも `poster`（記事の節ポスター）とも分ける。
  */
@@ -192,6 +192,7 @@ const cover =
     ? { url: coverUrl, rel: relFor(coverUrl), name: `「${w.title}」を${coverTarget.label}` }
     : undefined
 const coverRow = cover ? w.services.findIndex((s) => s.service === 'prime-video') : -1
+const sideCover = w.poster && coverRow < 0 ? w.poster : undefined
 
 /*
  * 関連する常設ページ。**そのサービスのページが実在するときだけ出す。**
@@ -390,20 +391,18 @@ const jsonLd = {
     <a href={`/category/${hub.slug}`}>{hub.label}</a>
   </nav>
 
-  {/*
-    ★ 絵が状態行に移らない作品だけ、**見出しの横に小さく出す**（上の `coverRow` の注記）。
-      作品の情報の大きいポスターはそのまま残す（同じ画像なので読み込みは1回）。
-    ★ **PR 表記はこの直下のまま動かさない**（docs/AFFILIATE.md 5-5）。
-  */}
-  <div class="head">
-    {w.poster && coverRow < 0 && <WorkCover src={w.poster} link={cover} />}
-    <h1>{title}</h1>
-  </div>
+  <h1>{title}</h1>
 
   <AffiliateNotice />
 
-  {/* 読者は「いつまで観られるか」を知りに来ている。答えを先に出す。 */}
-  <section class="status" aria-label="配信状況">
+  {/*
+    読者は「いつまで観られるか」を知りに来ている。答えを先に出す。
+    ★ 小さいポスターは行の左（上の `coverRow` / `sideCover` の注記）。
+      作品の情報の大きいポスターはそのまま残す（同じ画像なので読み込みは1回）。
+  */}
+  <section class:list={['status', { 'with-side-cover': sideCover }]} aria-label="配信状況">
+    {sideCover && <WorkCover src={sideCover} />}
+    <div class="status-rows">
     <ul class="states">
       {
         w.services.map((s, i) => {
@@ -494,6 +493,7 @@ const jsonLd = {
         </div>
       )
     }
+    </div>
   </section>
 
   {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
@@ -814,20 +814,6 @@ const jsonLd = {
     color: var(--text-muted);
   }
 
-  /*
-   * --- 見出しと、横のポスター（components/WorkCover.astro）---
-   * h1 の下の余白は PR 表記の margin-top（1rem）が受け持つので、ここでは 0 にする。
-   */
-  .head {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-  }
-  .head h1 {
-    flex: 1 1 auto;
-    min-width: 0;
-    margin: 0;
-  }
 
   /*
    * --- シリーズ記事への導線 ---
@@ -881,6 +867,20 @@ const jsonLd = {
   .status {
     margin: 1.6rem 0 1rem;
   }
+  /*
+   * 行の枠の外に小さいポスターを置くとき（components/WorkCover.astro）。
+   * 絵は左の列に固定し、行（状態行・見放題で配信中）は右の列に積む。
+   * **絵は1行目の上端に揃える**（行が何本あっても「この作品の答え」の左に来る）。
+   */
+  .status.with-side-cover {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+  }
+  .status-rows {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
   .states {
     margin: 0;
     padding: 0;
@@ -930,6 +930,9 @@ const jsonLd = {
   }
   .go {
     flex: none;
+    /* 行の左にポスターが入ると幅が約200pxまで狭まり、「Prime Videoでレンタル・購入を探す」が
+       枠からはみ出した（2026-09-17）。幅を行に収め、入りきらなければ文字を折り返す */
+    max-width: 100%;
     padding: 0.45rem 0.9rem;
     border-radius: 6px;
     background: var(--accent);
