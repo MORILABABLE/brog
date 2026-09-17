@@ -24,6 +24,28 @@ export const AFB_SLOTS = ['cta', 'rail', 'work', 'table', 'poster', 'body'] as c
 export type AfbSlot = (typeof AFB_SLOTS)[number]
 
 /**
+ * 表示計測の 1x1 画像を HTML に出してよいビルドか。**Cloudflare Pages の本番（`main`）だけ。**
+ *
+ * ■ なぜ要るか（2026-09-17）
+ * 1x1 はただの `<img>` なので、**そのHTMLをブラウザで開いた人が誰でも表示を1回送る。**
+ * `site/.env` にも同じ値が入っているため、`astro dev` / `astro preview` で手元のページを
+ * 開くたびに afb の表示回数が増えていた。同日、表示崩れの確認で作品ページを
+ * 自動ブラウザで一通り開き、**Hulu の枠がある549枚ぶんを送ってしまった**
+ * （運用者が管理画面で「今日すごく増えた」と気づいた）。表示回数とクリック率が読めなくなる。
+ *
+ * ■ どこで出るか
+ *   Cloudflare Pages・`main` のビルド … 出す（本番のHTMLは以前と同じ）
+ *   Pages のプレビュー（`*.pages.dev`）… 出さない（本番ドメインではない。LinkSwitch と同じ扱い＝docs/AFFILIATE.md 5-6）
+ *   手元・GitHub Actions のビルド      … 出さない（Actions のビルドは検査だけで、配信していない）
+ *
+ * ★ **原稿から要素を落とす改変ではない**（docs/AFFILIATE.md 11-3）。本番の読者には原稿どおり出ている。
+ * ★ 判定を環境変数のもう1つに逃がさないこと。手元で `CF_PAGES` を立てると本番扱いになり、
+ *   同じことがまた起きる。
+ * ★ **バナーのリンク自体は手元にも出る。** 手元で押すと自己クリックになるので押さない。
+ */
+export const AFB_IMPRESSION_BUILD = Boolean(process.env.CF_PAGES) && process.env.CF_PAGES_BRANCH === 'main'
+
+/**
  * id1 に使える文字（afb の仕様）。半角英数字と `.` `-` `_` `*` だけ。
  * 日本語や `=` `&` `/` は使えない。**枠名を増やすときはここを通ること。**
  */

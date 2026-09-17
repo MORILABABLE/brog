@@ -347,7 +347,7 @@ LinkSwitch は `*.pages.dev` では自分で無効化するので、Preview に�
 | `PUBLIC_AMAZON_TAG_PRIME` | `prime022-22` | ✅ 反映済み（11本） |
 | `PUBLIC_AMAZON_TAG_BODY` | `jetbike-body-22` | ⬜ Amazonリンクが0本なので本番HTMLでは確認できない |
 | **`PUBLIC_AFB_HULU_LP`** | `https://t.afi-b.com/visit.php?a=G8792C-h298034g&p=U9922286` | ✅ **反映済み**（2026-09-16 に本番で実測。`/works/406` に `afi-b.com` と `data-slot="hulu-work"` を確認） |
-| **`PUBLIC_AFB_HULU_IMP`** | `https://t.afi-b.com/lead/G8792C/U9922286/h298034g` | ✅ **反映済み**（afb レポートに表示回数が出ている。[AFFILIATE 13-5](./docs/AFFILIATE.md) の掲出2日目の実測） |
+| **`PUBLIC_AFB_HULU_IMP`** | `https://t.afi-b.com/lead/G8792C/U9922286/h298034g` | ✅ **反映済み**（afb レポートに表示回数が出ている。[AFFILIATE 13-5](./docs/AFFILIATE.md) の掲出2日目の実測）。**2026-09-17〜 1x1 は Pages の `main` のビルドにだけ出る**（手元の表示を数えないため）。確かめるときは本番HTMLで `curl.exe -s https://mihoudairader.com/works/406 \| findstr afi-b.com/lead` |
 | **`PUBLIC_AFB_HULU_BANNER`** | `https://www.afi-b.com/upload_image/8792-1500163686-3.gif` | ✅ **反映済み。** 空にするとテキストリンクに戻る |
 | **`PUBLIC_AFB_HULU_BANNER_SIZE`** | `728x90` | ✅ **反映済み。必須**（未設定だと 320x50 と誤って書かれ、画像が縦に潰れる） |
 

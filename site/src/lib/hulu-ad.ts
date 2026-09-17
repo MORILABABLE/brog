@@ -40,7 +40,7 @@
  * `PUBLIC_AFB_HULU_LP` が空のあいだ `huluAd()` は必ず null を返す。
  */
 import { huluNgHitsIn } from './hulu-ng'
-import { SLOT_OK, withSlot, type AfbSlot } from './afb'
+import { AFB_IMPRESSION_BUILD, SLOT_OK, withSlot, type AfbSlot } from './afb'
 
 /**
  * 🔴 **LP・1x1・バナーの3つは「同じ原稿」から取ること。**
@@ -68,8 +68,10 @@ const LP = import.meta.env.PUBLIC_AFB_HULU_LP ?? ''
  *   afb が認めている改変は rel / target / パラメータ追加までで、
  *   原稿から要素を落とすことは含まれていない（docs/AFFILIATE.md 11-3）。
  * ★ 無くてもリンクは動く。未設定なら出さない。
+ * ★ **Cloudflare Pages の本番ビルドでだけ出す**（afb.ts の `AFB_IMPRESSION_BUILD`）。
+ *   手元でページを開くたびに表示回数が増えていた（2026-09-17）。
  */
-const IMPRESSION = import.meta.env.PUBLIC_AFB_HULU_IMP ?? ''
+const IMPRESSION = AFB_IMPRESSION_BUILD ? (import.meta.env.PUBLIC_AFB_HULU_IMP ?? '') : ''
 
 /**
  * バナー原稿の画像。**入っていればバナー、空ならテキストリンクになる。**
