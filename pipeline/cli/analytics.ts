@@ -689,7 +689,123 @@ async function main(): Promise<void> {
       }
     }
 
-    out.ga4 = { hostList, overall, allHosts, channels, clickDomains, landing, bySlot, flow }
+    /*
+     * ■ 再訪（2026-09-18 追加）
+     *
+     * 回遊が「**1セッションの中で**次を読んだか」なのに対して、こちらは
+     * **セッションをまたいで戻ってきたか。** ブックマーク・リピーターの施策
+     * （docs/GROWTH.md 3-6 のウォッチリスト）が効いたかは、ここにしか出ない。
+     *
+     * 出す順:
+     *   ① 再訪セッションの割合 … **施策前の基準値。これを残すのが追加の目的**
+     *   ② 経路別（再訪だけ）  … 戻る読者は Direct になる（ブックマーク・URL直打ち）
+     *   ③ 再訪の着地ページ    … 戻った人が**最初に開いた面**。ウォッチリストの判定はここ
+     *
+     * ★ **`newVsReturning` は cookie で判定している。** 端末を変える・
+     *   プライベートウィンドウ・cookie を消す、のどれでも「新規」に戻る。
+     *   **実際の再訪より必ず少なく出る。** 絶対値を目標に使わず、前後の変化で見ること。
+     *
+     * ★ **Direct の再訪はボットと見分けが付かない。** 8-3 のとおり Direct には
+     *   `/` 着地・エンゲージ0のヒットが混ざり、ホスト名で絞っても残る。
+     *   ボットは cookie を持ち越さないので大半は「新規」側に入るが、
+     *   **エンゲージメント率 0% の行は本物の再訪ではない**と疑うこと。
+     *   ②でエンゲージメント率を併記しているのはこの判定のためで、外さないこと。
+     *
+     * ★ ユーザー数ではなくセッションで数えている。`totalUsers` を
+     *   `newVsReturning` で割ると、期間内に新規→再訪と変わった読者が両方に立ち、
+     *   内訳の和が全体と合わなくなる。
+     */
+    const returningFilter = {
+      dimensionFilter: {
+        filter: { fieldName: 'newVsReturning', stringFilter: { value: 'returning' } },
+      },
+    }
+    const newVsReturning = await g(
+      ['newVsReturning'],
+      ['sessions', 'engagementRate', 'screenPageViewsPerSession'],
+      10
+    )
+    const returningByChannel = await g(
+      ['sessionDefaultChannelGroup'],
+      ['sessions', 'engagementRate'],
+      20,
+      returningFilter
+    )
+    const returningLanding = await g(
+      ['landingPage'],
+      ['sessions', 'engagementRate'],
+      15,
+      returningFilter
+    )
+
+    console.log('')
+    console.log('■ 再訪（セッションをまたいで戻ってきたか）')
+    {
+      /*
+       * ★ 空の行が返ることがある（GA4 が分類できなかったセッション）。
+       *   **新規にも再訪にも寄せないこと。** 分母には入れて、内訳に「(不明)」で出す。
+       */
+      const bucket = (label: string) =>
+        newVsReturning.find((r) => dim(r, 0) === label)
+      const totalSessions = newVsReturning.reduce((acc, r) => acc + met(r, 0), 0)
+      const ret = bucket('returning')
+      const fresh = bucket('new')
+      if (totalSessions === 0) {
+        console.log('  行が返りませんでした。')
+      } else {
+        const retSessions = ret ? met(ret, 0) : 0
+        console.log(
+          `  新規 ${fresh ? met(fresh, 0) : 0}セッション ／ ` +
+            `**再訪 ${retSessions}セッション = ${pct(retSessions / totalSessions)}**` +
+            `（全 ${totalSessions}セッション）`
+        )
+        for (const r of [...newVsReturning].sort((a, b) => met(b, 0) - met(a, 0))) {
+          const label = { new: '新規  ', returning: '再訪  ' }[dim(r, 0)] ?? '(不明)'
+          console.log(
+            `     ${label} ${n(met(r, 0), 5)}セッション  エンゲージ ${pct(met(r, 1)).padStart(6)}` +
+              `  ${met(r, 2).toFixed(2)}PV/s`
+          )
+        }
+        console.log(
+          '  → cookie 判定なので**実際の再訪より少なく出る**。目標に使わず、施策の前後で比べる'
+        )
+      }
+
+      if (returningByChannel.length > 0) {
+        console.log('')
+        console.log('  経路別（再訪セッションだけ）')
+        for (const r of [...returningByChannel].sort((a, b) => met(b, 0) - met(a, 0))) {
+          console.log(
+            `  ${n(met(r, 0), 5)}セッション  エンゲージ ${pct(met(r, 1)).padStart(6)}  ${dim(r, 0)}`
+          )
+        }
+        console.log('  → Direct はブックマークとボットが同居する。エンゲージ0%の行は数えない（8-3）')
+      }
+
+      if (returningLanding.length > 0) {
+        console.log('')
+        console.log('  再訪の着地ページ（上位15・戻ってきて最初に開いた面）')
+        for (const r of returningLanding) {
+          console.log(
+            `  ${n(met(r, 0), 5)}セッション  エンゲージ ${pct(met(r, 1)).padStart(6)}  ${dim(r, 0)}`
+          )
+        }
+      }
+    }
+
+    out.ga4 = {
+      hostList,
+      overall,
+      allHosts,
+      channels,
+      clickDomains,
+      landing,
+      bySlot,
+      flow,
+      newVsReturning,
+      returningByChannel,
+      returningLanding,
+    }
   }
 
   if (has('write')) {

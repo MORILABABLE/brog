@@ -1,0 +1,206 @@
+---
+import { isoDate } from '../utils/date'
+import type { WorkPage } from '../lib/works'
+
+/**
+ * 作品ページの★。**ウォッチリスト（`/watchlist`）に入れる唯一の入口。**
+ *
+ * ■ 何のための機能か
+ * 実測（docs/FUNNEL.md 9-4）で、**ブックマーク経由の再訪は28日で0件**だった。
+ * 再訪26件は全部が再検索で、**URLを覚えて戻ってきた読者は1人もいない。**
+ * サイトのタグライン「消える前に、気づける。」に対して、
+ * **気づかせる仕掛けがこれまで1つも無かった。**
+ *
+ * ■ 読者の情報をこちら側に持たない
+ * 保存先は `localStorage` だけ。サーバも cookie も使わない（docs/GROWTH.md 3-6）。
+ * 送信も集計もしないので、プライバシーポリシーに項目を足す必要はない。
+ *
+ * ★ **保存するのは作品IDと、付けた時点の写し。**
+ *   写しは `/watchlist.json` に無かったとき（掲載を外れた作品）の保険で、
+ *   **日付は必ず索引の新しい方で上書きされる**（終了予定日は後から動くため）。
+ *
+ * ★ **`localStorage` は読めないことがある**（プライベートウィンドウ、
+ *   サイトデータの拒否、iOS の設定）。**必ず try/catch で包み、
+ *   読めなければ★を出さない**（押しても保存されない★のほうが害が大きい）。
+ *
+ * ■ JS をここと `/watchlist` に閉じ込める
+ * サイトは基本 JS ゼロで作られている（docs/GROWTH.md 3-6）。
+ * **一覧ページと記事ページにスクリプトを増やさないこと。**
+ * この部品は作品ページからしか呼ばない。
+ */
+interface Props {
+  work: WorkPage
+}
+
+const { work: w } = Astro.props
+const head = w.services[0]
+
+/*
+ * ★ 状態の分からない作品には★を出さない。
+ *   ウォッチリストは「いつ消えるか」を並べる面なので、
+ *   日付を持たない行を入れると並び順が決まらない。
+ */
+const snapshot = head
+  ? JSON.stringify([w.title, head.label, isoDate(head.at), head.state])
+  : null
+---
+
+{
+  snapshot && (
+    /*
+      ★ `hidden` を付けたまま出す。**JSが動く環境でだけ見せる。**
+        押しても何も起きない★が残るより、出ないほうがよい
+        （FollowBar.astro と同じ判断）。
+    */
+    <div class="watch" data-work-id={w.id} data-snapshot={snapshot} hidden>
+      <button class="star" type="button" aria-pressed="false">
+        <span class="mark" aria-hidden="true">★</span>
+        <span class="label">気になる</span>
+      </button>
+      {/*
+        ★を付けた直後にだけ出る案内。**ここが今回いちばん効かせたい1行。**
+        ★だけ付けて帰ると、読者はこのサイトに戻る手段を持たないまま終わる。
+      */}
+      <p class="hint" hidden>
+        <a href="/watchlist">ウォッチリスト</a>に入れました。
+        <strong>このページをブックマーク</strong>しておくと、終了日が近づいたときに気づけます。
+      </p>
+    </div>
+  )
+}
+
+<script>
+  /**
+   * ★の保存と解除。**このファイルと `/watchlist` 以外に同じ読み書きを書かないこと。**
+   * 鍵と形を変えるときは両方を必ず一緒に直す（片方だけだと保存済みの★が消える）。
+   */
+  const KEY = 'mhr-watchlist-v1'
+
+  /** 保存の形。`{ "<作品ID>": [題名, サービス名, 日付, 状態, 追加日時] }` */
+  type Item = [string, string, string, string, number]
+  type Store = Record<string, Item>
+
+  /**
+   * ★ **読めないことがある。** 読めなければ「空」ではなく **null** を返す。
+   *   空と区別できないと、読めない環境で★を押したときに
+   *   「保存できたように見えて消える」状態になる。
+   */
+  function read(): Store | null {
+    try {
+      const raw = localStorage.getItem(KEY)
+      if (!raw) return {}
+      const parsed = JSON.parse(raw) as unknown
+      // 壊れた値が入っていても落ちないようにする（手で触られることがある）
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? (parsed as Store)
+        : {}
+    } catch {
+      return null
+    }
+  }
+
+  function write(store: Store): boolean {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(store))
+      return true
+    } catch {
+      // 容量超過・書き込み拒否。**押した見た目だけ変えて実際は保存されない、を避ける**
+      return false
+    }
+  }
+
+  const box = document.querySelector<HTMLElement>('.watch')
+  const store = read()
+
+  // 読めない環境では枠ごと出さない（hidden のまま）
+  if (box && store) {
+    const id = box.dataset['workId']!
+    const snapshot = JSON.parse(box.dataset['snapshot']!) as [string, string, string, string]
+    const button = box.querySelector<HTMLButtonElement>('.star')!
+    const hint = box.querySelector<HTMLElement>('.hint')!
+
+    const paint = (on: boolean) => {
+      button.setAttribute('aria-pressed', String(on))
+      button.querySelector('.label')!.textContent = on ? 'ウォッチリスト中' : '気になる'
+    }
+
+    paint(id in store)
+    box.hidden = false
+
+    button.addEventListener('click', () => {
+      const current = read()
+      if (!current) return
+      const on = id in current
+      if (on) {
+        delete current[id]
+      } else {
+        current[id] = [...snapshot, Date.now()]
+      }
+      if (!write(current)) return
+      paint(!on)
+      /*
+       * 案内は**付けたときだけ**出す。外したときに出すと、
+       * 消そうとしている読者にブックマークを勧めることになる。
+       * ★ 一度出したら消さない（出入りさせると読者の邪魔になる）。
+       */
+      if (!on) hint.hidden = false
+    })
+  }
+</script>
+
+<style>
+  .watch {
+    margin: 0.9rem 0 0;
+  }
+  .watch[hidden] {
+    display: none;
+  }
+
+  .star {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.3;
+    cursor: pointer;
+  }
+  .star:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  /*
+   * 押された状態。**色だけで区別しない** — ★の塗りと文言の両方が変わる
+   * （色覚特性と、モノクロ表示の両方への配慮）。
+   */
+  .star[aria-pressed='true'] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+  .mark {
+    font-size: 1rem;
+  }
+  .star[aria-pressed='false'] .mark {
+    /* 未選択は輪郭だけの★に見せる。字形を変えずに濃さで差を付ける */
+    opacity: 0.45;
+  }
+
+  .hint {
+    margin: 0.6rem 0 0;
+    padding: 0.6rem 0.8rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-subtle);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .hint[hidden] {
+    display: none;
+  }
+</style>

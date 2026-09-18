@@ -143,6 +143,23 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
           </details>
         )
       }
+      {/*
+        ★ **ウォッチリスト（2026-09-18 追加）。★を1本でも付けた読者にだけ出す。**
+
+        ■ なぜ条件付きなのか
+        ★を付けていない読者（＝ほぼ全員）には空のページへの入口でしかなく、
+        ヘッダーの幅を1枠ぶん食うだけになる。**入れた人にだけ常設の入口**にする。
+        入れていない読者にも**フッターには常に出ている**ので、辿れなくはない。
+
+        ★ **最後に置くこと。** 現れたときに他の項目を押し下げないため
+          （出るのは★を持つ読者だけなので、その人には毎回同じ位置に見える）。
+
+        ★ docs/GROWTH.md 3-6 の「一覧ページと記事ページにスクリプトを増やさない」の
+          例外にあたる。**新しい script タグは足していない** — 下のメニュー開閉の
+          スクリプトに数行足しただけで、追加の通信も描画待ちも無い。
+          **ここを独立した <script> に切り出さないこと。**
+      */}
+      <a class="plain watch-link" href="/watchlist" hidden>ウォッチリスト<span class="count"></span></a>
     </nav>
     {/* JavaScript が動かない環境では、この枠ごと出ない */}
     <PostSearch />
@@ -162,6 +179,30 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
       if (!menu.open) return
       for (const other of menus) if (other !== menu) other.open = false
     })
+  }
+
+  /**
+   * ウォッチリストの入口。**★を1本でも持っている読者にだけ出す。**
+   *
+   * ★ 鍵は components/WatchStar.astro / pages/watchlist.astro と同じもの。
+   *   ここでは**件数を数えるだけ**で、書き込みは一切しない。
+   * ★ 読めない環境（プライベートウィンドウ等）では出さない。
+   *   try/catch を外さないこと — ここで例外が出るとメニュー開閉ごと巻き添えになる。
+   */
+  try {
+    const raw = localStorage.getItem('mhr-watchlist-v1')
+    const store = raw ? (JSON.parse(raw) as unknown) : null
+    const count =
+      store && typeof store === 'object' && !Array.isArray(store) ? Object.keys(store).length : 0
+    if (count > 0) {
+      const link = document.querySelector<HTMLElement>('.watch-link')
+      if (link) {
+        link.querySelector('.count')!.textContent = String(count)
+        link.hidden = false
+      }
+    }
+  } catch {
+    // 出さないだけ。フッターの入口は常に出ている
   }
 
   // 外を押したら閉じる。開いたままだと本文が読めない。
@@ -244,6 +285,34 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
   nav a:hover {
     /* --accent（#1f6feb）は紺の上でほとんど沈む。明るい青を使う */
     color: var(--header-link);
+  }
+
+  /*
+   * ウォッチリストの入口（★を持つ読者にだけ出る。上のスクリプト）。
+   * ★ `[hidden]` を明示的に打ち消せる形にしておくこと。
+   *   素で `display: inline-flex` を書くと、ブラウザ既定の
+   *   `[hidden] { display: none }` に打ち勝って hidden のまま見えてしまう
+   *   （FollowBar.astro で同じ穴を踏んでいる）。この2つはセット。
+   */
+  .watch-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .watch-link[hidden] {
+    display: none;
+  }
+  /* 件数。文字色だけだと数字か語尾か分からないので、小さな丸で囲う */
+  .count {
+    min-width: 1.15rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: var(--header-link);
+    color: #0b1220;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
   }
 
   /* --- 押すと開くメニュー --- */

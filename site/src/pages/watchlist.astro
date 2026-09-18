@@ -1,0 +1,439 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SITE } from '../config'
+
+/**
+ * ウォッチリスト。**★を付けた作品を、終了日の近い順に並べる。**
+ *
+ * ■ なぜこのページを作ったか
+ * 実測（docs/FUNNEL.md 9-4）で、**ブックマーク経由の再訪は28日で0件**。
+ * 戻ってきた読者26人も全員が**もう一度検索して**辿り着いていた。
+ * 「消える前に、気づける。」を機能として成立させる面がこれ（docs/GROWTH.md 3-6）。
+ *
+ * ■ 中身はサーバから来ない
+ * ★は読者の `localStorage` にしか無い。**このHTMLは空の器**で、
+ * 中身はブラウザ側で組み立てる。日付は `/watchlist.json`（索引）の
+ * **新しい方で必ず上書きする** — 終了予定日は後から動くため。
+ *
+ * ★ **noindex。** 読者ごとに中身が違う（＝検索エンジンには常に空に見える）ので、
+ *   出すと「中身の無いページ」として評価される。サイトマップからは
+ *   `plugins/prune-sitemap.ts` が自動で落とす（手で除外リストを書かないこと）。
+ *
+ * ★ **JS はこのページと `components/WatchStar.astro` に閉じ込める。**
+ *   一覧ページと記事ページにスクリプトを増やさないこと（docs/GROWTH.md 3-6）。
+ */
+const title = 'ウォッチリスト'
+const description =
+  '★を付けた作品の見放題終了日を、近い順にまとめて確認できます。保存はお使いのブラウザの中だけで行われます。'
+---
+
+<BaseLayout title={`${title}｜${SITE.name}`} description={description} noindex>
+  <nav class="breadcrumb" aria-label="パンくず">
+    <a href="/">ホーム</a> ›
+  </nav>
+
+  <h1>{title}</h1>
+
+  <p class="lead">
+    作品ページの<strong>「★ 気になる」</strong>で入れた作品を、終了日の近い順に並べます。
+    <strong>終了7日前から赤く</strong>なります。
+  </p>
+
+  {/*
+    ★ **このページ自体をブックマークしてもらうのが目的。**
+      ★を付けても戻る手段が無ければ、実測（9-4）の「Direct の再訪0件」は動かない。
+  */}
+  <p class="bookmark">
+    このページを<strong>ブックマーク</strong>しておくと、いつでもここから確認できます。
+  </p>
+
+  {/*
+    器だけ置く。**3つの状態を最初からHTMLに持たせ、JSは出し分けるだけ**にしてある。
+    文言をスクリプトの文字列で組み立てると、直すときに探せなくなる。
+  */}
+  <div id="watchlist" data-state="loading">
+    <p class="note" data-when="loading">読み込み中…</p>
+
+    <p class="note" data-when="empty">
+      まだ1本も入っていません。作品ページを開いて<strong>「★ 気になる」</strong>を押すと、ここに並びます。
+      <br />
+      <a href="/leaving/netflix">Netflixで終了予定の作品を見る</a> ／
+      <a href="/leaving/prime-video">Amazon Prime Videoで終了予定の作品を見る</a>
+    </p>
+
+    {/*
+      ★ **「保存できない」と「1本も無い」を必ず分ける。**
+        プライベートウィンドウでは★そのものが出ないので、
+        ここで「空です」と言うと読者は自分が消したのだと思う。
+    */}
+    <p class="note" data-when="blocked">
+      このブラウザではウォッチリストを保存できません。
+      プライベートウィンドウや、サイトデータを保存しない設定になっていないかご確認ください。
+    </p>
+
+    <ul class="items" data-when="ready"></ul>
+
+    <p class="asof" data-when="ready"></p>
+  </div>
+</BaseLayout>
+
+<script>
+  /**
+   * ★の読み出しと描画。
+   *
+   * ★ 鍵と保存の形は `components/WatchStar.astro` と**同じもの**。
+   *   片方だけ変えると保存済みの★が読めなくなる。必ず一緒に直すこと。
+   */
+  const KEY = 'mhr-watchlist-v1'
+
+  /** 保存の形。`[題名, サービス名, 日付, 状態, 追加日時]` */
+  type Item = [string, string, string, string, number]
+  /** 索引の形（`pages/watchlist.json.ts`）。`[題名, サービス名, 日付, 状態]` */
+  type IndexRow = [string, string, string, string]
+
+  const root = document.getElementById('watchlist')!
+  const list = root.querySelector<HTMLUListElement>('.items')!
+  const asOfLine = root.querySelector<HTMLElement>('.asof')!
+
+  function read(): Record<string, Item> | null {
+    try {
+      const raw = localStorage.getItem(KEY)
+      if (!raw) return {}
+      const parsed = JSON.parse(raw) as unknown
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? (parsed as Record<string, Item>)
+        : {}
+    } catch {
+      return null
+    }
+  }
+
+  function remove(id: string) {
+    try {
+      const cur = read()
+      if (!cur) return
+      delete cur[id]
+      localStorage.setItem(KEY, JSON.stringify(cur))
+    } catch {
+      // 消せなくても描画側はもう消している。次の読み込みで戻るだけ
+    }
+  }
+
+  /** JST の「きょう」。`YYYY-MM-DD` の比較で済ませる（時刻は持っていない）。 */
+  function todayJst(): string {
+    return new Date(Date.now() + 9 * 60 * 60_000).toISOString().slice(0, 10)
+  }
+
+  /** `YYYY-MM-DD` どうしの日数差。負なら過去。 */
+  function daysUntil(date: string, today: string): number {
+    const a = Date.parse(`${date}T00:00:00Z`)
+    const b = Date.parse(`${today}T00:00:00Z`)
+    if (Number.isNaN(a) || Number.isNaN(b)) return Number.NaN
+    return Math.round((a - b) / 86_400_000)
+  }
+
+  function formatDate(date: string): string {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
+    return m ? `${m[1]}年${Number(m[2])}月${Number(m[3])}日` : date
+  }
+
+  /**
+   * 状態ごとの言い回し。
+   *
+   * ★ **`lib/works.ts` の `WorkState` と対応させること。** 状態が増えたらここにも足す。
+   * ★ **「配信中」と書かない。** 当サイトが持っているのは変化の観測であって
+   *   現在の在庫ではない（作品ページと同じ線引き）。
+   */
+  function phrase(state: string, date: string, days: number): { text: string; level: string } {
+    if (state === 'leaving') {
+      if (Number.isNaN(days)) return { text: `${formatDate(date)}に終了予定`, level: '' }
+      if (days < 0) return { text: `${formatDate(date)}の終了予定日を過ぎました`, level: 'past' }
+      if (days === 0) return { text: '今日が終了予定日', level: 'soon' }
+      if (days <= 7) return { text: `あと${days}日（${formatDate(date)}に終了予定）`, level: 'soon' }
+      return { text: `${formatDate(date)}に終了予定`, level: '' }
+    }
+    if (state === 'passed') return { text: `${formatDate(date)}の終了予定日を過ぎました`, level: 'past' }
+    if (state === 'ended') return { text: `${formatDate(date)}に終了しました`, level: 'past' }
+    if (state === 'started') return { text: `${formatDate(date)}に配信開始`, level: '' }
+    return { text: formatDate(date), level: '' }
+  }
+
+  function show(state: 'loading' | 'empty' | 'blocked' | 'ready') {
+    root.dataset['state'] = state
+  }
+
+  async function render() {
+    const store = read()
+    if (!store) return show('blocked')
+
+    const ids = Object.keys(store)
+    if (ids.length === 0) return show('empty')
+
+    /*
+     * 索引で日付を上書きする。**取れなくても描く。**
+     * 通信が失敗したときに真っ白になるより、
+     * 付けた時点の写しで出して「情報が古いかもしれない」ほうがよい。
+     */
+    let index: Record<string, IndexRow> = {}
+    let asOf = ''
+    try {
+      const res = await fetch('/watchlist.json')
+      if (res.ok) {
+        const json = (await res.json()) as { asOf?: string; works?: Record<string, IndexRow> }
+        index = json.works ?? {}
+        asOf = json.asOf ?? ''
+      }
+    } catch {
+      // 圏外・ブロッカー。写しで描く
+    }
+
+    const today = todayJst()
+    const rows = ids
+      .map((id) => {
+        const saved = store[id]!
+        const fresh = index[id]
+        // ★ 索引にあれば**必ず索引を採る**。終了予定日は後から動く
+        const [title, service, date, state] = fresh ?? saved
+        return { id, title, service, date, state, days: daysUntil(date, today) }
+      })
+      /*
+       * 並び。**「まだ間に合うもの」が先、「もう終わったもの」が後。**
+       *
+       * ★ 日数の昇順だけで並べないこと。終了済み（days が負）が
+       *   いちばん上に来て、**急ぎの作品が下に埋まる**（2026-09-18 に実際にそうなった）。
+       *   読者がこの面に来る用は「次に何が消えるか」なので、
+       *   過ぎたものは下に送る。
+       *
+       *   ① これから終了するもの … 近い順（あと1日 → あと5日 → …）
+       *   ② 過ぎた・終了した・配信開始 … 新しい順（最近のできごとが上）
+       * ★ 日付が読めない行は最後（索引にも写しにも無い壊れた値）。
+       */
+      .sort((a, b) => {
+        const rank = (d: number) => (Number.isNaN(d) ? 2 : d >= 0 ? 0 : 1)
+        const ra = rank(a.days)
+        const rb = rank(b.days)
+        if (ra !== rb) return ra - rb
+        if (ra === 2) return a.title.localeCompare(b.title, 'ja')
+        // ①は昇順（近い順）、②は降順（新しい順）
+        return (ra === 0 ? a.days - b.days : b.days - a.days) || a.title.localeCompare(b.title, 'ja')
+      })
+
+    list.replaceChildren(
+      ...rows.map((r) => {
+        const { text, level } = phrase(r.state, r.date, r.days)
+        const li = document.createElement('li')
+        li.className = 'item'
+        if (level) li.dataset['level'] = level
+
+        /*
+         * ポスターはIDから組み立てる（索引に入れると全体が数倍になる）。
+         * ★ 無い作品があるので、読み込みに失敗したら枠ごと消す。
+         */
+        const img = document.createElement('img')
+        img.className = 'poster'
+        img.src = `/posters/${r.id}.webp`
+        img.alt = ''
+        img.loading = 'lazy'
+        img.width = 46
+        img.height = 69
+        img.addEventListener('error', () => img.remove())
+
+        const body = document.createElement('div')
+        body.className = 'body'
+
+        const a = document.createElement('a')
+        a.className = 'title'
+        a.href = `/works/${r.id}`
+        a.textContent = r.title
+
+        const meta = document.createElement('p')
+        meta.className = 'meta'
+        meta.textContent = `${r.service}｜${text}`
+
+        body.append(a, meta)
+
+        const del = document.createElement('button')
+        del.className = 'remove'
+        del.type = 'button'
+        del.textContent = '外す'
+        del.setAttribute('aria-label', `${r.title} をウォッチリストから外す`)
+        del.addEventListener('click', () => {
+          remove(r.id)
+          li.remove()
+          if (list.children.length === 0) show('empty')
+          else title_(rows.filter((x) => x.id !== r.id))
+        })
+
+        li.append(img, body, del)
+        return li
+      }),
+    )
+
+    asOfLine.textContent = asOf
+      ? `配信情報は ${formatDate(asOf)} 時点のものです。終了予定日は変更されることがあります。`
+      : '配信情報を取得できませんでした。★を付けた時点の内容を表示しています。'
+
+    show('ready')
+    title_(rows)
+  }
+
+  /**
+   * ★ **タブの見出しに「あと何件が今週終了」を出す**（2026-09-18）。
+   *
+   * このサイトが読者に通知を送る手段はこれしかない（メールもプッシュも持たない）。
+   * ブックマークから開いたとき・タブを開いたままのときに、
+   * **一覧を読まなくても急ぎがあるか分かる**のが狙い。
+   *
+   * ★ 件数が0なら素の見出しに戻すこと。「0件」と出し続けると
+   *   読者はこの数字を見なくなる。
+   */
+  function title_(rows: { days: number; state: string }[]) {
+    const soon = rows.filter(
+      (r) => r.state === 'leaving' && !Number.isNaN(r.days) && r.days >= 0 && r.days <= 7,
+    ).length
+    const base = 'ウォッチリスト｜見放題レーダー'
+    document.title = soon > 0 ? `【あと${soon}件】${base}` : base
+  }
+
+  void render()
+</script>
+
+<style>
+  .lead {
+    margin: 0.4rem 0 0.9rem;
+    line-height: 1.9;
+  }
+  .bookmark {
+    margin: 0 0 1.4rem;
+    padding: 0.7rem 0.9rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-subtle);
+    font-size: 0.88rem;
+    line-height: 1.8;
+  }
+
+  /*
+   * 出し分け。**HTMLには3つとも書いてあり、状態で1つだけ見せる。**
+   * ★ 既定では全部隠す。`data-state` が付いていない（JSが動かない）環境では
+   *   「読み込み中…」だけが残る作りにしない — 何も出ないほうが正しい。
+   */
+  #watchlist > [data-when] {
+    display: none;
+  }
+  #watchlist[data-state='loading'] [data-when='loading'],
+  #watchlist[data-state='empty'] [data-when='empty'],
+  #watchlist[data-state='blocked'] [data-when='blocked'],
+  #watchlist[data-state='ready'] [data-when='ready'] {
+    display: block;
+  }
+  .note {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-subtle);
+    font-size: 0.9rem;
+    line-height: 1.9;
+    color: var(--text-muted);
+  }
+
+  .items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  /*
+   * ★★ **ここから下は必ず `.items :global(...)` で書くこと。**（2026-09-18）
+   *
+   * 行は**スクリプトが `document.createElement` で作っている。**
+   * Astro のスコープ付きCSSは、**ビルド時にテンプレートへ `data-astro-cid-…` を
+   * 付ける**ことで効かせる仕組みなので、実行時に作った要素にはその印が付かない。
+   * `.item { display: flex }` と素で書くと**1行も当たらず**、
+   * ポスター・題名・「外す」が縦に積み上がる（初版で実際にそうなった）。
+   *
+   * 親の `.items` はテンプレートにあるので印が付く。
+   * そこから `:global()` で降りれば、**このページの中だけ**に閉じたまま当たる。
+   * ★ `is:global` でスタイルブロックごと開けないこと。`.title` `.body` `.meta` は
+   *   ありふれた名前で、サイト全体に漏らすと他の面を壊す。
+   */
+  .items :global(.item) {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem 0.9rem;
+    background: var(--bg);
+  }
+  .items :global(.item + .item) {
+    border-top: 1px solid var(--border);
+  }
+
+  .items :global(.poster) {
+    flex: none;
+    width: 46px;
+    height: 69px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: var(--bg-subtle);
+  }
+  .items :global(.body) {
+    flex: 1;
+    min-width: 0;
+  }
+  .items :global(.title) {
+    font-size: 0.94rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .items :global(.title:hover) {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .items :global(.meta) {
+    margin: 0.2rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /*
+   * ★ **終了7日前を赤く**（docs/GROWTH.md 3-6）。
+   *   色だけで伝えないこと — 文面が「あと3日（…に終了予定）」と
+   *   日数を先に言う形になっているので、モノクロでも順序と急ぎが読める。
+   */
+  .items :global(.item[data-level='soon']) {
+    background: color-mix(in srgb, #d93025 7%, var(--bg));
+  }
+  .items :global(.item[data-level='soon'] .meta) {
+    color: #d93025;
+    font-weight: 700;
+  }
+  .items :global(.item[data-level='past'] .title) {
+    color: var(--text-muted);
+  }
+
+  .items :global(.remove) {
+    flex: none;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    cursor: pointer;
+  }
+  .items :global(.remove:hover) {
+    border-color: var(--text-muted);
+    color: var(--text);
+  }
+
+  .asof {
+    margin: 0.8rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+</style>

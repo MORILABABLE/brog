@@ -32,6 +32,14 @@ const year = new Date().getFullYear()
             （理由と戻し方は LeftRail.astro の `SHOW_PEOPLE`）。人物ページ自体は残してある。
       */}
       <a href="/person">監督・出演者</a>
+      {/*
+        ★ **ウォッチリスト（2026-09-18 追加）。ここを消さないこと。**
+          ★を付けた読者が戻ってくる唯一の入口で、
+          **全ページから1クリックで届く必要がある**（ヘッダーにも置いてある）。
+          ページ自体は noindex（読者ごとに中身が違う）だが、
+          リンクは `follow` のままでよい — 隠す理由は評価ではなく中身の無さ。
+      */}
+      <a href="/watchlist">ウォッチリスト</a>
       <a href="/about">運営者情報</a>
       <a href="/privacy">プライバシーポリシー</a>
       <a href="/contact">お問い合わせ</a>

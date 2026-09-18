@@ -6,6 +6,7 @@ import AmazonCta from '../../components/AmazonCta.astro'
 import Thumb from '../../components/Thumb.astro'
 import AfbCta from '../../components/AfbCta.astro'
 import WorkCover from '../../components/WorkCover.astro'
+import WatchStar from '../../components/WatchStar.astro'
 import DemandShelf from '../../components/DemandShelf.astro'
 import { amazonTagFor, ATTRIBUTION, SITE, hubFor } from '../../config'
 import { relFor, withAmazonTag } from '../../lib/affiliate'
@@ -495,6 +496,13 @@ const jsonLd = {
     }
     </div>
   </section>
+
+  {/*
+    ★ **答えのすぐ下、注意書きより上。** 読者は「いつ消えるか」を読み終えた
+      直後にだけ「覚えておきたい」と思う。詳細まで下げると届かない。
+      なぜこの機能があるかは components/WatchStar.astro と docs/FUNNEL.md 9-4。
+  */}
+  <WatchStar work={w} />
 
   {/* 配信状況は変わる。いつ時点のデータかを必ず出す。 */}
   <p class="notice">

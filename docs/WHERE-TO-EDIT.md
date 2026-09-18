@@ -170,6 +170,17 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                               升目側の leavingPrefix / arrivalsPrefix と同じ文字列にする。
                               **片方だけ変えるとリンクが死ぬ**
                             対象サービス   → site/src/lib/events-data.ts の CALENDAR_SERVICES
+    ウォッチリスト        → site/src/pages/watchlist.astro（noindex・2026-09-18）
+                            作品ページの★   → site/src/components/WatchStar.astro
+                            作品の索引      → site/src/pages/watchlist.json.ts
+                            ヘッダーの入口   → site/src/components/Header.astro
+                                            （★を持つ読者にだけ出る。件数つき）
+                            フッターの入口   → site/src/components/Footer.astro
+                            ★ 保存の鍵 `mhr-watchlist-v1` と形は**上の3か所で同じもの**。
+                              片方だけ変えると保存済みの★が読めなくなる
+                            ★ 一覧の行はスクリプトが作る。スタイルは必ず
+                              `.items :global(...)` で書く（素で書くと1行も当たらない）
+                            理由と測り方    → docs/GROWTH.md 3-6 / docs/FUNNEL.md 9-4
     サービス別まとめ       → site/src/pages/service/[service].astro
                             記事は frontmatter の tags で拾う。
                             ★ タグの文字列は config.ts の SERVICE_HUBS と完全一致が要る
