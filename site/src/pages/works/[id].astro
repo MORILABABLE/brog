@@ -946,9 +946,21 @@ const jsonLd = {
   }
 
   /*
-   * 「見放題で配信中」の行。**状態行（.states li）と同じ枠に見せる**が、
+   * 「見放題で配信中」の行。枠の形は状態行（.states li）と揃えるが、
    * 根拠が違うので `.go` のボタンは置かない（lib/works.ts の注記）。
    * 読者の目には「終わる話」の直後に「では、どこで」の答えが続く形になる。
+   *
+   * ★ **色は状態行と分ける**（2026-09-18）。それまで枠も背景も状態行と同じ
+   *   `--bg-subtle` の灰色で、**着地した読者にはグレーの箱が2つ並んでいるだけ**だった。
+   *   実測（GA4 2026-09-08〜17）で `/works/14626092`（Prime Videoで終了予定・
+   *   Netflix と Disney+ では見放題）は **14セッション・1.00PV/s・エンゲージ 28.6%**。
+   *   ページは「どこで観るか」の答えを持っているのに、読まれる前に戻られている。
+   *
+   * ★ **並び順は変えない。** 「終わる」→「では、どこで」は読者の問いの順そのもので
+   *   （docs/GROWTH.md 3-1）、上の行は来訪の目的の答え。
+   * ★ **ボタンは輪郭のまま。** ここを塗りにすると、状態行の `.go`（枠別クリックの
+   *   38.9%・サイト最多）と強さが並び、測っている導線の意味が変わる。
+   *   変えるのは**枠の色だけ**で、押せるものの序列は動かさない。
    */
   .stock {
     display: flex;
@@ -957,9 +969,9 @@ const jsonLd = {
     gap: 0.6rem;
     margin: 0.7rem 0 0;
     padding: 0.9rem 1rem;
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
     border-radius: var(--radius);
-    background: var(--bg-subtle);
+    background: var(--accent-soft);
   }
   /* スマホではバッジの下に1段で並ぶ（状態行の `.line` と同じ 14rem で折り返す） */
   .stock-services {

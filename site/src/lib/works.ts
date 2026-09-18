@@ -25,7 +25,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { GENRE_ART } from '../../scripts/genre-art.mjs'
-import type { CategorySlug } from '../config'
+import type { CategorySlug, GenreSlug } from '../config'
 import {
   API_SERVICES,
   LABEL_BY_SERVICE,
@@ -33,6 +33,7 @@ import {
   type RawEvent,
   type RawWork,
 } from './events-data'
+import { workGenre } from './work-genre'
 import { amazonSearchUrl, availabilityUrl, resolveUrl, workLinkByTitle } from './work-links'
 import { marksFor } from './availability'
 import { seriesRefFor } from './series-for-work'
@@ -185,8 +186,22 @@ export function stateSentence(s: WorkServiceState): string {
       return `${d}に見放題配信が終了する予定です`
     // ★ `passed` を `ended` に丸めない。予定日を過ぎたことは観測しているが、
     //   実際に終わったことは観測していない（延長されることがある）。
+    //
+    // ★ **文の途中に「は」を置かないこと**（2026-09-18 修正）。
+    //   ここは `workDescription()` が `「◯◯」は{サービス}で` の**後ろに差し込む**ので、
+    //   文中に主題の「は」があると1文に2つ並ぶ。実際にそうなっていた。
+    //
+    //     旧 `見放題の終了予定日は${d}でした（…）`
+    //        → 「シャッター アイランド」**は**Amazon Prime Videoで見放題の終了予定日**は**2026年9月17日でした（…）
+    //
+    //   他の3つと同じ `${d}に見放題配信が…` の形にそろえれば、
+    //   **状態行（サービス名に続ける）と description（「◯◯は…で」に続ける）の
+    //   どちらに置いても1文として読める。**
+    // ★ 「終了しました」にはしない。終了は観測していない。
+    //   `${d}` は**予定日**なので「予定でした」までしか名乗らず、
+    //   過ぎていることは括弧で明示する（在庫で確かめた結果は `passedNote()` が別の文で続ける）。
     case 'passed':
-      return `見放題の終了予定日は${d}でした（この日を過ぎています）`
+      return `${d}に見放題配信が終了する予定でした（この日を過ぎています）`
     case 'ended':
       return `${d}に見放題配信が終了しました`
     // ★ 「配信中」と言い換えない。始まったことは観測した事実、
@@ -289,11 +304,38 @@ export function workHeadline(w: WorkPage): string {
 /**
  * meta description。全角120字前後に収める（config.ts の SITE.description と同じ基準）。
  * 見出しと同じく、状態と日付から組む。
+ *
+ * ■ 在庫のある社を名乗る（2026-09-18 追加）
+ *
+ * **検索結果に出す約束と、着地して見えるものが食い違っていた。**
+ * 実測（GA4 2026-09-08〜17）で `/works/14626092`（SAKAMOTO DAYS）は
+ * **14セッション・エンゲージ 28.6%**（同じ日の `/works/10534` は 81.8%）。
+ * 本作は Prime Video で終了予定だが **Netflix と Disney+ では見放題**で、
+ * ページはその答えを持っている。なのに description は
+ * 「…終了する予定です。他のサービスでの探し方と、**レンタル・購入で観る方法**を…」
+ * としか言っておらず、**観られる社の名前を1文字も出していなかった。**
+ * 「どこで見れる」で来た読者には「金を払えという話」に読め、
+ * 着地した瞬間にいちばん目立つのも Prime Video の行になる。
+ *
+ * ★ **根拠は在庫台帳**（`stockAnswer()`）。変化ログから「配信中」と書くのは
+ *   このファイル冒頭で禁じているもので、そこは破っていない（`stockAnswer()` の長い注記）。
+ * ★ **在庫があるときは定型の尾を短くする。** 「レンタル・購入で観る方法」は
+ *   答えを持っていないときの逃げ口上で、**実際の答えが言える面ではそちらを先に出す。**
+ *   全角120字を越えると、肝心の社名が検索結果で切れる。
+ * ★ 社の区切りは「・」（画面の「他のサービスで探す」と同じ house style）。
  */
 export function workDescription(w: WorkPage): string {
   const head = w.services[0]!
+  const stock = stockAnswer(w)
+  const lead = `「${workLabel(w)}」は${head.label}で${stateSentence(head)}。`
+
+  if (stock) {
+    const names = stock.services.map((s) => s.label).join('・')
+    return `${lead}${names}では見放題で配信中です。ほかのサービスでの探し方もまとめています。`
+  }
+
   const rest = w.services.length > 1 ? `他${w.services.length - 1}サービスの状況と、` : ''
-  return `「${workLabel(w)}」は${head.label}で${stateSentence(head)}。${rest}他のサービスでの探し方と、レンタル・購入で観る方法をまとめています。`
+  return `${lead}${rest}他のサービスでの探し方と、レンタル・購入で観る方法をまとめています。`
 }
 
 /**
@@ -660,6 +702,17 @@ export interface WorkPage {
   /** **日本語ラベル**に訳したもの。訳せなかったものは落としてある */
   genres: string[]
   /**
+   * アニメ／洋画／邦画のどれか（`lib/work-genre.ts` の `workGenre()`）。決まらなければ undefined。
+   *
+   * ★ **上の `genres` とは別物。** あちらは画面に出す日本語ラベルの列
+   *   （「アクション・アドベンチャー・アニメ」）で、こちらは**記事の
+   *   frontmatter `genres` と突き合わせるためのキー**。判定規則は1か所
+   *   （`work-genre.ts`）に置いてあるので、ここで文字列から作り直さないこと。
+   * ★ 使い道は `work-hub-article.ts`（記事への出口をジャンルで選ぶ）。
+   *   画面には出さない — 出すと「アニメ」の表示が上の列と二重になる。
+   */
+  genre?: GenreSlug
+  /**
    * 原語（`data/origins.json`・Wikidata）。日本語に訳したもの。
    *
    * ★ **製作国ではない。** Wikidata の P364（original language）で、
@@ -956,6 +1009,7 @@ function build(): Map<string, WorkPage> {
       rating: work.rating ? work.rating : undefined,
       // ★ 訳せなかったジャンルは**落とす**。英語のまま出さない。
       genres: [...new Set((work.genres ?? []).map((g) => GENRE_LABEL.get(g)).filter(Boolean))] as string[],
+      genre: workGenre(work),
       languages: ((key && origins.get(key)) || []).map((l) => LANGUAGE_JA[l] ?? l),
       directors: (key && directors.get(key)) || [],
       cast: ((key && cast.get(key)) || []).slice(0, CAST_LIMIT),

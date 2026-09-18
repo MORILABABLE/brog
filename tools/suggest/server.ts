@@ -4,6 +4,9 @@
  *   npm run suggest:ui                 http://127.0.0.1:5178 を開く
  *   npm run suggest:ui -- --port 5200  ポートを変える
  *
+ *   デスクトップの「サジェスト調査」から開く場合は start.ps1 が起動からブラウザまでを行う
+ *   （動いていれば開くだけ）。ショートカットの作り直しは add-desktop-shortcut.ps1。
+ *
  * ■ 立ち位置
  * `npm run demand -- --suggest` の取得部分（`pipeline/sources/demand/google-suggest.ts`）を
  * **人が自分で叩けるようにした画面**。サイトにもパイプラインにも何も書かない。
