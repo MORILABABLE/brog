@@ -283,6 +283,10 @@ export const specialArticle: ArticleType = {
     },
     { name: 'from', description: '対象期間の開始日 YYYY-MM-DD（既定は対象月の初日）' },
     { name: 'to', description: '対象期間の終了日 YYYY-MM-DD（既定は対象月の末日）' },
+    {
+      name: 'max',
+      description: `1記事に載せる上限（既定 ${MAX_ITEMS}）。ジャンル×サービスで月の全件を扱うときだけ上げる`,
+    },
   ],
 
   categoryOf(ctx) {
@@ -361,7 +365,18 @@ export const specialArticle: ArticleType = {
     }
 
     const kept = [...firstSeen.values()]
-    const max = traits.maxItems ?? MAX_ITEMS
+    /*
+     * 上限。既定は MAX_ITEMS で、`--max` があればそちらが勝つ。
+     *
+     * ★ **`--max` はジャンル×サービスで「その月の全件」を扱うときのためにある**
+     *   （2026-09-18 追加）。既定の40は「特報＝絞り込んだ主題」を前提にした数で、
+     *   `--genre` で月の全件を切り出す使い方はその前提の外にある。
+     *   実測: U-NEXT の2026年9月・western は67件あり、40で切ると
+     *   **評価順に落ちて洋画が3件しか残らず、中身が海外ドラマだけになった。**
+     *   タイトルが「洋画・海外ドラマ」なのに洋画が消えるので、本数を名乗れなくなる。
+     */
+    const given = Number(ctx.flags?.max)
+    const max = Number.isFinite(given) && given > 0 ? given : (traits.maxItems ?? MAX_ITEMS)
     const limited =
       kept.length <= max
         ? kept
