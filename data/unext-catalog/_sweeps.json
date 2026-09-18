@@ -1,11 +1,20 @@
 {
+  "asia-drama": {
+    "label": "韓流・アジア",
+    "startedAt": "2026-09-18T00:10:11.779Z",
+    "nextPage": 2,
+    "entries": 30,
+    "pages": 139,
+    "results": 4167
+  },
   "houga": {
     "label": "邦画",
     "startedAt": "2026-09-15T15:23:50.196Z",
-    "nextPage": 115,
-    "entries": 3420,
+    "nextPage": 1,
+    "entries": 10823,
     "pages": 363,
-    "results": 10879
+    "results": 10881,
+    "completedAt": "2026-09-18T00:10:11.778Z"
   },
   "kaigai-drama": {
     "label": "海外ドラマ",
