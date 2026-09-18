@@ -47,6 +47,20 @@
       "writtenAt": "2026-09-17"
     },
     {
+      "slug": "2026-09-special-arrivals-anime-u-next",
+      "typeId": "special",
+      "targetMonth": "2026-09",
+      "flags": {
+        "kind": "new",
+        "topic": "アニメ",
+        "slug": "arrivals-anime-u-next",
+        "service": "u-next",
+        "genre": "anime"
+      },
+      "category": "arrivals",
+      "writtenAt": "2026-09-18"
+    },
+    {
       "slug": "2026-09-special-japanese-anime-u-next",
       "typeId": "special",
       "targetMonth": "2026-09",
@@ -219,5 +233,5 @@
       "writtenAt": "2026-09-15"
     }
   ],
-  "updatedAt": "2026-09-17T13:49:24.007Z"
+  "updatedAt": "2026-09-18T14:24:31.653Z"
 }
