@@ -145,21 +145,34 @@ export function evergreenForService(service: string): EvergreenPage[] {
 }
 
 /**
- * ヘッダーのメニューなどで、ハブ×サービスを押したときの行き先。
+ * ヘッダーのメニューなどで、ハブ×サービスを押したときの行き先。**必ず記事の一覧。**
  *
- * ★ **カレンダーのある社は、同じ向きのカレンダーへ直接送る**（2026-09-17）。
- *   `/category/<ハブ>/<サービス>` は転送してあるので、そこを指したままでも着くが、
- *   **転送を1回挟む内部リンクを残さない**（クロールの無駄・計測の参照元がずれる）。
- * ★ カレンダーの無い社（U-NEXT）は従来どおり記事の一覧へ。
+ * ■ 2026-09-18 に全社を記事の一覧へ戻した（運用者の指定）
+ * 前日（2026-09-17）だけ、カレンダーのある社を `/leaving/<サービス>` へ直接送っていた。
+ * **メニューの2つのハブ（配信終了済み・予定／新着配信）は過去記事の一覧の入口**で、
+ * カレンダーへの入口は左の枠（LeftRail）とトップのカード（TopCalendar）が別に持っている。
+ * 入口の名前と行き先が食い違うので、サービスによる出し分けをやめた。
+ *
+ * ★ カレンダーへは、一覧の先頭に出る常設カード（EvergreenCard）から1手で入れる。
+ *   **メニュー → 一覧 → カレンダー**の道は切れていない。
+ * ★ 行き先を1つに固定したので、`public/_redirects` に
+ *   `/category/<ハブ>/<サービス>` の転送を書かないこと（ページを生成している）。
  */
 export function hubServiceHref(hub: string, service: string): string {
-  if ((hub === 'leaving' || hub === 'arrivals') && hasCalendar(service)) return `/${hub}/${service}`
   return `/category/${hub}/${service}`
 }
 
-/** そのハブ×サービスが**記事一覧ではなくカレンダー**になっているか（生成の出し分けに使う） */
-export function hubServiceIsCalendar(hub: string, service: string): boolean {
-  return hubServiceHref(hub, service) !== `/category/${hub}/${service}`
+/**
+ * そのハブ×サービスに、**同じ向きの配信カレンダーがあるか**。
+ *
+ * ★ 使い道は**索引の出し分けだけ**（pages/category/[category]/[service].astro）。
+ *   true のページは記事があっても `noindex` にする。カレンダー
+ *   （`/leaving/<サービス>`）と同じ検索語で表示を分け合っていたため
+ *   （2026-09-17 の実測。読者の道は残し、検索の受け皿はカレンダー側に寄せる）。
+ * ★ **行き先の出し分けには使わない。** 上の `hubServiceHref` の★。
+ */
+export function hubServiceHasCalendar(hub: string, service: string): boolean {
+  return (hub === 'leaving' || hub === 'arrivals') && hasCalendar(service)
 }
 
 // --- 鮮度の見せ方 -----------------------------------------------------------

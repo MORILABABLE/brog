@@ -93,10 +93,15 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                                          （判定はシリーズ記事の作品名の条件＝lib/series-for-work.ts）
       升目と月の切り替え      → site/src/components/EventCalendar.astro（組み立ては lib/calendar.ts）
       メニューの行き先        → site/src/lib/evergreen.ts の hubServiceHref
-                                 （カレンダーのある社はカテゴリ一覧を挟まず直接カレンダーへ）
-      転送                    → site/public/_redirects（/calendar/* と /category/<ハブ>/<3社>）
-      ★ /calendar/<サービス> は廃止。/category/<ハブ>/<Netflix・Prime・Disney+> は生成せず転送。
-        U-NEXT はカレンダーを作らない（docs/UNEXT.md）ので記事一覧のまま
+                                 （ヘッダーのメニューは5社とも**記事の一覧**へ。カレンダーへは
+                                   左の枠・トップのカードと、一覧の先頭の常設カードから入る）
+      カレンダーのある社の索引 → site/src/lib/evergreen.ts の hubServiceHasCalendar
+                                 （/category/<ハブ>/<3社> は記事があっても noindex。
+                                   カレンダーと検索語を分け合っていたため・2026-09-17 の実測）
+      転送                    → site/public/_redirects（/calendar/* だけ）
+      ★ /calendar/<サービス> は廃止。/category/<ハブ>/<サービス> は**5社ぶん生成する・転送しない**
+        （2026-09-17 に3社を転送にしたが、2026-09-18 に取り消した）
+        U-NEXT はカレンダーを作らない（docs/UNEXT.md）ので索引にも出る
       ★ Disney+ は終了予定を返さないので、/leaving/disney-plus は終了済みだけ
 
     左の枠（下段）＝「監督・出演者から探す」 … **2026-09-17 から出していない**

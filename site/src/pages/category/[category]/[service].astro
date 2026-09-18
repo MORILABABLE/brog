@@ -4,7 +4,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'
 import PostCard from '../../../components/PostCard.astro'
 import EvergreenCard from '../../../components/EvergreenCard.astro'
 import { SERVICE_HUBS, SERVICE_MENU_HUBS, SITE } from '../../../config'
-import { hubServiceHref, hubServiceIsCalendar } from '../../../lib/evergreen'
+import { hubServiceHasCalendar, hubServiceHref } from '../../../lib/evergreen'
 import { serviceHasContent, serviceIsIndexable, serviceSection } from '../../../lib/service-pages'
 
 /**
@@ -30,10 +30,12 @@ import { serviceHasContent, serviceIsIndexable, serviceSection } from '../../../
  *   （実測で /service/<サービス> と最大96%重複）。根拠は
  *   lib/service-pages.ts の `serviceIsIndexable()`。
  *
- * ★ **カレンダーのある社（Netflix / Prime Video / Disney+）のページは作らない**（2026-09-17）。
- *   同じ向きの配信カレンダー（/leaving/<サービス> /arrivals/<サービス>）へ転送してあり
- *   （public/_redirects）、記事の一覧もカレンダーのページが引き継いでいる。
- *   残るのはカレンダーを作れない社（U-NEXT）だけ。判定は lib/evergreen.ts の `hubServiceIsCalendar`。
+ * ★ **5サービスぶん必ず作る**（2026-09-18 に戻した・運用者の指定）。
+ *   前日だけ「カレンダーのある社は作らず /leaving/<サービス> へ転送」にしていたが、
+ *   このハブは**過去記事の一覧の入口**で、カレンダーの入口ではない（lib/evergreen.ts の `hubServiceHref`）。
+ *   ★ ただし**カレンダーのある社は記事があっても noindex**。
+ *     カレンダーと同じ検索語で表示を分け合っていたので、検索の受け皿は
+ *     カレンダー側に寄せたまま、読者の道だけ戻してある（判定は下の `indexable`）。
  *
  * ★ 親の /category/<ハブ> は 1つ上の [category].astro が出している。
  *   URLの形（/category/leaving/netflix）を変えるときは、
@@ -43,7 +45,7 @@ export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
 
   return SERVICE_MENU_HUBS.flatMap((hub) =>
-    SERVICE_HUBS.filter((service) => !hubServiceIsCalendar(hub.slug, service.slug)).map((service) => ({
+    SERVICE_HUBS.map((service) => ({
       params: { category: hub.slug, service: service.slug },
       props: {
         hub,
@@ -68,8 +70,16 @@ const hasContent = serviceHasContent(section)
  * ★ `hasContent`（中身があるか）と `indexable`（索引に出すか）は別物。
  *   本文の出し分けは前者、noindex は後者。**取り違えると、中身のあるページに
  *   「記事はありません」と書くか、薄いページを索引に出すかのどちらかになる。**
+ *
+ * ★ **カレンダーのある社は記事の本数に関わらず索引に出さない**（2026-09-18）。
+ *   `/category/leaving/netflix` と `/leaving/netflix` は同じ検索語で表示を
+ *   分け合っていた（2026-09-17 の実測）。読者はヘッダーのメニューからここへ入り、
+ *   検索からはカレンダーへ着く、という形にそろえてある。
+ *   ★ 記事が増えても自動では索引に戻らない。戻すなら
+ *     lib/evergreen.ts の `hubServiceHasCalendar` ごと見直すこと。
+ *   ★ サイトマップ（XML）からは自動で落ちる（plugins/prune-sitemap.ts）。
  */
-const indexable = serviceIsIndexable(section)
+const indexable = serviceIsIndexable(section) && !hubServiceHasCalendar(hub.slug, service.slug)
 
 const title = `${service.label}の${hub.heading}記事一覧`
 

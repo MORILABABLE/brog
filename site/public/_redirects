@@ -27,15 +27,10 @@
 /calendar/prime-video  /leaving/prime-video  301
 /calendar/disney-plus  /leaving/disney-plus  301
 
-# 2. ヘッダーのメニューの行き先だったカテゴリ×サービスの記事一覧。
-#    カレンダーのある3社だけ、同じ向きのカレンダーへ送る。記事の一覧はカレンダーのページが引き継いでいる。
-#    ★ /category/leaving/netflix は /leaving/netflix と同じ検索語で表示を分け合っていた（2026-09-17 の実測）。
-#    ★ U-NEXT はカレンダーを作らない（docs/UNEXT.md）ので、/category/*/u-next は転送しない。
-#    ★ ページの生成は止めてある（site/src/pages/category/[category]/[service].astro の getStaticPaths）。
-#      **カレンダーのある社を増やしたら、ここにも2行足すこと。**
-/category/leaving/netflix  /leaving/netflix  301
-/category/leaving/prime-video  /leaving/prime-video  301
-/category/leaving/disney-plus  /leaving/disney-plus  301
-/category/arrivals/netflix  /arrivals/netflix  301
-/category/arrivals/prime-video  /arrivals/prime-video  301
-/category/arrivals/disney-plus  /arrivals/disney-plus  301
+# 2. カテゴリ×サービスの記事一覧（/category/<ハブ>/<サービス>）は**転送しない**。
+#    2026-09-17 に、カレンダーのある3社だけ /leaving/<サービス> へ送る6行をここに書いたが、
+#    翌 2026-09-18 に取り消した（運用者の指定）。ヘッダーの「配信終了済み・予定」「新着配信」は
+#    過去記事の一覧の入口で、カレンダーの入口ではない（site/src/lib/evergreen.ts の `hubServiceHref`）。
+#    ★ 5サービスぶんのページを生成しているので、**ここに転送を書き足すと記事の一覧が読めなくなる。**
+#    ★ 検索語の重なり（/category/leaving/netflix ↔ /leaving/netflix。2026-09-17 の実測）は
+#      転送ではなく noindex で受けている（site/src/pages/category/[category]/[service].astro）。

@@ -9,7 +9,7 @@ import {
   SITE,
 } from '../config'
 import { archiveMonths, servicesIn } from '../lib/archive'
-import { EVERGREEN_PAGES, evergreenSummary, evergreenTitle, hubServiceIsCalendar } from '../lib/evergreen'
+import { EVERGREEN_PAGES, evergreenSummary, evergreenTitle } from '../lib/evergreen'
 import { serviceHasContent, serviceSection } from '../lib/service-pages'
 import { publishablePeople } from '../lib/people'
 import { STATE_CATEGORY, STATE_LABEL, STATE_ORDER_KEYS, publishableWorkPages } from '../lib/works'
@@ -74,8 +74,9 @@ const categoryPages = CATEGORY_HUBS.map((h) => ({
  * （pages/category/[category]/[service].astro と同じ判定を使う）。
  */
 const categoryServicePages = SERVICE_MENU_HUBS.flatMap((hub) =>
-  // ★ カレンダーのある社のページは作っていない（転送した・2026-09-17）。上の「配信カレンダー」に載る
-  SERVICE_HUBS.filter((service) => !hubServiceIsCalendar(hub.slug, service.slug)).map((service) => ({
+  // ★ 5サービスぶん全部載せる（2026-09-18 に戻した）。カレンダーのある社のページも作っている
+  //   （検索には出していないが、読者が辿れる道なのでこの一覧には出す）
+  SERVICE_HUBS.map((service) => ({
     href: `/category/${hub.slug}/${service.slug}`,
     label: `${service.label}の${hub.label}`,
     hasContent: serviceHasContent(serviceSection(posts, service, hub.includes)),
