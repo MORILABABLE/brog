@@ -442,3 +442,61 @@ curl -s https://mihoudairader.com/posts/2026-09-leaving-prime-video | grep -o 'g
 ```
 
 PRごとにプレビューURLが自動生成されるので、**マージ前に実際の見た目を確認できる。**
+
+---
+
+## Cloudflare のビルドが詰まったとき（2026-09-19 に実際に起きた）
+
+**手元でビルドした `dist` を直接アップロードして本番を出せる。**
+Cloudflare のビルド環境を一切使わないので、詰まったキューを丸ごと迂回できる。
+
+```bash
+cd site
+npm run build:fresh                    # ★ fresh で作る（理由は scripts/clear-cache.mjs）
+npx wrangler login                     # 初回だけ。ブラウザで認証
+npx wrangler pages deploy dist --project-name=brog --branch=main --commit-dirty=true
+```
+
+`--branch=main` が本番の扱いになる。返ってくる `https://<id>.brog-ez1.pages.dev` で
+中身を確かめてから、独自ドメイン側も `curl` で見る。
+
+> ★ **`site/.env` の値が焼き込まれる。** Cloudflare の環境変数ではなく手元の
+> `.env` が使われるので、**Pages 側にしか入れていない変数があると欠ける。**
+> 上げる前に `npm run check:ads` と、出したい値が `dist` に入っているかを見る。
+
+### 🔴 詰まったビルドは数十分後に完走して、手動アップロードを上書きする
+
+**これが 2026-09-19 にいちばん効いた落とし穴。**
+
+AdSense の審査リクエスト直後、手動アップロードで正しい内容を出したあと、
+**30分以上 `Building` で止まっていた古いコミット（`57b919c`）の再試行が完走し、
+本番を奪って**追従枠の広告が出た状態に戻った。審査中にいちばん見せたくない状態。
+
+- **デプロイ一覧の `Status` は当てにならない。** 止まっているものが `Active` と
+  表示され、`https://<id>.brog-ez1.pages.dev` を開くと **404** を返していた。
+  最終的に片方は `Failure`、片方は完走した
+- **キャンセルしないと消えない。** ダッシュボードの一覧の行の `⋯` →
+  `Cancel deployment`（ビルド中の行にしか出ない）。出ていなければAPI:
+
+  ```
+  POST https://api.cloudflare.com/client/v4/accounts/<account_id>/pages/projects/brog/deployments/<deployment_id>/cancel
+  ```
+
+> ★ **手動アップロードしたら、詰まっているビルドが残っていないか必ず確認する。**
+> `npx wrangler pages deployment list --project-name=brog` の上のほうを見て、
+> 古いコミットのものが残っていれば**先にキャンセルする。**
+> 放っておくと、いつ完走して本番を巻き戻すか分からない。
+
+### 復旧したかの確かめ方
+
+ビルドが直ったかは**ブランチを押して Preview で見る**のが安全（本番に触らない）。
+
+```bash
+git switch -c chore/なにか && git push -u origin chore/なにか
+# → Preview デプロイが作られる。成功まで約100秒
+npx wrangler pages deployment list --project-name=brog   # Environment 列が Preview
+curl -s https://<id>.brog-ez1.pages.dev/ | grep -c adsbygoogle
+```
+
+Preview に出したい値が入っていれば、**Pages の環境変数も効いている**ことが同時に分かる
+（環境変数は Production / Preview の両方に入れる。上の5節）。
