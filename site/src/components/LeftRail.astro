@@ -48,11 +48,11 @@ const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
  * 常設ページ（EVERGREEN_PAGES）と違って中身が入れ替わらないので、
  * lib/evergreen.ts には入れていない。**カードの体裁だけをそろえてある。**
  *
- * ★ **文字数に上限がある。** 枠の内側でサムネイルの右に使える幅は約130px
- *   （下の `.tags` の計算）。
- *   `lead` は折り返さない（`.stamp` が nowrap）ので **0.68rem で11字まで**、
- *   `name` は左の補正0.4remを引いて **0.86rem で8字まで**が1行に入る。
- *   超えると `lead` ははみ出し、`name` は2行になってカードが伸びる。
+ * ★ **`lead` は文字数に上限がある。** 2026-09-19 に絵を60pxへ揃えたので、
+ *   絵の右に使える幅は**1200px 時点で約109px**（カード203.2 − 枠線2 − padding22.4 − 絵60 − すきま9.6）。
+ *   `lead` は折り返さない（`.stamp` が nowrap）ので **0.68rem で約10字まで**。超えるとはみ出す。
+ * ★ `name` は**2行で切られる**（`.name` の `-webkit-line-clamp: 2`）ので、
+ *   長くてもカードは伸びない。切れた全文は `title` 属性が拾う。
  */
 const FIXED_PAGES = [
   {
@@ -139,7 +139,6 @@ const peopleTotal = publishablePeople().length
         あるのは各カードの**リンク先**であって、この枠ではない。
         文面を変えるときも「この枠で探せる」と読める書き方にしないこと。
     */}
-    <p class="block-note">終了・新着・配信予定を日付で探せます</p>
     {/*
       ★ カードの中身と見た目は **CalendarCards.astro**（2026-09-17 に切り出した）。
         トップページのスマホ表示（TopCalendar.astro）も同じカードを出す。
@@ -240,9 +239,10 @@ const peopleTotal = publishablePeople().length
                 class:list={['rail-card', isCurrent && 'is-current']}
                 href={isCurrent ? undefined : p.href}
                 aria-current={isCurrent ? 'page' : undefined}
+                title={`${p.lead}${p.name}`}
               >
-                {/* サムネイルの扱いは上の一覧と同じ。48px・角丸8で並びをそろえる */}
-                <Thumb image={serviceImage(p.thumb.key)} src={p.thumb.src} size={48} radius={8} />
+                {/* サムネイルの扱いは上の一覧と同じ。60px（右の枠と同じ）で並びをそろえる */}
+                <Thumb image={serviceImage(p.thumb.key)} src={p.thumb.src} size={60} />
                 <span class="body">
                   <span class="stamp">{p.lead}</span>
                   <span class="name">{p.name}</span>
@@ -370,41 +370,31 @@ const peopleTotal = publishablePeople().length
     color: var(--accent);
   }
 
+  /*
+   * --- カード（`.cards` / `.rail-card` / `.body` / `.name`）------------------
+   *
+   * ★ **値は右の枠「シリーズ配信」（SeriesRail.astro の `.series` / `.item` / `.body` / `.name`）
+   *   と1つ残らず同じ。** 2026-09-19 にそちらへ寄せた（運用者の指定）。
+   *   左右の枠は本文を挟んで並ぶので、**寸法が違うと横の線がそろわない。**
+   *   **片方だけ直さないこと。**（配信カレンダーのカードは CalendarCards.astro にも同じ写しがある）
+   *
+   * ★ 高さ 78px は**指定していない。** 絵60px ＋ 上下padding 8px×2 ＋ 枠線1px×2 で
+   *   自然にそうなる。以前は `min-height: 79px` を直に書いていたが、
+   *   **絵の大きさを変えると根拠がずれる**ので、絵の側に寄せてある。
+   */
   .cards {
     margin: 0;
     padding: 0;
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.35rem;
   }
   .rail-card {
     display: flex;
-    align-items: center;
-    /* サムネイルと文字のすきま。ここも 0.1rem 詰めて文字の幅に回している（上の★） */
-    gap: 0.5rem;
-    /*
-     * カード1枚の高さ。**79px は右の枠（シリーズ配信）の78pxに合わせた値**
-     * （2026-09-15。実測で左79.5px / 右78.0px）。
-     *
-     * ★ もともとは「サムネイル48px ＋ 上下padding」で 64px と書いてあったが、
-     *   実際の高さを決めていたのは**文字の3行**（バッジ・更新日・サービス名）で、
-     *   カードは常に79.5pxあった。更新日の行を外した（上の `Inner` の★）ときに
-     *   64pxまで縮み、**左の枠だけカードが小さくなって左右の並びが崩れた。**
-     *   高さの根拠を文字の行数からこの値に移して、明示的に揃える。
-     *
-     * ★ **右の枠を変えたらここも見ること。** 左右で高さが違うと、
-     *   本文を挟んだ2列の横の線がそろわない。
-     * ★ サムネイルは48pxのまま。60px（右の枠と同じ）にすると横幅を12px食い、
-     *   下の `.tags` のバッジ2枚が1行に収まらなくなる。
-     */
-    min-height: 79px;
-    /*
-     * ★ 横の余白は 0.45rem（2026-09-15 に 0.6rem から詰めた）。
-     *   バッジ2枚を1行に収めるために、文字が使える幅を左右で 4.8px 稼いでいる。
-     *   下の `.tags` の計算はこの値を前提にしている。戻すなら一緒に見直すこと。
-     */
-    padding: 0.45rem;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.5rem 0.7rem;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -418,36 +408,34 @@ const peopleTotal = publishablePeople().length
     background: var(--bg-subtle);
     border-color: var(--accent);
   }
-  /* サムネイルの見た目は Thumb.astro が持つ。ここで上書きしないこと。 */
+  /*
+   * サムネイルの見た目は Thumb.astro が持つ。ここで上書きしないこと。
+   * ★ `min-width: 0` が要る。無いと長い題名の最小幅で文字ブロックが広がり、枠から溢れる。
+   */
   .body {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
     min-width: 0;
+    font-size: 0.68rem;
+    line-height: 1.4;
   }
   /*
-   * ★ サービス名だけ左に 0.4rem 寄せる。**見た目を揃えるための補正。**
-   *
-   * 3行はどれも同じ x から始まっているのに、文字が出てくる位置だけずれる。
-   *   バッジ … 背景の内側に padding があるので、文字はその幅だけ内側から
-   *   サービス名 … 補正が無いので 0px（＝この行だけ左に飛び出して見える）
-   * 実測値（Edge・1280px）で確認したうえで合わせてある。
+   * 題名。**2行で切る**（右の枠と同じ）。切らないと枠が縦に伸びる。
+   * ★ 切れた全文は `title` 属性が持っている（上の `Inner`）。
    */
   .name {
-    padding-left: 0.4rem;
-    font-size: 0.86rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    line-height: 1.4;
+    line-height: 1.5;
     color: var(--text);
   }
   /*
-   * カードの小さい行。**いま使っているのは最下段の1枚だけ**（`【はじめての方へ】`）。
-   * 常設ページのカードでは更新日をここに出していたが、2026-09-15 に外した
-   * （上の `Inner` の説明）。
+   * カードの小さい行。**いま使っているのは最下段の2枚だけ**（`【はじめての方へ】`）。
+   * 右の枠では同じ位置にカテゴリバッジが入る。**大きさはバッジと同じ 0.68rem。**
    *
-   * ★ 主役は下の太い行（`.name`）。同じ大きさで並べると文字数の多いこちらが
-   *   目立って主従が崩れるので、バッジと同じ「補足」の段に見える大きさにする。
    * ★ **途中で折り返させない。** 日本語は原則どこでも折り返せるので、
    *   指定しないと「【はじめ」／「ての方へ】」のように割れる。
    */
@@ -456,10 +444,10 @@ const peopleTotal = publishablePeople().length
     white-space: nowrap;
     font-size: 0.68rem;
     font-weight: 400;
-    line-height: 1.3;
+    line-height: 1.4;
     /*
      * 補足の色だが、鮮度を伝える文字なので **muted のままだと薄すぎる。**
-     * 本文色へ 45% 寄せて、サービス名より弱く・バッジより読めるくらいにする。
+     * 本文色へ 45% 寄せて、題名より弱く・バッジより読めるくらいにする。
      * 明暗どちらのテーマでも同じ比率で寄るので、片方だけ沈むことがない。
      */
     color: var(--text-muted);

@@ -15,17 +15,20 @@ interface Props {
 const { current = '' } = Astro.props
 
 /**
- * 配信カレンダーのカード（サービス1社1枚）。**左の枠とトップページが同じものを出す。**
+ * 配信カレンダーのカード（サービス1社1枚）。**左の枠の中段。1200px 以上でだけ出る。**
+ * 使っているのは LeftRail.astro だけ。狭い画面では枠ごと消え、
+ * 代わりにトップの横スクロールの棚（TopCalendar.astro）が同じ行き先を出す
+ * （**あちらは別の形**＝132pxの横カード。中身の定義 `CALENDAR_CARDS` だけ共有している）。
  *
- *   左の枠（LeftRail.astro）     … 1200px 以上。紺の地の上
- *   トップ（TopCalendar.astro）  … 1200px 未満。白いカードの上
+ * ■ 2026-09-19 に右の枠「シリーズ配信」と同じ形にそろえた（運用者の指定）
+ * 絵を 48px → **60px**（右の枠と同じ）にし、枠・余白・文字も SeriesRail.astro に合わせた。
+ * 題名は**行き先の h1 そのまま**で、長ければ2行で切る。
  *
- * ■ 2026-09-17 に LeftRail.astro から切り出した
- * スマホのトップにも同じカードを出すことになったため（運用者の指定）。
- * 最初はトップにカレンダーそのもの（升目）を埋め込んだが、**運用者が意図していたのはこのカード**だった。
- *
- * ★ カードの枠（`.rail-card`・`.body`・`.name`）の値は、左の枠の下段の固定ページのカード
- *   （LeftRail.astro の FIXED_PAGES）と**同じ値**にしてある。片方だけ変えると、左の枠で段差が出る。
+ * ★ 寸法を触るときは**3か所まとめて**見ること。ずれると左の枠の中や、
+ *   本文を挟んだ左右の枠で横の線がそろわない。
+ *     components/SeriesRail.astro（右の枠・**ここが基準**）
+ *     components/LeftRail.astro の FIXED_PAGES（左の枠の下段）
+ *     このファイル（左の枠の中段）
  */
 ---
 
@@ -61,8 +64,7 @@ const { current = '' } = Astro.props
             image={poster ? undefined : serviceImage(p.thumbKey)}
             src={poster}
             category={p.category}
-            size={48}
-            radius={8}
+            size={60}
             initial={p.label.charAt(0)}
           />
           <span class="body">
@@ -82,11 +84,17 @@ const { current = '' } = Astro.props
                   名乗れないので「カレンダー」と出していたが、行き先の見出しが
                   「Netflix 見放題・配信終了カレンダー」と名乗るようになり、重複した。
                   **書き戻さないこと。**（TopCalendar.astro も同時に外してある）
-                ★ 残る1枚になっても、下の .tags の寸法は**そのままにしてある**（注記を参照）。
               */}
               <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
             </span>
-            <span class="name">{p.shortLabel}</span>
+            {/*
+              ★ **行き先の h1 をそのまま名乗る**（2026-09-19・運用者の指定。トップの棚と同じ）。
+                それまではサービス名の短い名前（`shortLabel`）で、**押した先の見出しと
+                カードの名前が別物**だった。名前は lib/evergreen.ts の `titleBase` の1か所から来る。
+              ★ **【9月18日更新】は付けない。** その役目は隣の「随時更新」のバッジが引き取っている
+                （上の★。2026-09-15 の判断）。戻すならバッジとどちらかにすること。
+            */}
+            <span class="name">{p.titleBase}</span>
           </span>
         </>
       )
@@ -94,11 +102,12 @@ const { current = '' } = Astro.props
         <li>
           {/* 現在地は消さずに、リンクだけ外す。並びを崩さないため */}
           {isCurrent ? (
-            <span class="rail-card is-current" aria-current="page">
+            <span class="rail-card is-current" aria-current="page" title={p.titleBase}>
               {Inner}
             </span>
           ) : (
-            <a class="rail-card" href={p.href}>
+            /* ★ `title` は**2行で切られた題名の全文**（右の枠の `fullTitle` と同じ扱い） */
+            <a class="rail-card" href={p.href} title={p.titleBase}>
               {Inner}
             </a>
           )}
@@ -115,18 +124,20 @@ const { current = '' } = Astro.props
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.35rem;
   }
   /*
-   * カード1枚。**値は LeftRail.astro の .rail-card と同じ**（上の★）。
-   * 高さ 79px の根拠（右の枠のカードと横の線を揃える）も LeftRail.astro の注記。
+   * カード1枚。**値は右の枠「シリーズ配信」（SeriesRail.astro の `.item`）と同じ。**
+   * 2026-09-19 にそちらへ寄せた（運用者の指定。絵の大きさを含めて）。
+   * ★ 左の枠の下段の固定ページのカード（LeftRail.astro の FIXED_PAGES）とも同じ値。
+   *   **3か所そろえること**（片方だけ変えると左の枠の中や、本文を挟んだ左右で段差が出る）。
+   * ★ 高さ 78px は**指定していない。** 絵60 ＋ 上下padding 8×2 ＋ 枠線1×2 で自然にそうなる。
    */
   .rail-card {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 79px;
-    padding: 0.45rem;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.5rem 0.7rem;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -140,40 +151,19 @@ const { current = '' } = Astro.props
     background: var(--bg-subtle);
     border-color: var(--accent);
   }
-  /* サムネイルの見た目は Thumb.astro が持つ。ここで上書きしないこと。 */
+  /*
+   * サムネイルの見た目は Thumb.astro が持つ。ここで上書きしないこと。
+   * ★ `min-width: 0` が要る。無いと長い題名の最小幅で文字ブロックが広がり、枠から溢れる。
+   */
   .body {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
     min-width: 0;
+    font-size: 0.68rem;
+    line-height: 1.4;
   }
   /*
-   * バッジを**1行に収めるための寸法**（2026-09-15）。
-   *
-   * ★ 2026-09-19 に「カレンダー」を外してバッジは1枚になったが、**この寸法は変えていない。**
-   *   残る「随時更新」は一覧の中のカード（EvergreenCard）と同じバッジで、
-   *   ここだけ大きさを戻すと**同じものへの入口が枠と一覧で違う見た目になる**（上の★と同じ理由）。
-   *   以下は2枚だったころの計算。**広げ直すときの上限**として残してある。
-   *
-   * ■ 使える幅（枠がいちばん狭い1200px。それ未満では枠ごと消える）
-   *   列232px − 枠の横padding 28.8 ＝ カード203.2px
-   *   − 枠線2 − カードの横padding 14.4 − サムネ48 − すきま8 ＝ **約130px**
-   *
-   * ■ 要る幅
-   *   「配信終了予定」6字 ＋ 「随時更新」4字 ＝ 10字。日本語は1字＝1em なので
-   *   0.62rem（9.92px）で約99px。バッジの横padding（0.26rem×2×2枚）と
-   *   すきま3.2px を足して**約119px**。**余りは約11px（9%）。**
-   *
-   * ★ **既定の0.76remでも0.68remでも入らない**（それぞれ約143px／約133px要る）。
-   *   縮めるのは**この枠だけ**。一覧の中のカード（PostCard / EvergreenCard）は
-   *   本文幅736pxの中にあるので、既定のまま3枚でも4枚でも並ぶ。
-   * ★ 9%の余りは**フォントの実装差のため**に空けてある。
-   *   最初 0.62rem で計算どおり詰めたら Chromium では1行に入ったのに、
-   *   Edge では「配信終了予定」の2枚だけ2行になった（2026-09-15 の実測）。
-   *   字の幅は環境で数%動く。**詰め直すときはここまで削らないこと。**
-   * ★ それでも折り返しは許してある（`flex-wrap`）。読者がブラウザの
-   *   最小文字サイズを上げていることもある。はみ出すより2行になるほうがよい。
+   * バッジ（「随時更新」）。**右の枠のカテゴリバッジと同じ大きさ。**
+   * ★ 2026-09-15 に 0.62rem まで詰めてあったのは「カレンダー」との2枚を
+   *   1行に収めるためで、その1枚は 2026-09-19 に外した。既定の大きさへ戻してある。
    */
   .tags {
     display: flex;
@@ -182,19 +172,26 @@ const { current = '' } = Astro.props
     gap: 0.2rem;
   }
   .badge {
-    font-size: 0.62rem;
-    padding: 0.05rem 0.26rem;
+    font-size: 0.68rem;
+    padding: 0.05rem 0.45rem;
   }
   /* 枠線の1pxぶん padding を引く。引かないと隣のバッジより2px高くなる */
   .badge.evergreen {
-    padding: calc(0.05rem - 1px) calc(0.26rem - 1px);
+    padding: calc(0.05rem - 1px) calc(0.45rem - 1px);
   }
-  /* サービス名を左に 0.4rem 寄せる補正。理由は LeftRail.astro の .name の注記 */
+  /*
+   * 題名（行き先の h1）。**2行で切る**（右の枠と同じ）。切らないとカードが縦に伸びる。
+   * ★ 切れた全文は `title` 属性が持っている（上の `Inner`）。
+   */
   .name {
-    padding-left: 0.4rem;
-    font-size: 0.86rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    line-height: 1.4;
+    line-height: 1.5;
     color: var(--text);
   }
   a.rail-card:hover .name {

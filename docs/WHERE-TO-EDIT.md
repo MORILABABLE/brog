@@ -71,7 +71,16 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
         （Footer.astro）。**片方だけ消さないこと**
 
     左の枠（中段）＝「配信カレンダー」・カード3枚（サービス1社1枚・2026-09-17）
-      カードの中身・見た目 → site/src/components/CalendarCards.astro（トップのスマホ表示と共有）
+      カードの中身・見た目 → site/src/components/CalendarCards.astro
+      カードの名前        → 行き先の h1 そのまま（lib/evergreen.ts の titleBase・2026-09-19）。
+                            長ければ2行で切る（全文は title 属性）
+      ★ **寸法は右の枠「シリーズ配信」が基準**（2026-09-19 にそろえた。絵60px・高さ78px）。
+        触るときは3か所まとめて見ること。ずれると左右の枠で横の線がそろわない
+          components/SeriesRail.astro（右の枠・基準）
+          components/CalendarCards.astro（左の枠・中段）
+          components/LeftRail.astro の FIXED_PAGES（左の枠・下段）
+      ★ トップのスマホ表示（TopCalendar.astro）は**別の形**（132pxの横カード）。
+        共有しているのは中身の定義（CALENDAR_CARDS）だけで、寸法は共有していない
       枠                  → site/src/components/LeftRail.astro
       何を並べるか        → site/src/lib/evergreen.ts の CALENDAR_CARDS（行き先は /leaving/<サービス>）
       カードの絵          → site/src/lib/evergreen.ts の calendarThumb（今月の早い日付のアニメのポスター → 無ければ全ジャンル → 無ければ src/assets/services/ の汎用画像）
