@@ -1,6 +1,7 @@
 ---
 import { amazonTagFor } from '../config'
 import { primeVideoStorefrontUrl, relFor, type AmazonSlot } from '../lib/affiliate'
+import { publicImageSize } from '../lib/image-size'
 
 interface Props {
   /**
@@ -15,11 +16,28 @@ interface Props {
 const { spot } = Astro.props
 
 /**
- * Amazon Prime Video のバナー（728×90）。**原稿はこの1枚だけ。**
+ * Amazon Prime Video のバナー。
  *
  * ■ 出ている場所（2026-09-19 時点）
  *   配信カレンダー（升目と日付めくりのあいだ）… `CalendarBanner.astro`（枠名 `calendar`）
  *   作品ページ（afb の枠が出せない面）        … `AfbCta.astro`（枠名 `fallback`）
+ *
+ * ■ 原稿は2枚。**狭い画面だけ差し替える**（2026-09-19・運用者の指定）
+ *
+ *   広い画面（47rem 以上） `amazon-prime-video-728x90.jpg`（横長・8:1）
+ *   狭い画面（47rem 未満） `amazon-prime-video-sp.<拡張子>`（**あれば**）
+ *
+ * ★ **横長のままスマホに出すと読めない。** 390px の画面では幅353px・高さ44pxまで縮み、
+ *   「今すぐ無料体験」の文字が7px相当になる（2026-09-19 の実測）。
+ *   ブラウザが幅に合わせて縮めているだけなので、**元画像を小さくしても見え方は変わらない。**
+ *   効くのは**縦横比の違う原稿に差し替えること**だけ。
+ *
+ * ★ **原稿は Amazon の管理画面（アソシエイト＞バナーリンク）から取ること。**
+ *   いまある横長を切り貼りして縦長を作らない。**広告主のクリエイティブの改変**に当たる。
+ *   サイズは問わない（300×250 でも 320×100 でも）。**寸法はファイルから読む**ので、
+ *   置き換えるだけでよく、コードも属性も直さなくてよい。
+ *
+ * ★ **スマホ用が無いあいだは横長1枚のまま**（下の `sp`）。壊れた画像にはならない。
  *
  * ■ 素材の扱いが Hulu と逆。**揃えようとしないこと**
  *   Amazon … 画像もリンクも当サイトが持つ（`public/ads/`）。規約に画像リンクの規定が無い
@@ -36,27 +54,66 @@ const { spot } = Astro.props
  * ページ冒頭の `AffiliateNotice` が担っている（docs/AFFILIATE.md 5-5。位置はむしろ冒頭が要件）。
  * 🔴 **冒頭の表記を消すと、この枠が無表示の広告になる。片方だけ消さないこと。**
  */
-const BANNER = {
-  src: '/ads/amazon-prime-video-728x90.jpg',
-  width: 728,
-  height: 90,
-  alt: 'Amazon Prime Video',
-} as const
+const ALT = 'Amazon Prime Video'
+
+/** 広い画面の原稿。**必ずある**前提（無ければ枠ごと出ない） */
+const WIDE_SRC = '/ads/amazon-prime-video-728x90.jpg'
+
+/**
+ * 狭い画面の原稿。**置いてあるものを拾う。**
+ * ★ 拡張子は問わない。Amazon の管理画面が配る形式に合わせて置けばよい。
+ * ★ ここに無いファイル名で置いても拾わない。**この並びに足すこと。**
+ */
+const SP_CANDIDATES = [
+  '/ads/amazon-prime-video-sp.jpg',
+  '/ads/amazon-prime-video-sp.png',
+  '/ads/amazon-prime-video-sp.gif',
+  '/ads/amazon-prime-video-sp.webp',
+]
+
+/**
+ * 切り替えの境目。**サイトの「スマホ」の線に合わせてある**
+ * （styles/global.css の `@media (max-width: 47rem)`＝本文カードが全幅に戻る幅）。
+ * ★ ここを動かすなら、なぜその幅なのかを書き足すこと。
+ */
+const SP_MAX = '47rem'
+
+const wide = publicImageSize(WIDE_SRC)
+const spSrc = SP_CANDIDATES.find((p) => publicImageSize(p) !== null)
+const sp = spSrc ? publicImageSize(spSrc) : null
 
 const href = primeVideoStorefrontUrl(amazonTagFor(spot))
 ---
 
-<aside class="amazon-banner" aria-label="広告">
-  {/*
-    ★ 枠も背景も付けない。**広告主が作った絵をそのまま置く**（HuluCta と同じ）。
-      縁を付けると「当サイトが作ったクリエイティブ」に近づく。
-    ★ `loading="lazy"` にしない。**最初の画面に入りうる**位置に出るので、
-      遅延させると読み込みが始まるころには通り過ぎている。
-  */}
-  <a class="banner" href={href} rel={relFor(href)} target="_blank" data-affiliate="true" data-slot={spot}>
-    <img src={BANNER.src} width={BANNER.width} height={BANNER.height} alt={BANNER.alt} decoding="async" />
-  </a>
-</aside>
+{
+  wide && (
+    <aside class="amazon-banner" aria-label="広告">
+      {/*
+        ★ 枠も背景も付けない。**広告主が作った絵をそのまま置く**（HuluCta と同じ）。
+          縁を付けると「当サイトが作ったクリエイティブ」に近づく。
+        ★ `loading="lazy"` にしない。**最初の画面に入りうる**位置に出るので、
+          遅延させると読み込みが始まるころには通り過ぎている。
+      */}
+      <a class="banner" href={href} rel={relFor(href)} target="_blank" data-affiliate="true" data-slot={spot}>
+        {/*
+          ★ `<picture>` は**スマホ用の原稿があるときだけ**。JavaScript は要らない。
+          ★ `<source>` は上から順に見て**最初に当たったもの**が使われるので、
+            広い画面の条件を先に書き、`<img>` を狭い画面の既定にする。
+          ★ `<source>` にも `width` / `height` を書く。書かないと、切り替わったときに
+            `<img>` 側の縦横比が使われて**絵が伸びる。**
+        */}
+        {sp && spSrc ? (
+          <picture>
+            <source media={`(min-width: ${SP_MAX})`} srcset={WIDE_SRC} width={wide.width} height={wide.height} />
+            <img src={spSrc} width={sp.width} height={sp.height} alt={ALT} decoding="async" />
+          </picture>
+        ) : (
+          <img src={WIDE_SRC} width={wide.width} height={wide.height} alt={ALT} decoding="async" />
+        )}
+      </a>
+    </aside>
+  )
+}
 
 <style>
   /*
@@ -67,7 +124,7 @@ const href = primeVideoStorefrontUrl(amazonTagFor(spot))
   .amazon-banner {
     margin: 2rem 0;
     /*
-     * 中央ぞろい。728×90 の横長バナーは左に寄せると本文の行頭と揃わず、
+     * 中央ぞろい。横長のバナーは左に寄せると本文の行頭と揃わず、
      * **本文の一部に見えてしまう**（HuluCta と同じ理由）。
      */
     text-align: center;
@@ -82,6 +139,12 @@ const href = primeVideoStorefrontUrl(amazonTagFor(spot))
   }
   .banner img {
     border: none;
+    /*
+     * ★ **引き伸ばさない。** 狭い画面用の原稿（300×250 など）は本文より狭いので、
+     *   幅いっぱいに広げると粗くなる。縮むのは許して、伸びるのは止める。
+     */
+    max-width: 100%;
+    height: auto;
   }
   .banner:hover {
     opacity: 0.9;

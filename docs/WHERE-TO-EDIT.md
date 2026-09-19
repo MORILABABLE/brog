@@ -115,6 +115,10 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                                  どの社にどの広告主か → site/src/lib/calendar-ad.ts
                                  Amazon の原稿        → site/src/components/AmazonBanner.astro
                                                         （画像は site/public/ads/・枠名 calendar）
+                                 ★ スマホ用の原稿は **置くだけ** で切り替わる。
+                                   site/public/ads/amazon-prime-video-sp.<jpg|png|gif|webp>
+                                   寸法はファイルから読む（lib/image-size.ts）ので
+                                   コードも属性も直さなくてよい。詳細は AFFILIATE.md 15-5-A
                                  Hulu の原稿          → site/src/lib/hulu-ad.ts（.env。**再ホスト禁止**）
                                  ★ 末尾の PrimeCta / AmazonCta は**これと引き換えに廃止した。**
                                    枠は1ページに1つのまま。戻すならどちらかにすること
