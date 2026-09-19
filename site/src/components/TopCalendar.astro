@@ -66,9 +66,14 @@ const cards = CALENDAR_CARDS.map((p) => {
               category={c.category}
               size={132}
             />
-            {/* 左の枠のカードと同じ名乗り（CalendarCards.astro）。幅が足りなければ2行に折り返す */}
+            {/*
+              左の枠のカードと同じ名乗り（CalendarCards.astro）。
+              ★ 「カレンダー」のバッジは**外した**（2026-09-19・運用者の指定）。
+                カードの行き先の見出しが「Netflix 見放題・配信終了カレンダー」と名乗るようになり、
+                棚の見出し（「配信カレンダー」）と合わせて**同じ言葉が3回出ていた**。
+                **書き戻さないこと。**（CalendarCards.astro も同時に外してある）
+            */}
             <span class="tags">
-              <span class="badge">カレンダー</span>
               <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
             </span>
             <span class="name">{c.label}</span>
@@ -136,8 +141,9 @@ const cards = CALENDAR_CARDS.map((p) => {
   /* --- ここまで同じ値 --- */
 
   /*
-   * バッジ2枚（「カレンダー」「随時更新」）。**シリーズ配信の棚のバッジと同じ大きさ**で、
-   * 132px に並べると余りが数pxしか無いので、足りない環境では2行に折り返す（はみ出させない）。
+   * バッジ（「随時更新」）。**シリーズ配信の棚のバッジと同じ大きさ。**
+   * ★ 2026-09-19 に「カレンダー」を外して1枚になったが、**折り返しは残してある**
+   *   （読者がブラウザの最小文字サイズを上げていると、1枚でも 132px を超えうる）。
    */
   .tags {
     display: flex;

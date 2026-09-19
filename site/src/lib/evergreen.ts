@@ -88,22 +88,27 @@ export function shortOf(label: string): string {
  * ★ **「見放題」を落とさないこと。** レンタル・購入と区別する言葉がここにしかない
  *   （記事タイトルの決まりと同じ理由。templates/naming.md）。
  *
- * ■ 「一覧」を残して「カレンダー」を足した（2026-09-17）
- * `/leaving/netflix` は「◯◯ netflix 配信終了」で表示を集めている面（docs/FUNNEL.md 4-1）。
- * **検索で当たっている先頭の言葉は変えず**、後ろに「カレンダー」を足して
- * 「netflix 配信終了 カレンダー」の語形にも当てる（docs/KEYWORDS.md 2-2）。
+ * ■ 2026-09-19 に「カレンダー」を名前の芯にした（運用者の指定）
+ *   変更前 `Netflixで見放題配信が終了する作品一覧・カレンダー`
+ *   変更後 `Netflix 見放題・配信終了カレンダー`
  *
- * ★ 終了予定を持たない社（Disney+）は「終了した」と過去形にする。
- *   中身が終了済みだけなのに「終了する作品」と名乗ると、未来の予定があるように読める。
+ * ページの中身が「日付をめくって、その日の作品を見る」形になり
+ * （components/ServiceCalendarPage.astro の日付めくり）、**一覧ではなくカレンダーそのもの**に
+ * なったため。ページの中にあった h2「配信カレンダー」は、この見出しと重複するので外した。
+ *
+ * ★ **サービス名・「見放題」・「配信終了」は必ず残すこと。**
+ *   `/leaving/netflix` は「◯◯ netflix 配信終了」で表示を集めている面（docs/FUNNEL.md 4-1）で、
+ *   この3語が当たっている本体。短くしたぶん「作品一覧」が落ちているので、
+ *   **これ以上削らない。**
+ * ★ 終了予定を持たない社（Disney+）も同じ名前にする。
+ *   「終了する／終了した」の言い分けはこの形には無く、
+ *   未来と過去の区別は**日付めくりの日付そのもの**が担う。
  */
-export function evergreenTitleBase(direction: CalendarDirection, service: string, label: string): string {
-  if (direction === 'leaving') {
-    return hasExpiring(service)
-      ? `${label}で見放題配信が終了する作品一覧・カレンダー`
-      : `${label}で見放題配信が終了した作品一覧・カレンダー`
-  }
+export function evergreenTitleBase(direction: CalendarDirection, _service: string, label: string): string {
   // ★ 「最近」は入れない。いつ時点かは evergreenTitle() が後ろに付ける。
-  return `${label}の見放題 新着・配信予定の作品一覧・カレンダー`
+  return direction === 'leaving'
+    ? `${label} 見放題・配信終了カレンダー`
+    : `${label} 見放題・新着配信カレンダー`
 }
 
 function contentsOf(direction: CalendarDirection, service: string): string {

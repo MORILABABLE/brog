@@ -259,13 +259,23 @@ const { label } = Astro.props
 
     /** いま選んでいる該当の行へ飛ぶ。**ここだけがページを動かす** */
     /**
-     * 飛ぶ先の行が**たたまれたシリーズの中**なら開く（WorkTable.astro の `.series-more`）。
-     * 開かないと行が表示されておらず、scrollIntoView が効かない。
+     * 飛ぶ先の行が隠れているなら出す。**出さないと scrollIntoView が効かない。**
+     *
+     * 隠れ方は2つある。**両方とも見ること。**
+     *   1. たたまれたシリーズの中（WorkTable.astro の `.series-more`）
+     *   2. いま見せていない日の中（DayPager.astro の `[data-day]`・2026-09-19 追加）
+     *
+     * ★ 2 は**イベントで知らせる**（直接 `hidden` を外さない）。日を出すだけでは
+     *   めくりの現在地・前後の日の可否・「該当なし」がずれたままになる。
+     *   日付めくりの無いページ（記事など）では誰も聞いていないので、何も起きない。
      */
     function reveal(row: HTMLElement) {
-      if (!row.classList.contains('series-more')) return
-      const toggle = row.closest('tbody')?.querySelector<HTMLInputElement>('[data-series-toggle]')
-      if (toggle && !toggle.checked) toggle.checked = true
+      if (row.classList.contains('series-more')) {
+        const toggle = row.closest('tbody')?.querySelector<HTMLInputElement>('[data-series-toggle]')
+        if (toggle && !toggle.checked) toggle.checked = true
+      }
+      const day = row.closest<HTMLElement>('[data-day]')
+      if (day?.hidden) day.dispatchEvent(new CustomEvent('day-show', { bubbles: true }))
     }
 
     function go() {
@@ -310,6 +320,10 @@ const { label } = Astro.props
       /*
        * ★ 配信カレンダーの絞り込み（CalendarFilter.astro）で隠した行は候補にしない（2026-09-17）。
        *   飛んでも表示されていない行へは移動できない。
+       * ★ **日付めくり（DayPager.astro）で見せていない日の行は、ここで落とさない**（2026-09-19）。
+       *   隠れているのは日の入れ物（`[data-day]`）であって行ではないので `row.hidden` は false のまま。
+       *   **ページ全部の作品から探せること**が検索窓の用で、飛ぶときに `reveal` が日を出す。
+       *   `row.closest('[data-day]')?.hidden` で落とすような直しを入れないこと。
        */
       hits =
         query === ''

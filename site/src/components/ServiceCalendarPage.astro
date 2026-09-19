@@ -4,6 +4,7 @@ import AffiliateNotice from './AffiliateNotice.astro'
 import AmazonCta from './AmazonCta.astro'
 import CalendarFilter from './CalendarFilter.astro'
 import CalendarPicker from './CalendarPicker.astro'
+import DayPager from './DayPager.astro'
 import EventCalendar from './EventCalendar.astro'
 import PostCard from './PostCard.astro'
 import PrimeCta from './PrimeCta.astro'
@@ -27,7 +28,7 @@ import {
 } from '../lib/evergreen'
 import { primeAd } from '../lib/prime-ad'
 import { serviceSection, type PostEntry } from '../lib/service-pages'
-import { formatDate } from '../utils/date'
+import { formatDate, isoDate } from '../utils/date'
 
 interface Props {
   direction: CalendarDirection
@@ -47,20 +48,32 @@ const { direction, service, label, posts } = Astro.props
  * ■ 2026-09-17 に1つの部品にまとめた
  * それまでは pages/leaving/[service].astro と pages/arrivals/[service].astro が
  * ほぼ同じ250行をそれぞれ持ち、「同じ形にすること」と注意書きで縛っていた。
- * 2枚が同じ形（切り替え → 升目 → 記事 → これからの表 → 過去の表）になったので、部品を1つにした。
  *
  * ■ 1ページに並ぶもの
  *
  *   /leaving/<サービス>   これから＝終了予定（loadLeaving）   過去＝終了済み（loadEnded・前月から）
  *   /arrivals/<サービス>  これから＝配信開始予定（loadUpcoming） 過去＝新着（loadArrivals・直近60日）
  *
- * ★ **「これから」を先に置く。** 読者の用は「次に何が起きるか」で、過去の記録はその後。
- *   並びの規則（きょうに近い順）は lib/events-data.ts の `loadLeaving` の上に1つだけ書いてある。
+ * ■ 2026-09-19 に「日付めくり」へ作り直した（運用者の指定）
+ * それまでは「見放題配信が終了する予定」「見放題配信が終了した作品」という**2つの節**に分かれ、
+ * その中で日付ごとの表が上から全部並んでいた。いまは節をやめて、
+ * **きょうを基準に1日ずつめくる**（components/DayPager.astro）。
+ *
+ *   ‹ 前の日    9月19日（金）    次の日 ›
+ *
+ * ★ **過去と未来は1本のめくりに統合してある。** ‹ で終了済み、› で終了予定へ進む。
+ *   「これからが先、過去が後」という並びは無くなり、**暦の順**だけが残った。
+ * ★ **節の見出し（h2）も説明文も消した。** 日付そのものが見出し（WorkTable の `.day-title`）になり、
+ *   「近い順に並べています」のような並びの説明は、めくりになった時点で意味を失った。
+ *   **書き戻さないこと。**
+ * ★ 記事の一覧は**表より後ろ**に移した（同じく運用者の指定）。
+ *   升目と表のあいだにあると、日付から作品へ行く道の途中に記事が挟まる。
  *
  * ■ 検索から来るページでもある（ここを崩さないこと）
  * `/leaving/netflix` は「◯◯ netflix 配信終了」で表示を集めている（docs/FUNNEL.md 4-1）。
  * **表（作品名の並び）が検索に当たっている本文**なので、升目だけのページにしない。
- * タイトルも「一覧」を残して「カレンダー」を足しただけ（lib/evergreen.ts）。
+ * ★ 日付めくりで隠れる日も **HTML には全部出ている**（隠すのはスクリプト。DayPager.astro）。
+ *   ビルド時に「きょうの日だけ書き出す」ような直しを入れると、本文が消える。
  *
  * ■ 絶対に守ること
  * **「配信中」と書かない。** 新着は「始まった記録」、配信開始予定は「告知された予定」、
@@ -77,14 +90,16 @@ interface Section {
   kind: CalendarKind
   /** 升目の行き先の頭と、表の見出しの id の頭。**必ず同じ文字列**（EventCalendar の kinds） */
   prefix: string
-  heading: string
-  note: string
-  /** 0件のときに表の代わりに出す文 */
-  empty: string
+  /**
+   * 日付見出しの意味づけ（「12本終了予定」の「終了予定」）。
+   *
+   * ★ **4つとも別の言葉にすること**（2026-09-19）。節の見出しを外したので、
+   *   同じ日に終了済みと終了予定が両方ある日は、**ここだけが2つの表を読み分ける手がかり**になる。
+   *   以前は終了予定も終了済みも「終了」で、並べると見分けが付かない。
+   * ★ 作品検索の候補に出る日付（WorkTable の `whenLabel`）もこの言葉を使う。
+   */
   dateNoun: string
   works: WorkRow[]
-  /** この社はこの種類のデータを持たない（表の代わりに理由を出す） */
-  unavailable?: string
 }
 
 /*
@@ -92,64 +107,73 @@ interface Section {
  */
 const future: Section =
   direction === 'leaving'
-    ? {
-        kind: 'leaving',
-        prefix: 'leaving-',
-        heading: '見放題配信が終了する予定',
-        note:
-          '終了日の近い順（きょうに近い日付が上）に並べています。' +
-          (isPrime
-            ? 'Prime Video は終了の約11日前にならないと終了予定が出ないため、先の日付ほど件数が少なくなります。'
-            : ''),
-        empty:
-          `現在、${label}で終了予定として取得できている作品はありません。` +
-          (isPrime
-            ? 'Prime Video は終了の約11日前にならないと終了予定が出ないため、時期によっては空になります。'
-            : 'しばらくしてから再度ご確認ください。'),
-        dateNoun: '終了',
-        works: futureWorks,
-        /*
-         * ★ Disney+ は配信データが終了予定を返さない（events-data.ts の LEAVING_SERVICES）。
-         *   「0件です」と書くと**観測できていないだけ**のことを、無いことのように見せてしまう。
-         *   節ごと消すと「終了予定」で探しに来た読者に理由が伝わらないので、理由を書く。
-         */
-        unavailable:
-          content.future === null
-            ? `${label}の終了予定日は、当サイトが使っている配信データに含まれないため載せていません。終了を確認した作品は下の一覧にあります。`
-            : undefined,
-      }
-    : {
-        kind: 'upcoming',
-        prefix: 'upcoming-',
-        heading: '見放題配信が始まる予定',
-        note: '各サービスの告知（翌月の配信ラインナップなど）から、配信開始日の近い順に並べています。予定は変更・延期されることがあります。',
-        empty: `現在、${label}の配信開始予定として取り込めている告知はありません。翌月ぶんの告知は、例月の月末ごろに出ます。`,
-        dateNoun: '配信予定',
-        works: futureWorks,
-      }
+    ? { kind: 'leaving', prefix: 'leaving-', dateNoun: '終了予定', works: futureWorks }
+    : { kind: 'upcoming', prefix: 'upcoming-', dateNoun: '配信開始予定', works: futureWorks }
 
 const past: Section =
   direction === 'leaving'
-    ? {
-        kind: 'ended',
-        prefix: 'ended-',
-        heading: '見放題配信が終了した作品',
-        note: `${formatDate(since)}以降に終了を確認した作品を、終了日の新しい順（きょうに近い日付が上）に並べています。`,
-        empty: `${formatDate(since)}以降に、${label}で見放題配信の終了を確認した作品はありません。`,
-        dateNoun: '終了',
-        works: pastWorks,
-      }
-    : {
-        kind: 'arrivals',
-        prefix: 'arrivals-',
-        heading: '最近見放題になった作品',
-        note: `直近${ARRIVALS_WINDOW_DAYS}日間ぶんを、配信開始日の新しい順（直近のものが上）に並べています。`,
-        empty: `直近${ARRIVALS_WINDOW_DAYS}日間に、${label}で見放題配信が始まった作品は取得できていません。`,
-        dateNoun: '追加',
-        works: pastWorks,
-      }
+    ? { kind: 'ended', prefix: 'ended-', dateNoun: '終了', works: pastWorks }
+    : { kind: 'arrivals', prefix: 'arrivals-', dateNoun: '追加', works: pastWorks }
 
-const sections = [future, past]
+/*
+ * ★ **過去が先。** 1日の中に2種類ある日（きょう終了した作品と、きょう終了する予定の作品）で
+ *   表を並べる順。暦と同じ向き（左から右へ時間が進む）にそろえてある
+ *   （升目の印の並びと同じ規則。EventCalendar.astro の ORDER）。
+ */
+const sections = [past, future]
+
+/*
+ * 日付めくりに渡す1日ぶん。**2つの節を日付で合流させる。**
+ * 同じ日に両方あれば、その日の中に表が2つ並ぶ（上の ORDER の順）。
+ */
+const dayMap = new Map<string, { date: Date; parts: { section: Section; works: WorkRow[] }[] }>()
+for (const s of sections) {
+  for (const g of groupByDate(s.works)) {
+    const iso = isoDate(g.date)
+    const hit = dayMap.get(iso) ?? { date: g.date, parts: [] }
+    hit.parts.push({ section: s, works: g.works })
+    dayMap.set(iso, hit)
+  }
+}
+/** 暦の順（古い日が先）。**めくりの ‹ › はこの並びを前後にたどる。** */
+const days = [...dayMap.entries()].sort(([a], [b]) => a.localeCompare(b))
+
+/**
+ * めくりの下に出す1行。**この社のデータに穴があるときだけ。**
+ *
+ * ★ 「近い順に並べています」のような**並びの説明は書かない**（2026-09-19 に削除）。
+ *   めくりになった以上、並び順は読者の操作そのもので、説明する対象が無い。
+ * ★ 「さかのぼれるのは◯月◯日までです」も**書かない**（2026-09-19・運用者の指定）。
+ *   端まで行けば ‹ が押せなくなるので、日付を先に言う必要が無い。**書き戻さないこと。**
+ * ★ 残してあるのは**社ごとのデータの穴**だけ。どちらも「押しても進まない」理由で、
+ *   ページを見ただけでは分からない。
+ */
+const notes: string[] = []
+if (direction === 'leaving' && isPrime) {
+  notes.push('Prime Video は終了の約11日前にならないと終了予定が出ないため、先の日付ほど件数が少なくなります。')
+}
+/*
+ * ★ Disney+ は配信データが終了予定を返さない（events-data.ts の LEAVING_SERVICES）。
+ *   黙って未来の日付が空になると、**観測できていないだけ**のことが、無いことのように見える。
+ */
+if (direction === 'leaving' && content.future === null) {
+  notes.push(
+    `${label}の終了予定日は、当サイトが使っている配信データに含まれないため載せていません。このカレンダーに出るのは、終了を確認した作品だけです。`,
+  )
+}
+
+/** その日に1本も無いときの文。**過去の日にも未来の日にも出る**ので、時制を持たせないこと。 */
+const dayEmpty =
+  direction === 'leaving'
+    ? 'この日は、見放題配信の終了を取得できていません。'
+    : 'この日は、見放題配信の開始を取得できていません。'
+
+/** 1本も無いページ（めくる日が1日も無い）。**めくりごと出さずにこの文だけ出す。** */
+const pageEmpty =
+  direction === 'leaving'
+    ? `現在、${label}で見放題配信の終了予定・終了済みとして取得できている作品はありません。` +
+      (isPrime ? 'Prime Video は終了の約11日前にならないと終了予定が出ないため、時期によっては空になります。' : '')
+    : `現在、${label}で見放題配信の開始予定・新着として取得できている作品はありません。翌月ぶんの告知は、例月の月末ごろに出ます。`
 
 /*
  * 升目。**渡すのは表に出しているのと同じ配列**（lib/calendar.ts）。
@@ -169,13 +193,14 @@ const calendar = buildCalendar(
 const hasRows = futureWorks.length + pastWorks.length > 0
 
 /*
- * 作品検索の説明文。**カレンダーの見出しの右と、升目が出ないときの単独置きで同じ文字列を使う。**
- * ★ 表は2つあるが、検索窓は**1つで両方に当たる**（WorkSearch は文書内の `[data-work-row]` を全部見る）。
+ * 作品検索の説明文。**升目の上と、升目が出ないときの単独置きで同じ文字列を使う。**
+ * ★ 表は日付ごとに分かれているが、検索窓は**1つでページ全部に当たる**
+ *   （WorkSearch は文書内の `[data-work-row]` を全部見る。**いま見せていない日の行も含めて**）。
  */
-const SEARCH_LABEL = 'この一覧から作品を探す'
+const SEARCH_LABEL = 'このカレンダーから作品を探す'
 
 /*
- * タイトルの末尾に基準日を出す（`…作品一覧・カレンダー【9月14日更新】`）。
+ * タイトルの末尾に基準日を出す（`Netflix 見放題・配信終了カレンダー【9月14日更新】`）。
  * **素のタイトルも組み立ても lib/evergreen.ts の1か所。ここで文字列を作らないこと。**
  */
 const title = evergreenTitle(evergreenTitleBase(direction, service, label), content.dataAsOf)
@@ -184,13 +209,13 @@ const nearest = futureWorks[0]
 const description =
   direction === 'leaving'
     ? content.future === null
-      ? `${label}で${formatDate(since)}以降に見放題配信が終了した作品${pastWorks.length}本を、カレンダーと一覧で確認できます。`
+      ? `${label}で${formatDate(since)}以降に見放題配信が終了した作品${pastWorks.length}本を、日付ごとに確認できます。`
       : futureWorks.length > 0
-        ? `${label}で見放題配信が終了する予定の作品${futureWorks.length}本（最も近い終了日は${formatDate(nearest!.at)}）と、${formatDate(since)}以降に終了した作品${pastWorks.length}本を、カレンダーと一覧で確認できます。`
-        : `${label}で見放題配信が終了する予定の作品と、${formatDate(since)}以降に終了した作品${pastWorks.length}本を、カレンダーと一覧で確認できます。現在、終了予定として取得できている作品はありません。`
+        ? `${label}で見放題配信が終了する予定の作品${futureWorks.length}本（最も近い終了日は${formatDate(nearest!.at)}）と、${formatDate(since)}以降に終了した作品${pastWorks.length}本を、日付ごとに確認できます。`
+        : `${label}で見放題配信が終了する予定の作品と、${formatDate(since)}以降に終了した作品${pastWorks.length}本を、日付ごとに確認できます。現在、終了予定として取得できている作品はありません。`
     : futureWorks.length > 0
-      ? `${label}で見放題配信が始まる予定の作品${futureWorks.length}本と、直近${ARRIVALS_WINDOW_DAYS}日間に見放題になった作品${pastWorks.length}本を、カレンダーと一覧で確認できます。`
-      : `${label}で直近${ARRIVALS_WINDOW_DAYS}日間に見放題になった作品${pastWorks.length}本を、カレンダーと一覧で確認できます。`
+      ? `${label}で見放題配信が始まる予定の作品${futureWorks.length}本と、直近${ARRIVALS_WINDOW_DAYS}日間に見放題になった作品${pastWorks.length}本を、日付ごとに確認できます。`
+      : `${label}で直近${ARRIVALS_WINDOW_DAYS}日間に見放題になった作品${pastWorks.length}本を、日付ごとに確認できます。`
 
 /*
  * このサービス×向きの記事（2026-09-17 追加）。
@@ -326,6 +351,44 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
     )
   }
 
+  {/*
+    日付めくり（2026-09-19・運用者の指定）。**このページの本体。**
+
+    ★ 1日ぶんを `[data-day]` で包む。**この入れ物を出し入れするのは DayPager だけ。**
+      中の `section.day` を出し入れするのは絞り込み（CalendarFilter）で、役割が分かれている。
+    ★ 日付見出しは h2（ページの h1 の直下）。節の見出しを外したのでここが2階層目になった。
+    ★ 表の `idPrefix` は**升目のリンク先**（EventCalendar の `kinds`）と必ず同じ文字列。
+      片方だけ変えると升目を押しても何も起きない。
+  */}
+  {
+    days.length === 0 ? (
+      <p class="empty">{pageEmpty}</p>
+    ) : (
+      <>
+        <DayPager buildToday={isoDate(new Date())} emptyLabel={dayEmpty}>
+          {days.map(([iso, day]) => (
+            <div class="day-page" data-day={iso}>
+              {day.parts.map((p) => (
+                <WorkTable
+                  groups={[{ date: day.date, works: p.works }]}
+                  dateNoun={p.section.dateNoun}
+                  service={service}
+                  idPrefix={p.section.prefix}
+                />
+              ))}
+            </div>
+          ))}
+        </DayPager>
+        {/* ★ 注記が無い社では**1バイトも出さない**（空の <p> が表と記事のあいだに残らないように） */}
+        {notes.length > 0 && <p class="day-note">{notes.join(' ')}</p>}
+      </>
+    )
+  }
+
+  {/*
+    ★ 記事の一覧は**表より後ろ**（2026-09-19・運用者の指定。それまでは升目と表のあいだ）。
+      日付から作品へ行く道の途中に記事が挟まると、このページの用（いつ何が消えるか）が遠くなる。
+  */}
   {
     articles.length > 0 && (
       <section class="articles" aria-labelledby="articles-title">
@@ -347,34 +410,6 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
         )}
       </section>
     )
-  }
-
-  {
-    sections.map((s) => (
-      <section class="block" id={s.kind}>
-        <h2>{s.heading}</h2>
-        {s.unavailable ? (
-          <p class="block-note">{s.unavailable}</p>
-        ) : s.works.length === 0 ? (
-          <p class="empty">{s.empty}</p>
-        ) : (
-          <>
-            <p class="block-note">{s.note}</p>
-            {/* 絞り込み（CalendarFilter.astro）で1本も残らなかったときだけ出す */}
-            <p class="empty" data-filter-empty hidden>
-              選んだ種類・ジャンルに当てはまる作品はありません。
-            </p>
-            <WorkTable
-              groups={groupByDate(s.works)}
-              dateNoun={s.dateNoun}
-              service={service}
-              idPrefix={s.prefix}
-              headingLevel={3}
-            />
-          </>
-        )}
-      </section>
-    ))
   }
 
   {
@@ -415,18 +450,22 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
     <a href="/stats">サービス別見放題の追加・削除一覧</a>
   </p>
 
+  {/*
+    ★ ここで言い分けているのは**日付見出しの言葉**（Section の `dateNoun`）。
+      節の見出しを外した（2026-09-19）ので、「終了予定」と「終了」の違いを説明する場所は
+      ページ内にここしか残っていない。**片方だけ言葉を変えないこと。**
+  */}
   <p class="site-note">
     {
       direction === 'leaving' ? (
         <>
-          「見放題配信が終了した作品」に載せているのは<strong>終了を確認した記録</strong>で、
-          その後に見放題へ戻っている場合があります。
+          日付見出しの「終了」は<strong>終了を確認した記録</strong>で、その後に見放題へ戻っている場合があります。
+          「終了予定」は<strong>配信データが持つ終了予定日</strong>で、延長されることがあります。
         </>
       ) : (
         <>
-          「見放題配信が始まる予定」は<strong>各サービスの告知にもとづく予定</strong>で、変更・延期されることがあります。
-          「最近見放題になった作品」に載せているのは<strong>配信が始まった記録</strong>で、
-          その後に配信が終了している場合があります。
+          日付見出しの「配信開始予定」は<strong>各サービスの告知にもとづく予定</strong>で、変更・延期されることがあります。
+          「追加」は<strong>配信が始まった記録</strong>で、その後に配信が終了している場合があります。
         </>
       )
     }
@@ -459,10 +498,10 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
   }
   /*
    * 記事の一覧。カードは PostCard の見た目のまま。
-   * ★ 升目と表のあいだに置くので、枚数は `ARTICLES_SHOWN`（5本）で止めてある。
+   * ★ 2026-09-19 から**表より後ろ**（上の★）。枚数は `ARTICLES_SHOWN`（5本）のまま。
    */
   .articles {
-    margin-top: 1.8rem;
+    margin-top: 2.4rem;
   }
   .articles h2 {
     margin: 0;
@@ -473,19 +512,19 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
     font-size: 0.84rem;
   }
   /*
-   * 節（これから / 過去）。**カレンダーから飛んでくる先の入れ物。**
-   * 節の頭に余白を入れて、前の節の表と地続きに見えないようにする。
+   * 1日ぶんの入れ物。**日付めくり（DayPager.astro）が出し入れする。**
+   * ★ `display` を書かないこと。書くと `hidden` に勝って、全部の日が並んだままになる。
+   * ★ 同じ日に2つ表が来ることがある（終了済みと終了予定）。2つめの表を少し離す。
    */
-  .block {
-    margin-top: 2.2rem;
+  .day-page > :global(section.day + section.day) {
+    margin-top: 1.8rem;
   }
-  .block h2 {
-    margin-bottom: 0.2rem;
-    /* ページ内リンクで直接飛ばれることがある。ヘッダーに潜らせない */
-    scroll-margin-top: 6rem;
-  }
-  .block-note {
-    margin: 0 0 0.8rem;
+  /*
+   * めくりの下の1行（社ごとのデータの穴の理由）。
+   * ★ **めくりの上に置かないこと。** 上に置くと、日付より先に注記を読ませることになる。
+   */
+  .day-note {
+    margin: 1.6rem 0 0;
     font-size: 0.84rem;
     line-height: 1.8;
     color: var(--text-muted);

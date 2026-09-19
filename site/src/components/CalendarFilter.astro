@@ -129,7 +129,7 @@ const GROUPS = [
       cell.classList.remove('no-img')
     }
 
-    const apply = () => {
+    const apply = (initial = false) => {
       for (const b of buttons) {
         b.setAttribute('aria-pressed', String(state[b.dataset.filter as Key] === b.dataset.value))
       }
@@ -161,14 +161,7 @@ const GROUPS = [
         if (id) visibleByDay.set(id, visible)
       }
 
-      // 4. 節（これから／過去）ごとに、1本も残らなければそう書く
-      for (const block of document.querySelectorAll<HTMLElement>('section.block')) {
-        const days = Array.from(block.querySelectorAll<HTMLElement>('section.day'))
-        const empty = block.querySelector<HTMLElement>('[data-filter-empty]')
-        if (empty && days.length > 0) empty.hidden = days.some((d) => !d.hidden)
-      }
-
-      // 5. 升目。行き先の見出しの id から、その日の見えている行を引く
+      // 4. 升目。行き先の見出しの id から、その日の見えている行を引く
       for (const cell of document.querySelectorAll<HTMLElement>('[data-cal] .cell.is-hit')) {
         const links = cell.matches('a')
           ? [cell as HTMLAnchorElement]
@@ -191,7 +184,7 @@ const GROUPS = [
         setPoster(cell, candidates)
       }
 
-      // 6. 月の合計
+      // 5. 月の合計
       for (const table of document.querySelectorAll<HTMLElement>('[data-cal] table[data-month]')) {
         let all = 0
         for (const sum of table.querySelectorAll<HTMLElement>('[data-sum-kind]')) {
@@ -208,7 +201,7 @@ const GROUPS = [
         if (none) none.hidden = all > 0
       }
 
-      // 7. URL と、上の切り替え（サービス／表示）の行き先に条件を残す
+      // 6. URL と、上の切り替え（サービス／表示）の行き先に条件を残す
       const q = new URLSearchParams(location.search)
       for (const key of Object.keys(state) as Key[]) {
         if (state[key]) q.set(key, state[key])
@@ -220,6 +213,17 @@ const GROUPS = [
         a.dataset.baseHref ??= a.getAttribute('href') ?? ''
         a.setAttribute('href', `${a.dataset.baseHref}${query}`)
       }
+
+      /*
+       * 7. 日付めくり（DayPager.astro）に知らせる。**全部が終わってから1回だけ。**
+       *
+       * ★ あちらが持ち直すのは「‹ › の可否」と「該当なし」の文で、
+       *   **行や `section.day` には触らない**（触るのはここだけ）。役割を混ぜないこと。
+       * ★ `initial` を必ず渡すこと。**URL の条件つきで開かれたときだけ、あちらは開く日を選び直す。**
+       *   読者がボタンを押したときに日まで動くと、いま読んでいた日から飛ばされる。
+       * ★ 日付めくりの無いページでは誰も聞いていないので、何も起きない。
+       */
+      document.dispatchEvent(new CustomEvent('cal:filtered', { detail: { initial } }))
     }
 
     for (const b of buttons) {
@@ -230,7 +234,7 @@ const GROUPS = [
     }
 
     // ★ 条件が付いて来たときだけ最初に当てる。付いていなければビルドした表示のまま（何も書き換えない）
-    if (state.type || state.genre) apply()
+    if (state.type || state.genre) apply(true)
   }
 </script>
 

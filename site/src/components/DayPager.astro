@@ -1,0 +1,411 @@
+---
+interface Props {
+  /**
+   * ビルド時点の JST のきょう（`2026-09-19`）。**最初に開く日の既定値。**
+   *
+   * ★ 読者の画面では**読者のきょう**で開き直す（下のスクリプト）。
+   *   収集は週2回なので、ビルド時のきょうは読者のきょうと最大3〜4日ずれる
+   *   （components/EventCalendar.astro の「きょう」の印と同じ事情）。
+   *   ここで渡すのは、スクリプトが動かない環境と、最初の描画の値。
+   */
+  buildToday: string
+  /**
+   * その日に作品が1本も無いときに出す文（`Netflixで見放題配信が終了する作品はありません。`）。
+   * ★ 日付は入れないこと。日付は見出し（`data-day-label`）が出している。
+   */
+  emptyLabel: string
+}
+
+const { buildToday, emptyLabel } = Astro.props
+
+/**
+ * 日付めくり（2026-09-19 追加・運用者の指定）。**1日ぶんの作品だけを見せて、前後の日へ送る。**
+ *
+ * ■ 何を変えたか
+ * それまでは「見放題配信が終了する予定」「見放題配信が終了した作品」の2つの節に分かれ、
+ * **その中で日付ごとの表が上から全部並んでいた**（Netflix の終了側で実測60日ぶん）。
+ * 読者の用は「◯月◯日に何が終わるか」なので、**日付を主語にして1日ずつ見せる**形に変えた。
+ *
+ *   ‹ 前の日    9月19日    次の日 ›
+ *                [きょう]
+ *
+ * ■ 過去と未来を**1本のめくりに統合してある**（運用者の指定）
+ * きょうを基準に ‹ を押すと前日（＝終了済みの記録）、› を押すと翌日（＝終了予定）へ進む。
+ * 節の見出し（h2）は無くなり、**日付そのものが見出し**（WorkTable の `.day-title`）になった。
+ * 同じ日に両方ある日は、その日の中に表が2つ並ぶ（「12本終了予定」と「3本終了」で読み分ける）。
+ *
+ * ■ 送り先は**作品のある日だけ**
+ * 暦の上の前日ではなく、**作品のある前の日**へ飛ぶ。1件も無い日を1日ずつ送らせると、
+ * 数十回押さないと隣の山に届かない（Prime Video の終了予定は約11日先までしか出ないので、
+ * 空の日が連続する）。例外は**きょうだけ**で、作品が無くてもめくりの位置として必ず持つ
+ * （読者が自分の現在地を見失わないため。EventCalendar の「今月は必ず入れる」と同じ）。
+ *
+ * ■ スクリプトが動かない環境では**全部の日が並ぶ**
+ * 隠すのはスクリプトの仕事で、HTML の時点では1日も隠していない
+ * （EventCalendar の月送りと同じ作り）。**この順序を逆にしないこと。**
+ * 作品名の並びは検索に当たっている本文（docs/FUNNEL.md 4-1）なので、
+ * 「スクリプトが動かないと本文が消える」形にはしない。
+ *
+ * ■ 外から日を切り替える口が2つある
+ *   1. 升目のリンク（`#leaving-2026-09-30`）… 下の click / hashchange
+ *   2. 作品検索（WorkSearch.astro）… `day-show` イベント
+ * ★ どちらも**隠れている日の中の行**を指してくる。先に日を出さないと飛べない。
+ *
+ * ■ 絞り込み（CalendarFilter.astro）との関係
+ * あちらが書き換えるのは**日の中の `section.day`** で、こちらが出し入れするのは
+ * **その外側の `[data-day]`**。役割が分かれているので互いに上書きしない。
+ * 絞り込みで1本も残らなかった日は ‹ › が飛ばす（`hasWorks`）。
+ */
+---
+
+<div class="daypager" data-daypager data-build-today={buildToday}>
+  {/*
+    めくりの操作。**スクリプトが動いたときだけ出す**（`hidden` を外すのはスクリプト）。
+    動かない環境では全部の日が並ぶので、ボタンは要らない。
+  */}
+  <div class="nav" data-day-nav hidden>
+    <div class="row">
+      <button type="button" class="arrow" data-day-step="-1" aria-label="前の日へ">‹</button>
+      {/*
+        いま見せている日。**`aria-live` を付ける。** ボタンを押しても画面は動かないので、
+        読み上げでは「何が変わったのか」がここでしか伝わらない。
+      */}
+      <span class="label" data-day-label aria-live="polite"></span>
+      <button type="button" class="arrow" data-day-step="1" aria-label="次の日へ">›</button>
+    </div>
+    <button type="button" class="home" data-day-home>きょう</button>
+  </div>
+
+  {/*
+    その日に1本も無いとき。**文はスクリプトが2つから選ぶ。**
+    ★ 「そもそも無い日」と「絞り込みで消えた日」を言い分けること。同じ文にすると、
+      絞り込みを当てたまま忘れた読者が「この日は何も無い日だ」と読んでしまう。
+    ★ 中身は空で出す。`hidden` のまま残る（＝スクリプトが動かない環境では全部の日が並ぶ）。
+  */}
+  <p
+    class="empty"
+    data-day-empty
+    data-empty-none={emptyLabel}
+    data-empty-filtered="選んだ種類・ジャンルに当てはまる作品はありません。"
+    hidden
+  >
+  </p>
+
+  <div class="days" data-days>
+    <slot />
+  </div>
+</div>
+
+<script>
+  /**
+   * 1日ずつ見せる。**日の中身には触らない**（表を書き換えるのは CalendarFilter）。
+   *
+   * ★ きょうは **JST** で決める。読者の端末が海外の時刻でも、
+   *   日付の切り方（lib/events-data.ts の `jstDay`）と揃えるため。
+   */
+  const JST_MS = 9 * 60 * 60 * 1000
+  const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
+
+  /** `2026-09-19` → `9月19日（金）` */
+  function label(iso: string): string {
+    const d = new Date(`${iso}T00:00:00Z`)
+    const w = WEEKDAYS[d.getUTCDay()] ?? ''
+    return `${Number(iso.slice(5, 7))}月${Number(iso.slice(8, 10))}日（${w}）`
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-daypager]')) {
+    const pages = Array.from(root.querySelectorAll<HTMLElement>('[data-day]'))
+    if (pages.length === 0) continue
+
+    const nav = root.querySelector<HTMLElement>('[data-day-nav]')
+    const text = root.querySelector<HTMLElement>('[data-day-label]')
+    const empty = root.querySelector<HTMLElement>('[data-day-empty]')
+    const prev = root.querySelector<HTMLButtonElement>('[data-day-step="-1"]')
+    const next = root.querySelector<HTMLButtonElement>('[data-day-step="1"]')
+    const homeBtn = root.querySelector<HTMLButtonElement>('[data-day-home]')
+    if (!nav || !text || !empty || !prev || !next || !homeBtn) continue
+
+    const byDay = new Map(pages.map((p) => [p.dataset.day ?? '', p]))
+    const today = new Date(Date.now() + JST_MS).toISOString().slice(0, 10)
+    /**
+     * 升目のリンクつき（`#leaving-2026-09-30`）で開かれたか。
+     * ★ **絞り込みの初期適用に開く日を上書きさせないため。** スクリプトの走る順は
+     *   束ね方で変わるので、`?genre=anime#leaving-2026-09-30` のようなリンクでは
+     *   どちらが先に動くか決め打ちできない。**指定された日のほうを必ず勝たせる。**
+     */
+    let pinned = false
+
+    /*
+     * めくれる位置。**作品のある日 ∪ きょう。**
+     * ★ きょうを必ず入れる（作品が無くても）。入れないと「きょう」ボタンの行き先が無くなり、
+     *   読者は自分の現在地を見失う。
+     */
+    const keys = [...new Set([...byDay.keys(), today])].filter(Boolean).sort()
+    const home = keys.indexOf(today)
+    let index = home
+
+    /** その日に**いま見えている**作品があるか（絞り込みで全部消えた日は false） */
+    function hasWorks(key: string): boolean {
+      const page = byDay.get(key)
+      if (!page) return false
+      return Array.from(page.querySelectorAll<HTMLElement>('section.day')).some((d) => !d.hidden)
+    }
+
+    /** めくりの位置として成立するか。**きょうは空でも成立する**（上の★） */
+    const usable = (i: number) => keys[i] === today || hasWorks(keys[i] ?? '')
+
+    /** `from` から `delta` の向きに、次に成立する位置。無ければ -1 */
+    function seek(from: number, delta: number): number {
+      for (let i = from + delta; i >= 0 && i < keys.length; i += delta) {
+        if (usable(i)) return i
+      }
+      return -1
+    }
+
+    /**
+     * 最初に見せる日。**きょうに作品があればきょう。無ければ「きょうにいちばん近い日」。**
+     *
+     * ★ きょうを外れるのは**きょうが空のときだけ。** 基準はあくまできょうで、
+     *   「きょう」ボタンを押せば空のきょうに戻れる（＝押せる状態で残る）。
+     * ★ **この分岐が要る理由（2026-09-19 の実測）。** 収集は週2回・終了日は月末に集中するので、
+     *   6枚のカレンダーのうち**4枚はきょうに1本も無い。**
+     *   きょうで固定すると、開いた瞬間に「この日は取得できていません」だけのページになる。
+     * ★ 近さは**日数の差**で測る。前後で同じなら後ろ（未来）を取る —
+     *   このサイトの用は「次に何が起きるか」なので、同点なら先の日付を見せる。
+     *   ★ 「未来を優先」にはしないこと。新着側は配信開始予定が翌月1日に固まるので、
+     *     きのう始まった作品を飛ばして2週間先へ飛ぶ。
+     */
+    function startIndex(): number {
+      if (hasWorks(today)) return home
+      const before = seek(home, -1)
+      const after = seek(home, 1)
+      if (before < 0) return after < 0 ? home : after
+      if (after < 0) return before
+      const gap = (i: number) => Math.abs(Date.parse(keys[i]!) - Date.parse(today))
+      return gap(after) <= gap(before) ? after : before
+    }
+
+    function paint() {
+      const key = keys[index] ?? today
+      for (const page of pages) page.hidden = page.dataset.day !== key
+      text!.textContent = label(key)
+
+      const shown = hasWorks(key)
+      empty!.hidden = shown
+      if (!shown) {
+        // 日そのものが無ければ「作品が無い日」、日はあって行が全部隠れているなら絞り込みのせい
+        const kind = byDay.has(key) ? 'emptyFiltered' : 'emptyNone'
+        empty!.textContent = empty!.dataset[kind] ?? ''
+      }
+
+      prev!.disabled = seek(index, -1) < 0
+      next!.disabled = seek(index, 1) < 0
+      homeBtn!.disabled = index === home
+    }
+
+    /** 指定の日へ移る。**その日が無ければ何もしない**（呼び出し側の的が外れているだけ） */
+    function showDay(key: string | undefined) {
+      const i = key ? keys.indexOf(key) : -1
+      if (i < 0) return
+      index = i
+      paint()
+    }
+
+    function step(delta: number) {
+      const i = seek(index, delta)
+      if (i < 0) return
+      index = i
+      paint()
+    }
+
+    prev.addEventListener('click', () => step(-1))
+    next.addEventListener('click', () => step(1))
+    homeBtn.addEventListener('click', () => {
+      index = home
+      paint()
+    })
+
+    /*
+     * 升目のリンク（`#leaving-2026-09-30`）で飛んでくる道。
+     *
+     * ★ **`preventDefault` しない。** この場で日を出しておけば、
+     *   そのあとブラウザが本来のジャンプを実行するときには見出しが表に出ている。
+     *   自前でスクロールすると、履歴に hash が残らず「戻る」が効かなくなる。
+     * ★ `hashchange` だけでは足りない。いま見ている日と同じリンクを押したときは
+     *   hash が変わらず、イベントが飛ばない。
+     */
+    const dayOfHash = (hash: string) =>
+      document.getElementById(hash.slice(1))?.closest<HTMLElement>('[data-day]')?.dataset.day
+
+    document.addEventListener('click', (event) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      const a = target.closest<HTMLAnchorElement>('a[href^="#"]')
+      if (!a) return
+      showDay(dayOfHash(a.getAttribute('href') ?? ''))
+    })
+    window.addEventListener('hashchange', () => {
+      /*
+       * ★ ハッシュが外れたとき（升目を押したあとの「戻る」）は**開いた日に戻す。**
+       *   何もしないと、戻ったのに押した日が出たままで、「戻る」が効かなく見える。
+       */
+      if (!location.hash) {
+        pinned = false
+        index = startIndex()
+        paint()
+        return
+      }
+      showDay(dayOfHash(location.hash))
+    })
+
+    /*
+     * 作品検索（WorkSearch.astro）から。隠れている日の行へ飛ぶ前に、こちらへ知らせが来る。
+     * ★ `hidden` な要素からもイベントは上がってくる。
+     */
+    root.addEventListener('day-show', (event) => {
+      const target = event.target
+      if (target instanceof Element) showDay(target.closest<HTMLElement>('[data-day]')?.dataset.day)
+    })
+
+    /*
+     * 絞り込み（CalendarFilter.astro）が当たったら、‹ › の可否と「該当なし」を付け直す。
+     *
+     * ★ **開く日を選び直すのは、URL の条件つきで開かれたとき（`initial`）だけ。**
+     *   `/leaving/netflix?genre=japanese` で開くと、きょうに邦画が1本も無いことがある。
+     *   そのまま「該当なし」を見せると、条件を付けて共有したリンクが空のページになる。
+     * ★ 読者がボタンを押したときは**日を動かさない。** いま読んでいた日から飛ばされるほうが驚く。
+     *   その日に残らなければ「選んだ種類・ジャンルに当てはまる作品はありません」を出し、
+     *   ‹ › が次に当てはまる日へ送る。
+     */
+    document.addEventListener('cal:filtered', (event) => {
+      const detail = (event as CustomEvent).detail
+      if (detail?.initial && !pinned) index = startIndex()
+      paint()
+    })
+
+    /* ★ 出し入れを始めるのはここから。ここより前で例外が出たら、全部の日が並んだまま残る */
+    nav.hidden = false
+    index = startIndex()
+    paint()
+
+    /*
+     * 升目のリンクつきで開かれたとき（`/leaving/netflix#leaving-2026-09-30`）。
+     *
+     * ★ **置き直しが要る。** この時点でブラウザはもう見出しまでスクロールし終えている
+     *   （読み込んだ HTML には全部の日が並んでいるため）。そこから他の日を隠すと
+     *   ページの高さが変わり、**押した日とは別の場所が画面に残る。**
+     */
+    const start = document.getElementById(location.hash.slice(1))
+    if (start) {
+      const key = dayOfHash(location.hash)
+      pinned = key !== undefined
+      showDay(key)
+      start.scrollIntoView({ behavior: 'auto', block: 'start', inline: 'nearest' })
+    }
+  }
+</script>
+
+<style>
+  .daypager {
+    margin: 1.6rem 0 0;
+  }
+  /*
+   * めくりの操作。**日付を真ん中に、左右に矢印。**
+   * ★ 月送り（EventCalendar の `.nav`）とは別の形にしてある。あちらは升目の上に並ぶ小さなボタン列で、
+   *   こちらは**ページの本文の見出しの代わり**なので、日付を大きく真ん中に置く。
+   */
+  .nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0 0 0.9rem;
+    padding: 0.5rem 0.6rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav[hidden] {
+    display: none;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  /*
+   * いま見せている日。**本文のどの見出しより大きくしない。**
+   * 日付の見出し（WorkTable の `.day-title`・1.05rem）がすぐ下に来るので、
+   * ここが大きすぎると同じ日付が2段の見出しに見える。
+   */
+  .label {
+    min-width: 8.5em;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    color: var(--text);
+  }
+  /*
+   * 前後の日。**指で押せる大きさ（44px 角）を確保する。**
+   * 読者の79.5%がスマホ（docs/DEMAND.md 6-1）で、この2つがページの主な操作になる。
+   */
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--accent);
+    font: inherit;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .arrow:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .arrow:disabled {
+    cursor: default;
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+  .home {
+    padding: 0.1rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.76rem;
+    line-height: 1.7;
+    cursor: pointer;
+  }
+  .home:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  /* きょうを見ている間は押せない。**消さない**（押せる場所がどこかを覚えておけるように） */
+  .home:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
+  .arrow:focus-visible,
+  .home:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .empty {
+    margin: 0 0 1.4rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .empty[hidden] {
+    display: none;
+  }
+</style>

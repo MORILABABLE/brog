@@ -18,7 +18,8 @@ interface Props {
   /**
    * 作品検索（WorkSearch.astro）の説明文。**渡したページだけ検索窓が出る。**
    *
-   * 検索窓は「配信カレンダー」の見出しと同じ行の右端に置く（2026-09-09）。
+   * 検索窓は升目のすぐ上・本文幅の右端に置く（2026-09-09。2026-09-19 に h2 を外すまでは
+   * 「配信カレンダー」の見出しと同じ行だった）。
    *
    * ★ 検索窓はページに1つだけ。WorkSearch のスクリプトは
    *   `[data-work-search]` を1つしか見ないので、同じページで2回出さないこと。
@@ -115,13 +116,17 @@ function spoken(iso: string): string {
 }
 ---
 
-<section class="calendar" aria-labelledby="calendar-title">
+<section class="calendar" aria-label="配信カレンダー">
   {/*
-    見出しの行。**右端に作品検索を置く**（2026-09-09）。
-    見出しと検索窓で1行に見せる。幅が足りなければ検索窓が下へ落ちる（スマホ）。
+    作品検索の行。**本文幅の右端に置く**（2026-09-09）。
+
+    ★ ここにあった h2「配信カレンダー」は**外した**（2026-09-19・運用者の指定）。
+      ページの h1 が `Netflix 見放題・配信終了カレンダー` と名乗るようになり、
+      その直下でもう一度「配信カレンダー」と言うことになったため。
+      **枠の名前は section の aria-label が持っている**ので、読み上げからは消えていない。
+      h2 を戻すなら、h1 の文言（lib/evergreen.ts の `evergreenTitleBase`）と併せて考えること。
   */}
   <div class="head">
-    <h2 id="calendar-title">配信カレンダー</h2>
     {searchLabel && <WorkSearch label={searchLabel} />}
   </div>
 
@@ -350,22 +355,17 @@ function spoken(iso: string): string {
     margin: 1.4rem 0 0;
   }
   /*
-   * 見出しと作品検索を1行に並べる。
-   * ★ `baseline`。検索窓は入力欄の下に件数の行（WorkSearch の `.status`）を
-   *   持つぶん背が高いので、`center` にすると**見出しの文字が入力欄より下がる。**
-   * ★ 幅が足りなければ検索窓が下へ落ちる（スマホ）。
+   * 作品検索の置き場。**右端そろえ**（styles/global.css の `.search-head` と同じ形）。
+   * ★ 2026-09-19 に h2 を外すまでは、見出しと検索窓を `space-between` で
+   *   左右に振り分けていた。**1つしか入らない今は `flex-end` でないと左端に寄る。**
+   * ★ 検索候補の枠（WorkSearch の `.panel`）は窓の**右端**を基準に左へ伸びるので、
+   *   窓を右端に置くこと自体に意味がある（左端に置くと候補が画面の外へ出る）。
    */
   .head {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.5rem 1.2rem;
+    justify-content: flex-end;
     margin: 0 0 0.35rem;
-  }
-  .calendar h2 {
-    margin: 0;
-    font-size: 1.05rem;
   }
 
   /*

@@ -78,7 +78,11 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
 
     トップの「配信カレンダー」（1200px 未満だけ・2026-09-17）
       棚                  → site/src/components/TopCalendar.astro（シリーズ配信の棚と同じ形。絵の選び方は calendarThumb）
-      置き場所            → site/src/pages/index.astro（2つの棚の下、最新記事の上）
+      置き場所            → site/src/pages/index.astro（**3つの棚のいちばん上**、最新記事より上）
+      ★ トップの棚の並びは **配信カレンダー → 見放題の終了が近い作品 → シリーズ配信**
+        （2026-09-19・運用者の指定。急ぐものほど上）。3つとも PR 表記より下・記事一覧より上。
+      ★ カードの「カレンダー」バッジは 2026-09-19 に外した（行き先の見出しと重複したため）。
+        CalendarCards.astro と TopCalendar.astro の**両方**にあったので、戻すなら両方。
 
     配信カレンダー（/leaving/<サービス> ・ /arrivals/<サービス>）… 2026-09-17 に作り直した
       ページ本体（2枚で共有）  → site/src/components/ServiceCalendarPage.astro
@@ -87,11 +91,18 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                                  loadLeaving（終了予定）/ loadEnded（終了済み・前月から）
                                  loadUpcoming（配信開始予定・各社の告知）/ loadArrivals（新着・60日）
       タイトル・件数          → site/src/lib/evergreen.ts の evergreenTitleBase / calendarContent
+      日付めくり（‹ 9月19日 ›） → site/src/components/DayPager.astro（2026-09-19。1日ずつ見せる）
+                                 ★ 過去と未来を**1本のめくり**にしてある（節の h2 は無い）
+                                 ★ 隠すのはスクリプトだけ。**HTML には全部の日が出ている**
+                                 ★ 日の入れ物 `[data-day]` を動かすのはこれだけ。
+                                   中の `section.day` は CalendarFilter の担当。混ぜないこと
       上の切り替え（サービス／表示） → site/src/components/CalendarPicker.astro
       絞り込み（種類／ジャンル）      → site/src/components/CalendarFilter.astro（ジャンル判定は lib/work-genre.ts・pipeline の classify と同じ規則）
       シリーズの折りたたみ            → site/src/components/WorkTable.astro の SERIES_MIN（3本以上）と segmentsOf
                                          （判定はシリーズ記事の作品名の条件＝lib/series-for-work.ts）
       升目と月の切り替え      → site/src/components/EventCalendar.astro（組み立ては lib/calendar.ts）
+                                 ★ h2「配信カレンダー」は 2026-09-19 に外した（h1 と重複）。
+                                   枠の名前は section の aria-label が持っている
       メニューの行き先        → site/src/lib/evergreen.ts の hubServiceHref
                                  （ヘッダーのメニューは5社とも**記事の一覧**へ。カレンダーへは
                                    左の枠・トップのカードと、一覧の先頭の常設カードから入る）
