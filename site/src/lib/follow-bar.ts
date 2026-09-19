@@ -18,23 +18,25 @@
  * 排他は CSS のメディアクエリで行う（`FollowBar.astro` の `@media`）。
  * **両方が同時に出る幅を作らないこと。** 同じ Amazon の導線が2つ見える。
  */
+import { FOLLOW_ADS_ENABLED } from '../config'
 
 /**
- * この枠を出すか。**AdSense の審査を出す前に false にする1か所。**
+ * この枠を出すか。
  *
- * ★ AdSense の自動広告のアンカー広告も画面下に fixed で出る。
- *   **両方出すと重なる**（アンカー広告のオン・オフは AdSense の管理画面側にあり、
- *   コードからは見えないので、こちらを手で止めるしかない）。
+ * ★ **判断はここに無い。** `config.ts` の `FOLLOW_ADS_ENABLED` が持っている。
+ *   右の追従枠（`FollowRail.astro`）のPR枠と**同じ1つのフラグ**で止める
+ *   （2026-09-19 に集約）。この2つは「画面に常にちょうど1つ」で排他の同じ枠なので、
+ *   片方だけ止められる状態にしておく意味が無く、実際に止め忘れる。
  *
  * ★ **この場所は AdSense を優先すると決めてある**（2026-09-05・運営者の判断）。
- *   つまりこの枠は AdSense の審査までの暫定。**審査の準備に入ったら false にする。**
- *   人手の作業で、忘れても何の警告も出ない（docs/AFFILIATE.md 10-5）。
+ *   なぜ審査中に止めるのか（アンカー広告との衝突・誤クリック誘発）は
+ *   `FOLLOW_ADS_ENABLED` の説明と docs/AFFILIATE.md 10-5。
  *
  * ★ 「主題が決まっているページは Amazon のまま、決まらないページは AdSense」で
- *   分けたくなったら（docs/AFFILIATE.md 10-5）、この定数を消して
+ *   分けたくなったら（docs/AFFILIATE.md 10-5）、`FOLLOW_ADS_ENABLED` を消して
  *   下の `followBarOn()` の中に条件として書くこと。判断を2か所に散らさない。
  */
-export const FOLLOW_BAR_ENABLED = true
+export const FOLLOW_BAR_ENABLED = FOLLOW_ADS_ENABLED
 
 /**
  * 枠を出すページ。**いま冒頭の広告表記（`AffiliateNotice`）を出している

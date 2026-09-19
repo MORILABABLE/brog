@@ -384,11 +384,50 @@ export function hubFor(category: CategorySlug): { slug: CategorySlug; label: str
 export const GA_MEASUREMENT_ID = 'G-MZBL57S5MY'
 
 /**
- * AdSense のパブリッシャーID。
- * **審査に通るまでは未設定のままにすること。** 未設定なら広告枠は描画されない。
- * 設定するときは site/.env に PUBLIC_ADSENSE_CLIENT=ca-pub-xxxx を置く。
+ * AdSense のパブリッシャーID。site/.env に `PUBLIC_ADSENSE_CLIENT=ca-pub-xxxx`。
+ *
+ * ★ **審査を出すには設定が要る**（2026-09-19 に注意書きを訂正）。
+ *   以前ここには「審査に通るまでは未設定のままにすること」と書いてあったが、
+ *   **これは逆だった。** 審査は `<head>` にこのコードが貼られてから始まる
+ *   （docs/AFFILIATE.md 10-2）。未設定のままでは審査が開始されない。
+ *
+ *   「通るまで未設定」が正しいのは**広告ユニット**のほうで、
+ *   そちらは `slot` が無ければ描画されない（components/AdSlot.astro）。
+ *   この値は2つの役目を兼ねているので、混同しないこと。
+ *     <head> のコード（BaseLayout.astro） … この値だけで出る。**審査に必須**
+ *     広告ユニット（AdSlot.astro）        … この値 ＋ `slot`。審査後に足す
+ *
+ * ★ 通ったら `public/ads.txt` を置く。審査前には不要。
+ *   `google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0`
  */
 export const ADSENSE_CLIENT = import.meta.env.PUBLIC_ADSENSE_CLIENT ?? ''
+
+/**
+ * 追従枠のアフィリエイト広告を出すか。**AdSense の審査中は false。**
+ *
+ * ■ 何を止めるのか
+ *   右の追従枠のPR枠   … components/FollowRail.astro（1200px 以上）
+ *   下の追従枠         … components/FollowBar.astro（1200px 未満。src/lib/follow-bar.ts 経由）
+ * この2つは「画面に常にちょうど1つ」で排他になっている同じ枠なので、
+ * **1つのフラグで両方を止める**（docs/AFFILIATE.md 10-5 の「判断を2か所に散らさない」）。
+ *
+ * ■ なぜ審査中は止めるのか
+ * 1. **AdSense の自動広告のアンカー広告も画面下に fixed で出る。**
+ *    下の追従枠と同じ場所なので、両方有効にすると重なる。アンカー広告の
+ *    オン・オフは AdSense の管理画面側にあり、コードからは見えない。
+ * 2. **追従広告は誤クリック誘発とみなされうる領域。** 審査中に追従枠が
+ *    出ている状態を見せるのがいちばん悪い。
+ *
+ * ★ 止まるのは**追従枠だけ**。本文中のアフィリエイトリンク・節ごとのポスター・
+ *   表の作品リンク・記事末尾のCTAはそのまま出る（PR表記も従来どおり）。
+ *
+ * ★ **審査に通ったら、ここを戻すかどうかを決める。**
+ *   通ったあとの選択肢は docs/AFFILIATE.md 10-5。ページで分けたくなったら
+ *   このフラグを消して `followBarOn()` の中の条件にすること。
+ *
+ * 2026-09-19: 審査の準備に入ったので false（運営者の指定）。
+ */
+export const FOLLOW_ADS_ENABLED = false
 
 /**
  * アフィリエイト。**どちらも未設定なら、広告表記も含めて一切描画されない。**

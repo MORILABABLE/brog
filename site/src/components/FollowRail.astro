@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content'
 import GenreRail from './GenreRail.astro'
 import SeriesRail from './SeriesRail.astro'
 import Thumb from './Thumb.astro'
-import { amazonTagFor, CATEGORIES } from '../config'
+import { amazonTagFor, CATEGORIES, FOLLOW_ADS_ENABLED } from '../config'
 import { amazonVideoSearchUrl, withAmazonTag } from '../lib/affiliate'
 import { ctaQueryFor } from '../lib/page-intent'
 
@@ -80,7 +80,17 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft))
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */
 const current = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '')
 
-const tag = amazonTagFor('rail')
+/**
+ * PR枠のトラッキングID。**これが空なら下のPR枠はHTMLを1バイトも出さない。**
+ *
+ * ★ `FOLLOW_ADS_ENABLED` が false のあいだは枠ごと出さない（2026-09-19）。
+ *   AdSense の審査中は追従枠を出さないと決めてある（config.ts の説明）。
+ *   下の追従枠（`FollowBar`）と**同じフラグ**で止まる。
+ *
+ * ★ 止まるのはこのPR枠だけ。上の3ブロック（ジャンル・シリーズ・最新記事）は
+ *   広告ではないのでそのまま出る。**枠ごと消すと読者の導線が減るだけ。**
+ */
+const tag = FOLLOW_ADS_ENABLED ? amazonTagFor('rail') : ''
 
 /**
  * PR枠の送り先を**そのページの主題に合わせる**（2026-09-03）。
