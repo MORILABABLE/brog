@@ -264,6 +264,17 @@ const jsonLd = jsonLdOverride ?? (publishedAt
       ★ **リンクは止めない。** `preventDefault` も遅延も入れないこと。
         リンクは別タブで開く（target="_blank"）ので、ページは遷移せず
         イベントは通常どおり送られる。計測のために読者を待たせない。
+
+      🔴 **ハイフンを `_` に直してから送る（2026-09-19 修正）。**
+        GA4 のイベント名に使えるのは**英数字と `_` だけ**で、先頭は文字。
+        `data-slot="hulu-work"` をそのまま送ると `aff_hulu-work` になり、
+        **GA4 が不正な名前として捨てる。** afb（Hulu）の枠名だけが
+        `hulu-work` / `hulu-cta` とハイフン入りだったので、
+        **2026-09-14 の稼働以来、Hulu 広告のクリックは1件も記録されていなかった。**
+        「0クリック」が本当に0なのか計測漏れなのか、区別がつかない状態だった。
+        ★ **`data-slot` の値は変えていない**（CSS・検査・ドキュメントが見ている）。
+          直すのは**送る直前の1回だけ**にして、名前の変換を1か所に閉じる。
+        ★ 新しい枠を足すときも**ハイフンを使ってよい**。ここが吸収する。
     */}
     <script
       is:inline
@@ -274,7 +285,7 @@ const jsonLd = jsonLdOverride ?? (publishedAt
         if (!a) return;
         var slot = a.getAttribute('data-slot');
         if (!slot || typeof gtag !== 'function') return;
-        gtag('event', 'aff_' + slot);
+        gtag('event', 'aff_' + slot.replace(/[^A-Za-z0-9_]/g, '_'));
       }, true);`}
     />
 

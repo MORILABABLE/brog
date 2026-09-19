@@ -266,15 +266,24 @@ const SLOT_NOTE: Record<string, string> = {
   cover: '作品ページの Prime Video の行の中のポスター（在庫がある作品だけ）',
   body: '記事本文の地の文のリンク',
   prime: 'Amazonプライムの無料体験（専用リンク・500円/件）',
+  avail: '表の ○ / △（「どこで観られるか」の答えそのもの）',
+  demand: '需要の棚（DemandShelf）',
+  stock: '作品ページの在庫の行',
+  watch: '記事の「次の一歩」のリンク（rehype-next-step の B）',
   // afb の枠は **広告主 + 位置** で持つ（2026-09-14）。
   // 記事と作品ページで置き場所が違うので、まとめると
   // 「上へ動かしたら効いたのか」が読めない。
+  //
+  // 🔴 **キーは `_` 区切り（2026-09-19 修正）。**
+  // GA4 のイベント名に使えるのは英数字と `_` だけ。BaseLayout が
+  // `data-slot` のハイフンを `_` に直してから送っている。
+  // **ここをハイフンのままにすると、返ってきた行に説明が付かない。**
   unext: 'U-NEXT の afb 枠（位置の区別なし・2026-09-14 より前）',
-  'unext-cta': 'U-NEXT の afb 枠（記事）',
-  'unext-work': 'U-NEXT の afb 枠（作品ページ）',
+  unext_cta: 'U-NEXT の afb 枠（記事）※提携が不合格のため、いまは出ていない',
+  unext_work: 'U-NEXT の afb 枠（作品ページ）※提携が不合格のため、いまは出ていない',
   hulu: 'Hulu の afb 枠（位置の区別なし・2026-09-14 より前）',
-  'hulu-cta': 'Hulu の afb 枠（記事）',
-  'hulu-work': 'Hulu の afb 枠（作品ページ・状態行の下）',
+  hulu_cta: 'Hulu の afb 枠（記事・本文のすぐ上）',
+  hulu_work: 'Hulu の afb 枠（作品ページ・状態行の下）',
 }
 
 async function main(): Promise<void> {
