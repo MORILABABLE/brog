@@ -1,0 +1,53 @@
+{
+  // ★ **これは雛形。`site/` に置き直さないこと。**（2026-09-19 に site/ から移した）
+  //
+  // ■ なぜ site/ から出したのか
+  // **Cloudflare Pages はこのファイルを読む。** 以前ここには
+  // 「Pages はこの設定を読まない」と書いてあったが、**逆だった。**
+  // ビルドログに毎回こう出ていた。
+  //
+  //   Found wrangler.json file. Reading build configuration...
+  //   A Wrangler configuration file was found but it does not appear to be valid.
+  //   Did you mean to use wrangler.toml to configure Pages? If so, then make sure
+  //   the file is valid and contains the `pages_build_output_dir` property.
+  //   Skipping file and continuing.
+  //
+  // Pages はビルドのルートディレクトリ（`site`）で `wrangler.json` /
+  // `wrangler.jsonc` / `wrangler.toml` を探す。見つけて読み、
+  // `pages_build_output_dir` が無いので不正と判断して読み飛ばしていた。
+  // `npx wrangler pages deploy` でも同じ警告が出る。
+  //
+  // 動いてはいたが、**Cloudflare は Pages を Workers へ統合中**で（DEPLOY.md 4節）、
+  // 「半分読んで弾く設定ファイル」は仕様変更で挙動が変わりやすい。
+  // ビルドが原因不明で止まったときに真っ先に疑う場所になるので、
+  // **読まれない場所（docs/）へ移し、名前も `.example` にした。**
+  //
+  // ★ **`pages_build_output_dir` を足して「正しい設定ファイル」にする案は採らなかった。**
+  //   そうすると Pages がこのファイルからビルド設定を読むようになり、
+  //   いまダッシュボードが持っている設定と**2か所に散る。**
+  //   設定の出どころはダッシュボード1本に保つ。
+  //
+  // ■ このファイルの役目
+  // 将来 Cloudflare が Pages を Workers に完全統合したときの移行先。
+  // そのときは **`site/` にコピーして名前を `wrangler.jsonc` に戻す**
+  // （Workers はこの設定を正式に読む。Pages と違って `assets` が正しい書き方）。
+  //
+  // Workers に移行する場合のダッシュボード設定:
+  //   Root directory        : site
+  //   Build command         : npm run build
+  //   Deploy command        : npx wrangler deploy
+  //   Non-production branch : npx wrangler versions upload   ← PRプレビュー用
+  //   ※ wrangler を devDependency に入れ直す必要がある（Pages では不要なので外してある）
+  //
+  // ★ `name` は**アカウント内のプロジェクト名**。`brog` で正しい。
+  //   公開URLの `brog-ez1.pages.dev` とは別物（理由は DEPLOY.md 4節）。
+  "name": "brog",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./dist",
+    // 拡張子なしのURL（/posts/xxx）で .html を返す。
+    // astro.config.mjs の build.format: 'file' と対になる設定。
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

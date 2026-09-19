@@ -272,15 +272,33 @@ git push -u origin main
 > https://dash.cloudflare.com/?to=/:account/workers-and-pages
 > ```
 >
-> プロジェクトの Custom domains に直行する場合（`brog-ez1` はプロジェクト名）:
+> プロジェクトの Custom domains に直行する場合:
 >
 > ```
-> https://dash.cloudflare.com/?to=/:account/pages/view/brog-ez1/domains
+> https://dash.cloudflare.com/?to=/:account/pages/view/brog/domains
 > ```
 >
 > `:account` はダッシュボード側が自動で解決するので、アカウントIDを調べる必要はない。
 
-1. 上のリンクで **Workers & Pages** を開き、`brog-ez1` を選択
+> ★ **プロジェクト名は `brog`。`brog-ez1` ではない**（2026-09-19 に訂正）。
+>
+> それまでこの節は「`brog-ez1` はプロジェクト名」と書いていたが、**違った。**
+>
+> | | |
+> |---|---|
+> | プロジェクト名 | **`brog`**。ダッシュボードの一覧・URL（`/pages/view/brog/…`）に出るのはこちら |
+> | 公開URL | **`brog-ez1.pages.dev`**。Cloudflare が割り当てたサブドメイン |
+>
+> Pages はプロジェクト名から `<名前>.pages.dev` を作るが、**その文字列が
+> 全世界で先取りされていると接尾辞を足す。** `brog.pages.dev` は
+> **他アカウントの無関係なサイト**が先に取っていたため、こちらは `brog-ez1` になった。
+> プロジェクト名はアカウント内の識別子で、同名が他アカウントにあっても何の関係もない。
+>
+> **`wrangler pages project list` で必ず確かめられる**（`Project Name` 列）。
+> 2026-09-19 にこの思い違いのせいで、止まったビルドを別プロジェクトの
+> 問題だと疑って時間を使った。**推測せずこのコマンドを打つこと。**
+
+1. 上のリンクで **Workers & Pages** を開き、`brog` を選択
 2. 上部タブの **Custom domains → Set up a domain**
 3. 取得したドメイン（例: `mihoudairader.com`）を入力 → **Continue**
 4. Cloudflare Registrar で取得していれば、**DNSレコードは自動で作成される**
@@ -300,6 +318,28 @@ git push -u origin main
 >    探すときは `Pages` ではなく **`Compute`** を目印にする。
 >
 > **既存の Pages プロジェクトはそのまま動く。**移行は不要。変わったのは新規作成の導線だけ。
+
+### ⚠️ `site/` に wrangler の設定ファイルを置かないこと（2026-09-19）
+
+**`site/wrangler.jsonc` を `docs/wrangler.jsonc.example` へ移した。**
+Pages はビルドのルートディレクトリ（`site`）で `wrangler.json` / `wrangler.jsonc` /
+`wrangler.toml` を探し、**見つけたら読む。** 毎回のビルドログにこう出ていた。
+
+```
+Found wrangler.json file. Reading build configuration...
+A Wrangler configuration file was found but it does not appear to be valid.
+Did you mean to use wrangler.toml to configure Pages? If so, then make sure
+the file is valid and contains the `pages_build_output_dir` property.
+Skipping file and continuing.
+```
+
+読み飛ばされていたので動いてはいたが、**Cloudflare は Pages を Workers へ統合中**で、
+「半分読んで弾く設定ファイル」は仕様変更で挙動が変わりやすい。
+移行の雛形としては要るので、**読まれない場所へ移して名前も `.example` にした。**
+
+★ **`pages_build_output_dir` を足して有効な設定にする案は採らなかった。**
+そうすると Pages がそのファイルからビルド設定を読み始め、
+**ダッシュボードの設定と2か所に散る。** 設定の出どころは1本に保つ。
 
 ---
 
@@ -323,7 +363,7 @@ git push -u origin main
 ### アフィリエイトの環境変数（2026-09-16 更新：Hulu の4つの反映を本番で実測／`STOCK` を追加）
 
 `site/.env` はリポジトリに入らない。**Pages 側にも同じものを入れないと本番だけ出ない。**
-`Workers & Pages → brog-ez1 → Settings → Environment variables`
+`Workers & Pages → brog → Settings → Environment variables`
 （新しいUIでは `Variables and Secrets`）の **Production / Preview の両方**に入れる。
 種別は **Plaintext** でよい。`PUBLIC_` はHTMLに出る値なので秘密ではなく、
 Secret にすると**あとから管理画面で値を読み返せなくなる**。
