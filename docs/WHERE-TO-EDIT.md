@@ -111,6 +111,9 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                                  ★ 隠すのはスクリプトだけ。**HTML には全部の日が出ている**
                                  ★ 日の入れ物 `[data-day]` を動かすのはこれだけ。
                                    中の `section.day` は CalendarFilter の担当。混ぜないこと
+      記事の一覧              → **出していない**（ServiceCalendarPage の `SHOW_ARTICLES`・2026-09-19）。
+                                 戻すならそこを true にするだけ。記事は /category/<ハブ>/<サービス> と
+                                 /service/<サービス> から辿れるので、消しても孤立しない
       上の切り替え（サービス／表示） → site/src/components/CalendarPicker.astro
       絞り込み（種類／ジャンル）      → site/src/components/CalendarFilter.astro（ジャンル判定は lib/work-genre.ts・pipeline の classify と同じ規則）
       シリーズの折りたたみ            → site/src/components/WorkTable.astro の SERIES_MIN（3本以上）と segmentsOf
