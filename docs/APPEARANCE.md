@@ -1643,8 +1643,10 @@ npm run build
 
 ### 作品検索を打っても何も起きない
 
-常設ページ（`/leaving/…` `/arrivals/…` `/calendar/…`）の検索窓は
+常設ページ（`/leaving/…` `/arrivals/…`）の検索窓は
 **JavaScript が動かないと出ない**（出ても押せない窓を見せないため）。
+置き場は切り替え（サービス／表示）と同じ行の右端
+（`ServiceCalendarPage` の `.controls`・2026-09-19）。
 出ているのに当たらない場合は、`site/src/lib/normalize.ts` の
 ならし方だけを直す。**ビルド時と実行時が同じ関数を使っている**ので、
 片方だけ変えると全件外れる。

@@ -1,21 +1,29 @@
 ---
 interface Props {
   /**
-   * 入力欄に出す説明文。
-   * 「終了予定の作品を探す」「新着の作品を探す」のようにページ側で言い分ける。
+   * この検索窓が何を探すのかの説明。**読み上げ用の名前になる**（画面には出ない `<label>`）。
+   * 「このカレンダーから作品を探す」のようにページ側で言い分ける。
    */
   label: string
+  /**
+   * 入力欄の中に薄く出る文字。既定は `label` と同じ。
+   *
+   * ★ **窓が狭いページでは短いものを渡すこと**（2026-09-19）。
+   *   窓は 13rem（208px）しかないので、`label` をそのまま出すと
+   *   「このカレンダーから作品を…」で切れる。切れた説明文は読めない。
+   * ★ 短くしても**読み上げは `label` のまま**なので、文脈は失われない。
+   */
+  placeholder?: string
 }
 
-const { label } = Astro.props
+const { label, placeholder = label } = Astro.props
 
 /**
- * 常設ページの作品検索。**「配信カレンダー」の見出しと同じ行の右端に置く**
- * （2026-09-09。それまでは冒頭文「32本が終了予定です。…」の右にあった）。
+ * 常設ページの作品検索。**切り替え（サービス／表示）と同じ行の右端に置く**
+ * （2026-09-19。2026-09-09 から 2026-09-19 までは h2「配信カレンダー」の右だった）。
  *
- * ★ 置き場は components/EventCalendar.astro の `.head`。ページ側から直接ではなく、
- *   カレンダーに `searchLabel` を渡すと出る。**升目が描かれない時期だけ**、
- *   ページ側が `.search-head`（styles/global.css）で単独に置く。
+ * ★ 置き場は components/ServiceCalendarPage.astro の `.controls`。**1か所だけ。**
+ *   升目が描かれない時期も同じ `.controls` に入る（分岐しない）。
  *   **同じページに2つ出さないこと**（下のスクリプトは `[data-work-search]` を1つしか見ない）。
  *
  * ■ 何をするか（★ 2026-09-09 に作り直した）
@@ -60,6 +68,21 @@ const { label } = Astro.props
   <label class="visually-hidden" for="work-search-input">{label}</label>
   <div class="row">
     {/*
+      虫めがね（2026-09-19 追加・運用者の指定）。**入力欄の中に重ねる。**
+      窓を 13rem まで詰めたぶん説明文が短くなったので、**丸い枠だけでは検索窓に見えない。**
+
+      ★ 絵文字（🔍）ではなく SVG。絵文字は端末ごとに絵柄と大きさが変わり、
+        Windows では色付きの四角に見える。線の太さも文字色に合わせられない。
+      ★ `aria-hidden` ＋ `pointer-events: none`。読み上げの名前は上の `<label>` が持っており、
+        ここを押したら入力欄に届いてほしい（絵が的を奪わないようにする）。
+    */}
+    <span class="glass" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="15" height="15">
+        <circle cx="6.8" cy="6.8" r="4.4" />
+        <path d="M10.2 10.2 14 14" />
+      </svg>
+    </span>
+    {/*
       ★ `combobox` の作法にそろえる。候補の開閉は `aria-expanded`、
         いま選んでいる候補は `aria-activedescendant` で伝える。
         **フォーカスは入力欄から動かさない**（候補側へ移すと打ち続けられない）。
@@ -73,7 +96,7 @@ const { label } = Astro.props
       aria-autocomplete="list"
       aria-expanded="false"
       aria-controls="work-search-list"
-      placeholder={label}
+      placeholder={placeholder}
       data-work-search-input
     />
     <span class="steps" hidden data-work-search-steps>
@@ -435,9 +458,16 @@ const { label } = Astro.props
 
 <style>
   .work-search {
-    /* 見出しの行の右端に置く。幅が足りなければ置き場の flex が下に落とす */
-    flex: 0 1 16rem;
-    min-width: 12rem;
+    /*
+     * 切り替え（サービス／表示）と同じ行の右端に置く。幅が足りなければ置き場の flex が下に落とす。
+     * ★ 2026-09-19 に 16rem → 13rem へ詰めた（運用者の指定）。
+     *   本文736pxのうち、左の切り替えが416px（CalendarPicker の max-width 26rem）。
+     *   16rem（256px）だと 416＋256＋すきま16 ＝ 688px で入りはするが余りが48pxしかなく、
+     *   **読者が文字を少し大きくしただけで検索窓が下の行へ落ちていた。**
+     * ★ これ以上は詰めないこと。10rem を切ると、説明文（`placeholder`）が途中で切れる。
+     */
+    flex: 0 1 13rem;
+    min-width: 10rem;
     /* 候補（.panel）の位置の基準 */
     position: relative;
   }
@@ -455,14 +485,42 @@ const { label } = Astro.props
     }
   }
   .row {
+    /* 虫めがねを入力欄の中に重ねるための基準 */
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.35rem;
   }
+  /*
+   * 虫めがね。**入力欄の左の余白に重ねる**（下の .input の padding-left がその余白）。
+   * ★ 縦は入力欄に合わせる。`.row` は ↑↓ ボタン（`.steps`）が出ると背が伸びるので、
+   *   `top: 50%` だとボタンが出た瞬間に絵だけ下がる。**上端からの固定値**で合わせてある。
+   */
+  .glass {
+    position: absolute;
+    left: 0.6rem;
+    top: 0.5rem;
+    display: block;
+    color: var(--text-muted);
+    /* 押したら入力欄に届いてほしい（絵が的を奪わない） */
+    pointer-events: none;
+  }
+  .glass svg {
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
   .input {
     flex: 1 1 auto;
     min-width: 0;
-    padding: 0.4rem 0.7rem;
+    /*
+     * ★ 高さを詰めるなら**padding で詰める**（2026-09-19 に 0.4rem → 0.28rem）。
+     *   下の font-size は 16px を切れないので、文字を小さくして縮める手は使えない。
+     * ★ 左だけ広いのは**虫めがねの居場所**（上の .glass）。片方だけ動かさないこと。
+     */
+    padding: 0.28rem 0.7rem 0.28rem 1.95rem;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 999px;

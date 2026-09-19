@@ -200,6 +200,11 @@ const hasRows = futureWorks.length + pastWorks.length > 0
  *   （WorkSearch は文書内の `[data-work-row]` を全部見る。**いま見せていない日の行も含めて**）。
  */
 const SEARCH_LABEL = 'このカレンダーから作品を探す'
+/*
+ * 入力欄の中に出す短い文（2026-09-19）。**窓は 13rem しか無い**ので、上の説明文は入らない。
+ * ★ 読み上げの名前は `SEARCH_LABEL` のまま（WorkSearch の `label` と `placeholder` の違い）。
+ */
+const SEARCH_PLACEHOLDER = '作品を探す'
 
 /*
  * タイトルの末尾に基準日を出す（`Netflix 見放題・配信終了カレンダー【9月14日更新】`）。
@@ -317,38 +322,41 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
     {label}の都合により変更される場合があります。ご視聴前に公式サイトでご確認ください。
   </p>
 
+  {/*
+    操作の2段（2026-09-19 にこの形にした）。**升目が出る時期も出ない時期も同じ並び。**
+
+      1段目  ［Netflix ▾］［配信終了 ▾］          （右端に）作品を探す窓
+      2段目  すべて 映画 TVシリーズ ／ すべて アニメ 洋画 邦画
+
+    ★ **切り替えと検索窓は同じ行。** h2「配信カレンダー」を外したとき、検索窓だけが
+      1つの行に取り残されて切り替えと2段になっていた（2026-09-19・運用者の指摘）。
+    ★ 切り替えは**必ず出す**（ほかのサービス・表示へ移る道がここにしか無い）。
+      検索窓と絞り込みは、行が1本も無いページでは出さない。
+    ★ 検索窓は**ページに1つだけ**（WorkSearch のスクリプトは `[data-work-search]` を1つしか見ない）。
+      だから下の2つの分岐で**同じ中身を2回描かない**こと。
+  */}
   {
     calendar.hasEvents ? (
       <EventCalendar
         months={calendar.months}
         buildMonth={calendar.buildMonth}
         kinds={sections.map((s) => ({ kind: s.kind, prefix: `#${s.prefix}` }))}
-        searchLabel={hasRows ? SEARCH_LABEL : undefined}
       >
-        {/*
-          ★ 切り替え（サービス／表示）は**「配信カレンダー」の見出しの直下**に置く（2026-09-17・運用者の指定）。
-            それまでは見出しの上（配信情報の注意書きの下）にあり、カレンダーを操作する部品だと読みにくかった。
-          ★ その下に絞り込み（種類／ジャンル）。スクリプトが動かない環境では絞り込みは出ない。
-        */}
         <Fragment slot="controls">
-          <CalendarPicker service={service} direction={direction} />
-          <CalendarFilter />
+          <div class="controls">
+            <CalendarPicker service={service} direction={direction} />
+            {hasRows && <WorkSearch label={SEARCH_LABEL} placeholder={SEARCH_PLACEHOLDER} />}
+          </div>
+          {hasRows && <CalendarFilter />}
         </Fragment>
       </EventCalendar>
     ) : (
-      /*
-       * ★ 升目が出ない時期は、切り替えと検索窓を単独で置く。
-       *   切り替えは**必ず出す**（ほかのサービス・表示へ移る道がここにしか無い）。
-       *   検索窓は**2つ出さないこと**（WorkSearch のスクリプトはページに1つある前提）。
-       */
       <>
-        <CalendarPicker service={service} direction={direction} />
+        <div class="controls">
+          <CalendarPicker service={service} direction={direction} />
+          {hasRows && <WorkSearch label={SEARCH_LABEL} placeholder={SEARCH_PLACEHOLDER} />}
+        </div>
         {hasRows && <CalendarFilter />}
-        {hasRows && (
-          <div class="search-head">
-            <WorkSearch label={SEARCH_LABEL} />
-          </div>
-        )}
       </>
     )
   }
@@ -497,6 +505,36 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
     margin: 0.4rem 0 1rem;
     font-size: 0.9rem;
     color: var(--text-muted);
+  }
+  /*
+   * 切り替え（サービス／表示）と作品検索を**1行に並べる。**
+   *
+   * ★ `space-between`。切り替えは `max-width: 26rem`（CalendarPicker）で左に置き、
+   *   検索窓を右端へ送る。**検索候補の枠は窓の右端を基準に左へ伸びる**ので、
+   *   窓が右端にあること自体に意味がある（左端だと候補が画面の外へ出る）。
+   * ★ `align-items: start`。検索窓は入力欄の下に件数の行（WorkSearch の `.status`）を
+   *   持つぶん背が高い。`center` にすると**切り替えのボタンが数px下がる。**
+   * ★ 幅が足りなければ検索窓が下の行へ落ちる（スマホ。WorkSearch の 600px の規則）。
+   */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: 0 1rem;
+  }
+  /*
+   * ★ **`flex` を明示すること。** `.picker` は中が grid（2列）で、`max-width: 26rem` は
+   *   上限でしかない。flex の中に素で置くと**中身の幅まで縮み**、ボタンが
+   *   ページによって 222px だったり 308px だったりする（「配信終了」と「新着・配信予定」で字数が違う）。
+   *   伸ばしてやれば、どのページでも上限の 26rem で揃う。
+   * ★ 上の余白は 0 にして、右の検索窓と上端をそろえる。
+   *   下余白は行ごと（下の絞り込みとの間）で取る。
+   */
+  .controls :global(.picker) {
+    flex: 1 1 16rem;
+    margin-top: 0;
+    margin-bottom: 0.55rem;
   }
   /*
    * 記事の一覧。カードは PostCard の見た目のまま。

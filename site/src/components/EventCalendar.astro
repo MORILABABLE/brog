@@ -1,5 +1,4 @@
 ---
-import WorkSearch from './WorkSearch.astro'
 import type { CalendarKind, CalendarMonth } from '../lib/calendar'
 
 interface Props {
@@ -15,21 +14,9 @@ interface Props {
    * ★ 渡す順は問わない。凡例と印は下の `ORDER`（過去 → これから）で並べ直す。
    */
   kinds: { kind: CalendarKind; prefix: string }[]
-  /**
-   * 作品検索（WorkSearch.astro）の説明文。**渡したページだけ検索窓が出る。**
-   *
-   * 検索窓は升目のすぐ上・本文幅の右端に置く（2026-09-09。2026-09-19 に h2 を外すまでは
-   * 「配信カレンダー」の見出しと同じ行だった）。
-   *
-   * ★ 検索窓はページに1つだけ。WorkSearch のスクリプトは
-   *   `[data-work-search]` を1つしか見ないので、同じページで2回出さないこと。
-   * ★ 升目が出ない時期はこの部品ごと描かれない。**そのときはページ側が単独で置く**
-   *   （styles/global.css の `.search-head`）。
-   */
-  searchLabel?: string
 }
 
-const { months, buildMonth, kinds, searchLabel } = Astro.props
+const { months, buildMonth, kinds } = Astro.props
 
 /**
  * 種類ごとの印と言葉。**ここ1か所に置く。**
@@ -118,21 +105,17 @@ function spoken(iso: string): string {
 
 <section class="calendar" aria-label="配信カレンダー">
   {/*
-    作品検索の行。**本文幅の右端に置く**（2026-09-09）。
-
-    ★ ここにあった h2「配信カレンダー」は**外した**（2026-09-19・運用者の指定）。
+    ★ ここにあった h2「配信カレンダー」と、その右の検索窓は**外した**（2026-09-19・運用者の指定）。
       ページの h1 が `Netflix 見放題・配信終了カレンダー` と名乗るようになり、
       その直下でもう一度「配信カレンダー」と言うことになったため。
       **枠の名前は section の aria-label が持っている**ので、読み上げからは消えていない。
-      h2 を戻すなら、h1 の文言（lib/evergreen.ts の `evergreenTitleBase`）と併せて考えること。
-  */}
-  <div class="head">
-    {searchLabel && <WorkSearch label={searchLabel} />}
-  </div>
+    ★ h2 を外したら検索窓が1つだけの行に残り、**切り替え（サービス／表示）と2段**になった。
+      いまは検索窓も切り替えと同じ行で、まとめて下の `controls` から差し込まれる
+      （components/ServiceCalendarPage.astro の `.controls`）。**この部品は検索窓を持たない。**
 
-  {/*
-    ★ 見出しの直下に差し込む部品（2026-09-17）。配信カレンダーのページでは
-      サービス／表示の切り替え（CalendarPicker.astro）と、種類・ジャンルの絞り込み（CalendarFilter.astro）が入る。
+    ★ 升目の上に差し込む部品（2026-09-17）。配信カレンダーのページでは
+      サービス／表示の切り替え（CalendarPicker）＋作品検索（WorkSearch）と、
+      種類・ジャンルの絞り込み（CalendarFilter）が入る。
   */}
   <slot name="controls" />
 
@@ -354,20 +337,6 @@ function spoken(iso: string): string {
   .calendar {
     margin: 1.4rem 0 0;
   }
-  /*
-   * 作品検索の置き場。**右端そろえ**（styles/global.css の `.search-head` と同じ形）。
-   * ★ 2026-09-19 に h2 を外すまでは、見出しと検索窓を `space-between` で
-   *   左右に振り分けていた。**1つしか入らない今は `flex-end` でないと左端に寄る。**
-   * ★ 検索候補の枠（WorkSearch の `.panel`）は窓の**右端**を基準に左へ伸びるので、
-   *   窓を右端に置くこと自体に意味がある（左端に置くと候補が画面の外へ出る）。
-   */
-  .head {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    margin: 0 0 0.35rem;
-  }
-
   /*
    * 種類ごとの色。**この変数1つで、凡例・印・月の合計・タイルの帯が揃う。**
    * 値の意味とコントラスト比は styles/global.css の --cal-*。
