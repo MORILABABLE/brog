@@ -79,6 +79,9 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
     トップの「配信カレンダー」（1200px 未満だけ・2026-09-17）
       棚                  → site/src/components/TopCalendar.astro（シリーズ配信の棚と同じ形。絵の選び方は calendarThumb）
       置き場所            → site/src/pages/index.astro（**3つの棚のいちばん上**、最新記事より上）
+      カードの名前        → 行き先の h1 そのまま（lib/evergreen.ts の titleBase・2026-09-19）。
+                            ★ 左の枠（CalendarCards）は幅158pxしか無いので**短い名前のまま**。
+                              あちらを h1 にすると3〜4行になってカードの高さが揃わない
       ★ トップの棚の並びは **配信カレンダー → 見放題の終了が近い作品 → シリーズ配信**
         （2026-09-19・運用者の指定。急ぐものほど上）。3つとも PR 表記より下・記事一覧より上。
       ★ カードの「カレンダー」バッジは 2026-09-19 に外した（行き先の見出しと重複したため）。
@@ -91,7 +94,10 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                                  loadLeaving（終了予定）/ loadEnded（終了済み・前月から）
                                  loadUpcoming（配信開始予定・各社の告知）/ loadArrivals（新着・60日）
       タイトル・件数          → site/src/lib/evergreen.ts の evergreenTitleBase / calendarContent
-      日付めくり（‹ 9月19日 ›） → site/src/components/DayPager.astro（2026-09-19。1日ずつ見せる）
+      日付めくり（‹ 9月19日（土）›） → site/src/components/DayPager.astro（2026-09-19。1日ずつ見せる）
+                                 ★ **日付が出るのはめくりの1か所だけ。** 表の日付見出しは
+                                   `is-paged` で日付を伏せ「5本終了予定」だけにする（伏せるだけ・消さない）
+                                 ★ 「きょう」へ戻るボタンは置かない。きょうへは升目の丸から戻る
                                  ★ 過去と未来を**1本のめくり**にしてある（節の h2 は無い）
                                  ★ 隠すのはスクリプトだけ。**HTML には全部の日が出ている**
                                  ★ 日の入れ物 `[data-day]` を動かすのはこれだけ。

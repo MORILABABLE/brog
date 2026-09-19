@@ -26,19 +26,27 @@ const { buildToday, emptyLabel } = Astro.props
  * **その中で日付ごとの表が上から全部並んでいた**（Netflix の終了側で実測60日ぶん）。
  * 読者の用は「◯月◯日に何が終わるか」なので、**日付を主語にして1日ずつ見せる**形に変えた。
  *
- *   ‹ 前の日    9月19日    次の日 ›
- *                [きょう]
+ *   ‹    9月19日（土）    ›
+ *   5本終了予定
+ *   ［表］
+ *
+ * ■ 日付が出るのは**この1か所だけ**（2026-09-19・運用者の指定）
+ * 矢印のあいだの日付がこの日の見出しで、押すと日付が変わり、下の表が入れ替わる。
+ * 表側の日付見出し（WorkTable の `.day-title`）は**日付を伏せて「5本終了予定」だけ**にする
+ * （下の style の `.is-paged`）。同じ日付が2段に出ていたため。
+ * ★ 伏せるだけで**消していない。** 読み上げと、スクリプトの動かない環境では日付が出る。
+ * ★ 「きょう」へ戻るボタンは**置かない**（運用者の指定）。
+ *   きょうへは升目（EventCalendar が丸を付けている日）を押して戻る。
  *
  * ■ 過去と未来を**1本のめくりに統合してある**（運用者の指定）
  * きょうを基準に ‹ を押すと前日（＝終了済みの記録）、› を押すと翌日（＝終了予定）へ進む。
- * 節の見出し（h2）は無くなり、**日付そのものが見出し**（WorkTable の `.day-title`）になった。
- * 同じ日に両方ある日は、その日の中に表が2つ並ぶ（「12本終了予定」と「3本終了」で読み分ける）。
+ * 節の見出し（h2）は無くなった。同じ日に両方ある日は、その日の中に表が2つ並ぶ
+ * （「12本終了予定」と「3本終了」で読み分ける。**だから `dateNoun` を4つとも別にしてある**）。
  *
  * ■ 送り先は**作品のある日だけ**
  * 暦の上の前日ではなく、**作品のある前の日**へ飛ぶ。1件も無い日を1日ずつ送らせると、
  * 数十回押さないと隣の山に届かない（Prime Video の終了予定は約11日先までしか出ないので、
- * 空の日が連続する）。例外は**きょうだけ**で、作品が無くてもめくりの位置として必ず持つ
- * （読者が自分の現在地を見失わないため。EventCalendar の「今月は必ず入れる」と同じ）。
+ * 空の日が連続する）。**きょうも例外ではない**（空なら止まらずに通過する）。
  *
  * ■ スクリプトが動かない環境では**全部の日が並ぶ**
  * 隠すのはスクリプトの仕事で、HTML の時点では1日も隠していない
@@ -64,16 +72,19 @@ const { buildToday, emptyLabel } = Astro.props
     動かない環境では全部の日が並ぶので、ボタンは要らない。
   */}
   <div class="nav" data-day-nav hidden>
-    <div class="row">
-      <button type="button" class="arrow" data-day-step="-1" aria-label="前の日へ">‹</button>
-      {/*
-        いま見せている日。**`aria-live` を付ける。** ボタンを押しても画面は動かないので、
+    <button type="button" class="arrow" data-day-step="-1" aria-label="前の日へ">‹</button>
+    {/*
+      いま見せている日。**これがこのページの日付表示の唯一の場所**（2026-09-19・運用者の指定）。
+      下の表にも日付見出し（WorkTable の `.day-title`）があるが、めくりが動いている間は
+      その日付を伏せる（下の `.is-paged`）。同じ日付が2段に出ていたため。
+
+      ★ `aria-live` を付ける。矢印を押しても画面は動かないので、
         読み上げでは「何が変わったのか」がここでしか伝わらない。
-      */}
-      <span class="label" data-day-label aria-live="polite"></span>
-      <button type="button" class="arrow" data-day-step="1" aria-label="次の日へ">›</button>
-    </div>
-    <button type="button" class="home" data-day-home>きょう</button>
+      ★ 「きょう」へ戻るボタンは**置かない**（運用者の指定）。
+        きょうへは升目（EventCalendar が丸を付けている日）を押して戻る。
+    */}
+    <span class="label" data-day-label aria-live="polite"></span>
+    <button type="button" class="arrow" data-day-step="1" aria-label="次の日へ">›</button>
   </div>
 
   {/*
@@ -122,8 +133,7 @@ const { buildToday, emptyLabel } = Astro.props
     const empty = root.querySelector<HTMLElement>('[data-day-empty]')
     const prev = root.querySelector<HTMLButtonElement>('[data-day-step="-1"]')
     const next = root.querySelector<HTMLButtonElement>('[data-day-step="1"]')
-    const homeBtn = root.querySelector<HTMLButtonElement>('[data-day-home]')
-    if (!nav || !text || !empty || !prev || !next || !homeBtn) continue
+    if (!nav || !text || !empty || !prev || !next) continue
 
     const byDay = new Map(pages.map((p) => [p.dataset.day ?? '', p]))
     const today = new Date(Date.now() + JST_MS).toISOString().slice(0, 10)
@@ -137,8 +147,8 @@ const { buildToday, emptyLabel } = Astro.props
 
     /*
      * めくれる位置。**作品のある日 ∪ きょう。**
-     * ★ きょうを必ず入れる（作品が無くても）。入れないと「きょう」ボタンの行き先が無くなり、
-     *   読者は自分の現在地を見失う。
+     * ★ きょうを入れてあるのは**「きょうにいちばん近い日」を測る起点**にするため
+     *   （下の `startIndex`）。きょうに作品が無ければ、めくりはそこに止まらない（`usable`）。
      */
     const keys = [...new Set([...byDay.keys(), today])].filter(Boolean).sort()
     const home = keys.indexOf(today)
@@ -151,8 +161,12 @@ const { buildToday, emptyLabel } = Astro.props
       return Array.from(page.querySelectorAll<HTMLElement>('section.day')).some((d) => !d.hidden)
     }
 
-    /** めくりの位置として成立するか。**きょうは空でも成立する**（上の★） */
-    const usable = (i: number) => keys[i] === today || hasWorks(keys[i] ?? '')
+    /**
+     * めくりの止まれる位置。**作品のある日だけ。**
+     * ★ 2026-09-19 に「きょう」ボタンを外したとき、きょうも例外から外した。
+     *   戻る先が無くなった以上、**空のきょうに止まる理由が無い**（‹ › が空の日を通過する）。
+     */
+    const usable = (i: number) => hasWorks(keys[i] ?? '')
 
     /** `from` から `delta` の向きに、次に成立する位置。無ければ -1 */
     function seek(from: number, delta: number): number {
@@ -165,8 +179,7 @@ const { buildToday, emptyLabel } = Astro.props
     /**
      * 最初に見せる日。**きょうに作品があればきょう。無ければ「きょうにいちばん近い日」。**
      *
-     * ★ きょうを外れるのは**きょうが空のときだけ。** 基準はあくまできょうで、
-     *   「きょう」ボタンを押せば空のきょうに戻れる（＝押せる状態で残る）。
+     * ★ きょうを外れるのは**きょうが空のときだけ。**
      * ★ **この分岐が要る理由（2026-09-19 の実測）。** 収集は週2回・終了日は月末に集中するので、
      *   6枚のカレンダーのうち**4枚はきょうに1本も無い。**
      *   きょうで固定すると、開いた瞬間に「この日は取得できていません」だけのページになる。
@@ -200,7 +213,6 @@ const { buildToday, emptyLabel } = Astro.props
 
       prev!.disabled = seek(index, -1) < 0
       next!.disabled = seek(index, 1) < 0
-      homeBtn!.disabled = index === home
     }
 
     /** 指定の日へ移る。**その日が無ければ何もしない**（呼び出し側の的が外れているだけ） */
@@ -220,10 +232,6 @@ const { buildToday, emptyLabel } = Astro.props
 
     prev.addEventListener('click', () => step(-1))
     next.addEventListener('click', () => step(1))
-    homeBtn.addEventListener('click', () => {
-      index = home
-      paint()
-    })
 
     /*
      * 升目のリンク（`#leaving-2026-09-30`）で飛んでくる道。
@@ -283,7 +291,13 @@ const { buildToday, emptyLabel } = Astro.props
       paint()
     })
 
-    /* ★ 出し入れを始めるのはここから。ここより前で例外が出たら、全部の日が並んだまま残る */
+    /*
+     * ★ 出し入れを始めるのはここから。ここより前で例外が出たら、全部の日が並んだまま残る。
+     * ★ `is-paged` が**表の日付見出しから日付を伏せる印**（下の style）。
+     *   めくりが動いていないとき（スクリプト無効・例外）は付かないので、
+     *   **全部の日が日付つきで並ぶ。** 日付の消えた表だけが残る、は起きない。
+     */
+    root.classList.add('is-paged')
     nav.hidden = false
     index = startIndex()
     paint()
@@ -312,14 +326,14 @@ const { buildToday, emptyLabel } = Astro.props
   /*
    * めくりの操作。**日付を真ん中に、左右に矢印。**
    * ★ 月送り（EventCalendar の `.nav`）とは別の形にしてある。あちらは升目の上に並ぶ小さなボタン列で、
-   *   こちらは**ページの本文の見出しの代わり**なので、日付を大きく真ん中に置く。
+   *   こちらは**そのまま日付の見出し**なので、日付を大きく真ん中に置く。
    */
   .nav {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    margin: 0 0 0.9rem;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0 0 0.6rem;
     padding: 0.5rem 0.6rem;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -327,17 +341,12 @@ const { buildToday, emptyLabel } = Astro.props
   .nav[hidden] {
     display: none;
   }
-  .row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-  }
   /*
-   * いま見せている日。**本文のどの見出しより大きくしない。**
-   * 日付の見出し（WorkTable の `.day-title`・1.05rem）がすぐ下に来るので、
-   * ここが大きすぎると同じ日付が2段の見出しに見える。
+   * いま見せている日。**このページで日付が出るのはここだけ**（2026-09-19・運用者の指定）。
+   * ★ 大きさは表の日付見出し（WorkTable の `.day-title`・1.05rem）に合わせてある。
+   *   見出しを1つに寄せただけで、階層を1段上げたわけではない。
+   * ★ `min-width` は**矢印を動かさないため。** 「9月1日（火）」と「12月28日（月）」で
+   *   字数が変わるので、指で押す的の位置が日によってずれる。
    */
   .label {
     min-width: 8.5em;
@@ -375,28 +384,7 @@ const { buildToday, emptyLabel } = Astro.props
     color: var(--text-muted);
     opacity: 0.5;
   }
-  .home {
-    padding: 0.1rem 0.8rem;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg);
-    color: var(--text-muted);
-    font: inherit;
-    font-size: 0.76rem;
-    line-height: 1.7;
-    cursor: pointer;
-  }
-  .home:hover:not(:disabled) {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  /* きょうを見ている間は押せない。**消さない**（押せる場所がどこかを覚えておけるように） */
-  .home:disabled {
-    cursor: default;
-    opacity: 0.45;
-  }
-  .arrow:focus-visible,
-  .home:focus-visible {
+  .arrow:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
@@ -407,5 +395,41 @@ const { buildToday, emptyLabel } = Astro.props
   }
   .empty[hidden] {
     display: none;
+  }
+
+  /*
+   * --- めくりが動いている間だけ（`is-paged`）---------------------------------
+   *
+   * 表の日付見出し（WorkTable の `.day-title`）から**日付を伏せる。**
+   * 上の `.label` と同じ日付が2段に出ていたため（2026-09-19・運用者の指定）。
+   *
+   * ★ **消さずに隠す。** 見出しの読み上げは「2026年9月19日 5本終了予定」のままにする
+   *   （`.visually-hidden` と同じ手。styles/global.css）。
+   *   `display: none` にすると、見出しの名前から日付が消える。
+   * ★ **`.day-title` ごと隠さないこと。** この見出しは升目のリンクの飛び先（id を持つ）で、
+   *   隠すと `scrollIntoView` も届かなくなる。
+   * ★ 残る「5本終了予定」は、同じ日に表が2つ並ぶ日（終了済みと終了予定）で
+   *   **2つを読み分ける唯一の手がかり**。小さくしても消さない。
+   * ★ `:global` が要る。`.day-title` は別部品（WorkTable）のクラスで、印が付いていない。
+   */
+  .is-paged :global(.day-title > time) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* 日付が抜けたぶん、見出しの重さを「◯本終了予定」が引き取る */
+  .is-paged :global(.day-title) {
+    margin-top: 0;
+    font-size: 0.9rem;
+  }
+  .is-paged :global(.day-title .count) {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-muted);
   }
 </style>

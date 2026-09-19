@@ -76,7 +76,16 @@ const cards = CALENDAR_CARDS.map((p) => {
             <span class="tags">
               <span class="badge evergreen">{EVERGREEN_BADGE.label}</span>
             </span>
-            <span class="name">{c.label}</span>
+            {/*
+              ★ **行き先の h1 をそのまま名乗る**（2026-09-19・運用者の指定）。
+                それまではサービス名だけ（「Amazon Prime Video」）で、**押した先の見出しと
+                カードの名前が別物**だった。名前は lib/evergreen.ts の `titleBase` の1か所から来る。
+              ★ **【9月18日更新】は付けない。** その役目は隣の「随時更新」のバッジが引き取っている
+                （CalendarCards.astro の★。2026-09-15 の判断）。戻すならバッジとどちらかにすること。
+              ★ 132px に4行前後で収まる。左の枠（CalendarCards.astro）は文字に使える幅が
+                158px しか無いので、**あちらはサービス名の短い名前のまま**にしてある。
+            */}
+            <span class="name">{c.titleBase}</span>
           </a>
         </li>
       ))
