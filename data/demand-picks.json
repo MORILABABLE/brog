@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-18T01:18:16.257Z",
-  "asOf": "2026-09-18",
+  "generatedAt": "2026-09-19T01:11:05.408Z",
+  "asOf": "2026-09-19",
   "note": "npm run demand -- --picks が書く。手で編集しない。需要の数字は入れない（並び順だけが需要を反映する）。読む側は site/src/lib/demand-picks.ts。",
   "picks": [
     {
@@ -17,7 +17,7 @@
         "2026-09-special-anime-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -36,7 +36,7 @@
         "2026-09-upcoming-prime-video-western"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -50,7 +50,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -64,7 +64,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -81,7 +81,7 @@
         "kamen-rider"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -99,7 +99,7 @@
         "2026-09-special-japanese-anime-u-next"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -115,7 +115,7 @@
         "2026-08-leaving"
       ],
       "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -132,7 +132,7 @@
         "2026-08-arrivals-prime-video"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -148,7 +148,7 @@
         "2026-08-leaving"
       ],
       "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -163,7 +163,7 @@
         "2026-08-arrivals-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -178,7 +178,7 @@
         "kamen-rider"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -191,7 +191,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -207,7 +207,7 @@
         "2026-08-arrivals-prime-video"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -223,7 +223,7 @@
         "2026-08-arrivals-prime-video"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -236,7 +236,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -249,7 +249,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -262,7 +262,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -275,7 +275,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -291,7 +291,7 @@
         "2026-08-ended"
       ],
       "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -304,23 +304,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
-    },
-    {
-      "workIds": [
-        "25030469"
-      ],
-      "title": "攻殻機動隊 THE GHOST IN THE SHELL",
-      "answer": "ended",
-      "endedAt": "2026-08-06T09:53:11.000Z",
-      "services": [
-        "disney-plus"
-      ],
-      "covered": [
-        "2026-08-ended"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -336,7 +320,7 @@
         "2026-08-arrivals-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
@@ -353,23 +337,43 @@
         "2026-09-upcoming-prime-video-western"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-18"
+      "lastSeen": "2026-09-19"
     },
     {
       "workIds": [
-        "9884318"
+        "168462"
       ],
-      "title": "不適切にもほどがある!",
+      "title": "容疑者 室井慎次",
       "answer": "where",
       "services": [
         "prime-video"
       ],
       "covered": [
-        "2026-08-arrivals-japanese",
         "2026-08-arrivals-prime-video"
       ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-09-18"
+      "firstSeen": "2026-09-19",
+      "lastSeen": "2026-09-19"
+    },
+    {
+      "workIds": [
+        "25942288",
+        "87976",
+        "SID0099619"
+      ],
+      "title": "ONE PIECE STAMPEDE",
+      "answer": "where",
+      "services": [
+        "netflix",
+        "u-next"
+      ],
+      "covered": [
+        "2026-08-arrivals-anime",
+        "2026-08-arrivals-netflix",
+        "2026-08-leaving-u-next",
+        "2026-09-leaving-netflix"
+      ],
+      "firstSeen": "2026-09-19",
+      "lastSeen": "2026-09-19"
     }
   ],
   "notifiedSignature": "ONE PIECE"
