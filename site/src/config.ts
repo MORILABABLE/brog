@@ -572,6 +572,17 @@ export const AMAZON_TAGS: AmazonTags = {
   bar: import.meta.env.PUBLIC_AMAZON_TAG_BAR ?? '',
   /** 記事本文のその他のリンク。上のどれにも当たらないもの */
   body: import.meta.env.PUBLIC_AMAZON_TAG_BODY ?? '',
+  /**
+   * 配信カレンダーの升目と日付めくりのあいだのバナー（components/CalendarBanner.astro・2026-09-19）。
+   * ★ **未設定なら既定のIDに落ちる**（`tagFor`）ので、.env に行を足さなくても成果は出る。
+   *   足せばこのバナーだけを分けて数えられる。
+   */
+  calendar: import.meta.env.PUBLIC_AMAZON_TAG_CALENDAR ?? '',
+  /**
+   * 作品ページで afb の枠が出せない面に出すバナー（components/AfbCta.astro・2026-09-19）。
+   * ★ **未設定なら既定のIDに落ちる**（`tagFor`）。
+   */
+  fallback: import.meta.env.PUBLIC_AMAZON_TAG_FALLBACK ?? '',
 }
 
 /** その枠のトラッキングid。未設定の枠は既定に落ちる。 */

@@ -1,0 +1,89 @@
+---
+import { amazonTagFor } from '../config'
+import { primeVideoStorefrontUrl, relFor, type AmazonSlot } from '../lib/affiliate'
+
+interface Props {
+  /**
+   * 枠名。`data-slot`（クリック計測）と、トラッキングid の引き当てに使う。
+   *
+   * ★ **`slot` という名前にしてはいけない**（Astro の予約語。
+   *   コンポーネントごと出力から消える。UnextCta.astro の注意書きと同じ罠）。
+   */
+  spot: AmazonSlot
+}
+
+const { spot } = Astro.props
+
+/**
+ * Amazon Prime Video のバナー（728×90）。**原稿はこの1枚だけ。**
+ *
+ * ■ 出ている場所（2026-09-19 時点）
+ *   配信カレンダー（升目と日付めくりのあいだ）… `CalendarBanner.astro`（枠名 `calendar`）
+ *   作品ページ（afb の枠が出せない面）        … `AfbCta.astro`（枠名 `fallback`）
+ *
+ * ■ 素材の扱いが Hulu と逆。**揃えようとしないこと**
+ *   Amazon … 画像もリンクも当サイトが持つ（`public/ads/`）。規約に画像リンクの規定が無い
+ *   Hulu   … afb の管理画面のURLのまま出す決まりで、**自前ドメインへの再ホストが禁止**
+ *            （`lib/hulu-ad.ts` の🔴）
+ *
+ * ■ 文字を1つも足さない
+ * 枠の中にあるのは広告主が作った絵だけ。**説明文を書き足さないこと。**
+ * ここに書いた言葉は「当サイトが書いた広告文」になり、
+ * 作品にも配信状況にも触れていないという前提が崩れる（HuluCta と同じ規律）。
+ * ★ `alt` も**バナーが何の広告かだけ**を言う。
+ *
+ * ■ PR表記は枠の中に置かない
+ * ページ冒頭の `AffiliateNotice` が担っている（docs/AFFILIATE.md 5-5。位置はむしろ冒頭が要件）。
+ * 🔴 **冒頭の表記を消すと、この枠が無表示の広告になる。片方だけ消さないこと。**
+ */
+const BANNER = {
+  src: '/ads/amazon-prime-video-728x90.jpg',
+  width: 728,
+  height: 90,
+  alt: 'Amazon Prime Video',
+} as const
+
+const href = primeVideoStorefrontUrl(amazonTagFor(spot))
+---
+
+<aside class="amazon-banner" aria-label="広告">
+  {/*
+    ★ 枠も背景も付けない。**広告主が作った絵をそのまま置く**（HuluCta と同じ）。
+      縁を付けると「当サイトが作ったクリエイティブ」に近づく。
+    ★ `loading="lazy"` にしない。**最初の画面に入りうる**位置に出るので、
+      遅延させると読み込みが始まるころには通り過ぎている。
+  */}
+  <a class="banner" href={href} rel={relFor(href)} target="_blank" data-affiliate="true" data-slot={spot}>
+    <img src={BANNER.src} width={BANNER.width} height={BANNER.height} alt={BANNER.alt} decoding="async" />
+  </a>
+</aside>
+
+<style>
+  /*
+   * ★ 値は `HuluCta.astro` の `.hulu-cta` / `.banner` と同じ。
+   *   同じ位置に出る同じ役割の枠なので、広告主で見た目が変わらないようにする。
+   * ★ 上下の余白は置き場所側が詰める（`CalendarBanner` は升目とめくりの切れ目に寄せている）。
+   */
+  .amazon-banner {
+    margin: 2rem 0;
+    /*
+     * 中央ぞろい。728×90 の横長バナーは左に寄せると本文の行頭と揃わず、
+     * **本文の一部に見えてしまう**（HuluCta と同じ理由）。
+     */
+    text-align: center;
+  }
+  /*
+   * `line-height: 0` は画像の下に出る隙間（インライン行のベースライン）を消す。
+   * 狭い画面での縮小は global.css の img { max-width:100%; height:auto } が持つ。
+   */
+  .banner {
+    display: inline-block;
+    line-height: 0;
+  }
+  .banner img {
+    border: none;
+  }
+  .banner:hover {
+    opacity: 0.9;
+  }
+</style>

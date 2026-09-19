@@ -1,13 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AffiliateNotice from './AffiliateNotice.astro'
-import AmazonCta from './AmazonCta.astro'
+import CalendarBanner from './CalendarBanner.astro'
 import CalendarFilter from './CalendarFilter.astro'
 import CalendarPicker from './CalendarPicker.astro'
 import DayPager from './DayPager.astro'
 import EventCalendar from './EventCalendar.astro'
 import PostCard from './PostCard.astro'
-import PrimeCta from './PrimeCta.astro'
 import WorkSearch from './WorkSearch.astro'
 import WorkTable from './WorkTable.astro'
 import { ATTRIBUTION, CATEGORIES, CATEGORY_HUBS, EVERGREEN_BADGE, SERVICE_HUBS, SITE } from '../config'
@@ -26,7 +25,6 @@ import {
   posterOf,
   type CalendarDirection,
 } from '../lib/evergreen'
-import { primeAd } from '../lib/prime-ad'
 import { serviceSection, type PostEntry } from '../lib/service-pages'
 import { formatDate, isoDate } from '../utils/date'
 
@@ -256,22 +254,30 @@ const allArticles = serviceHub ? serviceSection(posts, serviceHub, hub.includes)
 const ARTICLES_SHOWN = 5
 const articles = allArticles.slice(0, ARTICLES_SHOWN)
 
-/*
- * 本文のCTA。**Prime Video の面だけ行き先が変わる**（判断と文言は lib/prime-ad.ts の1か所）。
+/**
+ * バナー広告（升目と日付めくりのあいだ）に渡す、**このページに名前が出る作品の全部。**
  *
- * ★ **「これから」（終了予定）が1本も無い終了側では出さない。** 終わった作品しか並ばない面で
- *   会員を勧めると、prime-ad.ts の「出してよい面」の線を越える。
- * ★ 新着側は、新着が1本も無く配信予定だけのときは出さない（文言が「始まった作品」を前提にする）。
+ * ★ Hulu の掲載NG判定（ディズニー作品・TBS作品）に要る。**Netflix の面で効く。**
+ *   取りこぼすより広く止める、という当て方は作品ページ（pages/works/[id].astro の
+ *   `adPageText`）と同じ。原題も渡す（NG一覧が原題で持っている作品があるため）。
+ * ★ Amazon の面では使われない（`lib/calendar-ad.ts`）。
+ *
+ * ■ 2026-09-19、ここにあった「PR／Amazonプライム／このページには…」のテキスト枠は廃止した
+ * （運用者の指定）。**バナーはその置き換えで、足したのではない。**
+ * 1ページの広告枠は1つのまま（`lib/calendar-ad.ts` の■）。
  */
-const primeProps =
-  direction === 'leaving'
-    ? futureWorks.length > 0
-      ? { service, category: 'leaving' as const, alsoEnded: pastWorks.length > 0 }
-      : null
-    : pastWorks.length > 0
-      ? { service, category: 'arrivals' as const, alsoUpcoming: futureWorks.length > 0 }
-      : null
-const primeSlot = primeProps ? primeAd(primeProps) : null
+/*
+ * 🔴 **区切りは改行。スペースで繋がない。**
+ *   集めてきた題名の照合（lib/ng-match.ts の `buildDelimited`）は、
+ *   題名の前後に**区切り文字**（改行・タブ・かぎ括弧・表の `|`）があるときだけ当てる。
+ *   スペースは区切りに入っていないので、` `で繋ぐと**1件も当たらず素通りする**
+ *   （2026-09-19 に実際に踏んだ。「CLANNAD」を混ぜても広告が消えなかった）。
+ *   記事（pages/posts）も作品ページ（pages/works）も `\n` で繋いでいる。**揃えること。**
+ */
+const adPageText = [...pastWorks, ...futureWorks]
+  .flatMap((w) => [w.title, w.originalTitle])
+  .filter((v): v is string => Boolean(v))
+  .join('\n')
 
 /* 配信開始予定の出典（告知のページ）。**取り込んだ告知があるときだけ並べる** */
 const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ? upcomingSources(service) : []
@@ -376,6 +382,18 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
   }
 
   {/*
+    バナー広告（2026-09-19 追加・運用者の指定）。**升目と日付めくりのあいだ。**
+
+    ★ **この位置から動かさないこと。** 升目は俯瞰、めくりから下はその日の本文で、
+      ここが切れ目。下へ動かすと日付と表のあいだに挟まり、読者が来た目的の答えが広告の下になる。
+      上へ動かすと、ページの用より先に広告が来る（理由は CalendarBanner.astro）。
+    ★ 何が出るか（社ごとの広告主）は lib/calendar-ad.ts の1か所。
+    ★ 末尾にあった「PR／Amazonプライム／…」のテキスト枠は**これと引き換えに廃止した。**
+      枠を増やしていない。
+  */}
+  <CalendarBanner service={service} pageText={adPageText} />
+
+  {/*
     日付めくり（2026-09-19・運用者の指定）。**このページの本体。**
 
     ★ 1日ぶんを `[data-day]` で包む。**この入れ物を出し入れするのは DayPager だけ。**
@@ -437,13 +455,11 @@ const announcementSources = direction === 'arrivals' && futureWorks.length > 0 ?
     )
   }
 
-  {
-    primeSlot && primeProps ? (
-      <PrimeCta {...primeProps} />
-    ) : (
-      <AmazonCta category={direction} />
-    )
-  }
+  {/*
+    ★ ここにあった Amazon / Amazonプライムのテキスト枠は**廃止した**（2026-09-19・運用者の指定）。
+      置き換えは升目の下のバナー（CalendarBanner）で、**枠を増やしてはいない。**
+      戻すなら、バナーとどちらかにすること（lib/calendar-ad.ts の■）。
+  */}
 
   <section class="sources">
     <h2>出典</h2>

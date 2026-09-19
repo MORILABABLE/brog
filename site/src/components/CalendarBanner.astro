@@ -1,0 +1,106 @@
+---
+import AmazonBanner from './AmazonBanner.astro'
+import HuluCta from './HuluCta.astro'
+import { calendarBanner } from '../lib/calendar-ad'
+import { huluAd } from '../lib/hulu-ad'
+
+interface Props {
+  /** サービスキー（`netflix` など）。**どの広告主を出すかはこれだけで決まる** */
+  service: string
+  /**
+   * ページに出ている作品名（Hulu の掲載NG判定に要る）。
+   * ★ **Netflix の面では必ず渡すこと。** 渡さないと、ディズニー作品・TBS作品が
+   *   並んでいる面でも Hulu のバナーが素通りする（`hulu-ad.ts` のガイドライン１）。
+   */
+  pageText?: string
+}
+
+const { service, pageText } = Astro.props
+
+/**
+ * 配信カレンダーのバナー広告（2026-09-19 追加・運用者の指定）。
+ * **升目と日付めくり（`‹ 9月19日（土）›`）のあいだに1枚だけ。**
+ *
+ * ■ 何が出るかはこのファイルで決めない
+ * 割り当て（どの社にどの広告主か）と、その理由は `src/lib/calendar-ad.ts` に1か所ある。
+ * ここは返ってきたものを描くだけ。**文言も割り当てもここに書き足さないこと。**
+ *
+ * ■ Amazon と Hulu で作りが違う。**揃えようとしないこと**
+ *
+ *   Amazon … 画像もリンクも当サイトが持つ（`public/ads/`）。規約に画像リンクの規定が無い
+ *   Hulu   … `HuluCta.astro` に丸投げ。画像は afb の管理画面のURLのまま出す決まりで、
+ *            **自前ドメインへの再ホストが禁止**（`lib/hulu-ad.ts` の🔴）。
+ *            掲載NG判定・表示計測の1x1・枠名（`id1`）も全部あちらが持っている
+ *
+ * ■ なぜこの位置か（升目の下・めくりの上）
+ * 升目は「どの日に何があるか」を俯瞰する部品、めくりから下は「その日の作品」の本文。
+ * **俯瞰から本文へ移る切れ目**なので、本文の途中を割らずに目に入る。
+ * ★ **めくりより下へ動かさないこと。** 日付と表のあいだに広告が挟まると、
+ *   読者が来た目的（いつ何が消えるか）の答えが広告の下になる。
+ * ★ **升目より上にも置かないこと。** ページの用より先に広告が来る形は、
+ *   AdSense の審査でも見られる（docs/AFFILIATE.md 10-5）。
+ *
+ * ■ PR表記は枠の中に置かない
+ * ページ冒頭の `AffiliateNotice` が担っている（`lib/calendar-ad.ts` の🔴・HuluCta と同じ扱い）。
+ *
+ * ■ Hulu が出せない面は Amazon で埋める（2026-09-19・運用者の指定）
+ * 作品ページと同じ規則（`AfbCta.astro` の `fallback`）。
+ *
+ * 🔴 **Netflix の面では、埋め合わせのほうが常態だと思っておくこと。**
+ *   このページには数百本の作品名が並ぶので、TBS作品・ディズニー作品が1本でも混ざれば
+ *   Hulu は出せない（ガイドライン１）。2026-09-19 の実測:
+ *
+ *     /leaving/netflix   380本中2本が掲載NG（「トリリオンゲーム」「インビジブル」）
+ *     /arrivals/netflix  336本中2本（「ヘラクレス」「世界の中心で、愛をさけぶ」）
+ *
+ *   **1本でも当たれば面ごと止まる**うえ、並ぶ作品は収集のたびに入れ替わる。
+ *   Hulu が出る日と出ない日があるのは正常で、**ガードが壊れた兆候ではない。**
+ *   ★ 「Hulu が出ないから」と判定を緩めないこと。違反は提携解除・成果全却下。
+ *
+ * ■ それでも出ないことがある
+ * 割り当ての無い社（`calendarBanner()` が null）。**HTMLを1バイトも出さない。**
+ */
+const kind = calendarBanner(service)
+
+/*
+ * ★ `huluAd()` をここで呼ぶのは**出るかどうかを知るため**（AfbCta.astro と同じ扱い）。
+ *   描くのは HuluCta で、同じ入力から同じ答えを返す。判断を2か所に散らさない。
+ * ★ `services` は渡さない。**この面のサービスは Netflix** で、Hulu 側が見ているのは
+ *   「Disney+ のページか」だけ（`hulu-ad.ts` の BLOCKED_SERVICES）。
+ *   止めるべきは**並んでいる作品**のほうで、それは `pageText` が担う。
+ */
+const huluFits = kind === 'hulu' && huluAd({ slot: 'calendar', pageText }) !== null
+---
+
+{
+  huluFits ? (
+    <div class="calendar-ad">
+      <HuluCta spot="calendar" pageText={pageText} />
+    </div>
+  ) : (
+    kind !== null && (
+      /*
+       * Amazon を割り当てた社と、**Hulu が出せなかった Netflix の面**（上の🔴）。
+       * ★ 枠名は `calendar` のまま。afb が出せなかった面だけを分けたいときは、
+       *   作品ページ側（`fallback`）と同じように枠名を分けること。いまは分けていない。
+       */
+      <div class="calendar-ad">
+        <AmazonBanner spot="calendar" />
+      </div>
+    )
+  )
+}
+
+<style>
+  /*
+   * ★ 上下の余白は升目とめくりのどちらからも離す。**切れ目に置いてあることが形で分かるように。**
+   *   中の枠（AmazonBanner / HuluCta）は自前で 2rem を持っているので、ここで打ち消す。
+   */
+  .calendar-ad {
+    margin: 1.6rem 0 0;
+  }
+  .calendar-ad :global(.hulu-cta),
+  .calendar-ad :global(.amazon-banner) {
+    margin: 0;
+  }
+</style>

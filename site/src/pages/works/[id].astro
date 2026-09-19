@@ -570,7 +570,12 @@ const jsonLd = {
       ディズニー・Disney+ は U-NEXT ○ / Hulu ✕）ので、枠を増やさずに空白が埋まる。
       `services` は Hulu 側が Disney+ のページを避けるために要る。
   */}
-  <AfbCta spot="work" pageText={adPageText} services={w.services.map((s) => s.service)} />
+  {/*
+    ★ `fallback` を渡してある（2026-09-19・運用者の指定）。afb が2社とも出せない面
+      （ディズニー作品・TBS作品を含むページ）は、これまで**枠ごと空白**だった。
+      そこに Amazon Prime Video のバナーを出す。**afb が出る面には出ない**ので枠は増えない。
+  */}
+  <AfbCta spot="work" pageText={adPageText} services={w.services.map((s) => s.service)} fallback />
 
   {
     /*

@@ -1,6 +1,8 @@
 ---
+import AmazonBanner from './AmazonBanner.astro'
 import UnextCta from './UnextCta.astro'
 import HuluCta from './HuluCta.astro'
+import { huluAd } from '../lib/hulu-ad'
 import { unextAd } from '../lib/unext-ad'
 import type { AfbSlot } from '../lib/afb'
 import type { CategorySlug } from '../config'
@@ -76,6 +78,20 @@ interface Props {
    * 記事では「U-NEXT のタグが付いているか」。作品ページは常に true。
    */
   unextSubject?: boolean
+  /**
+   * afb（U-NEXT / Hulu）がどちらも出せない面で、**Amazon のバナーで埋めるか**
+   * （2026-09-19・運用者の指定）。既定は埋めない。
+   *
+   * ■ なぜ既定を false にしてあるか
+   * 埋めるのは「afb が出せない面」＝**掲載NG（ディズニー作品・TBS作品）を含む面**が主。
+   * そこに別の広告を置いてよいかは面ごとの判断なので、**呼び出し側が明示する。**
+   * いま true にしてあるのは作品ページだけ（pages/works/[id].astro）。
+   *
+   * ★ Amazon の掲載NGではない。**Hulu のガイドラインが止めているだけ**なので、
+   *   同じ面に Amazon を出すこと自体は禁止に当たらない。
+   * ★ **枠は増えない。** afb が出た面には Amazon のバナーは出ない（下の分岐）。
+   */
+  fallback?: boolean
 }
 
 const {
@@ -86,6 +102,7 @@ const {
   asOf,
   services,
   unextSubject = true,
+  fallback = false,
 } = Astro.props
 
 /*
@@ -95,12 +112,27 @@ const {
  */
 const unextFits =
   unextSubject && unextAd({ slot: spot, category, genre, pageText, asOf }) !== null
+
+/*
+ * ★ `huluAd()` をここでも呼ぶのは**出るかどうかを知るため**（`unextAd` と同じ扱い）。
+ *   描くのは HuluCta で、同じ入力から同じ答えを返す。判断を2か所に散らさない。
+ *   これが分かって初めて「どちらも出ない面」を見分けられる。
+ */
+const huluFits = !unextFits && huluAd({ slot: spot, pageText, services }) !== null
 ---
 
 {
   unextFits ? (
     <UnextCta spot={spot} category={category} genre={genre} pageText={pageText} asOf={asOf} />
-  ) : (
+  ) : huluFits ? (
     <HuluCta spot={spot} pageText={pageText} services={services} />
+  ) : (
+    /*
+     * afb が2社とも出せない面（掲載NGを含むページ・提携前）。
+     * ★ **`fallback` を渡した面だけ**埋める（既定は何も出さない。上の Props の注意書き）。
+     * ★ 枠名は `fallback`。**afb が出せなかった面だけ**の数字になるので、
+     *   「掲載NGで空いていた面をバナーで埋めたら踏まれたか」がこの枠だけで読める。
+     */
+    fallback && <AmazonBanner spot="fallback" />
   )
 }

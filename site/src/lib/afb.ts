@@ -20,7 +20,7 @@
  * afb ではリンクコードの末尾に `&id1=<枠>` として付ける。成果データの
  * `keyword` 欄に返ってくる（docs/AFFILIATE.md 11-4）。
  */
-export const AFB_SLOTS = ['cta', 'rail', 'work', 'table', 'poster', 'body'] as const
+export const AFB_SLOTS = ['cta', 'rail', 'work', 'table', 'poster', 'body', 'calendar'] as const
 export type AfbSlot = (typeof AFB_SLOTS)[number]
 
 /**

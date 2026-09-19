@@ -98,6 +98,16 @@ export const AMAZON_SLOTS = [
   // ★ `poster` と混ぜないこと。あちらは**記事本文の節ポスター**で、面も読者の位置も違う。
   //   rehype プラグインは出さないので astro.config.mjs 側には要らない。
   'cover',
+  // 配信カレンダーの升目と日付めくりのあいだのバナー（components/CalendarBanner.astro。2026-09-19）。
+  // ★ `cta` `prime` と混ぜないこと。あちらは記事末尾のテキスト枠で、こちらは**面の途中のバナー**。
+  //   読者の位置も形も違うので、同じIDにすると「バナーが効いたのか」が永久に読めない。
+  // ★ rehype プラグインは出さないので astro.config.mjs 側には要らない。
+  'calendar',
+  // 作品ページで **afb（Hulu / U-NEXT）の枠が出せない面**に出す埋め合わせのバナー
+  // （components/AfbCta.astro。2026-09-19）。
+  // ★ `work` と混ぜないこと。あちらは状態行のボタンで、こちらは本文CTAの位置のバナー。
+  //   「afb が出せない面をバナーで埋めたら踏まれたか」は、この枠だけが答えられる。
+  'fallback',
 ] as const
 
 export type AmazonSlot = (typeof AMAZON_SLOTS)[number]
@@ -211,6 +221,24 @@ export function amazonVideoSearchUrl(query: string, tag: string): string {
  */
 export function primeTrialUrl(tag: string): string {
   const u = new URL('https://www.amazon.co.jp/amazonprime')
+  if (tag) u.searchParams.set('tag', tag)
+  return u.toString()
+}
+
+/**
+ * Prime Video のストアフロント。**バナー原稿（`public/ads/amazon-prime-video-728x90.jpg`）の
+ * 行き先として、運用者から渡された1本。**
+ *
+ *   https://www.amazon.co.jp/gp/video/storefront?benefitId=default&tag=<トラッキングid>
+ *
+ * ★ **`benefitId=default` を落とさないこと。** 運用者が受け取ったリンクの一部で、
+ *   こちらの都合で削ってよいパラメータかどうかは分からない。
+ * ★ `primeTrialUrl`（`/amazonprime`）とは**別物**。あちらは無料体験の紹介（固定報酬）専用リンクで、
+ *   Amazon 公式が「そのURLを経由した場合のみ」と明記している。**混ぜて使わない。**
+ */
+export function primeVideoStorefrontUrl(tag: string): string {
+  const u = new URL('https://www.amazon.co.jp/gp/video/storefront')
+  u.searchParams.set('benefitId', 'default')
   if (tag) u.searchParams.set('tag', tag)
   return u.toString()
 }

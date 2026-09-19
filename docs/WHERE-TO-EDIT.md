@@ -111,6 +111,15 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                                  ★ 隠すのはスクリプトだけ。**HTML には全部の日が出ている**
                                  ★ 日の入れ物 `[data-day]` を動かすのはこれだけ。
                                    中の `section.day` は CalendarFilter の担当。混ぜないこと
+      バナー広告（升目とめくりのあいだ） → site/src/components/CalendarBanner.astro（2026-09-19）
+                                 どの社にどの広告主か → site/src/lib/calendar-ad.ts
+                                 Amazon の原稿        → site/src/components/AmazonBanner.astro
+                                                        （画像は site/public/ads/・枠名 calendar）
+                                 Hulu の原稿          → site/src/lib/hulu-ad.ts（.env。**再ホスト禁止**）
+                                 ★ 末尾の PrimeCta / AmazonCta は**これと引き換えに廃止した。**
+                                   枠は1ページに1つのまま。戻すならどちらかにすること
+                                 ★ Netflix は Hulu 割り当てだが、TBS作品が1本でも並ぶと
+                                   掲載NGで出せない。その面は Amazon が埋める（正常な動き）
       記事の一覧              → **出していない**（ServiceCalendarPage の `SHOW_ARTICLES`・2026-09-19）。
                                  戻すならそこを true にするだけ。記事は /category/<ハブ>/<サービス> と
                                  /service/<サービス> から辿れるので、消しても孤立しない
