@@ -235,6 +235,12 @@ export function primeTrialUrl(tag: string): string {
  *   こちらの都合で削ってよいパラメータかどうかは分からない。
  * ★ `primeTrialUrl`（`/amazonprime`）とは**別物**。あちらは無料体験の紹介（固定報酬）専用リンクで、
  *   Amazon 公式が「そのURLを経由した場合のみ」と明記している。**混ぜて使わない。**
+ *
+ * ⛔ **2026-09-19 現在、この関数を使っている場所は無い**（運用者の指定でバナーの行き先を
+ *   `primeTrialUrl` に切り替えた。`components/AmazonBanner.astro` の🔴）。
+ *   ストアフロントへの紹介料は**表の作品名のリンクがすでに担っている**ので、
+ *   バナーの枠を同じ役割に使うと固定報酬を捨てることになる。
+ *   **消していないのは、運用者から渡された1本だから。** 戻すときはこの1本を使う。
  */
 export function primeVideoStorefrontUrl(tag: string): string {
   const u = new URL('https://www.amazon.co.jp/gp/video/storefront')

@@ -235,6 +235,15 @@ export interface ArticleType {
    * 「素材不足」と表示して運用者に見せるところまでにとどめる。
    */
   readonly minItems?: number
+  /**
+   * 分量の下限の上書き（`core/verify.ts` の既定は本文1,200字・地の文1,000字）。
+   *
+   * **シリーズ記事だけが長い。** 解説の上限が小段落あたり1,500字
+   * （月次・特報は1,000字）なので、下限もそれに見合わせる。
+   * 宣言しない記事タイプは既定のまま。
+   */
+  readonly minBodyChars?: number
+  readonly minProseChars?: number
   /** 記事にする素材を選ぶ。空なら記事化しない。 */
   select(events: ChangeEvent[], ledger: Ledger, ctx: ArticleContext): ChangeEvent[]
   /** LLMへの指示を組み立てる */

@@ -397,6 +397,9 @@ async function finalize(
       stopReason,
       // 同じ作品を別の題で書く記事タイプがある（ArticleType.mentions）
       mentions: type.mentions ? (e, body) => type.mentions!(e, body, items) : undefined,
+      // 解説の上限が記事タイプで違うので、下限もそれに合わせる（ArticleType.minBodyChars）
+      minBodyChars: type.minBodyChars,
+      minProseChars: type.minProseChars,
     }),
     ...type.verify(parsed.body, items, ctx),
     // ★ タイトルは verify() に渡っていない（`ArticleType.verifyTitle` のコメント）。

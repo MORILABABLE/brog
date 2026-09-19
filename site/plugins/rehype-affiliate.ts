@@ -96,6 +96,14 @@ function slotOf(node: Node): AmazonSlot {
    *   「表の直後に置く」ことが効いたかどうかは、この枠だけが答えられる。
    */
   if (Array.isArray(cls) && cls.includes('next-watch-link')) return 'watch'
+  /*
+   * ★ 小段落の直下の広告（`plugins/rehype-section-ads.ts`。2026-09-19）。
+   *   **`body` と混ぜないこと。** あちらは地の文のリンクで、こちらは
+   *   **Amazonプライムの無料体験（固定報酬 500円/件）**。
+   *   紹介料とは成果の種類が違うので、同じIDにするとレポートで単価が読めなくなる
+   *   （`src/config.ts` の `prime`）。
+   */
+  if (Array.isArray(cls) && cls.includes('prime-ad-link')) return 'prime'
 
   for (const child of node.children ?? []) {
     if (child.tagName !== 'img') continue

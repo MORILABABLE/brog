@@ -23,7 +23,6 @@ heroImage: '/heroes/conan-movies.webp'
 ## Netflixで見放題配信が終了した29本
 
 [![名探偵コナン 灰原哀物語 ～黒鉄のミステリートレイン～（2023年）](/sections/posters/conan-movies-7bf24d2f-1.webp)](https://www.amazon.co.jp/s?k=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E7%81%B0%E5%8E%9F%E5%93%80%E7%89%A9%E8%AA%9E%20%EF%BD%9E%E9%BB%92%E9%89%84%E3%81%AE%E3%83%9F%E3%82%B9%E3%83%86%E3%83%AA%E3%83%BC%E3%83%88%E3%83%AC%E3%82%A4%E3%83%B3%EF%BD%9E&i=instant-video) [![名探偵コナン 緋色の不在証明（2021年）](/sections/posters/conan-movies-7bf24d2f-2.webp)](https://www.amazon.co.jp/s?k=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E7%B7%8B%E8%89%B2%E3%81%AE%E4%B8%8D%E5%9C%A8%E8%A8%BC%E6%98%8E&i=instant-video)
-
 | 終了日 | 作品 | 状態 | 評価 | サービス |
 | --- | --- | --- | --- | --- |
 | 8月31日 | 名探偵コナン 100万ドルの五稜星 | 終了済み | 61/100 | Netflix |
@@ -61,10 +60,9 @@ heroImage: '/heroes/conan-movies.webp'
 シリーズが大きくなった転機は、20周年記念作となった第20作『名探偵コナン 純黒の悪夢』でした。黒の組織を正面から扱ったこの作品で興行収入は前作から20億円近く伸びて63億3,000万円となり、ここから第23作『名探偵コナン 紺青の拳』まで7作連続でシリーズ最高興収を更新し続けます。第1作が11億円だったことを思えば、その差がそのままシリーズの歩みです。第26作『名探偵コナン 黒鉄の魚影』以降は100億円を超える規模になりました。
 
 古い作品も評判で選ばれ続けています。2016年に行われた歴代19作の人気投票では第6作『名探偵コナン ベイカー街の亡霊』が2位、第4作『名探偵コナン 瞳の中の暗殺者』が3位に入り、『瞳の中の暗殺者』は2020年1月の『金曜ロードSHOW!』の人気投票でも1位を取って、翌月に同枠で初めて放送されました。
+## そのほかに終了した5本
 
-## U-NEXTで見放題配信が終了した32本
-
-[![TVシリーズ特別編集版『名探偵コナン vs 怪盗キッド』（2024年）](/sections/tiles/conan-movies-5551f336-1.webp)](https://www.amazon.co.jp/s?k=TV%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%E7%89%B9%E5%88%A5%E7%B7%A8%E9%9B%86%E7%89%88%E3%80%8E%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20vs%20%E6%80%AA%E7%9B%97%E3%82%AD%E3%83%83%E3%83%89%E3%80%8F&i=instant-video) [![名探偵コナン「警察学校編　Wild Police Story」（2021年）](/sections/tiles/conan-movies-5551f336-2.webp)](https://www.amazon.co.jp/s?k=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%E3%80%8C%E8%AD%A6%E5%AF%9F%E5%AD%A6%E6%A0%A1%E7%B7%A8%20Wild%20Police%20Story%E3%80%8D&i=instant-video)
+[![名探偵コナン「警察学校編　Wild Police Story」（2021年）](/sections/tiles/conan-movies-b226a84d-1.webp)](https://www.amazon.co.jp/s?k=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%E3%80%8C%E8%AD%A6%E5%AF%9F%E5%AD%A6%E6%A0%A1%E7%B7%A8%20Wild%20Police%20Story%E3%80%8D&i=instant-video) [![TVシリーズ特別編集版『名探偵コナン vs 怪盗キッド』（2024年）](/sections/tiles/conan-movies-b226a84d-2.webp)](https://www.amazon.co.jp/s?k=TV%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%E7%89%B9%E5%88%A5%E7%B7%A8%E9%9B%86%E7%89%88%E3%80%8E%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20vs%20%E6%80%AA%E7%9B%97%E3%82%AD%E3%83%83%E3%83%89%E3%80%8F&i=instant-video)
 
 | 終了日 | 作品 | 状態 | 評価 | サービス |
 | --- | --- | --- | --- | --- |
@@ -74,23 +72,12 @@ heroImage: '/heroes/conan-movies.webp'
 | 8月31日 | 総集編「名探偵コナン 灰原哀物語～黒鉄のミステリートレイン～」 | 終了済み | 90/100 | U-NEXT |
 | 8月31日 | 名探偵コナン　緋色の不在証明 | 終了済み | 90/100 | U-NEXT |
 
+### U-NEXTで見放題配信が終了した32本
+
 U-NEXTで終了したのは32本で、そのうち29本はNetflixと同じ作品です。下の表には、U-NEXTにしか無い3本と、Netflixとは別の題で扱われていた2本を挙げています。TVシリーズ特別編集版『名探偵コナン vs 怪盗キッド』、『名探偵コナン 本庁の刑事恋物語 ～結婚前夜～』、『名探偵コナン「警察学校編 Wild Police Story」』の3本がU-NEXTだけのものです。
 
 なお、U-NEXTは見放題とポイントでの取り扱いが同居しているサービスです。ここに挙げているのは見放題での配信が終了する作品で、そのあとの取り扱いは配信サービスの公式サイトでご確認ください。
-
-## 他のサービスで探す
-
-※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+・U-NEXT の5サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
-
-- **名探偵コナン 時計じかけの摩天楼** [U-NEXT](https://video.unext.jp/freeword?query=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E6%99%82%E8%A8%88%E3%81%98%E3%81%8B%E3%81%91%E3%81%AE%E6%91%A9%E5%A4%A9%E6%A5%BC) / [Hulu](https://www.hulu.jp/search?q=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E6%99%82%E8%A8%88%E3%81%98%E3%81%8B%E3%81%91%E3%81%AE%E6%91%A9%E5%A4%A9%E6%A5%BC) / [DMM TV](https://tv.dmm.com/search/?keyword=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E6%99%82%E8%A8%88%E3%81%98%E3%81%8B%E3%81%91%E3%81%AE%E6%91%A9%E5%A4%A9%E6%A5%BC)
-- **名探偵コナン ベイカー街の亡霊** [U-NEXT](https://video.unext.jp/freeword?query=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E3%83%99%E3%82%A4%E3%82%AB%E3%83%BC%E8%A1%97%E3%81%AE%E4%BA%A1%E9%9C%8A) / [Hulu](https://www.hulu.jp/search?q=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E3%83%99%E3%82%A4%E3%82%AB%E3%83%BC%E8%A1%97%E3%81%AE%E4%BA%A1%E9%9C%8A) / [DMM TV](https://tv.dmm.com/search/?keyword=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E3%83%99%E3%82%A4%E3%82%AB%E3%83%BC%E8%A1%97%E3%81%AE%E4%BA%A1%E9%9C%8A)
-- **名探偵コナン 瞳の中の暗殺者** [U-NEXT](https://video.unext.jp/freeword?query=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E7%9E%B3%E3%81%AE%E4%B8%AD%E3%81%AE%E6%9A%97%E6%AE%BA%E8%80%85) / [Hulu](https://www.hulu.jp/search?q=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E7%9E%B3%E3%81%AE%E4%B8%AD%E3%81%AE%E6%9A%97%E6%AE%BA%E8%80%85) / [DMM TV](https://tv.dmm.com/search/?keyword=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E7%9E%B3%E3%81%AE%E4%B8%AD%E3%81%AE%E6%9A%97%E6%AE%BA%E8%80%85)
-- **名探偵コナン 100万ドルの五稜星** [U-NEXT](https://video.unext.jp/freeword?query=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20100%E4%B8%87%E3%83%89%E3%83%AB%E3%81%AE%E4%BA%94%E7%A8%9C%E6%98%9F) / [Hulu](https://www.hulu.jp/search?q=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20100%E4%B8%87%E3%83%89%E3%83%AB%E3%81%AE%E4%BA%94%E7%A8%9C%E6%98%9F) / [DMM TV](https://tv.dmm.com/search/?keyword=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20100%E4%B8%87%E3%83%89%E3%83%AB%E3%81%AE%E4%BA%94%E7%A8%9C%E6%98%9F)
-- **TVシリーズ特別編集版『名探偵コナン vs 怪盗キッド』** [Hulu](https://www.hulu.jp/search?q=TV%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%E7%89%B9%E5%88%A5%E7%B7%A8%E9%9B%86%E7%89%88%E3%80%8E%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20vs%20%E6%80%AA%E7%9B%97%E3%82%AD%E3%83%83%E3%83%89%E3%80%8F) / [DMM TV](https://tv.dmm.com/search/?keyword=TV%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%E7%89%B9%E5%88%A5%E7%B7%A8%E9%9B%86%E7%89%88%E3%80%8E%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20vs%20%E6%80%AA%E7%9B%97%E3%82%AD%E3%83%83%E3%83%89%E3%80%8F)
-- **名探偵コナン「警察学校編　Wild Police Story」** [Hulu](https://www.hulu.jp/search?q=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%E3%80%8C%E8%AD%A6%E5%AF%9F%E5%AD%A6%E6%A0%A1%E7%B7%A8%20Wild%20Police%20Story%E3%80%8D) / [DMM TV](https://tv.dmm.com/search/?keyword=%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%E3%80%8C%E8%AD%A6%E5%AF%9F%E5%AD%A6%E6%A0%A1%E7%B7%A8%20Wild%20Police%20Story%E3%80%8D)
-
 ## まとめ
-
 Netflixは劇場版27作に2本を加えた29本、U-NEXTはそこにU-NEXTだけの3本を足した32本で、サービスごとに数えると合わせて61本になります。見放題が終わったあとにどのサービスで観られるかは、上の表で確認できます。表に出ていないサービスでの取り扱いは、各作品の検索リンクから確かめられます。
 
 > 配信情報は Streaming Availability API by Movie of the Night 提供

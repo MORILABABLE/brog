@@ -96,6 +96,8 @@ import {
   ratingMentionsInProse,
   serviceLabels,
   styleIssues,
+  SECTION_PROSE_LIMIT_SERIES,
+  structureIssues,
   titleIssues,
   UNAVAILABLE_CLAIM,
   writingRules,
@@ -136,7 +138,12 @@ const REQUIRED_PHRASES = [
   'series-ended-lead-partial-first-sentence',
   'series-unext-note',
   'series-lead-elsewhere',
-  'other-services-intro',
+  /*
+   * ★ `other-services-intro` は 2026-09-19 に廃止（「他のサービスで探す」の節ごと）。
+   *   行き先は表の各行の下に出る（site/plugins/rehype-availability.ts）。
+   * ★ `series-coverage-note` は**残す。** 廃止したのはリンクの羅列で、
+   *   こちらは「記事に何が載っていないか」の断り（置き場所は小段落2の表の下に移した）。
+   */
   'series-coverage-note',
   'attribution',
   'attribution-unext',
@@ -662,6 +669,16 @@ export const seriesArticle: ArticleType = {
   description: 'シリーズ（月を名乗らない保存版。--topic / --slug / --match が必要）',
 
   /*
+   * ★ **この記事タイプだけ分量の下限が高い**（2026-09-19・運用者の指定）。
+   *   小段落の解説の上限が1,500字（月次・特報は1,000字）で、表の作品数にも
+   *   制限を置いていない。1つの主題を1本で引き受ける保存版なので、
+   *   月次記事と同じ下限だと「シリーズ記事なのに薄い」ものが通ってしまう。
+   *   既定は `pipeline/core/verify.ts`（本文1,200字・地の文1,000字）。
+   */
+  minBodyChars: 1800,
+  minProseChars: 1400,
+
+  /*
    * ★ **この記事タイプだけが書き直しどきを持つ。**
    *   月を名乗らないURLを何か月も書き直すので、終了予定だった作品が
    *   終了済みになった時点で、書き直すまで記事だけが古い事実を言い続ける。
@@ -1125,9 +1142,7 @@ ${resolved.unextNote}
 
 `
     : ''
-}## 「他のサービスで探す」の冒頭（2つとも、この順に続けて置く）
-
-${resolved.otherServicesIntro}
+}## 掲載範囲の断り（**小段落2の表のすぐ後ろ**に置く）
 
 ${resolved.coverageNote}
 
@@ -1140,18 +1155,39 @@ ${resolved.attributions.join('\n\n')}
 ${OUTPUT_FORMAT}`
 
     const tasks = [
+      `**「##」の節は2つだけ作ってください（＋まとめ）。** 記事全体の形は次で固定です。
+
+   \`\`\`
+   リード（見出しなし・固定文言の1組だけ）
+   ## 小段落1  中心の2〜3作   … 表 → 解説（最大${SECTION_PROSE_LIMIT_SERIES}字）
+   ## 小段落2  残りの全${items.length}件 … 表 → 掲載範囲の断り → 軽い言及
+   ## まとめ
+   \`\`\`
+
+   ★ **シリーズ記事だけ解説の上限が${SECTION_PROSE_LIMIT_SERIES}字**です（月次・特報は1,000字）。
+     **表に載せる作品数に制限はありません。**
+   ★ **「他のサービスで探す」「対象作品リスト」の節は作りません**（2026-09-19 に廃止）。
+     行き先は表の各行の下にサイトが出します。残り全件は小段落2の表が持ちます。
+   ★ **Amazon・Hulu のリンクも、配信カレンダーへのリンクも本文に書かないこと。**
+     小段落の直下と表の直下にビルドが入れます。`,
+      `**リードは上の固定文言の1組だけです。2段落目を書かないでください。**
+   タイトルがすでに中心作を名乗っているので、ここで作品名を挙げると同じ名前を2回読ませることになります。`,
       `**主題（${resolved.topic}）から離れないこと。** 与えられた作品以外の話に広げない。
    「今月の配信終了作品一覧」のような書き方はしない。それは月次記事の仕事です。`,
-      `**各セクションは「見出し → 表 → 解説」の順に書くこと。**
+      `**小段落1で解説するのは、中心になる2〜3作だけです（最大${SECTION_PROSE_LIMIT_SERIES}字）。**
+   シリーズの中で名前の通った2〜3作を選び、そこに調べた事実を集中させます。**4作以上を解説しないこと。**`,
+      `**どちらの小段落も「見出し → 表 → 解説」の順に書くこと。**
    表の列は「終了日 / 作品 / 状態 / 出演者 / サービス」の5列で固定してください。
-   **サービス列と状態列を省かないでください**（サイトが行のサービス名を読んでリンクを付けます）。`,
-      `**対象作品リストの節に、下の${items.length}件を1件残らず表に載せること。**${
+   **サービス列と状態列を省かないでください**（サイトが行のサービス名を読んでリンクを付けます）。
+   ★ **同じ作品を2つの表に出さないこと。** 小段落1に出した作品は小段落2の表から外します。`,
+      `**小段落2の表に、下の${items.length}件のうち小段落1に出していない作品を1件残らず載せること。**${
         workCount(items) !== items.length
           ? `
    同じ作品が複数サービスにあるので、**作品の数は${workCount(items)}本**です。
    タイトルとリードで名乗るのはこちらの数で、**ズレの理由は本文に書きません。**`
           : ''
-      }`,
+      }
+   表の下に**掲載範囲の断り**をそのまま置き、そのあと特筆すべき1〜2作を1〜2文で書いてください。`,
       `**評価スコアは記事のどこにも書かないこと。** 表にも地の文にも出しません。
    素材の評価は、表の行を並べる順番を決めるための目安としてだけ使ってください。`,
       `**表の「出演者」欄には主演と助演を1名ずつ（計2名まで）書くこと。網羅しません。**
@@ -1171,7 +1207,7 @@ ${OUTPUT_FORMAT}`
 
    ★ アニメは**キャラ名（CV.声優）**の形で書きます。
    ★ **記事に1回だけ置いてください。** サービスが分かれていても主演は同じなので、
-     **最初の表の下にだけ**置きます。同じ1行を節ごとに繰り返さないこと。
+     **小段落1の表の下にだけ**置きます。同じ1行を節ごとに繰り返さないこと。
    ★ **主演と書けるのは、素材のリサーチに「主演・◯◯」のような記述がある作品だけ**です。
      どの作品でも主演が確かめられない記事では、**この箇条書きごと置かないでください**。`,
       /*
@@ -1391,7 +1427,15 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
   verify(raw, items, ctx): VerifyIssue[] {
     const md = normalizeBody(raw)
     // 全記事タイプ共通の決まり（templates/writing.md）
-    const issues: VerifyIssue[] = styleIssues(md)
+    const issues: VerifyIssue[] = [
+      ...styleIssues(md),
+      /*
+       * 記事の骨格（小段落2つ＋まとめ・廃止した節・解説の字数）。
+       * ★ **シリーズだけ解説の上限が1,500字**（月次・特報は1,000字）。
+       *   1つの主題を1本で引き受ける保存版なので、表の作品数にも制限を置いていない。
+       */
+      ...structureIssues(md, { maxSectionProse: SECTION_PROSE_LIMIT_SERIES }),
+    ]
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 
@@ -1483,7 +1527,6 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     const scanned = [
       resolved.leadFirstSentence,
       resolved.unextNote,
-      resolved.otherServicesIntro,
       resolved.coverageNote,
     ]
       .filter(Boolean)
@@ -1745,7 +1788,6 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     for (const [name, text] of [
       ['リードの1文目', resolved.leadFirstSentence],
       ['U-NEXTの但し書き', resolved.unextNote],
-      ['他のサービスで探すの冒頭', resolved.otherServicesIntro],
       ['掲載範囲の断り', resolved.coverageNote],
     ] as const) {
       if (text && !md.includes(text)) {
@@ -1780,7 +1822,6 @@ interface ResolvedPhrases {
   leadFirstSentence: string
   /** U-NEXT の作品が入るときだけ。入らなければ空文字で、使われない */
   unextNote: string
-  otherServicesIntro: string
   /** 何を載せていないかの断り。**シリーズ記事だけ**（fixed-phrases.md の注記） */
   coverageNote: string
   /** 素材の出どころが混ざるので配列。**片方だけ書くと出典を偽ることになる。** */
@@ -2000,7 +2041,6 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
     topic,
     leadFirstSentence,
     unextNote: items.some((e) => hasLineup(e.service)) ? get('series-unext-note') : '',
-    otherServicesIntro: get('other-services-intro'),
     coverageNote: get('series-coverage-note'),
     attributions,
     asOf,

@@ -624,6 +624,26 @@ export function titleIssues(title: string, ctx: ArticleContext, rule: TitleRule)
     )
   }
 
+  /*
+   * --- 見どころ（`｜` のあと） ---
+   *
+   * ★ **必ず1つは作品名を入れる**（2026-09-19・運用者の指定）。
+   *   新テンプレでリードから作品名が消えたので、**作品名が出るのは
+   *   タイトルと見出しだけ**になった。ここを省くと、読者が検索結果で
+   *   「どの作品の記事か」を判断する手がかりが1つも無くなる。
+   *
+   * ★ 以前は「挙げる価値のある固有名詞が無い月は `｜` ごと省いてよい」だった
+   *   （`naming.md`）。**その逃げ道は塞いである。**
+   */
+  const bar = title.indexOf('｜')
+  if (bar < 0 || title.slice(bar + 1).trim() === '') {
+    err(
+      'タイトルに見どころ（「｜」のあと）がありません。**記事の中心作を1つ以上、固有名詞で**置いてください' +
+        '（templates/naming.md「見どころ」）。\n' +
+        '      例: 【2026年9月】Netflixで見放題配信が終了予定の作品17本｜リコリス・リコイル',
+    )
+  }
+
   // --- 止めない指摘 ---
   if (rule.requiresCount !== false && !/\d+本/.test(title)) {
     warn('タイトルに本数（◯本）がありません。読者が規模を掴めません。')
@@ -969,6 +989,215 @@ export function styleIssues(md: string): VerifyIssue[] {
         '（templates/writing.md 11節）。見出しに入れた作品は節の中心作として書きます。' +
         '書く材料が無いなら、見出しから外して表に任せてください。',
     })
+  }
+
+  return issues
+}
+
+// --- 記事の骨格（2026-09-19 のテンプレ改修） -------------------------------
+
+/**
+ * `##` の節。**新テンプレはこれを3つに固定する。**
+ *
+ *     ## 小段落1  … 中心の2〜3作（表 → 解説）
+ *     ## 小段落2  … 残り全件（表 → 軽い言及）
+ *     ## まとめ
+ *
+ * リードは見出しを持たない。数え方の都合で `###` は数えない
+ * （新テンプレは `###` を使わないが、使っても節の数は変わらないため）。
+ */
+const MAX_SECTIONS = 3
+
+/**
+ * **廃止した節**（2026-09-19）。残っていたら公開を止める。
+ *
+ * | 廃止した節 | 何が代わりに答えているか |
+ * |---|---|
+ * | 他のサービスで探す | 表の各行の下（`site/plugins/rehype-availability.ts` の在庫行と「他で探す」チップ） |
+ * | 全終了作品リスト・全作品リスト | **小段落2の表**（残り全件をそこに載せる） |
+ *
+ * ★ どちらも「機能が消えた」のではなく**置き場所が変わった**もの。
+ *   実測で「他のサービスで探す」は `kamen-rider` の本文の68%（26,028字）を
+ *   占めていたが、中身は検索リンクの羅列だった（`core/verify.ts` の MIN_PROSE_CHARS）。
+ */
+const RETIRED_HEADINGS = [
+  { pattern: /他のサービスで探す/, why: '表の各行の下に在庫と検索リンクが出ます' },
+  { pattern: /全(?:終了)?作品リスト|対象作品一覧/, why: '小段落2の表が残り全件を持ちます' },
+] as const
+
+/**
+ * **本文に書いてはいけないリンク**（自動で入るもの）。
+ *
+ * 記事にリンクを焼き込まない方針（docs/AFFILIATE.md）。
+ * 広告のリンクコードは `.env` から、カレンダーへの導線はビルド時に入る。
+ * 本文に書くと**二重に出る**うえ、IDを変えるたびに全記事の書き直しが要る。
+ */
+const AUTO_LINKS = [
+  {
+    pattern: /afi-b\.com/,
+    why: 'afb（Hulu / U-NEXT）のリンクは小段落の直下にビルドが入れます（site/plugins/rehype-section-ads.ts）',
+  },
+  {
+    pattern: /\]\(\/(?:leaving|arrivals)\//,
+    why: '配信カレンダーへの導線は表の直下にビルドが入れます（site/plugins/rehype-section-ads.ts）',
+  },
+] as const
+
+export interface Section {
+  heading: string
+  /** 表・箇条書き・見出し・引用・画像を除いた地の文 */
+  prose: string
+  /** その節の最後の段落（締めの検査に使う） */
+  lastParagraph: string | undefined
+  /** 見出しの直後（ポスターの画像行を飛ばした最初の行）が表か */
+  startsWithTable: boolean
+}
+
+/** `##` の節を全部取り出す。リード（見出しの前）は含まない。 */
+export function sectionsOf(md: string): Section[] {
+  const out: Section[] = []
+  let current: { heading: string; lines: string[] } | undefined
+
+  const flush = () => {
+    if (!current) return
+    const trimmed = current.lines.map((l) => l.trim()).filter((l) => l !== '')
+    const prose = trimmed.filter(
+      (l) => !/^[|>#]/.test(l) && !l.startsWith('[![') && !l.startsWith('- '),
+    )
+    out.push({
+      heading: current.heading,
+      prose: prose.join('\n'),
+      lastParagraph: prose.at(-1)?.replace(/\*+/g, '').trim(),
+      // ポスターの画像行（`[![…](/sections/…)](…)`）は自動で挿し込まれるので飛ばす
+      startsWithTable: (trimmed.find((l) => !l.startsWith('[![')) ?? '').startsWith('|'),
+    })
+    current = undefined
+  }
+
+  for (const line of md.split('\n')) {
+    const h2 = line.match(/^## +(.*)$/)
+    if (h2) {
+      flush()
+      current = { heading: h2[1]!.trim(), lines: [] }
+      continue
+    }
+    current?.lines.push(line)
+  }
+  flush()
+  return out
+}
+
+/** まとめの節か（数の検査から外すため） */
+function isClosing(heading: string): boolean {
+  return /まとめ/.test(heading)
+}
+
+/**
+ * 小段落の解説の上限（字）。**読みやすさのための制限**（2026-09-19・運用者の指定）。
+ *
+ * 改修前は節ごとに同じ密度で解説を続けていて、
+ * 「読者は疲れを感じる構成になってしまっている」という添削を受けている
+ * （2026-09-10）。**厚く書く場所を1つに絞り、そこに上限を置く**のがこの数字。
+ *
+ * ★ 下限は `core/verify.ts`（地の文1,000字／シリーズ1,400字）。**上下で挟んである。**
+ */
+export const SECTION_PROSE_LIMIT = 1000
+
+/**
+ * シリーズ記事だけ緩い（2026-09-19・運用者の指定）。
+ * 1つの主題を1本で引き受ける保存版なので、**表の作品数にも制限が無い。**
+ */
+export const SECTION_PROSE_LIMIT_SERIES = 1500
+
+export interface StructureOptions {
+  /**
+   * 小段落の解説の上限（字）。**月次・特報は1,000字、シリーズは1,500字。**
+   * 上限は `templates/writing.md`、下限は `core/verify.ts` にある。
+   */
+  maxSectionProse: number
+  /**
+   * `##` の節の上限の上書き。**既定は3**（小段落2つ＋まとめ）。
+   *
+   * ★ 増やしてよいのは**安全のために分けざるを得ない節がある記事タイプだけ**。
+   *   いまのところ配信開始記事の「これから配信開始予定」だけで、
+   *   これは**まだ観られない作品を開始済みと混ぜない**ための節（`arrivals-upcoming-intro`）。
+   *   同じ表に混ぜると読者が「今すぐ観られる」と誤解する。
+   *   **見栄えの都合で増やさないこと。**
+   */
+  maxSections?: number
+  /**
+   * 解説の字数を数えない節の見出し。**まとめは常に対象外。**
+   * 配信開始記事の「これから配信開始予定」のように、表と注記しか置かない節に使う。
+   */
+  tableOnlyHeading?: RegExp
+}
+
+/**
+ * 記事の骨格の検査（全記事タイプ共通・2026-09-19 のテンプレ改修）。
+ *
+ * ■ 何を守っているか
+ * 改修前は「厚い節を2つ ＋ そのほか ＋ 全件表 ＋ 他のサービスで探す」で、
+ * **同じ作品が3つの表に出て、読者が同じ行を何度もたどっていた。**
+ * 新テンプレは表を2つに分け、片方を中心作、もう片方を残り全件にする。
+ * ここはその形が崩れていないかだけを見る。
+ *
+ * ■ error と warn の分け方
+ *   節の数・廃止した節・自動リンクの手書き … **記事の型**なので error
+ *   解説の字数・見出しの直後が表か         … 読みやすさなので warn
+ */
+export function structureIssues(md: string, opts: StructureOptions): VerifyIssue[] {
+  const issues: VerifyIssue[] = []
+  const err = (message: string) => issues.push({ level: 'error', message })
+  const warn = (message: string) => issues.push({ level: 'warn', message })
+
+  const sections = sectionsOf(md)
+
+  // --- 廃止した節が残っていないか ---
+  for (const s of sections) {
+    for (const r of RETIRED_HEADINGS) {
+      if (!r.pattern.test(s.heading)) continue
+      err(
+        `「${clip(s.heading, 30)}」は廃止した節です（2026-09-19 のテンプレ改修）。${r.why}。` +
+          '節ごと削ってください。',
+      )
+    }
+  }
+
+  // --- 節の数 ---
+  const maxSections = opts.maxSections ?? MAX_SECTIONS
+  if (sections.length > maxSections) {
+    err(
+      `「##」の節が${sections.length}個あります。**${maxSections}つ**に収めてください` +
+        `（templates/writing.md）。\n` +
+        `      現在: ${sections.map((s) => clip(s.heading, 18)).join(' / ')}\n` +
+        '      中心の2〜3作を1つ目に、残り全件の表を2つ目にまとめます。',
+    )
+  }
+
+  // --- 見出し → 表 → 解説の順 ---
+  for (const s of sections) {
+    if (isClosing(s.heading) || s.startsWithTable) continue
+    warn(
+      `「${clip(s.heading, 24)}」の直後が表ではありません（templates/writing.md）。` +
+        '読者が何がいつ終わる（始まる）のかを先に掴めるよう、見出しの次に表を置いてください。',
+    )
+  }
+
+  // --- 解説の字数 ---
+  for (const s of sections) {
+    if (isClosing(s.heading) || opts.tableOnlyHeading?.test(s.heading)) continue
+    const chars = s.prose.replace(/\s/g, '').length
+    if (chars <= opts.maxSectionProse) continue
+    warn(
+      `「${clip(s.heading, 24)}」の解説が${chars}字です（上限${opts.maxSectionProse}字・templates/writing.md）。` +
+        '読みやすさのための上限なので、中心の作品に絞って削ってください。',
+    )
+  }
+
+  // --- 本文に書いてはいけないリンク ---
+  for (const a of AUTO_LINKS) {
+    if (!a.pattern.test(md)) continue
+    err(`本文にリンクを書いています（${a.why}）。二重に出るので消してください。`)
   }
 
   return issues

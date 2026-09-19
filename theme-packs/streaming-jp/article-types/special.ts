@@ -58,7 +58,9 @@ import {
   previousAsOf,
   publishable,
   ratingMentionsInProse,
+  SECTION_PROSE_LIMIT,
   serviceLabels,
+  structureIssues,
   titleIssues,
   UNAVAILABLE_CLAIM,
   styleIssues,
@@ -82,11 +84,11 @@ const REQUIRED_PHRASES = [
   'special-upcoming-lead-first-sentence',
   'special-leaving-lead-first-sentence',
   'special-ended-lead-first-sentence',
-  // 締めは月次記事と同じ役割なので流用する（新しい文言を作らない）
-  'arrivals-lead-closer',
-  'leaving-lead-closer',
-  'ended-lead-closer',
-  'other-services-intro',
+  /*
+   * ★ 2026-09-19 のテンプレ改修で4つ減った（理由は leaving.ts と同じ）。
+   *   `*-lead-closer` 3つ … リードを1組（2文）だけにしたので置き場所が無くなった
+   *   `other-services-intro` … 「他のサービスで探す」の節ごと廃止（行き先は表の各行の下）
+   */
   'attribution',
   'attribution-unext',
   // 各社の公式発表（配信開始予定）由来の素材に付ける
@@ -117,10 +119,8 @@ interface KindTraits {
   periodSuffix?: string
   /** 素材に出す日付の呼び方 */
   dateLabel: string
-  /** リードの1文目に使う固定文言のキー */
+  /** リードに使う固定文言のキー。**記事の冒頭はこれ1組だけ**（2026-09-19） */
   leadKey: string
-  /** リードの締めに使う固定文言のキー（月次記事と共用） */
-  closerKey: string
   /** 日付が未来のものだけを残すか（true）、過去のものだけか（false）、問わないか（undefined） */
   future?: boolean
   /** 1記事に載せる上限（既定は MAX_ITEMS） */
@@ -140,7 +140,6 @@ const KINDS: Record<string, KindTraits> = {
     verbPhrase: '見放題配信開始',
     dateLabel: '配信開始日',
     leadKey: 'special-new-lead-first-sentence',
-    closerKey: 'arrivals-lead-closer',
   },
   upcoming: {
     kind: 'upcoming',
@@ -159,7 +158,6 @@ const KINDS: Record<string, KindTraits> = {
     periodSuffix: '配信開始',
     dateLabel: '配信開始予定日',
     leadKey: 'special-upcoming-lead-first-sentence',
-    closerKey: 'arrivals-lead-closer',
     // まだ始まっていないものだけ。始まった作品は new 側で扱う
     future: true,
     // 公表されたラインナップを丸ごと扱う。月次記事（100〜200件）と同じ規模になる
@@ -171,7 +169,6 @@ const KINDS: Record<string, KindTraits> = {
     verbPhrase: '見放題配信終了予定',
     dateLabel: '終了日',
     leadKey: 'special-leaving-lead-first-sentence',
-    closerKey: 'leaving-lead-closer',
     // まだ終わっていないものだけ。過ぎた作品を「これから終わる」と書かせない
     future: true,
     /*
@@ -192,7 +189,6 @@ const KINDS: Record<string, KindTraits> = {
     verbPhrase: '見放題配信終了',
     dateLabel: '終了日',
     leadKey: 'special-ended-lead-first-sentence',
-    closerKey: 'ended-lead-closer',
     // もう終わったものだけ。データが先行することがあるので念のため絞る
     future: false,
     questionClause: 'はどこで見れる？',
@@ -485,17 +481,9 @@ ${
 
 以下は**一字一句そのまま**本文に入れてください。言い換え・要約・記号の変更をしてはいけません。
 
-## リードの1文目（本文の冒頭）
+## リード（本文の冒頭。**ここだけで1段落。2段落目を書かない**）
 
 ${resolved.leadFirstSentence}
-
-## リードの締め（リード段落の最後の1文）
-
-${resolved.leadCloser}
-
-## 「他のサービスで探す」の冒頭
-
-${resolved.otherServicesIntro}
 
 ## 記事の末尾
 
@@ -506,12 +494,31 @@ ${resolved.attributions.join('\n\n')}
 ${OUTPUT_FORMAT}`
 
     const tasks = [
+      `**「##」の節は2つだけ作ってください（＋まとめ）。** 記事全体の形は次で固定です。
+
+   \`\`\`
+   リード（見出しなし・固定文言の1組だけ）
+   ## 小段落1  中心の2〜3作   … 表 → 解説（最大${SECTION_PROSE_LIMIT}字）
+   ## 小段落2  残りの全${items.length}件 … 表 → 軽い言及
+   ## まとめ
+   \`\`\`
+
+   ★ **「他のサービスで探す」「対象作品リスト」の節は作りません**（2026-09-19 に廃止）。
+     行き先は表の各行の下にサイトが出します。残り全件は小段落2の表が持ちます。
+   ★ **Amazon・Hulu のリンクも、配信カレンダーへのリンクも本文に書かないこと。**
+     小段落の直下と表の直下にビルドが入れます。`,
+      `**リードは上の固定文言の1組だけです。2段落目を書かないでください。**
+   タイトルがすでに中心作を名乗っているので、ここで作品名を挙げると同じ名前を2回読ませることになります。`,
       `**主題（${resolved.topic}）から離れないこと。** 与えられた作品以外の話に広げない。
    月次のまとめ記事ではないので、「今月の配信終了作品一覧」のような書き方はしない。`,
-      `**各セクションは「見出し → 表 → 解説」の順に書くこと。**
+      `**小段落1で解説するのは、中心になる2〜3作だけです（最大${SECTION_PROSE_LIMIT}字）。**
+   主題の中で名前の通った2〜3作を選び、そこに調べた事実を集中させます。**4作以上を解説しないこと。**`,
+      `**どちらの小段落も「見出し → 表 → 解説」の順に書くこと。**
    表の列は「${traits.dateLabel} / 作品 / 出演者 / サービス」の4列で固定してください。
-   **サービス列を省かないでください**（サイトが行のサービス名を読んでリンクを付けます）。`,
-      `**対象作品リストの節に、下の${items.length}件を1件残らず表に載せること。**`,
+   **サービス列を省かないでください**（サイトが行のサービス名を読んでリンクを付けます）。
+   ★ **同じ作品を2つの表に出さないこと。** 小段落1に出した作品は小段落2の表から外します。`,
+      `**小段落2の表に、下の${items.length}件のうち小段落1に出していない作品を1件残らず載せること。**
+   表の下は**特筆すべき1〜2作を1〜2文**にとどめ、作品名を並べただけの段落を作らないこと。`,
       `**評価スコアは記事のどこにも書かないこと。** 表にも地の文にも出しません。
    素材の評価は、表の行を並べる順番を決めるための目安としてだけ使ってください。`,
       `**表の「出演者」欄には主演と助演を1名ずつ（計2名まで）書くこと。網羅しません。**
@@ -528,7 +535,7 @@ ${OUTPUT_FORMAT}`
      - 佐藤健（実写5作すべてに主演）
 
    ★ アニメは**キャラ名（CV.声優）**の形で書きます。
-   ★ **記事に1回だけ。** 節が分かれていても、**最初の表の下にだけ**置きます。
+   ★ **記事に1回だけ。** 小段落1の表の下にだけ置きます。
    ★ **主演と書けるのは、素材のリサーチに「主演・◯◯」のような記述がある作品だけ**です。
      確かめられない記事では、**この箇条書きごと置かないでください**。`,
       traits.kind === 'removed'
@@ -657,7 +664,11 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
   verify(raw, items, ctx): VerifyIssue[] {
     const md = normalizeBody(raw)
     // 全記事タイプ共通の決まり（templates/writing.md）
-    const issues: VerifyIssue[] = styleIssues(md)
+    const issues: VerifyIssue[] = [
+      ...styleIssues(md),
+      // 記事の骨格（小段落2つ＋まとめ・廃止した節・解説の字数）
+      ...structureIssues(md, { maxSectionProse: SECTION_PROSE_LIMIT }),
+    ]
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 
@@ -713,15 +724,16 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     }
 
     // --- 事故を防ぐ検査 ---
+    // 作品の表があるか。**小段落2の表が残り全件を持つ**（2026-09-19 の改修）
     if (!md.includes('|')) {
-      err('対象作品の一覧表がありません。テンプレートの構成3が守られていません。')
+      err('作品の一覧表がありません。小段落1と小段落2の両方に表が要ります。')
     }
     const missing = items
       .map((e) => e.work.localizedTitle ?? e.work.title)
       .filter((t) => t && !md.includes(t))
     if (missing.length > 0) {
       err(
-        `対象作品リストに載っていない作品が${missing.length}件あります: ` +
+        `表に載っていない作品が${missing.length}件あります: ` +
           missing.slice(0, 8).map((t) => clip(t, 24)).join(' / ') +
           (missing.length > 8 ? ' ほか' : ''),
       )
@@ -734,14 +746,12 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     }
 
     // --- 固定文言 ---
-    for (const [name, text] of [
-      ['リードの1文目', resolved.leadFirstSentence],
-      ['リードの締め', resolved.leadCloser],
-      ['他のサービスで探すの冒頭', resolved.otherServicesIntro],
-    ] as const) {
-      if (text && !md.includes(text)) {
-        err(`固定文言（${name}）がそのまま入っていません。fixed-phrases.md の文言をそのまま使ってください。`)
-      }
+    // ★ リードは**この1組だけ**（2026-09-19）。締めの文言と「他のサービスで探す」は廃止した。
+    if (!md.startsWith(resolved.leadFirstSentence)) {
+      err(
+        '本文の冒頭がリードの固定文言と一致しません。次の1組をそのまま1行目に置いてください:\n' +
+          `      ${resolved.leadFirstSentence}`,
+      )
     }
     for (const attribution of resolved.attributions) {
       if (!md.includes(attribution)) {
@@ -766,9 +776,8 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
 
 interface ResolvedPhrases {
   topic: string
+  /** リード。**記事の冒頭はこれ1組だけ**（2026-09-19） */
   leadFirstSentence: string
-  leadCloser: string
-  otherServicesIntro: string
   /** 素材の出どころが混ざる月があるので配列。**片方だけ書くと出典を偽ることになる。** */
   attributions: string[]
   asOf: string
@@ -820,8 +829,6 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext): ResolvedPhra
   return {
     topic,
     leadFirstSentence: get(traits.leadKey),
-    leadCloser: get(traits.closerKey),
-    otherServicesIntro: get('other-services-intro'),
     attributions,
     asOf,
   }

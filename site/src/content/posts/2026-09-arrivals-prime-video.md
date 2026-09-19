@@ -21,7 +21,6 @@ heroImage: '/heroes/2026-09-arrivals-prime-video.webp'
 ## 9月1日：「バイオハザード」シリーズの実写映画6作が見放題配信を開始
 
 [![バイオハザード（2002年）](/sections/posters/2026-09-arrivals-prime-video-c609ea6b-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89&i=instant-video) [![バイオハザードII アポカリプス（2004年）](/sections/posters/2026-09-arrivals-prime-video-c609ea6b-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89II%20%E3%82%A2%E3%83%9D%E3%82%AB%E3%83%AA%E3%83%97%E3%82%B9&i=instant-video)
-
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 9月1日 | バイオハザード | 66/100 | Amazon Prime Video |
@@ -40,10 +39,7 @@ heroImage: '/heroes/2026-09-arrivals-prime-video.webp'
 2012年の「バイオハザードV リトリビューション」を経て、2016年の「バイオハザード: ザ・ファイナル」がシリーズ第6作かつ最終作です。最初にバイオハザードが発生したラクーンシティへ舞台を戻し、アンブレラとの最後の戦いが描かれます。最終作ということで、前作までの全5作品のハイライトが多く描写されています。
 
 6作すべてが同じ時期に見放題へ入りましたので、1作目から順に追うことができます。
-
-## 9月1日：「羊たちの沈黙」「大脱走」など往年の名作が見放題配信を開始
-
-[![羊たちの沈黙（1991年）](/sections/posters/2026-09-arrivals-prime-video-72173cb7-1.webp)](https://www.amazon.co.jp/s?k=%E7%BE%8A%E3%81%9F%E3%81%A1%E3%81%AE%E6%B2%88%E9%BB%99&i=instant-video) [![大脱走（1963年）](/sections/posters/2026-09-arrivals-prime-video-72173cb7-2.webp)](https://www.amazon.co.jp/s?k=%E5%A4%A7%E8%84%B1%E8%B5%B0&i=instant-video)
+## そのほかに配信開始した23本
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -52,6 +48,26 @@ heroImage: '/heroes/2026-09-arrivals-prime-video.webp'
 | 9月1日 | レインマン | 79/100 | Amazon Prime Video |
 | 9月1日 | 大脱走 | 78/100 | Amazon Prime Video |
 | 9月1日 | キャリー | 73/100 | Amazon Prime Video |
+| 9月2日 | ダークナイト ライジング | 82/100 | Amazon Prime Video |
+| 9月2日 | TENET テネット | 72/100 | Amazon Prime Video |
+| 9月4日 | インターステラー | 86/100 | Amazon Prime Video |
+| 9月1日 | ライダーズ・オブ・ジャスティス | 74/100 | Amazon Prime Video |
+| 9月1日 | トリック劇場版 | 61/100 | Amazon Prime Video |
+| 9月1日 | 旅と日々 | 58/100 | Amazon Prime Video |
+| 9月1日 | orange | 69/100 | Amazon Prime Video |
+| 9月1日 | イフ・アイ・ステイ 愛が還る場所 | 68/100 | Amazon Prime Video |
+| 9月1日 | I Like Movies アイ・ライク・ムービーズ | 65/100 | Amazon Prime Video |
+| 9月1日 | デーヴァラ | 62/100 | Amazon Prime Video |
+| 9月1日 | ジョン・ウィック: チャプター4 | 76/100 | Amazon Prime Video |
+| 9月1日 | おじいちゃんはデブゴン | 58/100 | Amazon Prime Video |
+| 9月1日 | トゥームレイダー | 63/100 | Amazon Prime Video |
+| 9月2日 | G.I.ジョー | 57/100 | Amazon Prime Video |
+| 9月2日 | マックス | 67/100 | Amazon Prime Video |
+| 9月2日 | 新感染 ファイナル・エクスプレス | 76/100 | Amazon Prime Video |
+| 9月2日 | ソーシャル・ネットワーク | 76/100 | Amazon Prime Video |
+| 9月4日 | The Runner | — | Amazon Prime Video |
+
+### 9月1日：「羊たちの沈黙」「大脱走」など往年の名作が見放題配信を開始
 
 「羊たちの沈黙」は1991年の作品で、制作はオライオン・ピクチャーズです。原作はトマス・ハリスが1988年に発表した小説で、ハンニバル・レクターシリーズの2作目にあたります。若きFBI訓練生クラリス・スターリングが、収監中の凶悪犯の助言を受けながらバッファロー・ビルと呼ばれる猟奇殺人鬼を追う物語です。ジョナサン・デミが監督した映画版はアカデミー賞の主要5部門を受賞しました。
 
@@ -65,15 +81,7 @@ heroImage: '/heroes/2026-09-arrivals-prime-video.webp'
 
 いずれも公開から数十年を経た作品が、まとめて見放題で観られるようになりました。
 
-## 9月2日：クリストファー・ノーラン監督の3作が見放題配信を開始
-
-[![ダークナイト ライジング（2012年）](/sections/posters/2026-09-arrivals-prime-video-e1898df1-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%80%E3%83%BC%E3%82%AF%E3%83%8A%E3%82%A4%E3%83%88%20%E3%83%A9%E3%82%A4%E3%82%B8%E3%83%B3%E3%82%B0&i=instant-video) [![TENET テネット（2020年）](/sections/posters/2026-09-arrivals-prime-video-e1898df1-2.webp)](https://www.amazon.co.jp/s?k=TENET%20%E3%83%86%E3%83%8D%E3%83%83%E3%83%88&i=instant-video)
-
-| 配信開始日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月2日 | ダークナイト ライジング | 82/100 | Amazon Prime Video |
-| 9月2日 | TENET テネット | 72/100 | Amazon Prime Video |
-| 9月4日 | インターステラー | 86/100 | Amazon Prime Video |
+### 9月2日：クリストファー・ノーラン監督の3作が見放題配信を開始
 
 「ダークナイト ライジング」は2012年のアメリカ・イギリスのスーパーヒーロー映画で、「ダークナイト・トリロジー」三部作の完結作にあたります。原案はクリストファー・ノーランとデヴィッド・ゴイヤー、脚本はノーランとジョナサン・ノーランで、監督はノーランが務めました。自ら退いていたバットマンが、ベインと呼ばれる容赦のないテロリストと戦うために戻ってきます。
 
@@ -83,7 +91,7 @@ heroImage: '/heroes/2026-09-arrivals-prime-video.webp'
 
 同じ監督の3作が数日のうちに見放題へ入りましたので、続けて観ることもできます。
 
-## その他の注目作
+### その他の注目作
 
 「ジョン・ウィック: チャプター4」は2023年のアクション映画で、シリーズの第4作にあたります。監督はチャド・スタエルスキ、主演はキアヌ・リーブスで、日本公開時の副題は「コンセクエンス」でした。大阪コンチネンタル・ホテルの格闘シーンでは、日本人アクション監督の川本耕史がファイトコレオグラファーを務めています。
 
@@ -99,53 +107,8 @@ heroImage: '/heroes/2026-09-arrivals-prime-video.webp'
 
 「I Like Movies アイ・ライク・ムービーズ」は2023年の作品で、17歳の不器用な映画好きがビデオ店で働きはじめ、年上の女性店長との込み入った友情に向き合います。「The Runner」は2026年の心理スリラーです。ロンドンの弁護士が朝のランニング中にかかってきた1本の電話で息子を奪われ、指示に従って走り続けることになります。日本語の題名が確定していないため、原題のまま扱っています。
 
-## 9月に見放題配信が始まった全29作品
-
-| 配信開始日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月1日 | ライダーズ・オブ・ジャスティス | 74/100 | Amazon Prime Video |
-| 9月1日 | トリック劇場版 | 61/100 | Amazon Prime Video |
-| 9月1日 | 旅と日々 | 58/100 | Amazon Prime Video |
-| 9月1日 | orange | 69/100 | Amazon Prime Video |
-| 9月1日 | レインマン | 79/100 | Amazon Prime Video |
-| 9月1日 | バイオハザード: ザ・ファイナル | 56/100 | Amazon Prime Video |
-| 9月1日 | イフ・アイ・ステイ 愛が還る場所 | 68/100 | Amazon Prime Video |
-| 9月1日 | キャリー | 73/100 | Amazon Prime Video |
-| 9月1日 | I Like Movies アイ・ライク・ムービーズ | 65/100 | Amazon Prime Video |
-| 9月1日 | デーヴァラ | 62/100 | Amazon Prime Video |
-| 9月1日 | ジョン・ウィック: チャプター4 | 76/100 | Amazon Prime Video |
-| 9月1日 | レイジング・ブル | 80/100 | Amazon Prime Video |
-| 9月1日 | 羊たちの沈黙 | 85/100 | Amazon Prime Video |
-| 9月1日 | おじいちゃんはデブゴン | 58/100 | Amazon Prime Video |
-| 9月1日 | バイオハザード | 66/100 | Amazon Prime Video |
-| 9月1日 | 大脱走 | 78/100 | Amazon Prime Video |
-| 9月1日 | トゥームレイダー | 63/100 | Amazon Prime Video |
-| 9月2日 | G.I.ジョー | 57/100 | Amazon Prime Video |
-| 9月2日 | バイオハザードIII | 62/100 | Amazon Prime Video |
-| 9月2日 | マックス | 67/100 | Amazon Prime Video |
-| 9月2日 | 新感染 ファイナル・エクスプレス | 76/100 | Amazon Prime Video |
-| 9月2日 | バイオハザードV リトリビューション | 54/100 | Amazon Prime Video |
-| 9月2日 | ソーシャル・ネットワーク | 76/100 | Amazon Prime Video |
-| 9月2日 | TENET テネット | 72/100 | Amazon Prime Video |
-| 9月2日 | ダークナイト ライジング | 82/100 | Amazon Prime Video |
-| 9月2日 | バイオハザードIV アフターライフ | 58/100 | Amazon Prime Video |
-| 9月4日 | バイオハザードII アポカリプス | 61/100 | Amazon Prime Video |
-| 9月4日 | インターステラー | 86/100 | Amazon Prime Video |
-| 9月4日 | The Runner | — | Amazon Prime Video |
-
-## 他のサービスで探す
-
-※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+・U-NEXT の5サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
-
-- **バイオハザード** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89) / [Hulu](https://www.hulu.jp/search?q=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89)
-- **羊たちの沈黙** [U-NEXT](https://video.unext.jp/freeword?query=%E7%BE%8A%E3%81%9F%E3%81%A1%E3%81%AE%E6%B2%88%E9%BB%99) / [Hulu](https://www.hulu.jp/search?q=%E7%BE%8A%E3%81%9F%E3%81%A1%E3%81%AE%E6%B2%88%E9%BB%99) / [DMM TV](https://tv.dmm.com/search/?keyword=%E7%BE%8A%E3%81%9F%E3%81%A1%E3%81%AE%E6%B2%88%E9%BB%99)
-- **インターステラー** [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%BC%E3%82%B9%E3%83%86%E3%83%A9%E3%83%BC) / [Hulu](https://www.hulu.jp/search?q=%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%BC%E3%82%B9%E3%83%86%E3%83%A9%E3%83%BC) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%BC%E3%82%B9%E3%83%86%E3%83%A9%E3%83%BC)
-- **大脱走** [U-NEXT](https://video.unext.jp/freeword?query=%E5%A4%A7%E8%84%B1%E8%B5%B0) / [Hulu](https://www.hulu.jp/search?q=%E5%A4%A7%E8%84%B1%E8%B5%B0) / [DMM TV](https://tv.dmm.com/search/?keyword=%E5%A4%A7%E8%84%B1%E8%B5%B0)
-- **ジョン・ウィック: チャプター4** [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%B8%E3%83%A7%E3%83%B3%E3%83%BB%E3%82%A6%E3%82%A3%E3%83%83%E3%82%AF) / [Hulu](https://www.hulu.jp/search?q=%E3%82%B8%E3%83%A7%E3%83%B3%E3%83%BB%E3%82%A6%E3%82%A3%E3%83%83%E3%82%AF) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%B8%E3%83%A7%E3%83%B3%E3%83%BB%E3%82%A6%E3%82%A3%E3%83%83%E3%82%AF)
-- **新感染 ファイナル・エクスプレス** [U-NEXT](https://video.unext.jp/freeword?query=%E6%96%B0%E6%84%9F%E6%9F%93%20%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB%E3%83%BB%E3%82%A8%E3%82%AF%E3%82%B9%E3%83%97%E3%83%AC%E3%82%B9) / [Hulu](https://www.hulu.jp/search?q=%E6%96%B0%E6%84%9F%E6%9F%93%20%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB%E3%83%BB%E3%82%A8%E3%82%AF%E3%82%B9%E3%83%97%E3%83%AC%E3%82%B9) / [DMM TV](https://tv.dmm.com/search/?keyword=%E6%96%B0%E6%84%9F%E6%9F%93%20%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB%E3%83%BB%E3%82%A8%E3%82%AF%E3%82%B9%E3%83%97%E3%83%AC%E3%82%B9)
-
+### 9月に見放題配信が始まった全29作品
 ## まとめ
-
 Amazon Prime Videoでは9月1日から4日にかけて29本が見放題に加わりました。中心は「バイオハザード」シリーズの実写映画6作で、1作目から最終作までが数日のうちにそろっています。あわせて「羊たちの沈黙」「レイジング・ブル」「レインマン」「大脱走」「キャリー」といった往年の名作と、クリストファー・ノーラン監督の「ダークナイト ライジング」「TENET テネット」「インターステラー」が同じ時期に並びました。
 
 > 配信情報は Streaming Availability API by Movie of the Night 提供

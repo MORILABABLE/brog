@@ -1289,3 +1289,59 @@ tr.is-search-current > *:first-child {
   margin: 0 0.1rem;
   opacity: 0.45;
 }
+
+/* --- 小段落の直下の広告と、配信カレンダーへの導線（2026-09-19 のテンプレ改修） ---
+ *
+ * どちらも `plugins/rehype-section-ads.ts` が本文に差し込む。
+ * **記事のMarkdownには何も書かれていない。**
+ *
+ * ★ 広告の枠に当サイトの文字を足さないこと（`lib/hulu-ad.ts` の規律）。
+ *   ここで足してよいのは余白と枠線だけで、見出しも説明文も置かない。
+ *   「PR」表記はページ冒頭の AffiliateNotice が担っている。
+ */
+.prose .section-ad {
+  margin: 1.6rem 0;
+  text-align: center;
+}
+.prose .section-ad-link {
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
+}
+.prose .section-ad-link img {
+  max-width: 100%;
+  height: auto;
+}
+
+/*
+ * カレンダーへの導線。**画像つき作品リンクと同じフィールドの見た目**にそろえる
+ * （2026-09-19・運用者の指定）。塗りのボタンにはしない
+ * （`.next-step-article` と同じ判断で、広告と見分けが付かなくなるため）。
+ */
+.prose .section-calendar {
+  margin: 1rem 0 1.4rem;
+}
+.prose .section-calendar-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--bg-subtle);
+  text-decoration: none;
+}
+.prose .section-calendar-link:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.prose .section-calendar-label {
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.prose .section-calendar-note {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}

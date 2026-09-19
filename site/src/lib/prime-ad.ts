@@ -171,7 +171,21 @@ export interface PrimeAdInput {
  *   広告表記（PR）だけが出てしまう（`AFFILIATE_ENABLED` と同じ考え方）。
  */
 export function primeAd(input: PrimeAdInput): PrimeAd | null {
-  const tag = amazonTagFor('prime')
+  return primeAdWithTag(amazonTagFor('prime'), input)
+}
+
+/**
+ * `primeAd()` の中身。**トラッキングidを引数で受け取るだけの違い。**
+ *
+ * ■ なぜ分けてあるか（2026-09-19）
+ * 記事本文の広告は rehype プラグイン（`plugins/rehype-section-ads.ts`）が差し込む。
+ * **プラグインは astro.config から読み込まれるので `import.meta.env` が使えず**、
+ * `amazonTagFor()` を呼べない（IDは loadEnv 側で組み立てて渡す）。
+ *
+ * ★ **判断をそちらに写さないこと。** 出してよい面の線引き（上の「出してよい面が限られる」）は
+ *   このファイルだけが持つ。プラグインはこの関数を呼ぶだけにする。
+ */
+export function primeAdWithTag(tag: string, input: PrimeAdInput): PrimeAd | null {
   if (!tag) return null
 
   const category = input.category

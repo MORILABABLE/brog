@@ -20,16 +20,13 @@ heroImage: '/heroes/2026-09-leaving-prime-video.webp'
 シリーズや名作を見放題終了順に解説していきますので、チェックして気になる作品を観ておきましょう！
 
 ## 今回新たに判明した終了予定4本
+| 終了日 | 作品 | 評価 | サービス |
+| --- | --- | --- | --- |
+| 9月12日 | スマイル2 | 66/100 | Amazon Prime Video |
 
 前回の掲載以降に、9月中旬に終了する4本の日付が新たに分かりました。いずれも1本ずつ独立した作品で、9月12日から9月17日にかけて順に見放題配信が終了します。
 
 ### 9月12日：ホラー「スマイル2」が見放題配信を終了
-
-[![スマイル2（2024年）](/sections/posters/2026-09-leaving-prime-video-f4db50be-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%B9%E3%83%9E%E3%82%A4%E3%83%AB2&i=instant-video)
-
-| 終了日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月12日 | スマイル2 | 66/100 | Amazon Prime Video |
 
 「スマイル2」は2024年のホラー作品で、制作はテンプル・ヒル・プロダクションズです。歌手である主人公が、説明のつかない出来事に次々と見舞われながら、自身の暗い過去と向き合うことになる1本になります。
 
@@ -61,10 +58,7 @@ heroImage: '/heroes/2026-09-leaving-prime-video.webp'
 「シャッター アイランド」は2010年のミステリー・スリラーで、制作にはパラマウント映画、コロンビア映画、アッピアン・ウェイ、フェニックス・ピクチャーズ、シケリア・プロダクションズが名を連ねます。連邦保安官のテディとチャックが、マサチューセッツ沖の孤島にある犯罪者向けの精神科病院から女性殺人犯が消えた事件を調べるために呼び出される物語です。
 
 今回判明した4本のなかでは終了がいちばん遅い1本になります。9月17日までにチェックしておきましょう。
-
-## 9月1日：「ミッション:インポッシブル」シリーズ5作は見放題配信が終了しました
-
-[![ミッション:インポッシブル（1996年）](/sections/posters/2026-09-leaving-prime-video-18cc0703-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%9F%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3%3A%E3%82%A4%E3%83%B3%E3%83%9D%E3%83%83%E3%82%B7%E3%83%96%E3%83%AB&i=instant-video) [![ミッション:インポッシブル3（2006年）](/sections/posters/2026-09-leaving-prime-video-18cc0703-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%9F%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3%3A%E3%82%A4%E3%83%B3%E3%83%9D%E3%83%83%E3%82%B7%E3%83%96%E3%83%AB3&i=instant-video)
+## そのほかに終了予定の26本
 
 | 終了日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
@@ -73,6 +67,29 @@ heroImage: '/heroes/2026-09-leaving-prime-video.webp'
 | 9月1日 | ミッション:インポッシブル/ゴースト・プロトコル | 73/100 | Amazon Prime Video |
 | 9月1日 | ミッション:インポッシブル | 71/100 | Amazon Prime Video |
 | 9月1日 | ミッション:インポッシブル3 | 68/100 | Amazon Prime Video |
+| 9月1日 | トランスフォーマー | 70/100 | Amazon Prime Video |
+| 9月1日 | バンブルビー | 67/100 | Amazon Prime Video |
+| 9月1日 | トランスフォーマー/ダークサイド・ムーン | 62/100 | Amazon Prime Video |
+| 9月1日 | トランスフォーマー/リベンジ | 60/100 | Amazon Prime Video |
+| 9月1日 | トランスフォーマー/ロストエイジ | 57/100 | Amazon Prime Video |
+| 9月1日 | トランスフォーマー/最後の騎士王 | 54/100 | Amazon Prime Video |
+| 9月1日 | 続・夕陽のガンマン | 83/100 | Amazon Prime Video |
+| 9月1日 | 夕陽のガンマン | 78/100 | Amazon Prime Video |
+| 9月1日 | 荒野の七人 | 74/100 | Amazon Prime Video |
+| 9月1日 | マグニフィセント・セブン | 67/100 | Amazon Prime Video |
+| 9月1日 | ロードハウス 孤独の街 | 67/100 | Amazon Prime Video |
+| 9月1日 | 96時間 | 76/100 | Amazon Prime Video |
+| 9月1日 | マイノリティ・リポート | 75/100 | Amazon Prime Video |
+| 9月1日 | ゴッドファーザー PART III | 74/100 | Amazon Prime Video |
+| 9月1日 | ピアノ・レッスン | 74/100 | Amazon Prime Video |
+| 9月1日 | 光の旅人 K-PAX | 73/100 | Amazon Prime Video |
+| 9月1日 | RONIN | 71/100 | Amazon Prime Video |
+| 9月1日 | 暗殺の森 | 70/100 | Amazon Prime Video |
+| 9月14日 | 野生の島のロズ | 81/100 | Amazon Prime Video |
+| 9月14日 | ブルータリスト | 71/100 | Amazon Prime Video |
+| 9月17日 | シャッター アイランド | 81/100 | Amazon Prime Video |
+
+### 9月1日：「ミッション:インポッシブル」シリーズ5作は見放題配信が終了しました
 
 シリーズ5作が同じ日に見放題配信を終えました。いずれもパラマウント映画が関わっています。
 
@@ -82,18 +99,7 @@ heroImage: '/heroes/2026-09-leaving-prime-video.webp'
 
 見放題での取り扱いは終わっていますので、いまお探しの場合は記事末尾の検索から他のサービスを当たってみましょう。
 
-## 9月1日：「トランスフォーマー」シリーズ5作と「バンブルビー」も見放題配信が終了しました
-
-[![トランスフォーマー（2007年）](/sections/posters/2026-09-leaving-prime-video-34eea655-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B9%E3%83%95%E3%82%A9%E3%83%BC%E3%83%9E%E3%83%BC&i=instant-video) [![トランスフォーマー/リベンジ（2009年）](/sections/posters/2026-09-leaving-prime-video-34eea655-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B9%E3%83%95%E3%82%A9%E3%83%BC%E3%83%9E%E3%83%BC%20%E3%83%AA%E3%83%99%E3%83%B3%E3%82%B8&i=instant-video)
-
-| 終了日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月1日 | トランスフォーマー | 70/100 | Amazon Prime Video |
-| 9月1日 | バンブルビー | 67/100 | Amazon Prime Video |
-| 9月1日 | トランスフォーマー/ダークサイド・ムーン | 62/100 | Amazon Prime Video |
-| 9月1日 | トランスフォーマー/リベンジ | 60/100 | Amazon Prime Video |
-| 9月1日 | トランスフォーマー/ロストエイジ | 57/100 | Amazon Prime Video |
-| 9月1日 | トランスフォーマー/最後の騎士王 | 54/100 | Amazon Prime Video |
+### 9月1日：「トランスフォーマー」シリーズ5作と「バンブルビー」も見放題配信が終了しました
 
 同じ日に「トランスフォーマー」シリーズが6作まとめて見放題配信を終えました。いずれもパラマウント映画・ドリームワークス・ハズブロが関わる作品です。
 
@@ -103,17 +109,7 @@ heroImage: '/heroes/2026-09-leaving-prime-video.webp'
 
 「バンブルビー」は、傷つき壊れたバンブルビーが少女チャーリーに見つけられ修理されるところから始まります。シリーズ全体の配信状況は保存版の記事でも追っていますので、そちらも確かめてみましょう。
 
-## 9月1日：「荒野の七人」と「マグニフィセント・セブン」、西部劇の名作も見放題配信が終了しました
-
-[![荒野の七人（1960年）](/sections/posters/2026-09-leaving-prime-video-848e31ff-1.webp)](https://www.amazon.co.jp/s?k=%E8%8D%92%E9%87%8E%E3%81%AE%E4%B8%83%E4%BA%BA&i=instant-video) [![マグニフィセント・セブン（2016年）](/sections/posters/2026-09-leaving-prime-video-848e31ff-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%9E%E3%82%B0%E3%83%8B%E3%83%95%E3%82%A3%E3%82%BB%E3%83%B3%E3%83%88%E3%83%BB%E3%82%BB%E3%83%96%E3%83%B3&i=instant-video)
-
-| 終了日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月1日 | 続・夕陽のガンマン | 83/100 | Amazon Prime Video |
-| 9月1日 | 夕陽のガンマン | 78/100 | Amazon Prime Video |
-| 9月1日 | 荒野の七人 | 74/100 | Amazon Prime Video |
-| 9月1日 | マグニフィセント・セブン | 67/100 | Amazon Prime Video |
-| 9月1日 | ロードハウス 孤独の街 | 67/100 | Amazon Prime Video |
+### 9月1日：「荒野の七人」と「マグニフィセント・セブン」、西部劇の名作も見放題配信が終了しました
 
 「荒野の七人」と「マグニフィセント・セブン」は同じ原題を持つ2本で、新旧そろって同じ日に見放題配信を終えました。1960年の「荒野の七人」は、黒ずくめの男がメキシコの村人たちを守るために雇われガンマンを集める作品です。ユナイテッド・アーティスツとザ・ミリッシュ・カンパニーの制作になります。
 
@@ -123,19 +119,7 @@ heroImage: '/heroes/2026-09-leaving-prime-video.webp'
 
 いずれも見放題での取り扱いは終わっていますので、他のサービスの検索から探してみましょう。
 
-## 9月1日：「ゴッドファーザー PART III」「ピアノ・レッスン」など名作も見放題配信が終了しました
-
-[![ゴッドファーザー PART III（1990年）](/sections/posters/2026-09-leaving-prime-video-1a2c5ad8-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%B4%E3%83%83%E3%83%89%E3%83%95%E3%82%A1%E3%83%BC%E3%82%B6%E3%83%BC%20PART%20III&i=instant-video) [![ピアノ・レッスン（1993年）](/sections/posters/2026-09-leaving-prime-video-1a2c5ad8-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%94%E3%82%A2%E3%83%8E%E3%83%BB%E3%83%AC%E3%83%83%E3%82%B9%E3%83%B3&i=instant-video)
-
-| 終了日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月1日 | 96時間 | 76/100 | Amazon Prime Video |
-| 9月1日 | マイノリティ・リポート | 75/100 | Amazon Prime Video |
-| 9月1日 | ゴッドファーザー PART III | 74/100 | Amazon Prime Video |
-| 9月1日 | ピアノ・レッスン | 74/100 | Amazon Prime Video |
-| 9月1日 | 光の旅人 K-PAX | 73/100 | Amazon Prime Video |
-| 9月1日 | RONIN | 71/100 | Amazon Prime Video |
-| 9月1日 | 暗殺の森 | 70/100 | Amazon Prime Video |
+### 9月1日：「ゴッドファーザー PART III」「ピアノ・レッスン」など名作も見放題配信が終了しました
 
 「ゴッドファーザー PART III」は、60代になったマイケル・コルレオーネが一族を犯罪と過去の罪から解き放つことと、ふさわしい後継者を見つけることの2つに突き動かされる物語です。フランシス・フォード・コッポラによる三部作の完結編で、制作はパラマウント映画とアメリカン・ゾエトロープになります。
 
@@ -145,7 +129,7 @@ heroImage: '/heroes/2026-09-leaving-prime-video.webp'
 
 いずれも9月1日で見放題が終わりました。他のサービスでの取り扱いを確かめてみましょう。
 
-## その他の注目作
+### その他の注目作
 
 同じ9月1日には、イルミネーション制作の「ミニオンズ」も見放題配信を終えました。すべてが始まった場所へ戻る作品です。
 
@@ -153,26 +137,8 @@ heroImage: '/heroes/2026-09-leaving-prime-video.webp'
 
 ほかに、警察と裁判官と陪審と死刑執行人を一身に兼ねるジャッジたちを描いた「ジャッジ・ドレッド」、ニューヨークの危機に4兄弟が立ち上がる「ミュータント・タートルズ」、ゴーモン制作の「私生活のない女」も9月1日で終了しています。
 
-## 9月に見放題配信が終了する全4作品
-
-| 終了日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月12日 | スマイル2 | 66/100 | Amazon Prime Video |
-| 9月14日 | 野生の島のロズ | 81/100 | Amazon Prime Video |
-| 9月14日 | ブルータリスト | 71/100 | Amazon Prime Video |
-| 9月17日 | シャッター アイランド | 81/100 | Amazon Prime Video |
-
-## 他のサービスで探す
-
-※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+・U-NEXT の5サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
-
-- **スマイル2** [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%B9%E3%83%9E%E3%82%A4%E3%83%AB2) / [Hulu](https://www.hulu.jp/search?q=%E3%82%B9%E3%83%9E%E3%82%A4%E3%83%AB2) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%B9%E3%83%9E%E3%82%A4%E3%83%AB2)
-- **ブルータリスト** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%96%E3%83%AB%E3%83%BC%E3%82%BF%E3%83%AA%E3%82%B9%E3%83%88) / [Hulu](https://www.hulu.jp/search?q=%E3%83%96%E3%83%AB%E3%83%BC%E3%82%BF%E3%83%AA%E3%82%B9%E3%83%88) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%96%E3%83%AB%E3%83%BC%E3%82%BF%E3%83%AA%E3%82%B9%E3%83%88)
-- **野生の島のロズ** [U-NEXT](https://video.unext.jp/freeword?query=%E9%87%8E%E7%94%9F%E3%81%AE%E5%B3%B6%E3%81%AE%E3%83%AD%E3%82%BA) / [Hulu](https://www.hulu.jp/search?q=%E9%87%8E%E7%94%9F%E3%81%AE%E5%B3%B6%E3%81%AE%E3%83%AD%E3%82%BA) / [DMM TV](https://tv.dmm.com/search/?keyword=%E9%87%8E%E7%94%9F%E3%81%AE%E5%B3%B6%E3%81%AE%E3%83%AD%E3%82%BA)
-- **シャッター アイランド** [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%B7%E3%83%A3%E3%83%83%E3%82%BF%E3%83%BC%20%E3%82%A2%E3%82%A4%E3%83%A9%E3%83%B3%E3%83%89) / [Hulu](https://www.hulu.jp/search?q=%E3%82%B7%E3%83%A3%E3%83%83%E3%82%BF%E3%83%BC%20%E3%82%A2%E3%82%A4%E3%83%A9%E3%83%B3%E3%83%89) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%B7%E3%83%A3%E3%83%83%E3%82%BF%E3%83%BC%20%E3%82%A2%E3%82%A4%E3%83%A9%E3%83%B3%E3%83%89)
-
+### 9月に見放題配信が終了する全4作品
 ## まとめ
-
 Amazon Prime Videoでは、9月12日に「スマイル2」、9月14日に「野生の島のロズ」と「ブルータリスト」、9月17日に「シャッター アイランド」が見放題終了予定です。月の中旬に4本が日をおいて並びますので、観たい作品は終了日までに押さえておきましょう。9月1日には「ミッション:インポッシブル」シリーズと「トランスフォーマー」シリーズがすでに見放題配信を終えています。お見逃しがないように。
 
 > 配信情報は Streaming Availability API by Movie of the Night 提供

@@ -21,7 +21,6 @@ heroImage: '/heroes/2026-08-arrivals-anime.webp'
 ## 8月3日：Netflixで京都アニメーション作品が一斉に見放題配信開始
 
 [![Free!（2013年）](/sections/posters/2026-08-arrivals-anime-3d6410c0-1.webp)](https://www.amazon.co.jp/s?k=Free!&i=instant-video) [![らき☆すた（2007年）](/sections/posters/2026-08-arrivals-anime-3d6410c0-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%89%E3%81%8D%E2%98%86%E3%81%99%E3%81%9F&i=instant-video)
-
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月3日 | Free! | 62/100 | Netflix |
@@ -36,16 +35,40 @@ heroImage: '/heroes/2026-08-arrivals-anime.webp'
 「Free!」は水泳が好きな七瀬遙が、小学生のころ同じスイミングクラブに通っていた松岡凛と高校で再会するところから始まる物語です。TVシリーズに続く劇場版3作も同時に配信開始となり、遙と凛がそれぞれの進路へ進む時期を描いた「劇場版 Free!-Timeless Medley- 絆」「劇場版 Free!-Timeless Medley- 約束」、遙がシドニーで世界大会に挑む「劇場版 Free!-the Final Stroke- 前編」まで、シリーズを通して観てみましょう。
 
 「日常」は平凡な3人の女子高生と、小さな博士や普通になりたいロボットが暮らす町を描いたコメディです。空から鮭が降ってくるような町なので、題名からは想像しにくい展開が続きます。「らき☆すた」は2007年のコメディ作品で、こちらも京都アニメーションの制作です。
-
-## 8月3日：東映アニメーション作品が「ONE PIECE STAMPEDE」など3作で配信開始
-
-[![ONE PIECE STAMPEDE（2019年）](/sections/tiles/2026-08-arrivals-anime-b8d73870-1.webp)](https://www.amazon.co.jp/s?k=ONE%20PIECE%20STAMPEDE&i=instant-video) [![デジタルモンスター（1999年）](/sections/tiles/2026-08-arrivals-anime-b8d73870-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC&i=instant-video)
+## そのほかに配信開始した28本
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 8月3日 | ONE PIECE STAMPEDE | — | Netflix |
 | 8月14日 | デジタルモンスター | 69/100 | Amazon Prime Video |
 | 8月14日 | ガールズバンドクライ | 57/100 | Amazon Prime Video |
+| 8月3日 | クレヨンしんちゃん オラたちの恐竜日記 | 58/100 | Amazon Prime Video |
+| 8月16日 | クレヨンしんちゃん 嵐を呼ぶ アッパレ!戦国大合戦 | 63/100 | Amazon Prime Video |
+| 8月16日 | クレヨンしんちゃん 雲黒斎の野望 | 61/100 | Amazon Prime Video |
+| 8月16日 | クレヨンしんちゃん ブリブリ王国の秘宝 | 54/100 | Amazon Prime Video |
+| 8月7日 | 魔法少女まどか☆マギカ | 67/100 | Amazon Prime Video |
+| 8月14日 | 劇場版 幼女戦記 | 60/100 | Amazon Prime Video |
+| 8月16日 | チ。-地球の運動について- | 67/100 | Amazon Prime Video |
+| 8月16日 | 黄泉のツガイ | 64/100 | Amazon Prime Video |
+| 8月16日 | SF西遊記スタージンガー | 60/100 | Amazon Prime Video |
+| 8月16日 | 咲-Saki- | 57/100 | Amazon Prime Video |
+| 8月16日 | ぼくらの7日間戦争 | 55/100 | Amazon Prime Video |
+| 8月16日 | 星屑テレパス | 51/100 | Amazon Prime Video |
+| 8月3日 | タッチ | 60/100 | Amazon Prime Video |
+| 8月5日 | ただいま、おかえり | 55/100 | Disney+ |
+| 8月8日 | 劇場版 ゲゲゲの鬼太郎 日本爆裂!! | 46/100 | Netflix |
+| 8月8日 | THE RIBBON HERO リボンヒーロー | — | Netflix |
+| 8月11日 | 最強の職業は勇者でも賢者でもなく鑑定士（仮）らしいですよ？ | 54/100 | Netflix |
+| 8月14日 | クラスで2番目に可愛い女の子と友だちになった | 64/100 | Netflix |
+| 8月14日 | 映画大好きポンポさん | 60/100 | Amazon Prime Video |
+| 8月14日 | 氷属性男子とクールな同僚女子 | 60/100 | Amazon Prime Video |
+| 8月14日 | グッバイ、ドン・グリーズ! | 56/100 | Amazon Prime Video |
+| 8月14日 | バビロン | 56/100 | Amazon Prime Video |
+| 8月14日 | マーダーミステリー・オブ・ザ・デッド | 40/100 | Amazon Prime Video |
+| 8月20日 | MAO | 53/100 | Netflix |
+| 8月21日 | 愛してるゲームを終わらせたい | 60/100 | Netflix |
+
+### 8月3日：東映アニメーション作品が「ONE PIECE STAMPEDE」など3作で配信開始
 
 「ONE PIECE STAMPEDE」は2019年公開の劇場版アニメで、東映アニメーションの制作です。ジャンルはアクションとアドベンチャーになります。
 
@@ -53,29 +76,13 @@ heroImage: '/heroes/2026-08-arrivals-anime.webp'
 
 「ガールズバンドクライ」は高校を中退して上京した井芹仁菜が、駅前で歌う河原木桃香の音楽に心を動かされ、本当の気持ちを隠す安和すばる、親に捨てられた海老塚智、身寄りのないルパとバンドを組んでいく物語です。
 
-## 8月3日：「クレヨンしんちゃん」劇場版が今月4作そろって配信開始
-
-[![クレヨンしんちゃん ブリブリ王国の秘宝（1994年）](/sections/posters/2026-08-arrivals-anime-5ff1058f-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%AF%E3%83%AC%E3%83%A8%E3%83%B3%E3%81%97%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%20%E3%83%96%E3%83%AA%E3%83%96%E3%83%AA%E7%8E%8B%E5%9B%BD%E3%81%AE%E7%A7%98%E5%AE%9D&i=instant-video) [![クレヨンしんちゃん 雲黒斎の野望（1995年）](/sections/posters/2026-08-arrivals-anime-5ff1058f-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%AF%E3%83%AC%E3%83%A8%E3%83%B3%E3%81%97%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%20%E9%9B%B2%E9%BB%92%E6%96%8E%E3%81%AE%E9%87%8E%E6%9C%9B&i=instant-video)
-
-| 配信開始日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 8月3日 | クレヨンしんちゃん オラたちの恐竜日記 | 58/100 | Amazon Prime Video |
-| 8月16日 | クレヨンしんちゃん 嵐を呼ぶ アッパレ!戦国大合戦 | 63/100 | Amazon Prime Video |
-| 8月16日 | クレヨンしんちゃん 雲黒斎の野望 | 61/100 | Amazon Prime Video |
-| 8月16日 | クレヨンしんちゃん ブリブリ王国の秘宝 | 54/100 | Amazon Prime Video |
+### 8月3日：「クレヨンしんちゃん」劇場版が今月4作そろって配信開始
 
 Amazon Prime Videoでは、日付をまたいで「クレヨンしんちゃん」の劇場版4作が見放題に入りました。1994年の「クレヨンしんちゃん ブリブリ王国の秘宝」、1995年の「クレヨンしんちゃん 雲黒斎の野望」、2002年の「クレヨンしんちゃん 嵐を呼ぶ アッパレ!戦国大合戦」という初期から中期の3作に、2024年の「クレヨンしんちゃん オラたちの恐竜日記」が加わる形です。
 
 「ブリブリ王国の秘宝」と「雲黒斎の野望」はシンエイ動画の制作で、シリーズは現在も新作が公開され続けています。
 
-## 8月7日：シリーズの新作が続く「魔法少女まどか☆マギカ」「劇場版 幼女戦記」
-
-[![魔法少女まどか☆マギカ（2011年）](/sections/posters/2026-08-arrivals-anime-839df5f9-1.webp)](https://www.amazon.co.jp/s?k=%E9%AD%94%E6%B3%95%E5%B0%91%E5%A5%B3%E3%81%BE%E3%81%A9%E3%81%8B%E2%98%86%E3%83%9E%E3%82%AE%E3%82%AB&i=instant-video) [![劇場版 幼女戦記（2019年）](/sections/posters/2026-08-arrivals-anime-839df5f9-2.webp)](https://www.amazon.co.jp/s?k=%E5%8A%87%E5%A0%B4%E7%89%88%20%E5%B9%BC%E5%A5%B3%E6%88%A6%E8%A8%98&i=instant-video)
-
-| 配信開始日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 8月7日 | 魔法少女まどか☆マギカ | 67/100 | Amazon Prime Video |
-| 8月14日 | 劇場版 幼女戦記 | 60/100 | Amazon Prime Video |
+### 8月7日：シリーズの新作が続く「魔法少女まどか☆マギカ」「劇場版 幼女戦記」
 
 どちらもシリーズが今も続いている作品で、その入口にあたる作品がAmazon Prime Videoで見放題に入りました。
 
@@ -83,18 +90,7 @@ Amazon Prime Videoでは、日付をまたいで「クレヨンしんちゃん�
 
 「劇場版 幼女戦記」は、エリートサラリーマンが幼い少女に転生し、帝国軍で最も危険な魔導師になっていくという設定の1本です。制作はナットで、こちらもシリーズの新作が続いています。
 
-## 8月16日：Amazon Prime Videoで「チ。-地球の運動について-」など9作品が配信開始
-
-[![チ。-地球の運動について-（2024年）](/sections/posters/2026-08-arrivals-anime-b8ca37b7-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%81%E3%80%82-%E5%9C%B0%E7%90%83%E3%81%AE%E9%81%8B%E5%8B%95%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6-&i=instant-video) [![黄泉のツガイ（2026年）](/sections/posters/2026-08-arrivals-anime-b8ca37b7-2.webp)](https://www.amazon.co.jp/s?k=%E9%BB%84%E6%B3%89%E3%81%AE%E3%83%84%E3%82%AC%E3%82%A4&i=instant-video)
-
-| 配信開始日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 8月16日 | チ。-地球の運動について- | 67/100 | Amazon Prime Video |
-| 8月16日 | 黄泉のツガイ | 64/100 | Amazon Prime Video |
-| 8月16日 | SF西遊記スタージンガー | 60/100 | Amazon Prime Video |
-| 8月16日 | 咲-Saki- | 57/100 | Amazon Prime Video |
-| 8月16日 | ぼくらの7日間戦争 | 55/100 | Amazon Prime Video |
-| 8月16日 | 星屑テレパス | 51/100 | Amazon Prime Video |
+### 8月16日：Amazon Prime Videoで「チ。-地球の運動について-」など9作品が配信開始
 
 「チ。-地球の運動について-」は、地球と太陽をめぐる異端の教えを知った神童が、異端審問を逃れながら師の隠した研究を追う物語です。制作はマッドハウスになります。
 
@@ -102,7 +98,7 @@ Amazon Prime Videoでは、日付をまたいで「クレヨンしんちゃん�
 
 旧作では1978年の「SF西遊記スタージンガー」が今月いちばん古い作品です。ほかに麻雀の全国大会を目指す高校生を描いた「咲-Saki-」、宮沢りえ主演の実写版でも知られる小説を原作にした「ぼくらの7日間戦争」が並びます。
 
-## その他の注目作
+### その他の注目作
 
 8月3日にはAmazon Prime Videoで「タッチ」（1985年）も配信開始となりました。制作はグループ・タックです。
 
@@ -112,55 +108,8 @@ Amazon Prime Videoでは、日付をまたいで「クレヨンしんちゃん�
 
 月の後半はNetflixに新作が続きます。8月20日の「MAO」は呪われた術者マオが中学生の菜花と出会い、時を越えて闇の力と戦う物語、8月21日の「愛してるゲームを終わらせたい」は両想いなのに告白できない幸弥と美久を描いたコメディです。
 
-## 8月に見放題配信が始まったアニメ全34作品
-
-| 配信開始日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 8月3日 | Free! | 62/100 | Netflix |
-| 8月3日 | 劇場版 Free!-Timeless Medley- 絆 | 51/100 | Netflix |
-| 8月3日 | 劇場版 Free!-Timeless Medley- 約束 | 50/100 | Netflix |
-| 8月3日 | 劇場版 Free!-the Final Stroke- 前編 | 51/100 | Netflix |
-| 8月3日 | らき☆すた | 70/100 | Netflix |
-| 8月3日 | 日常 | 62/100 | Netflix |
-| 8月3日 | ONE PIECE STAMPEDE | — | Netflix |
-| 8月3日 | クレヨンしんちゃん オラたちの恐竜日記 | 58/100 | Amazon Prime Video |
-| 8月3日 | タッチ | 60/100 | Amazon Prime Video |
-| 8月5日 | ただいま、おかえり | 55/100 | Disney+ |
-| 8月7日 | 魔法少女まどか☆マギカ | 67/100 | Amazon Prime Video |
-| 8月8日 | 劇場版 ゲゲゲの鬼太郎 日本爆裂!! | 46/100 | Netflix |
-| 8月8日 | THE RIBBON HERO リボンヒーロー | — | Netflix |
-| 8月11日 | 最強の職業は勇者でも賢者でもなく鑑定士（仮）らしいですよ？ | 54/100 | Netflix |
-| 8月14日 | クラスで2番目に可愛い女の子と友だちになった | 64/100 | Netflix |
-| 8月14日 | デジタルモンスター | 69/100 | Amazon Prime Video |
-| 8月14日 | 映画大好きポンポさん | 60/100 | Amazon Prime Video |
-| 8月14日 | 劇場版 幼女戦記 | 60/100 | Amazon Prime Video |
-| 8月14日 | 氷属性男子とクールな同僚女子 | 60/100 | Amazon Prime Video |
-| 8月14日 | ガールズバンドクライ | 57/100 | Amazon Prime Video |
-| 8月14日 | グッバイ、ドン・グリーズ! | 56/100 | Amazon Prime Video |
-| 8月14日 | バビロン | 56/100 | Amazon Prime Video |
-| 8月14日 | マーダーミステリー・オブ・ザ・デッド | 40/100 | Amazon Prime Video |
-| 8月16日 | チ。-地球の運動について- | 67/100 | Amazon Prime Video |
-| 8月16日 | 黄泉のツガイ | 64/100 | Amazon Prime Video |
-| 8月16日 | クレヨンしんちゃん 嵐を呼ぶ アッパレ!戦国大合戦 | 63/100 | Amazon Prime Video |
-| 8月16日 | クレヨンしんちゃん 雲黒斎の野望 | 61/100 | Amazon Prime Video |
-| 8月16日 | クレヨンしんちゃん ブリブリ王国の秘宝 | 54/100 | Amazon Prime Video |
-| 8月16日 | 咲-Saki- | 57/100 | Amazon Prime Video |
-| 8月16日 | ぼくらの7日間戦争 | 55/100 | Amazon Prime Video |
-| 8月16日 | SF西遊記スタージンガー | 60/100 | Amazon Prime Video |
-| 8月16日 | 星屑テレパス | 51/100 | Amazon Prime Video |
-| 8月20日 | MAO | 53/100 | Netflix |
-| 8月21日 | 愛してるゲームを終わらせたい | 60/100 | Netflix |
-
-## 他のサービスで探す
-
-※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+ の4サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
-
-- [U-NEXT で検索](https://video.unext.jp/freeword)
-- [Hulu で検索](https://www.hulu.jp/search)
-- [DMM TV で検索](https://tv.dmm.com/search/)
-
+### 8月に見放題配信が始まったアニメ全34作品
 ## まとめ
-
 今月は8月3日にNetflixで京都アニメーション制作の「Free!」「らき☆すた」「日常」がそろって見放題配信が始まり、Amazon Prime Videoでは「クレヨンしんちゃん」劇場版4作が8月3日と8月16日に分かれて配信開始となりました。「ONE PIECE STAMPEDE」「デジタルモンスター」といった東映アニメーション作品も加わっています。
 
 > 配信情報は Streaming Availability API by Movie of the Night 提供

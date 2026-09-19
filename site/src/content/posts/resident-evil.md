@@ -22,7 +22,6 @@ heroImage: '/heroes/resident-evil.webp'
 ## Amazon Prime Videoで見放題配信中の8本
 
 [![バイオハザード（2002年）](/sections/posters/resident-evil-cfc9bdaa-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89&i=instant-video) [![バイオハザード: ザ・ファイナル（2016年）](/sections/posters/resident-evil-cfc9bdaa-2.webp)](https://www.amazon.co.jp/s?k=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%3A%20%E3%82%B6%E3%83%BB%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB&i=instant-video)
-
 | 終了日 | 作品 | 状態 | 出演者 | サービス |
 | --- | --- | --- | --- | --- |
 | — | バイオハザード | 見放題配信中 | ミラ・ジョヴォヴィッチ、ミシェル・ロドリゲス | Amazon Prime Video |
@@ -53,24 +52,7 @@ heroImage: '/heroes/resident-evil.webp'
 見放題に入っているフルCG映画は、2017年の「バイオハザード ヴェンデッタ」と2023年の「バイオハザード：デスアイランド」の2本です。「ヴェンデッタ」の監督は辻本貴則、「デスアイランド」の監督は羽住英一郎です。
 
 はじめて観るなら、実写版を2002年の「バイオハザード」から公開順に6作を追うのが分かりやすくなります。フルCGの2本は実写版と物語がつながっていないので、あとから観ても先に観ても筋を追えます。
-
-## 他のサービスで探す
-
-※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+・U-NEXT の5サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
-
-※この記事に載せているのは、配信情報APIで見放題の取り扱いを確認できた作品です。Prime Videoチャンネル（東映オンデマンドなど別料金のもの）やレンタル・購入のみの作品、APIが把握していない作品は含みません。各サービスの検索結果と本数が合わないことがあります。
-
-- **バイオハザード** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89) / [Hulu](https://www.hulu.jp/search?q=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89)
-- **バイオハザードII アポカリプス** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89II%20%E3%82%A2%E3%83%9D%E3%82%AB%E3%83%AA%E3%83%97%E3%82%B9) / [Hulu](https://www.hulu.jp/search?q=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89II%20%E3%82%A2%E3%83%9D%E3%82%AB%E3%83%AA%E3%83%97%E3%82%B9) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89II%20%E3%82%A2%E3%83%9D%E3%82%AB%E3%83%AA%E3%83%97%E3%82%B9)
-- **バイオハザードIII** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89III) / [Hulu](https://www.hulu.jp/search?q=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89III) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89III)
-- **バイオハザードIV アフターライフ** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89IV%20%E3%82%A2%E3%83%95%E3%82%BF%E3%83%BC%E3%83%A9%E3%82%A4%E3%83%95) / [Hulu](https://www.hulu.jp/search?q=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89IV%20%E3%82%A2%E3%83%95%E3%82%BF%E3%83%BC%E3%83%A9%E3%82%A4%E3%83%95) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89IV%20%E3%82%A2%E3%83%95%E3%82%BF%E3%83%BC%E3%83%A9%E3%82%A4%E3%83%95)
-- **バイオハザードV リトリビューション** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89V%20%E3%83%AA%E3%83%88%E3%83%AA%E3%83%93%E3%83%A5%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3) / [Hulu](https://www.hulu.jp/search?q=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89V%20%E3%83%AA%E3%83%88%E3%83%AA%E3%83%93%E3%83%A5%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89V%20%E3%83%AA%E3%83%88%E3%83%AA%E3%83%93%E3%83%A5%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3)
-- **バイオハザード: ザ・ファイナル** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%3A%20%E3%82%B6%E3%83%BB%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB) / [Hulu](https://www.hulu.jp/search?q=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%3A%20%E3%82%B6%E3%83%BB%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%3A%20%E3%82%B6%E3%83%BB%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB)
-- **バイオハザード ヴェンデッタ** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%20%E3%83%B4%E3%82%A7%E3%83%B3%E3%83%87%E3%83%83%E3%82%BF) / [Hulu](https://www.hulu.jp/search?q=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%20%E3%83%B4%E3%82%A7%E3%83%B3%E3%83%87%E3%83%83%E3%82%BF) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%20%E3%83%B4%E3%82%A7%E3%83%B3%E3%83%87%E3%83%83%E3%82%BF)
-- **バイオハザード：デスアイランド** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%EF%BC%9A%E3%83%87%E3%82%B9%E3%82%A2%E3%82%A4%E3%83%A9%E3%83%B3%E3%83%89) / [Hulu](https://www.hulu.jp/search?q=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%EF%BC%9A%E3%83%87%E3%82%B9%E3%82%A2%E3%82%A4%E3%83%A9%E3%83%B3%E3%83%89) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%90%E3%82%A4%E3%82%AA%E3%83%8F%E3%82%B6%E3%83%BC%E3%83%89%EF%BC%9A%E3%83%87%E3%82%B9%E3%82%A2%E3%82%A4%E3%83%A9%E3%83%B3%E3%83%89)
-
 ## まとめ
-
 Amazon Prime Videoの見放題にあるのは、実写映画6作とフルCG映画2作の合わせて8本です。それぞれの他サービスでの配信状況は上の表のとおりで、表に出ていないサービスでの取り扱いは検索リンクから確かめられます。配信状況が変わった時点でこのページを書き直します。
 
 > 配信情報は Streaming Availability API by Movie of the Night 提供

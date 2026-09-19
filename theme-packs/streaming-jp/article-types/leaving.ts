@@ -24,7 +24,6 @@ import {
   asOfLabel,
   bareDeliveryEnd,
   clip,
-  dateSections,
   fixedPhrases,
   foundSince,
   halfWidthSymbols,
@@ -37,8 +36,11 @@ import {
   previousAsOf,
   publishable,
   ratingMentionsInProse,
+  sectionsOf,
+  SECTION_PROSE_LIMIT,
   serviceLabels,
   shortScriptSection,
+  structureIssues,
   titleIssues,
   UNAVAILABLE_CLAIM,
   variantKey,
@@ -160,9 +162,12 @@ const REQUIRED_PHRASES = [
   'leaving-lead-first-sentence',
   // 月内に同じ記事を書き直したとき用（2026-08-27 追加）
   'leaving-update-lead-first-sentence',
-  'leaving-update-lead-first-sentence-nochange',
-  'leaving-lead-closer',
-  'other-services-intro',
+  /*
+   * ★ 2026-09-19 のテンプレ改修で3つ減った。
+   *   `*-nochange`         … 頭の 【◯月◯日更新】 を外したので初回の文言と同一になった
+   *   `leaving-lead-closer` … リードを1組（2文）だけにしたので置き場所が無くなった
+   *   `other-services-intro`… 「他のサービスで探す」の節ごと廃止（行き先は表の各行の下）
+   */
   'attribution',
   // U-NEXT の記事に API の帰属表示を付けると出典を偽ることになるため別文言
   'attribution-unext',
@@ -337,17 +342,9 @@ ${
 
 以下は**一字一句そのまま**本文に入れてください。言い換え・要約・記号の変更をしてはいけません。
 
-## リードの1文目（本文の冒頭）
+## リード（本文の冒頭。**ここだけで1段落。2段落目を書かない**）
 
 ${resolved.leadFirstSentence}
-
-## リードの締め（リード段落の最後の1文）
-
-${resolved.leadCloser}
-
-## 「他のサービスで探す」の冒頭
-
-${resolved.otherServicesIntro}
 
 ## 記事の末尾
 
@@ -364,22 +361,39 @@ ${OUTPUT_FORMAT}`
     // 指示は素材の性質で増減するので、番号は組み立て時に振る。
     // 手で番号を打つと、行を足したときに 6 が2つある指示ができあがる。
     const tasks = [
+      `**「##」の節は2つだけ作ってください（＋まとめ）。** 記事全体の形は次で固定です。
+
+   \`\`\`
+   リード（見出しなし・固定文言の1組だけ）
+   ## 小段落1  中心の2〜3作   … 表 → 解説（最大${SECTION_PROSE_LIMIT}字）
+   ## 小段落2  残りの全${items.length}件 … 表 → 軽い言及
+   ## まとめ
+   \`\`\`
+
+   ★ **「他のサービスで探す」「全終了作品リスト」の節は作りません**（2026-09-19 に廃止）。
+     行き先は表の各行の下にサイトが出します。残り全件は小段落2の表が持ちます。
+   ★ **Amazon・Hulu のリンクも、配信カレンダーへのリンクも本文に書かないこと。**
+     小段落の直下と表の直下にビルドが入れます。`,
       version.isUpdate
-        ? `**「今回新たに判明した終了予定」の節を、リードの直後に置くこと。**
-   対象は ★ が付いた${version.added.length}件です。
-   前回までに載っていた作品も全終了作品リストには**そのまま全件残してください**。
+        ? `**小段落1は「今回新たに判明した終了予定」にしてください。**
+   対象は ★ が付いた${version.added.length}件です。解説する2〜3作はその中から選びます。
+   前回までに載っていた作品は落とさず、**小段落2の表に全件残してください**。
    前の版の本数は書かないこと（読者が前の版を見ているとは限りません）。`
-        : '',
-      `終了日を見比べて「同じ日に終了するまとまり」を探すこと。
-   同一監督・同一シリーズ・同一ジャンルの集中があれば、それを記事の軸にする。`,
-      `リードの2段落目では、見つけたまとまりのうち**知名度の高いものを終了日順に**、
-   作品名・シリーズ名を「」で囲んで挙げること。記事の構造の説明は書かない。
-   目立つシリーズが無ければ、有名作・人気作、近年に続編が出た作品を優先する。`,
-      `**各セクションは「見出し → 表 → 解説」の順に書くこと。**
+        : `**小段落1で解説するのは、中心になる2〜3作だけです。**
+   本数が多く名前の通ったまとまり（同一シリーズ・同一制作会社・同一ジャンル）を1つ選び、
+   その中の2〜3作を解説します。**4作以上を解説しないでください。**`,
+      `**リードは上の固定文言の1組（2文）だけです。2段落目を書かないでください。**
+   タイトルがすでに中心作を名乗っているので、ここで作品名を挙げると同じ名前を2回読ませることになります。
+   リードのすぐ次が小段落1の見出しです。`,
+      `**どちらの小段落も「見出し → 表 → 解説」の順に書くこと。**
    見出しの直後に導入文を挟まず、いきなり表を置きます。
-   表の列は「終了日 / 作品 / 出演者 / サービス」の4列で固定してください。`,
-      `まとまりを解説する \`##\` セクションは、**見出しに具体的な作品名を入れ**、
-   **最終段落を「〜しましょう」など視聴を促す形で締める**こと。`,
+   表の列は「終了日 / 作品 / 出演者 / サービス」の4列で固定してください。
+   ★ **同じ作品を2つの表に出さないこと。** 小段落1に出した作品は小段落2の表から外します。`,
+      `小段落1の解説は**${SECTION_PROSE_LIMIT}字以内**に収めてください。
+   調べた事実の密度は落とさず、**扱う作品数を絞る**ことで字数を守ります。
+   見出しには具体的な作品名を入れ、**最終段落を「〜しましょう」など視聴を促す形で締める**こと。`,
+      `小段落2は**表が主役**です。表の下に、特筆すべき1〜2作だけを1〜2文で書いてください。
+   作品名を並べただけの段落を作らないこと。書くことが無ければ表だけで構いません。`,
       `**評価スコアは記事のどこにも書かないこと。** 表にも地の文にも出しません。
    素材の評価は、表の行を並べる順番を決めるための目安としてだけ使ってください。
    「この日の最高評価は」「評価だけで選ぶなら」はいずれも禁止です。`,
@@ -483,7 +497,11 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
     const md = normalizeBody(raw)
 
     // 全記事タイプ共通の決まり（templates/writing.md）
-    const issues: VerifyIssue[] = styleIssues(md)
+    const issues: VerifyIssue[] = [
+      ...styleIssues(md),
+      // 記事の骨格（小段落2つ＋まとめ・廃止した節・解説の字数）
+      ...structureIssues(md, { maxSectionProse: SECTION_PROSE_LIMIT }),
+    ]
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
 
@@ -494,16 +512,9 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
 
     // --- 事故を防ぐ検査（公開を止める） ---
 
-    // 全終了作品リスト（表）があるか
+    // 作品の表があるか。**小段落2の表が残り全件を持つ**（2026-09-19 の改修）
     if (!md.includes('|')) {
-      err('全終了作品の一覧表がありません。テンプレートの構成4が守られていません。')
-    }
-    // 他サービス検索リンクがあるか（収益導線かつ読者の実用性）
-    if (otherLinks.length && !otherLinks.some((l) => md.includes(l.label))) {
-      err(
-        `他サービス（${otherLinks.map((l) => l.label).join(' / ')}）での検索リンクがありません。` +
-          'テンプレートの構成5が守られていません。',
-      )
+      err('作品の一覧表がありません。小段落1と小段落2の両方に表が要ります。')
     }
     // 「配信中」と断定していないか。
     // ★ 判定の対象は「この記事のサービス以外」。U-NEXT の記事で
@@ -556,14 +567,15 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
 
     // --- 固定文言の検査（公開を止める） ---
 
-    if (!md.startsWith(resolved.leadPrefix)) {
-      err(`本文の冒頭が「${resolved.leadPrefix}」で始まっていません。リードの1文目は固定の型です。`)
-    }
-    if (!md.includes(resolved.leadCloser)) {
-      err(`リードの締めの固定文言がありません。次の1文をそのまま入れてください:\n      ${resolved.leadCloser}`)
-    }
-    if (!md.includes(resolved.otherServicesIntro)) {
-      err('「他のサービスで探す」の冒頭が固定文言と一致しません。fixed-phrases.md の文言をそのまま使ってください。')
+    /*
+     * ★ リードは**この1組（2文）だけ**（2026-09-19）。頭の 【◯月終了】 も締めの文言も外した。
+     *   本文の1行目がこの固定文言そのものであることを見る。
+     */
+    if (!md.startsWith(resolved.leadFirstSentence)) {
+      err(
+        '本文の冒頭がリードの固定文言と一致しません。次の1組をそのまま1行目に置いてください:\n' +
+          `      ${resolved.leadFirstSentence}`,
+      )
     }
 
     // --- 版の取り違え（公開を止める） ---
@@ -588,9 +600,22 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
 
     // --- 文体の検査（止めない。判定が外れることがあるため） ---
 
-    const firstLine = md.split('\n', 1)[0] ?? ''
-    if (firstLine !== resolved.leadFirstSentence && md.startsWith(resolved.leadPrefix)) {
-      warn(`リードの1文目が想定の型と違います。想定:\n      ${resolved.leadFirstSentence}`)
+    /*
+     * ★ リードは1段落だけ（2026-09-19）。2段落目を書くと、タイトルで名乗った
+     *   中心作の名前を読者が2回読むことになる（fixed-phrases.md の理由）。
+     *   1行目の固定文言と、次の `##` のあいだに地の文があれば指摘する。
+     */
+    const beforeFirstHeading = md.split(/\n## /, 1)[0] ?? ''
+    const leadExtra = beforeFirstHeading
+      .slice(resolved.leadFirstSentence.length)
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l !== '')
+    if (leadExtra.length > 0) {
+      warn(
+        `リードに2段落目があります: 「${clip(leadExtra.join(''), 50)}」\n` +
+          '      リードは固定文言の1組だけにして、すぐ小段落1の見出しへ進んでください。',
+      )
     }
 
     // 評価は表にだけ載せる。地の文の言及は読者の役に立たない。
@@ -598,12 +623,12 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
       warn(`地の文で評価に言及しています: 「${clip(line, 50)}」（評価は表にだけ載せます）`)
     }
 
-    for (const section of dateSections(md)) {
-      // ★ 構成の核。見出しの直後に導入文を挟むと、
-      //   読者は一覧を掴む前に文章を読まされることになる。
-      if (!section.startsWithTable) {
-        warn(`「${section.heading}」の見出し直後が表になっていません（見出し → 表 → 解説の順）。`)
-      }
+    /*
+     * ★ 締めの検査は**小段落1だけ**（2026-09-19）。
+     *   小段落2は表が主役で、0〜2文しか置かないので促し文句を求めない。
+     *   「見出し → 表」の順は structureIssues が全節を見ている。
+     */
+    for (const section of sectionsOf(md).slice(0, 1)) {
       const last = section.lastParagraph
       if (last && !CALL_TO_ACTION.test(last)) {
         warn(
@@ -625,11 +650,8 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
 // --- 固定文言 -------------------------------------------------------------
 
 interface ResolvedPhrases {
-  /** 初回は 【8月終了】、更新版は 【8月27日更新】 */
-  leadPrefix: string
+  /** リード。**記事の冒頭はこれ1組だけ**（2026-09-19） */
   leadFirstSentence: string
-  leadCloser: string
-  otherServicesIntro: string
   attribution: string
   /** ショート動画の締め */
   shortCloser: string
@@ -671,17 +693,16 @@ function resolvePhrases(items: ChangeEvent[], ctx: ArticleContext, version: Vers
   const get = phraseReader(fixedPhrases(ctx, REQUIRED_PHRASES), vars)
 
   return {
-    leadPrefix: version.isUpdate ? `【${vars.基準日}更新】` : `【${vars.月}月終了】`,
+    /*
+     * ★ **追加0本の更新版は初回と同じ文言**（2026-09-19）。
+     *   「今回新たに0本の終了予定が判明し」が読者の見る1文目に出るのを避ける。
+     *   頭の 【◯月◯日更新】 を外したので、専用の `-nochange` は要らなくなった。
+     */
     leadFirstSentence: get(
-      // ★ 追加0本の回は別の文言（2026-09-10。ended.ts と同じ理由）
-      !version.isUpdate
-        ? 'leaving-lead-first-sentence'
-        : version.added.length > 0
-          ? 'leaving-update-lead-first-sentence'
-          : 'leaving-update-lead-first-sentence-nochange',
+      version.isUpdate && version.added.length > 0
+        ? 'leaving-update-lead-first-sentence'
+        : 'leaving-lead-first-sentence',
     ),
-    leadCloser: get('leaving-lead-closer'),
-    otherServicesIntro: get('other-services-intro'),
     // ★ データの出どころが違えば出典表記も違う。機械的に API の帰属表示を
     //   付けると、取得していないAPIを出典として偽ることになる。
     attribution: get(traitsOf(ctx.variant?.key).attributionKey),

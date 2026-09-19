@@ -11,6 +11,7 @@ import { rehypeAvailability } from './plugins/rehype-availability.ts'
 import { rehypeCast } from './plugins/rehype-cast.ts'
 import { rehypeFindLinks } from './plugins/rehype-find-links.ts'
 import { rehypeNextStep } from './plugins/rehype-next-step.ts'
+import { rehypeSectionAds } from './plugins/rehype-section-ads.ts'
 
 // astro.config は Astro が .env を読み込む前に評価されるため、
 // ここでは import.meta.env が使えない。Vite の loadEnv で明示的に読む。
@@ -47,6 +48,44 @@ const amazonTags = {
   find: env.PUBLIC_AMAZON_TAG_FIND ?? '',
   // 表の直後の「終了後も観られるもの」（plugins/rehype-next-step.ts。2026-09-15）
   watch: env.PUBLIC_AMAZON_TAG_WATCH ?? '',
+  /*
+   * 小段落の直下の広告（plugins/rehype-section-ads.ts。2026-09-19）。
+   * 🔴 **Amazonプライムの無料体験は固定報酬**で、他の枠（紹介料）と成果の種類が違う。
+   *   同じIDにするとレポートで単価が読めなくなるので、必ず別IDにすること。
+   */
+  prime: env.PUBLIC_AMAZON_TAG_PRIME ?? '',
+}
+
+/**
+ * 小段落の直下に差し込む広告の原稿（`plugins/rehype-section-ads.ts`）。
+ *
+ * ★ **`src/lib/hulu-ad.ts` と同じ環境変数を読んでいる。**
+ *   astro.config は Astro が .env を読む前に評価されるため import.meta.env が使えず、
+ *   loadEnv でもう一度組み立てるしかない（amazonTags と同じ事情）。
+ *   **変数名を変えるときは両方直すこと。**
+ *
+ * ★ **1x1（表示計測）は本番ビルドでだけ渡す。** 判定は `src/lib/afb.ts` の
+ *   `AFB_IMPRESSION_BUILD` と同じ条件にしてある。手元でページを開くたびに
+ *   afb の表示回数が増えた事故が 2026-09-17 にあった（549件）。
+ */
+const isProdBuild = Boolean(process.env.CF_PAGES) && process.env.CF_PAGES_BRANCH === 'main'
+
+const sectionAds = {
+  hulu: {
+    lp: env.PUBLIC_AFB_HULU_LP ?? '',
+    banner: env.PUBLIC_AFB_HULU_BANNER ?? '',
+    bannerSize: env.PUBLIC_AFB_HULU_BANNER_SIZE ?? '',
+    impression: isProdBuild ? (env.PUBLIC_AFB_HULU_IMP ?? '') : '',
+  },
+  /*
+   * Amazonプライムの**メンバー紹介**（無料体験 500円/件）のid。
+   *
+   * 🔴 **`PUBLIC_AMAZON_TAG_BODY` などと混ぜないこと。** 無料体験は紹介料ではなく
+   *   固定報酬で、同じIDにするとレポートで単価が読めなくなる（`src/config.ts` の `prime`）。
+   * ★ 未設定なら**枠ごと出ない**（IDの無いリンクは1円にもならないので、
+   *   広告表記だけが残ることになる）。既定IDに落とさないのはそのため。
+   */
+  primeTag: env.PUBLIC_AMAZON_TAG_PRIME ?? '',
 }
 
 export default defineConfig({
@@ -120,6 +159,12 @@ export default defineConfig({
       //   表の直後に「次の一手」を差し込み、ここで作った <a> に
       //   後段が tag= と rel="sponsored" を付ける。
       rehypeNextStep,
+      /*
+       * ★ affiliate の前。小段落の直下に広告を、表の直下に配信カレンダーへの
+       *   導線を差し込む（2026-09-19 のテンプレ改修）。ここで作った `<a>` に
+       *   後段が tag= と rel="sponsored" を付ける。
+       */
+      [rehypeSectionAds, sectionAds],
       [rehypeAffiliate, { tags: amazonTags }],
     ],
   },

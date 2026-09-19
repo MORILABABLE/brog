@@ -1,6 +1,6 @@
 ---
 import { amazonTagFor } from '../config'
-import { primeVideoStorefrontUrl, relFor, type AmazonSlot } from '../lib/affiliate'
+import { primeTrialUrl, relFor, type AmazonSlot } from '../lib/affiliate'
 import { publicImageSize } from '../lib/image-size'
 
 interface Props {
@@ -82,7 +82,23 @@ const wide = publicImageSize(WIDE_SRC)
 const spSrc = SP_CANDIDATES.find((p) => publicImageSize(p) !== null)
 const sp = spSrc ? publicImageSize(spSrc) : null
 
-const href = primeVideoStorefrontUrl(amazonTagFor(spot))
+/*
+ * 🔴 **リンク先は `/amazonprime`（無料体験の専用リンク）。ストアフロントではない**
+ *   （2026-09-19・運用者の指定）。
+ *
+ * ■ なぜ差し替えたか
+ * **プライム無料体験 500円/件は、専用リンクを経由しないと0円**になる。
+ * ふつうの商品リンクのようにクッキーでは取れない（Amazon 公式が明記。`lib/affiliate.ts`）。
+ * 一方、ストアフロントへ送って得られる紹介料は、**表の作品名のリンクがすでに担っている。**
+ * この枠をストアフロントに使うと、取れるはずの固定報酬を捨てて同じ役割を二重に持つことになる。
+ *
+ * ★ **トラッキングidは `prime`**（枠ごとのidではない）。無料体験は紹介料と
+ *   成果の種類が違うので、混ぜるとレポートで単価が読めなくなる（`src/config.ts` の `prime`）。
+ *   **枠の区別は `data-slot`（GA4側）が持つ**ので、どの面で踏まれたかは読める。
+ * ★ **`primeVideoStorefrontUrl` に戻さないこと。** 戻すときは、なぜ固定報酬を
+ *   捨ててよいのかをここに書くこと。
+ */
+const href = primeTrialUrl(amazonTagFor('prime'))
 ---
 
 {

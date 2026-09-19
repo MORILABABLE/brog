@@ -3,12 +3,8 @@ import { getCollection, render } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AdSlot from '../../components/AdSlot.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
-import AmazonCta from '../../components/AmazonCta.astro'
-import PrimeCta from '../../components/PrimeCta.astro'
-import AfbCta from '../../components/AfbCta.astro'
 import { CATEGORIES, SERVICE_HUBS, hubFor } from '../../config'
-import { genreBadges, soleGenre } from '../../lib/genres'
-import { primeAd } from '../../lib/prime-ad'
+import { genreBadges } from '../../lib/genres'
 import { formatDate, isoDate } from '../../utils/date'
 
 export async function getStaticPaths() {
@@ -23,12 +19,11 @@ const cat = CATEGORIES[post.data.category]
  * ジャンル（アニメ／洋画／邦画）。**全記事が名乗る**（2026-09-15）。
  * 入っているものを全部出すので最大3枚並ぶ。組み立ては lib/genres.ts。
  *
- * ★ `soleGenre` は別物。**1つのジャンルだけを名乗れる記事**のときだけ値が入り、
- *   U-NEXT のLP選び（lib/unext-ad.ts）に渡す。混ざっている記事を
- *   先頭のジャンルで代表させると、アニメのLPに洋画の読者を送ることになる。
+ * ★ `soleGenre`（1つのジャンルだけを名乗れる記事で値が入る）は 2026-09-19 に
+ *   ここから外した。U-NEXT のLP選びに使っていたが、広告の判定ごと
+ *   `plugins/rehype-section-ads.ts` へ移したため。
  */
 const genres = genreBadges(post.data)
-const lpGenre = soleGenre(post.data)
 /*
  * パンくずの行き先は**カテゴリではなくハブ**。
  * 「配信終了済み」の記事は /category/ended ではなく /category/leaving に載っている
@@ -37,32 +32,19 @@ const lpGenre = soleGenre(post.data)
  */
 const hub = hubFor(post.data.category)
 /*
- * U-NEXT（afb）の導線を出すか。**U-NEXT を扱っている記事にだけ出す。**
+ * ★ **広告の判定はこのファイルから消えた**（2026-09-19 のテンプレ改修）。
+ *   枠が本文の中に移ったので、掲載NGの判定も出し分けも
+ *   `plugins/rehype-section-ads.ts` が持っている。
  *
- * ★ 全記事に出さない理由は2つ。
- *   1. ガイドライン【6】「関連性が薄いサイト」。Netflix だけの記事に
- *      U-NEXT の広告を貼るのは、ページの中身と広告が噛み合っていない
- *   2. 噛み合っていない枠は押されない。**枠を増やすほど成果は薄まる**
+ *   ここにあったもの（戻すときの手がかり）:
+ *     unextSubject … U-NEXT を扱う記事にだけ U-NEXT の枠を出す（ガイドライン【6】関連性）
+ *     primeSlot    … Prime Video の「まだ観られる」記事だけ無料体験の専用リンクに替える
+ *                    （`lib/prime-ad.ts`。**普通の Amazon リンクでは成果にならない**）
+ *     adPageText   … 掲載NGの判定に渡す文字列（タイトル・説明文・本文）
  *
- * ★ 判定はタグ。サービス軸のページ（config.ts の SERVICE_HUBS）が使うのと
- *   同じ文字列で、記事側は theme-packs の `tags()` が書く。
+ *   🔴 **2か所に書かないこと。** 同じ判断がページ側とプラグイン側に散ると、
+ *     片方だけ直して掲載NGの面に広告が出る事故になる。
  */
-const unextSubject = post.data.tags.includes('U-NEXT')
-
-/*
- * 本文のCTA。**Prime Video を主題にした「まだ観られる」記事だけ行き先が変わる。**
- * 判断は lib/prime-ad.ts の1か所（サービス軸であること・カテゴリが
- * arrivals か leaving であることの両方を見ている）。
- * 配信終了済みの記事には出ない — 観られない作品のページで
- * 会員登録を勧めることになるため。
- */
-const primeSlot = primeAd({ tags: post.data.tags, category: post.data.category })
-/*
- * 掲載NGの判定に渡す文字列。**タイトル・説明文・本文をすべて渡す。**
- * 表の作品名も解説文も本文の中にあるので、これで足りる
- * （U-NEXT は src/lib/unext-ng.ts、Hulu は src/lib/hulu-ng.ts が読む）。
- */
-const adPageText = [post.data.title, post.data.description, post.body ?? ''].join('\n')
 ---
 
 <BaseLayout
@@ -127,63 +109,39 @@ const adPageText = [post.data.title, post.data.description, post.body ?? ''].joi
     </p>
 
     {/*
-      afb（U-NEXT / Hulu）への導線。**本文のすぐ上**（2026-09-14 に移動）。
+      ★ **本文中の広告はビルドが入れる**（2026-09-19 のテンプレ改修）。
+        `plugins/rehype-section-ads.ts` が**小段落1と小段落2の直下**に1枠ずつ差し込み、
+        小段落2の表の直下に配信カレンダーへの導線を置く。
 
-      ■ なぜ上なのか — **記事の最後尾まで読者は到達しない**
-      スクロール90%到達は実測22%（docs/FUNNEL.md 5-3）。それまでこの枠は
-      本文の下にあり、枠別のクリック実測は **`cta` 0回**だった
-      （`data-slot`・2026-09-11 まで。踏まれていたのは work 4 / table 3 /
-      bar 2 / poster 1）。**8割の読者に見られていない場所**に、
-      単価がいちばん高い枠を置いていたことになる。
+      ■ なぜページ側から外したのか
+      それまでは「本文のすぐ上に afb 1枠」＋「記事末尾に Amazon 1枠」だった。
+      **枠の数は変えていない。位置だけを小段落の直下へ移した。**
 
-      記事で踏まれているのは表の作品名（`table`）で、表は本文の最初の1画面に入る。
-      その直前がこの位置。
+        2026-09-14 まで 本文の下に afb  … 枠別のクリック実測は `cta` 0回
+                                          （スクロール90%到達は22%。docs/FUNNEL.md 5-3）
+        2026-09-19 まで 本文の上に afb  … 表を1画面目から押し下げていた
+        いま            小段落の直下    … 読者が解説を読み終えた位置
 
-      ★ **押し下げる代償は承知の上。** 表を最初の1画面に置くのは
-        docs/FUNNEL.md 5-3 の設計で、ここに1枚入れるとスマホで約46px
-        （728x90 が画面幅に合わせて縮む）、PCで90px 下がる。
-        **効かなければ戻すこと。** 判断材料は `hulu-cta` 枠のクリック数。
-      ★ 広告（PR）表記は**この枠より上**にある（AffiliateNotice）。
+      ★ **広告（PR）表記は本文より上にある**（AffiliateNotice）。
         順番を入れ替えないこと — 広告が表記より先に出てはいけない。
-      ★ **1ページに afb の枠は1つだけ。** U-NEXT を優先し、出せない面に
-        Hulu を落とす（判断は AfbCta.astro）。2社は掲載NGの範囲が
-        噛み合っていないので、これは「空白を埋める」動きになる。
-      ★ `unextSubject` が false でもこの枠は消えない — U-NEXT が出ないだけで、
-        Hulu の条件を満たせば Hulu が出る。**記事31本中21本が該当する。**
+      ★ 出し分け（Hulu → 出せない面は Amazon）と掲載NGの判定は
+        プラグイン側にある。**このファイルに条件を書き戻さないこと。**
       ★ afb のリンクコードが未設定なら1バイトも出ない。
-      ★ 掲載NGの作品・権利元が本文にあるページでは、この枠ごと消える。
     */}
-    <AfbCta
-      spot="cta"
-      category={post.data.category}
-      genre={lpGenre}
-      pageText={adPageText}
-      asOf={post.data.dataAsOf}
-      services={post.data.tags}
-      unextSubject={unextSubject}
-    />
-
     <div class="prose">
       <Content />
     </div>
 
     {/*
-      Amazon への導線。**afb の枠の下**（2026-09-14 に入れ替え。上の★）。
-      リンクの文字は記事カテゴリで変わる
-      （配信終了記事に「見放題で探す」と出すのは誤誘導になるため）。
-      トラッキングID未設定なら描画されない。
+      ★ **記事末尾の Amazon 枠は 2026-09-19 に廃止した**（運用者の指定）。
+        行き先は小段落の直下の枠に移っている（`plugins/rehype-section-ads.ts`）。
 
-      ★ **Prime Video の「まだ観られる」記事だけ、枠ごと置き換わる**
-        （プライムの無料体験は専用リンクでないと成果にならない。
-        docs/AFFILIATE.md 3-0）。**並べずに置き換えること。**
+      🔴 **`PrimeCta` を戻すときは、ここではなくプラグイン側に置くこと。**
+        Prime Video の「まだ観られる」記事だけ無料体験の専用リンクに置き換わる
+        仕組みだった（docs/AFFILIATE.md 3-0）。**普通の Amazon リンクでは
+        無料体験の成果にならない**ので、同じ出し分けが要る。
+        いまは枠が本文の中にしか無いため、判断もそちらに寄せる。
     */}
-    {
-      primeSlot ? (
-        <PrimeCta tags={post.data.tags} category={post.data.category} />
-      ) : (
-        <AmazonCta category={post.data.category} />
-      )
-    }
 
     <AdSlot />
 

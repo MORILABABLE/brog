@@ -21,7 +21,6 @@ heroImage: '/heroes/2026-09-arrivals-netflix.webp'
 ## 9月1日：「ラストキス」と「セカンド・シティ・テレビジョン」など4作品が見放題配信を開始
 
 [![ラストキス（2006年）](/sections/posters/2026-09-arrivals-netflix-00dcb543-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%A9%E3%82%B9%E3%83%88%E3%82%AD%E3%82%B9&i=instant-video) [![セカンド・シティ・テレビジョン（1976年）](/sections/posters/2026-09-arrivals-netflix-00dcb543-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%BB%E3%82%AB%E3%83%B3%E3%83%89%E3%83%BB%E3%82%B7%E3%83%86%E3%82%A3%E3%83%BB%E3%83%86%E3%83%AC%E3%83%93%E3%82%B8%E3%83%A7%E3%83%B3&i=instant-video)
-
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 9月1日 | ラストキス | 63/100 | Netflix |
@@ -36,29 +35,24 @@ heroImage: '/heroes/2026-09-arrivals-netflix.webp'
 「Untold Raygun: Breaking Badly」は2026年のドキュメンタリーになります。オリンピックで注目を集めたオーストラリアのブレイクダンサーについて、反逆者なのか、悪役なのか、それとも偽者なのかという問いを立てて全体像を追いかけます。
 
 この4本が9月1日から見放題の対象になっています。
-
-## 9月2日：「アナコンダ4」がシリーズの4作目として見放題配信を開始
-
-[![アナコンダ4（2009年）](/sections/posters/2026-09-arrivals-netflix-ff07ca47-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%A2%E3%83%8A%E3%82%B3%E3%83%B3%E3%83%804&i=instant-video)
+## そのほかに配信開始した6本
 
 | 配信開始日 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 9月2日 | アナコンダ4 | 33/100 | Netflix |
+| 9月3日 | リィンカーネーションの花弁 | 54/100 | Netflix |
+| 9月3日 | Lovesick | — | Netflix |
+| 9月3日 | Turning Point: Generation 9/11 | — | Netflix |
+| 9月3日 | Gandhari | — | Netflix |
+| 9月4日 | ストロベリームーン 余命半年の恋 | — | Netflix |
+
+### 9月2日：「アナコンダ4」がシリーズの4作目として見放題配信を開始
 
 「アナコンダ4」は2009年のホラー作品で、監督はドン・E・ファンルロイです。アメリカのSyfyで放送されたテレビ映画で、「アナコンダ3」の続編にあたります。成長した新世代の大蛇が犠牲者を出しながら次々と獲物を狙う、シリーズ4作目の物語になります。
 
 日本では劇場未公開の作品で、2009年4月22日にソニー・ピクチャーズエンタテインメントからDVDが発売されました。シリーズをたどってきた方には、続きにあたる1本が見放題に入ったことになります。
 
-## 9月3日：「リィンカーネーションの花弁」など4作品が見放題配信を開始
-
-[![リィンカーネーションの花弁（2026年）](/sections/posters/2026-09-arrivals-netflix-62011edc-1.webp)](https://www.amazon.co.jp/s?k=%E3%83%AA%E3%82%A3%E3%83%B3%E3%82%AB%E3%83%BC%E3%83%8D%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E8%8A%B1%E5%BC%81&i=instant-video) [![Lovesick（2026年）](/sections/posters/2026-09-arrivals-netflix-62011edc-2.webp)](https://www.amazon.co.jp/s?k=Lovesick&i=instant-video)
-
-| 配信開始日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月3日 | リィンカーネーションの花弁 | 54/100 | Netflix |
-| 9月3日 | Lovesick | — | Netflix |
-| 9月3日 | Turning Point: Generation 9/11 | — | Netflix |
-| 9月3日 | Gandhari | — | Netflix |
+### 9月3日：「リィンカーネーションの花弁」など4作品が見放題配信を開始
 
 「リィンカーネーションの花弁」は2026年のアニメです。原作は小西幹久による漫画で、2014年7月号の『月刊コミックブレイド』で連載が始まり、掲載誌の休刊にともなってウェブ媒体へ移りながら現在も続いています。2026年1月の時点で累計発行部数は333万部を超えました。テレビアニメは2026年4月から6月にかけて放送されたものです。「偉人の森」と呼ばれる秘密結社に関わることになった主人公が、前世の才能を受け継ぐ「リターナー」として、歴史上の偉人の生まれ変わりたちとともに歩む物語になります。ただし、その才能を良い方向に使う者ばかりではありません。
 
@@ -70,13 +64,7 @@ heroImage: '/heroes/2026-09-arrivals-netflix.webp'
 
 日本語の題名が確定していない3本は、Netflixの表記どおりの原題で扱っています。
 
-## 9月4日：「ストロベリームーン 余命半年の恋」が見放題配信を開始
-
-[![ストロベリームーン 余命半年の恋](/sections/posters/2026-09-arrivals-netflix-acc36657-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%B9%E3%83%88%E3%83%AD%E3%83%99%E3%83%AA%E3%83%BC%E3%83%A0%E3%83%BC%E3%83%B3%20%E4%BD%99%E5%91%BD%E5%8D%8A%E5%B9%B4%E3%81%AE%E6%81%8B&i=instant-video)
-
-| 配信開始日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月4日 | ストロベリームーン 余命半年の恋 | — | Netflix |
+### 9月4日：「ストロベリームーン 余命半年の恋」が見放題配信を開始
 
 「ストロベリームーン 余命半年の恋」は2025年のロマンス作品です。原作は芥川なおの小説「ストロベリームーン」で、2023年4月にデビュー作として刊行され、2025年5月に文庫化されました。2025年8月の時点でシリーズ累計発行部数は21.5万部を超えています。
 
@@ -84,33 +72,8 @@ heroImage: '/heroes/2026-09-arrivals-netflix.webp'
 
 公開からおよそ1年を経て、見放題で観られるようになっています。
 
-## 9月に見放題配信が始まった全10作品
-
-| 配信開始日 | 作品 | 評価 | サービス |
-| --- | --- | --- | --- |
-| 9月1日 | セカンド・シティ・テレビジョン | 59/100 | Netflix |
-| 9月1日 | Alpha | 35/100 | Netflix |
-| 9月1日 | ラストキス | 63/100 | Netflix |
-| 9月1日 | Untold Raygun: Breaking Badly | — | Netflix |
-| 9月2日 | アナコンダ4 | 33/100 | Netflix |
-| 9月3日 | リィンカーネーションの花弁 | 54/100 | Netflix |
-| 9月3日 | Lovesick | — | Netflix |
-| 9月3日 | Turning Point: Generation 9/11 | — | Netflix |
-| 9月3日 | Gandhari | — | Netflix |
-| 9月4日 | ストロベリームーン 余命半年の恋 | — | Netflix |
-
-## 他のサービスで探す
-
-※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+・U-NEXT の5サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
-
-- **リィンカーネーションの花弁** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%AA%E3%82%A3%E3%83%B3%E3%82%AB%E3%83%BC%E3%83%8D%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E8%8A%B1%E5%BC%81) / [Hulu](https://www.hulu.jp/search?q=%E3%83%AA%E3%82%A3%E3%83%B3%E3%82%AB%E3%83%BC%E3%83%8D%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E8%8A%B1%E5%BC%81) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%AA%E3%82%A3%E3%83%B3%E3%82%AB%E3%83%BC%E3%83%8D%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E8%8A%B1%E5%BC%81)
-- **ストロベリームーン 余命半年の恋** [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%B9%E3%83%88%E3%83%AD%E3%83%99%E3%83%AA%E3%83%BC%E3%83%A0%E3%83%BC%E3%83%B3%20%E4%BD%99%E5%91%BD%E5%8D%8A%E5%B9%B4%E3%81%AE%E6%81%8B) / [Hulu](https://www.hulu.jp/search?q=%E3%82%B9%E3%83%88%E3%83%AD%E3%83%99%E3%83%AA%E3%83%BC%E3%83%A0%E3%83%BC%E3%83%B3%20%E4%BD%99%E5%91%BD%E5%8D%8A%E5%B9%B4%E3%81%AE%E6%81%8B) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%B9%E3%83%88%E3%83%AD%E3%83%99%E3%83%AA%E3%83%BC%E3%83%A0%E3%83%BC%E3%83%B3%20%E4%BD%99%E5%91%BD%E5%8D%8A%E5%B9%B4%E3%81%AE%E6%81%8B)
-- **ラストキス** [U-NEXT](https://video.unext.jp/freeword?query=%E3%83%A9%E3%82%B9%E3%83%88%E3%82%AD%E3%82%B9) / [Hulu](https://www.hulu.jp/search?q=%E3%83%A9%E3%82%B9%E3%83%88%E3%82%AD%E3%82%B9) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%83%A9%E3%82%B9%E3%83%88%E3%82%AD%E3%82%B9)
-- **アナコンダ4** [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%A2%E3%83%8A%E3%82%B3%E3%83%B3%E3%83%804) / [Hulu](https://www.hulu.jp/search?q=%E3%82%A2%E3%83%8A%E3%82%B3%E3%83%B3%E3%83%804) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%A2%E3%83%8A%E3%82%B3%E3%83%B3%E3%83%804)
-- **セカンド・シティ・テレビジョン** [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%BB%E3%82%AB%E3%83%B3%E3%83%89%E3%83%BB%E3%82%B7%E3%83%86%E3%82%A3%E3%83%BB%E3%83%86%E3%83%AC%E3%83%93%E3%82%B8%E3%83%A7%E3%83%B3) / [Hulu](https://www.hulu.jp/search?q=%E3%82%BB%E3%82%AB%E3%83%B3%E3%83%89%E3%83%BB%E3%82%B7%E3%83%86%E3%82%A3%E3%83%BB%E3%83%86%E3%83%AC%E3%83%93%E3%82%B8%E3%83%A7%E3%83%B3) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%BB%E3%82%AB%E3%83%B3%E3%83%89%E3%83%BB%E3%82%B7%E3%83%86%E3%82%A3%E3%83%BB%E3%83%86%E3%83%AC%E3%83%93%E3%82%B8%E3%83%A7%E3%83%B3)
-
+### 9月に見放題配信が始まった全10作品
 ## まとめ
-
 Netflixでは9月1日から4日にかけて10本が見放題に加わりました。累計333万部の漫画を原作とするアニメ「リィンカーネーションの花弁」が9月3日、原作小説がシリーズ累計21.5万部を超えた「ストロベリームーン 余命半年の恋」が9月4日に配信開始となっています。9月1日の「ラストキス」、9月2日の「アナコンダ4」とあわせて、月のはじめに日をおいて作品が加わりました。
 
 > 配信情報は Streaming Availability API by Movie of the Night 提供

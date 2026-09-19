@@ -22,7 +22,6 @@ heroImage: '/heroes/ultraman.webp'
 ## U-NEXTで見放題配信が終了した9本
 
 [![ザ☆ウルトラマン（1979年）](/sections/tiles/ultraman-1177ec0b-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%B6%E2%98%86%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3&i=instant-video) [![ウルトラマン８０（1980年）](/sections/tiles/ultraman-1177ec0b-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%EF%BC%98%EF%BC%90&i=instant-video)
-
 | 終了日 | 作品 | 状態 | 出演者 | サービス |
 | --- | --- | --- | --- | --- |
 | 8月31日 | ウルトラマン（HDリマスター版） | 終了済み | — | U-NEXT |
@@ -44,10 +43,9 @@ heroImage: '/heroes/ultraman.webp'
 1990年の『ウルトラマンG』は、円谷プロダクションがオーストラリアで製作した全13話の作品です。日本ではオリジナルビデオとして展開されました。実写のウルトラシリーズとしては『ウルトラマン８０』以来10年ぶりで、元号が平成に変わってから最初に作られた作品でもあります。ウルトラマングレートや怪獣の巨大感を出すため、ビルより低い背丈に設定されるなど、それまでとは違った撮り方が試されました。
 
 1996年の『ウルトラマン超闘士激伝』は、バンダイのガシャポンを中心とした玩具企画から生まれた作品です。漫画版が1993年から1997年まで『コミックボンボン』に連載され、1996年にOVAが作られました。デフォルメされたウルトラ戦士や怪獣が「装鉄鋼」と呼ばれる鎧を身に着け、「闘士」の姿になって戦うという、シリーズの中でもかなり毛色の違う1本です。
+## そのほかに終了した4本
 
-## Amazon Prime Videoで見放題配信が終了した3本
-
-[![ウルトラマンテオ（2026年）](/sections/tiles/ultraman-cd0d9aa1-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%83%86%E3%82%AA&i=instant-video) [![ウルトラマンギンガ（2013年）](/sections/tiles/ultraman-cd0d9aa1-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AE%E3%83%B3%E3%82%AC&i=instant-video)
+[![ウルトラマンオーブ（2016年）](/sections/posters/ultraman-d2b15e6d-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AA%E3%83%BC%E3%83%96&i=instant-video) [![ウルトラマンジード（2017年）](/sections/posters/ultraman-d2b15e6d-2.webp)](https://www.amazon.co.jp/s?k=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%B8%E3%83%BC%E3%83%89&i=instant-video)
 
 | 終了日 | 作品 | 状態 | 出演者 | サービス |
 | --- | --- | --- | --- | --- |
@@ -56,6 +54,8 @@ heroImage: '/heroes/ultraman.webp'
 | 8月16日 | ウルトラマンギンガ | 終了済み | — | Amazon Prime Video |
 | — | ウルトラマンテオ | 見放題配信中 | — | Amazon Prime Video |
 
+### Amazon Prime Videoで見放題配信が終了した3本
+
 **同じサービスでも、1行だけ状態が違います**。2026年の『ウルトラマンテオ』は9月11日にAmazon Prime Videoで見放題での配信が始まった作品で、終了日はまだ分かっていません。上の3本とは違い、いま見放題で観られるのはこの1本です。
 
 2013年の『ウルトラマンギンガ』は円谷プロダクション創立50周年の記念作品で、『新ウルトラマン列伝』の中で全11話が放送されました。ウルトラシリーズの地上波全日帯番組としては『ウルトラマンメビウス』以来で、初のハイビジョン制作でもあります。主人公は歴代のウルトラ戦士や怪獣に変身できる高校生で、地球防衛組織が登場しないのはシリーズで初めてのことでした。地球や宇宙を守るという広い使命ではなく、身近な人を守るという動機で戦う話になっています。
@@ -63,23 +63,7 @@ heroImage: '/heroes/ultraman.webp'
 2016年の『ウルトラマンオーブ』は、テレビ東京系で全25話が放送されました。歴代のウルトラマン2人の力を宿した姿へ変身する「フュージョンアップ」が最大の特徴で、主人公が防衛チームに所属しない風来坊として設定されているのも、それまでの作品との大きな違いです。主題歌は、2016年に歌手活動45周年を迎えた水木一郎が担当しました。
 
 2017年の『ウルトラマンジード』も同じくテレビ東京系で全25話が放送されています。悪のウルトラ戦士の遺伝子を受け継ぐ「息子」が主役という設定で、自分の生まれと運命を知りながらも本物のヒーローになろうとする姿を追う話です。シリーズ構成を、小説を中心に書いてきた作家の乙一が担当したことでも知られています。
-
-## 他のサービスで探す
-
-※当サイトはNetflix・Amazon Prime Video・Disney+・Apple TV+・U-NEXT の5サービスの配信状況を把握できます。他サービスでの配信有無を確認する場合は、こちらから検索できます。
-
-※この記事に載せているのは、配信情報APIで見放題の取り扱いを確認できた作品です。Prime Videoチャンネル（東映オンデマンドなど別料金のもの）やレンタル・購入のみの作品、APIが把握していない作品は含みません。各サービスの検索結果と本数が合わないことがあります。
-
-- ウルトラマン（HDリマスター版） … [Netflix](https://www.netflix.com/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3) / [Hulu](https://www.hulu.jp/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3)
-- 帰ってきたウルトラマン（HDリマスター版） … [Netflix](https://www.netflix.com/search?q=%E5%B8%B0%E3%81%A3%E3%81%A6%E3%81%8D%E3%81%9F%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3) / [Hulu](https://www.hulu.jp/search?q=%E5%B8%B0%E3%81%A3%E3%81%A6%E3%81%8D%E3%81%9F%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3) / [DMM TV](https://tv.dmm.com/search/?keyword=%E5%B8%B0%E3%81%A3%E3%81%A6%E3%81%8D%E3%81%9F%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3)
-- ウルトラマンタロウ（HDリマスター版） … [Netflix](https://www.netflix.com/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%BF%E3%83%AD%E3%82%A6) / [Hulu](https://www.hulu.jp/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%BF%E3%83%AD%E3%82%A6) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%BF%E3%83%AD%E3%82%A6)
-- ウルトラマンギンガ … [Netflix](https://www.netflix.com/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AE%E3%83%B3%E3%82%AC) / [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AE%E3%83%B3%E3%82%AC) / [Hulu](https://www.hulu.jp/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AE%E3%83%B3%E3%82%AC)
-- ウルトラマンオーブ … [Netflix](https://www.netflix.com/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AA%E3%83%BC%E3%83%96) / [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AA%E3%83%BC%E3%83%96) / [Hulu](https://www.hulu.jp/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%AA%E3%83%BC%E3%83%96)
-- ウルトラマンジード … [Netflix](https://www.netflix.com/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%B8%E3%83%BC%E3%83%89) / [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%B8%E3%83%BC%E3%83%89) / [Hulu](https://www.hulu.jp/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%82%B8%E3%83%BC%E3%83%89)
-- ウルトラマンテオ … [U-NEXT](https://video.unext.jp/freeword?query=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%83%86%E3%82%AA) / [Hulu](https://www.hulu.jp/search?q=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%83%86%E3%82%AA) / [DMM TV](https://tv.dmm.com/search/?keyword=%E3%82%A6%E3%83%AB%E3%83%88%E3%83%A9%E3%83%9E%E3%83%B3%E3%83%86%E3%82%AA)
-
 ## まとめ
-
 U-NEXTでは1966年から1996年までの9本が8月31日に見放題での配信を終え、Amazon Prime Videoではニュージェネレーション3本の見放題配信が8月14日と8月16日に終了しました。同じシリーズでも、契約しているサービスによって手が届く年代がまったく違います。対象13本のうちいま見放題で観られるのは『ウルトラマンテオ』の1本で、作品ごとの状態は上の表のとおりです。
 
 > 配信情報は Streaming Availability API by Movie of the Night 提供

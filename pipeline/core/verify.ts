@@ -15,8 +15,55 @@ export interface VerifyIssue {
   message: string
 }
 
-/** AdSense対策の下限。これを下回る記事は薄いと判断される。 */
-const MIN_BODY_CHARS = 2000
+/**
+ * 本文全体の下限。**安全網であって、独自性の物差しではない。**
+ *
+ * ■ なぜ2,000から下げたか（2026-09-19・テンプレ改修）
+ * 解説を中心2〜3作に絞り、「他のサービスで探す」の節を廃止したので、
+ * 記事1本の総量が下がる。ただし**この数字が止めた記事は一度も無い**
+ * （公開済み37本の最小は5,980字。地の文だけでも2,810字あった）。
+ *
+ * ★ **総文字数は表の行数で決まる。** 63行の表がある記事は、解説が1文も無くても
+ *   2,000字を超える。だから「記事が薄いか」はこの数字では分からない。
+ *   それを見るのは下の `MIN_PROSE_CHARS`。**片方だけ動かさないこと。**
+ */
+const MIN_BODY_CHARS = 1200
+
+/**
+ * **地の文の下限**（2026-09-19 新設）。表・リンク・画像・見出しを除いた、
+ * **自分の言葉で書いた分量**。
+ *
+ * ■ なぜ総文字数と別に要るか
+ * AdSense が見るのは字数ではなく独自の価値で、当サイトでそこに当たるのは
+ * リード・解説・まとめだけ。表の行は提供元のデータで、並べるほど
+ * 総文字数は増えるが独自性は増えない。**実測で「他のサービスで探す」の節は
+ * `kamen-rider` の本文の68%（26,028字）を占めていた**が、
+ * 中身は検索リンクの羅列だった。総量で測っているかぎり、
+ * この種の水増しと解説の厚みを区別できない。
+ *
+ * ★ 上限は `templates/writing.md`（解説は小段落あたり1,000字・シリーズ1,500字）。
+ *   **下限と上限で挟んである**ので、どちらかを動かすときは両方を見ること。
+ */
+const MIN_PROSE_CHARS = 1000
+
+/**
+ * 地の文だけを取り出す。**除くのは「自分で書いていない行」。**
+ *
+ *   `|` 始まり   … 表の行（提供元のデータ）
+ *   `[![` 始まり … ポスターの画像リンク（`scripts/posters.mjs` が入れる）
+ *   `- ` 始まり  … 箇条書き（検索リンクなど、機械が組む行）
+ *   `#` 始まり   … 見出し
+ *   `>` 始まり   … 引用（出典表記）
+ */
+export function proseOf(body: string): string {
+  return body
+    .split('\n')
+    .filter((l) => {
+      const t = l.trim()
+      return t !== '' && !/^[|>#]/.test(t) && !t.startsWith('[![') && !t.startsWith('- ')
+    })
+    .join('\n')
+}
 
 /**
  * データの出どころごとの出典表記。本文に必ず含まれていなければならない。
@@ -66,6 +113,12 @@ export interface VerifyInput {
    * 差し替えられるようにしてあるのは `ArticleType.mentions` のため。
    */
   mentions?: (item: ChangeEvent, body: string) => boolean
+  /**
+   * 本文全体・地の文の下限の上書き（`ArticleType.minBodyChars` / `minProseChars`）。
+   * **シリーズ記事だけが長い**（解説の上限が1,500字なので、下限もそれに見合う）。
+   */
+  minBodyChars?: number
+  minProseChars?: number
 }
 
 /**
@@ -163,9 +216,24 @@ export function verifyArticle(input: VerifyInput): VerifyIssue[] {
 
   // --- 分量 ---
   // 空白と記号を除いた実質的な文字数で測る
+  const minBody = input.minBodyChars ?? MIN_BODY_CHARS
   const bodyChars = parsed.body.replace(/\s/g, '').length
-  if (bodyChars < MIN_BODY_CHARS) {
-    err(`本文が ${bodyChars} 字です。${MIN_BODY_CHARS} 字以上必要です。`)
+  if (bodyChars < minBody) {
+    err(`本文が ${bodyChars} 字です。${minBody} 字以上必要です。`)
+  }
+
+  /*
+   * ★ **こちらが本命。** 総文字数は表の行数で増えるので、
+   *   記事が薄いかどうかは地の文でしか分からない（上の MIN_PROSE_CHARS）。
+   */
+  const minProse = input.minProseChars ?? MIN_PROSE_CHARS
+  const proseChars = proseOf(parsed.body).replace(/\s/g, '').length
+  if (proseChars < minProse) {
+    err(
+      `地の文が ${proseChars} 字です。${minProse} 字以上必要です` +
+        '（表・検索リンク・ポスターの行を除いた、自分の言葉で書いた分量）。\n' +
+        '      表の行を増やしても、ここは増えません。リード・解説・まとめを厚くしてください。',
+    )
   }
 
   // --- タイトル・説明文 ---
