@@ -19,6 +19,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { currentYearMonth } from './datetime.ts'
+import { collectCostEstimate, loadState } from './collect-window.ts'
 
 export const USAGE_PATH = join('data', 'api-usage.json')
 
@@ -106,7 +107,18 @@ export function warnIfLow(u: UsageSnapshot): void {
   }
 }
 
-/** collect 1回ぶん。実測 11 / 11 / 11 / 14 / 16 に上振れを見た値 */
+/**
+ * collect 1回ぶん。実測 11 / 11 / 11 / 14 / 16 に上振れを見た値。
+ *
+ * ★ **2026-09-20 以降、これは「実測が貯まるまでの置き石」でしかない。**
+ *   窓を実間隔まで詰め、`upcoming` を月1回にしたので実消費は下がるが、
+ *   **見込みでは下げない。** 予約を小さくしすぎると手作業が定期収集ぶんまで食い、
+ *   月末に収集が 429 で落ちる。予約が大きすぎる害（手作業が絞られる）より、
+ *   小さすぎる害（観測が欠ける）のほうが取り返しがつかない。
+ *   そこで `collect` が自分の消費を `data/collect-state.json` に積み、
+ *   2回ぶん貯まったら `collectCostEstimate()` がこの定数を**置き換える**。
+ *   手で直す必要は無い。
+ */
 const COLLECT_COST = 20
 
 /**
@@ -150,8 +162,11 @@ const ANNOUNCE_DAILY = 2
 export function scheduledRemaining(
   now: Date,
   offsetMinutes: number,
-  opts: { excludeAnnounce?: boolean } = {},
+  opts: { excludeAnnounce?: boolean; collectCost?: number } = {},
 ): number {
+  // 実測が渡されていればそちらを使う（core/collect-window.ts の collectCostEstimate）。
+  // 定数は「まだ実測が2回ぶん貯まっていない」ときの置き石。
+  const perCollect = opts.collectCost ?? COLLECT_COST
   const local = new Date(now.getTime() + offsetMinutes * 60_000)
   const year = local.getUTCFullYear()
   const month = local.getUTCMonth()
@@ -164,9 +179,42 @@ export function scheduledRemaining(
     const dow = new Date(Date.UTC(year, month, d)).getUTCDay()
     if (dow === 1 || dow === 4) collects++
   }
-  const collectCost = collects * COLLECT_COST
+  const collectCost = collects * perCollect
   if (opts.excludeAnnounce) return collectCost
 
   const daysLeft = lastDay - today + 1
   return collectCost + ANNOUNCE_BATCH + daysLeft * ANNOUNCE_DAILY
+}
+
+export interface MonthlyPlan extends UsageSnapshot {
+  /** 月末までに定期実行が使う見込み */
+  reserve: number
+  /** 予約を引いたあとの、手作業に回せるぶん。0未満にはしない */
+  spare: number
+}
+
+/**
+ * 「いま何回まで自由に使えるか」を1か所で出す。
+ *
+ * ■ なぜ関数にしたか（2026-09-20）
+ * `availability.ts` と `collect-announce.ts` が**同じ3行をそれぞれ書いていた**。
+ * `refresh-images.ts` は**書いていなかった**ので、残り枠しか見ずに
+ * 「残り124回・対象457件」でも `--limit` さえ下げれば通ってしまい、
+ * **月末の定期収集ぶんを食い潰せる状態だった。**
+ *
+ * ★ 既存2か所はいまのところ手を入れていない（動いているものを触らない）。
+ *   次にあのあたりを直すときに、こちらへ寄せること。
+ */
+export async function monthlyPlan(
+  offsetMinutes: number,
+  opts: { excludeAnnounce?: boolean; now?: Date } = {},
+): Promise<MonthlyPlan> {
+  const usage = await readUsage(offsetMinutes)
+  // 予約は実測で較正する。定数のままだと、節約したぶんが手作業に回らない。
+  const collectCost = collectCostEstimate(await loadState())
+  const reserve = scheduledRemaining(opts.now ?? new Date(), offsetMinutes, {
+    ...opts,
+    collectCost,
+  })
+  return { ...usage, reserve, spare: Math.max(0, usage.limit - usage.used - reserve) }
 }

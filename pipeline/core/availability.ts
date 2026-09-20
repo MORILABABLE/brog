@@ -34,6 +34,21 @@
  *      目視で確かめた否認は `data/availability-ng.json` に置き、
  *      `subscriptionServices()` が落とす（`core/availability-ng.ts`）。
  *      **台帳そのものは直さない。** あれはAPIが何と言ったかの記録。
+ *
+ *   5. **出どころを必ず残す**（`via`。2026-09-20 追加）。
+ *      在庫は3つの口から入る。**どれも同じ `streamingOptions` フィールド**だが、
+ *      どこで得たかは1件ずつ辿れること。
+ *
+ *        search   `/shows/search/filters`（キーワード検索）… `npm run availability`
+ *        id       `/shows/{id}`（ID直引き）              … `--ids` / 取りこぼしの補完
+ *        changes  `/changes` の応答に入っていた `shows{}` … `npm run collect` のついで
+ *
+ *      ★ **`changes` は「変化の観測」ではない。** `/changes` が返す `changes[]`
+ *        （＝変化。これを根拠に「配信中」と書いてはいけない）とは別の、
+ *        同じ応答に同梱された**作品そのものの在庫**を指す。
+ *        2026-09-20 に実測で確認: 1ページ25件の `shows` 全部が
+ *        `streamingOptions` を持ち、変化のあった社だけでなく全社ぶんが入っていた。
+ *        **混ぜないために名前を分けてある。** 疑わしくなったら `via` で絞って数え直すこと。
  */
 import { readFileSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
@@ -64,9 +79,17 @@ export interface ServiceAvailability {
   link?: string
 }
 
+/**
+ * 在庫をどの口から得たか。**上の「絶対に守ること」5。**
+ * 古い台帳には無いので省略可。無いものは `search` とみなす（それしか無かったため）。
+ */
+export type AvailabilitySource = 'search' | 'id' | 'changes'
+
 export interface WorkAvailability {
   /** 取得時刻。**記事に出す。** */
   fetchedAt: string
+  /** 出どころ。**記事の書き方は変えない**（根拠の強さは同じ）。監査のために残す */
+  via?: AvailabilitySource
   /** サービスごとの取扱。**空配列は「日本ではどこにも無い」と確認済み** */
   services: ServiceAvailability[]
   /**
@@ -103,9 +126,11 @@ export interface AvailabilityLedger {
 
 const EMPTY: AvailabilityLedger = {
   note:
-    'その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。' +
+    'その時点の在庫（show.streamingOptions.jp）。npm run availability と npm run collect が書く。' +
     '手で編集しない。★ subscription だけが見放題。addon は別料金。' +
-    '★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。',
+    '★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。' +
+    '★ via は出どころ: search=キーワード検索 / id=ID直引き / changes=/changes の応答に同梱されていた在庫。' +
+    'changes は「変化の観測」ではなく作品そのものの在庫で、根拠の強さは他と同じ。',
   updatedAt: '',
   works: {},
 }

@@ -53,9 +53,11 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
  *
  * **URLは署名付きで、有効期限は6〜12ヶ月**（`?Expires=` に入っている）。
  * サイトはこれをビルド時に取得して自分のドメインから配信する。
- * 再ホストは提供元の許諾済み（2026-08-25）で、
- * 「最低でも6ヶ月ごとに取り直すこと」を推奨されている。
- *   → 取り直しは `npm run refresh:images`
+ * 再ホストは提供元の許諾済み（2026-08-25）。
+ * ★ **「最低でも6ヶ月ごとに取り直すこと」の推奨は 2026-09-20 に撤回された。**
+ *   規約の変更で、取得済みの画像は手元に持ったまま使い続けてよい（運営者確認）。
+ *   取り直しは義務ではなく、**手元に原本が無い環境のための保険**になった。
+ *   → 取り直しは `npm run refresh:images`（月ぶんずつ平準化）
  */
 interface ApiImageSet {
   verticalPoster?: Record<string, string>
@@ -144,8 +146,58 @@ export class StreamingAvailabilitySource implements Source {
    */
   #requests = 0
 
+  /**
+   * 何に使ったかの内訳（`changes:new` / `shows` など）。
+   *
+   * ■ なぜ要るか（2026-09-20 追加）
+   * 合計しか出していなかったので、**「1回16〜21回」は分かっても、
+   * そのうち何回が空振りの `upcoming` なのかが誰にも見えていなかった。**
+   * 削りどころは内訳にしか出ない。ログに出す以外のことはしない。
+   */
+  #byTag = new Map<string, number>()
+
+  /** いま投げているリクエストの札。`#get()` が読んで `#byTag` に積む */
+  #tag = 'other'
+
+  /**
+   * 応答のついでに分かった**在庫**。作品ID -> サービスごとの取扱。
+   *
+   * ■ これは「変化」ではない（2026-09-20 追加）
+   * `/changes` の応答は2つの別物を返す。
+   *
+   *   `changes[]`  変化の観測。**これが `/changes` の主題**で、
+   *                「配信中」と書いてはいけない根拠はこちら（core/availability.ts 冒頭）
+   *   `shows{}`    作品そのもの。**その中の `streamingOptions` は、
+   *                `/shows/search/filters` や `/shows/{id}` が返すのと同じフィールド**で、
+   *                意味も「いまどこで観られるか」で同じ
+   *
+   * 2026-09-20 に実測して確かめた（`/changes` 1ページ）。
+   *
+   *     changes 25 / shows 25 / streamingOptions を持つ show 25件
+   *     例: Jurassic Park → prime:subscription, netflix:subscription, apple:rent …
+   *     **変化のあった社だけでなく、日本の在庫が全社ぶん入っている**
+   *
+   * つまりこれは在庫の証拠そのもので、`/changes` 由来だから弱い、ということはない。
+   * **それでも混ぜない。** 呼び出し側が `data/availability.json` へ
+   * `via: 'changes'` と出どころを付けて積み、イベントログ（変化の記録）には触らない。
+   * 置き場所と出どころを分けておけば、あとから1件ずつ根拠を辿れる。
+   *
+   * ★ **追加のリクエストは1回も要らない。** すでに受け取って捨てていたものを拾うだけ。
+   */
+  #stock = new Map<string, ServiceAvailabilityRow[]>()
+
+  /** 収穫した在庫。`collect` が台帳へ積む */
+  get harvestedStock(): Map<string, ServiceAvailabilityRow[]> {
+    return this.#stock
+  }
+
   get requestCount(): number {
     return this.#requests
+  }
+
+  /** 多い順の内訳。呼び出し側がログに出す */
+  get requestsByTag(): [string, number][] {
+    return [...this.#byTag].sort((a, b) => b[1] - a[1])
   }
 
   constructor(
@@ -160,12 +212,37 @@ export class StreamingAvailabilitySource implements Source {
     )
   }
 
+  /**
+   * `show.streamingOptions` を、テーマのサービスキーに直した在庫の行にする。
+   *
+   * **同じ12行が3か所にあった**（ID直引き・キーワード検索・そして今回の収穫）。
+   * 取扱区分（subscription / addon / rent / buy）を落とさないのが肝で、
+   * `addon` を捨てると「無い」と「別料金である」の区別が付かなくなる。
+   * 散らしておくと、いつか1か所だけ直り忘れる。
+   */
+  #servicesOf(show: ApiShow): ServiceAvailabilityRow[] {
+    const byService = new Map<string, ServiceAvailabilityRow>()
+    for (const o of show.streamingOptions?.[this.theme.country] ?? []) {
+      const apiId = o.service?.id
+      if (!apiId || !o.type) continue
+      // API のサービスIDをテーマのキーへ。未知のサービスはそのまま残す
+      // （zee5 のような対象外も「そこにある」という事実ではあるため）。
+      const key = this.#serviceByCatalogId.get(apiId)?.key ?? apiId
+      const row = byService.get(key) ?? { service: key, types: [], link: o.link }
+      if (!row.types.includes(o.type)) row.types.push(o.type)
+      if (!row.link && o.link) row.link = o.link
+      byService.set(key, row)
+    }
+    return [...byService.values()]
+  }
+
   async #get<T>(path: string, params: Record<string, string | number>): Promise<T> {
     const url = new URL(BASE + path)
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v))
 
     for (let attempt = 0; attempt < 4; attempt++) {
       this.#requests++
+      this.#byTag.set(this.#tag, (this.#byTag.get(this.#tag) ?? 0) + 1)
       const res = await fetch(url, {
         headers: { 'X-API-Key': this.apiKey, accept: 'application/json' },
       })
@@ -193,6 +270,7 @@ export class StreamingAvailabilitySource implements Source {
 
   /** 生レスポンスの確認用（フィールド名の検証に使う） */
   async raw(path: string, params: Record<string, string | number>): Promise<unknown> {
+    this.#tag = 'probe'
     return this.#get<unknown>(path, params)
   }
 
@@ -235,6 +313,7 @@ export class StreamingAvailabilitySource implements Source {
   async fetchAvailabilityById(
     showId: string,
   ): Promise<{ services: ServiceAvailabilityRow[] } | undefined> {
+    this.#tag = 'shows:在庫(ID指定)'
     let show: ApiShow
     try {
       show = await this.#get<ApiShow>(`/shows/${encodeURIComponent(showId)}`, {
@@ -245,17 +324,7 @@ export class StreamingAvailabilitySource implements Source {
       // 404（その国に無い等）は「分からない」。**落とさない。**
       return undefined
     }
-    const byService = new Map<string, ServiceAvailabilityRow>()
-    for (const o of show.streamingOptions?.[this.theme.country] ?? []) {
-      const apiId = o.service?.id
-      if (!apiId || !o.type) continue
-      const key = this.#serviceByCatalogId.get(apiId)?.key ?? apiId
-      const row = byService.get(key) ?? { service: key, types: [], link: o.link }
-      if (!row.types.includes(o.type)) row.types.push(o.type)
-      if (!row.link && o.link) row.link = o.link
-      byService.set(key, row)
-    }
-    return { services: [...byService.values()] }
+    return { services: this.#servicesOf(show) }
   }
 
   /**
@@ -276,6 +345,7 @@ export class StreamingAvailabilitySource implements Source {
     keyword: string,
     opts: { maxPages?: number; subscriptionOnly?: boolean } = {},
   ): Promise<Map<string, { services: ServiceAvailabilityRow[]; work: Work }>> {
+    this.#tag = 'search:在庫(キーワード)'
     const out = new Map<string, { services: ServiceAvailabilityRow[]; work: Work }>()
     let cursor: string | undefined
     const maxPages = opts.maxPages ?? 8
@@ -309,19 +379,7 @@ export class StreamingAvailabilitySource implements Source {
 
       for (const show of res.shows ?? []) {
         if (show.id == null) continue
-        const byService = new Map<string, ServiceAvailabilityRow>()
-        for (const o of show.streamingOptions?.[this.theme.country] ?? []) {
-          const apiId = o.service?.id
-          if (!apiId || !o.type) continue
-          // API のサービスIDをテーマのキーへ。未知のサービスはそのまま残す
-          // （zee5 のような対象外も「そこにある」という事実ではあるため）。
-          const key = this.#serviceByCatalogId.get(apiId)?.key ?? apiId
-          const row = byService.get(key) ?? { service: key, types: [], link: o.link }
-          if (!row.types.includes(o.type)) row.types.push(o.type)
-          if (!row.link && o.link) row.link = o.link
-          byService.set(key, row)
-        }
-        out.set(String(show.id), { services: [...byService.values()], work: toWork(show) })
+        out.set(String(show.id), { services: this.#servicesOf(show), work: toWork(show) })
       }
 
       if (!res.hasMore || !res.nextCursor) break
@@ -373,6 +431,7 @@ export class StreamingAvailabilitySource implements Source {
     kind: ChangeKind,
     collectedAt: string,
   ): Promise<ChangeEvent[]> {
+    this.#tag = `changes:${kind}`
     const out: ChangeEvent[] = []
     let cursor: string | undefined
     let pages = 0
@@ -383,6 +442,20 @@ export class StreamingAvailabilitySource implements Source {
         ...(cursor ? { cursor } : {}),
       })
       const shows = res.shows ?? {}
+
+      /*
+       * ★ **応答に入っている在庫を拾う**（2026-09-20 追加）。追加リクエストは0。
+       *   `changes[]` ではなく `shows{}` を回すのは、**変化が立っていない作品も
+       *   応答に含まれることがある**ため。ここで拾うのは在庫であって変化ではないので、
+       *   変化の有無に関係なく拾ってよい（`#stock` の注記）。
+       */
+      for (const [id, show] of Object.entries(shows)) {
+        const services = this.#servicesOf(show)
+        // 空配列は「日本ではどこにも無い」の意味を持つ（core/availability.ts）。
+        // だが `/changes` の応答で空なのは**国が違う等で欠けた**場合と見分けが付かないので、
+        // **空は積まない。** 「分からない」のままにしておくほうが安全側。
+        if (services.length > 0) this.#stock.set(id, services)
+      }
 
       for (const ch of res.changes ?? []) {
         const show = ch.showId != null ? shows[String(ch.showId)] : undefined
@@ -436,6 +509,7 @@ export class StreamingAvailabilitySource implements Source {
     if (query.yearMin != null) params.year_min = query.yearMin
     if (query.yearMax != null) params.year_max = query.yearMax
 
+    this.#tag = 'search:作品一覧'
     const out: Work[] = []
     let cursor: string | undefined
     let pages = 0
@@ -466,6 +540,7 @@ export class StreamingAvailabilitySource implements Source {
    * 期限前に取り直すために使う。呼ぶのは `npm run refresh:images`。
    */
   async fetchImages(showId: string): Promise<{ posterUrl?: string; backdropUrl?: string }> {
+    this.#tag = 'shows:画像の取り直し'
     const show = await this.#get<ApiShow>(`/shows/${encodeURIComponent(showId)}`, {
       country: this.theme.country,
       output_language: this.theme.api_language,
@@ -489,6 +564,7 @@ export class StreamingAvailabilitySource implements Source {
    * 見つからなければ 404 で例外になるので、呼び出し側で握って undefined にすること。
    */
   async fetchShow(showId: string): Promise<Work> {
+    this.#tag = 'shows:作品の引き当て'
     const show = await this.#get<ApiShow>(`/shows/${encodeURIComponent(showId)}`, {
       country: this.theme.country,
       output_language: this.theme.api_language,

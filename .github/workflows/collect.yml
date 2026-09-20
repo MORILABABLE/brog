@@ -2,7 +2,17 @@ name: collect
 
 # 配信状況の変化を収集する。
 #
-# 無料枠は 500リクエスト/月。週2回の実行で月あたり約250リクエストに収まる。
+# 無料枠は 500リクエスト/月。
+#
+# ★ **期間は渡さない**（2026-09-20 変更）。渡すと毎回その日数ぶんを取り直す。
+#   火・金の実行なのに `--days 7` を渡していたため、**毎回3〜4日ぶんが重複**していた。
+#   重複ぶんは台帳が落とすので記事は1件も増えず、リクエストだけが増える。
+#   いまは前回の収集からの実間隔で窓が決まる（pipeline/core/collect-window.ts）。
+#   `workflow_dispatch` で days を入れたときだけ、その日数が優先される。
+#
+# ★ **kinds も渡さない。** 渡すと `upcoming` が毎回投げられる。
+#   日本カタログでは一度も返っていないので、月の最初の収集でだけ様子を見る。
+#
 # 全カタログを走査する必要がないのは /changes エンドポイントのおかげ。
 on:
   schedule:
@@ -19,11 +29,9 @@ on:
   workflow_dispatch:
     inputs:
       days:
-        description: '何日前までの変化を取るか'
-        default: '7'
+        description: '何日前までの変化を取るか（空なら前回の収集からの実間隔）'
       kinds:
-        description: '取得する変化の種類（カンマ区切り）'
-        default: 'new,removed,expiring'
+        description: '取得する変化の種類（カンマ区切り。空なら new,removed,expiring と月1回の upcoming）'
 
 permissions:
   contents: write
@@ -70,9 +78,21 @@ jobs:
       - name: 変化を収集
         env:
           STREAMING_API_KEY: ${{ secrets.STREAMING_API_KEY }}
-          DAYS: ${{ inputs.days || '7' }}
-          KINDS: ${{ inputs.kinds || 'new,removed,expiring' }}
-        run: npm run collect -- --days "$DAYS" --kinds "$KINDS"
+          DAYS: ${{ inputs.days }}
+          KINDS: ${{ inputs.kinds }}
+        # ★ **空のときは渡さない。** `--days ""` でも「明示された」扱いになり、
+        #   前回からの実間隔で窓を決める仕組みが効かなくなる。
+        # ★ `&&` で繋がないこと。GitHub の run は `bash -e` なので、
+        #   条件が偽のときに AND リスト全体が非0を返してステップが落ちる。
+        run: |
+          args=()
+          if [ -n "$DAYS" ]; then
+            args+=(--days "$DAYS")
+          fi
+          if [ -n "$KINDS" ]; then
+            args+=(--kinds "$KINDS")
+          fi
+          npm run collect -- "${args[@]}"
 
       # ★ **収集の直後に必ず走らせる。** 収集しただけの作品は
       #   監督・出演者が英語のままで、**作品ページが作られない**

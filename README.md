@@ -73,7 +73,17 @@ https://developers.movieofthenight.com/ で登録し、API キーを取得する
 > Streaming Availability API は無料枠でも商用利用を明示的に許可している唯一の選択肢。
 > 詳細は [DESIGN.md 3章](./DESIGN.md#3-データソースの選定重要な決定調査済み)。
 
-**無料枠は 500リクエスト/月。** 本パイプラインの設計消費は約250/月。
+**無料枠は 500リクエスト/月。** 定期実行の設計消費は **約150/月**（2026-09-20 に約250から削減）。
+
+削ったのは3か所。いずれも**取れるデータは減らしていない。**
+
+| 削ったもの | 前 | 後 |
+|---|---|---|
+| `collect` の期間 | `--days 7` 固定。火・金の実行なので**毎回3〜4日ぶんが重複** | 前回の収集からの実間隔（4〜5日）。`data/collect-state.json` |
+| `collect` の `upcoming` | 毎回2回。**日本カタログでは一度も返っていない** | 月の最初の1回だけ様子を見る |
+| 予約枠の見積り | `collect` 1回＝20回の固定値 | **実測を積んで自動で較正**（`collectCostEstimate`） |
+
+`npm run collect -- --plan` で、APIを1回も使わずに次の実行の形と残量が見られる。
 
 ### 2. 依存をインストールして .env を用意
 
@@ -99,8 +109,9 @@ Netflix / Prime Video / Disney+ 以外（U-NEXT / Hulu / DMM TV）の ID は未�
 ### 4. 収集してみる
 
 ```bash
-npm run collect                        # 直近7日の new / removed / expiring / upcoming
-npm run collect -- --days 14
+npm run collect                        # 前回の収集からのぶん（new / removed / expiring）
+npm run collect -- --plan              # APIを使わず、次に何をどれだけ取るかだけ見る
+npm run collect -- --days 14           # 期間を明示する（前回の記録を無視する）
 npm run collect -- --kinds new,expiring
 ```
 

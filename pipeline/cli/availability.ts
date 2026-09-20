@@ -10,6 +10,7 @@
  *   npm run availability -- --max-by-id 5   ID直引きの上限（既定12・1件1リクエスト）
  *   npm run availability -- --no-by-id      ID直引きをしない（キーワードだけ）
  *   npm run availability -- --ids 138947,2699508   作品IDを直に指定する（下書きを見ない）
+ *   npm run availability -- --ids … --refetch      新しい在庫を持っていても引き直す
  *   npm run availability -- --adopt --match "仮面ライダー|風都探偵"
  *                                       下書きに無い作品も**素材として**台帳に入れる
  *
@@ -89,6 +90,7 @@ import type { Work } from '../sources/types.ts'
 import type { ServiceAvailabilityRow } from '../sources/streaming-availability.ts'
 import {
   AVAILABILITY_PATH,
+  MAX_AGE_DAYS,
   loadAvailability,
   saveAvailability,
   isFresh,
@@ -261,7 +263,39 @@ async function main(): Promise<void> {
     const source = new StreamingAvailabilitySource(apiKey, theme)
     const fetchedAt = new Date().toISOString()
     let hit = 0
-    for (const id of explicitIds) {
+
+    /*
+     * ★ **すでに新しい在庫を持っているIDは引かない**（2026-09-20 追加）。
+     *
+     *   ここには `isFresh` の判定が**無かった**。キーワード経路は
+     *   `stillMissing` で同じ判定をしているのに、**`--ids` だけが素通りで、
+     *   渡されたIDを問答無用で1件1リクエスト引いていた。**
+     *
+     *   2026-09-16 に「表示の多い作品ページ40件」を40リクエストで取っているが、
+     *   そのうち何件が引き直す必要のないものだったかは分からない。
+     *   いまは飛ばした件数が出るので、次からは分かる。
+     *
+     *   ★ `--refetch` で従来どおり全部引ける。**在庫が動いたと分かっている**ときに使う。
+     *
+     *   ★ **`--force` とは別のフラグにしてある。** あちらは「残り枠が無くても投げる」で、
+     *     意味が違う。1つに重ねると、**枠を押し切った回が同時に全件引き直しになり、
+     *     いちばん危ない瞬間にいちばん高くつく。**
+     */
+    const forced = has('refetch')
+    const skipped: string[] = []
+    const targets = explicitIds.filter((id) => {
+      if (forced || !isFresh(ledger.works[id])) return true
+      skipped.push(id)
+      return false
+    })
+    if (skipped.length > 0) {
+      console.log(
+        `${skipped.length}件は新しい在庫を持っているので飛ばします` +
+          `（${MAX_AGE_DAYS}日以内。引き直すなら --refetch）。`,
+      )
+    }
+
+    for (const id of targets) {
       if (isUnextWork(id)) {
         console.log(`  ${id} … U-NEXTのIDなので飛ばします（配信APIのIDではありません）`)
         continue
@@ -272,14 +306,23 @@ async function main(): Promise<void> {
         continue
       }
       hit++
-      if (!has('dry-run')) ledger.works[id] = { fetchedAt, services: row.services }
+      if (!has('dry-run')) ledger.works[id] = { fetchedAt, via: 'id', services: row.services }
       console.log(`  ${id}`)
       for (const line of subscriptionLines(row.services, id, [])) console.log(line)
     }
     await addUsage(source.requestCount, theme.utc_offset_minutes)
     if (!has('dry-run') && hit > 0) await saveAvailability(ledger)
-    console.log(`
-台帳に入れた: ${hit}件 / 指定 ${explicitIds.length}件  リクエスト: ${source.requestCount}`)
+    console.log(
+      `\n台帳に入れた: ${hit}件 / 指定 ${explicitIds.length}件` +
+        (skipped.length ? `（うち ${skipped.length}件は取得済み）` : '') +
+        `  リクエスト: ${source.requestCount}`,
+    )
+    if (source.requestCount >= 20) {
+      console.log(
+        '\n※ ID直引きは**1件1リクエスト**です。同じシリーズをまとめて埋めるなら\n' +
+          '   `--keyword "<原題>"` のほうが安い（1リクエストで15〜20作品）。',
+      )
+    }
     return
   }
 
@@ -494,7 +537,7 @@ async function main(): Promise<void> {
       const row = await source.fetchAvailabilityById(id)
       if (!row) continue
       hit++
-      if (!has('dry-run')) ledger.works[id] = { fetchedAt, services: row.services }
+      if (!has('dry-run')) ledger.works[id] = { fetchedAt, via: 'id', services: row.services }
       const title = wanted.get(id) || ''
       console.log(`  ${(title || id).slice(0, 34).padEnd(34)}`)
       for (const line of subscriptionLines(row.services, id, title ? [title] : [])) {
