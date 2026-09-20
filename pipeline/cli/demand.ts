@@ -243,6 +243,27 @@ async function main(): Promise<void> {
     console.log('  Search Console  0件（data/search-queries.json が無いか、在庫に当たらなかった）')
   }
 
+  /*
+   * 取り込みが**止まっていること**を言う。
+   *
+   * ★ 上の行は集計期間を出すが、**古いこと自体は言わない。** ファイルが
+   *   凍っていても、もっともらしい期間が毎日表示されるだけになる。
+   *   2026-09-06〜09-20 に実際に踏んだ: queries が GSC_SERVICE_ACCOUNT_JSON
+   *   未登録で3週続けて落ち、その間この行は 08-03〜08-31 を出し続けていた。
+   *
+   * 14日にしているのは、取り込みが週1回（queries.yml）なので
+   * **1回飛ばしたら気づける幅**（check-ads.ts の45日と同じ考え方で、
+   * あちらは月1回の運用だから45日）。
+   */
+  const scFetchedAt = sc.fetchedAt ? Date.parse(sc.fetchedAt) : NaN
+  const scStaleDays = Number.isNaN(scFetchedAt) ? Infinity : (Date.now() - scFetchedAt) / 86_400_000
+  if (sc.signals.length > 0 && scStaleDays > 14) {
+    console.log(
+      `  ⚠ 検索語の取り込みが止まっています（${Math.floor(scStaleDays)}日前）。` +
+        'queries.yml の実行結果を見てください（npm run queries で手元からも取り込めます）。',
+    )
+  }
+
   const posts = await readPublishedPosts(POSTS_DIR)
   const report = matchDemand([...merged.values(), ...sc.signals], inventory, {
     ngWords: loadNgWords(),

@@ -1,46 +1,380 @@
 {
-  "fetchedAt": "2026-09-03T06:55:26.588Z",
+  "fetchedAt": "2026-09-20T03:08:14.881Z",
   "range": {
-    "start": "2026-08-03",
-    "end": "2026-08-31"
+    "start": "2026-08-20",
+    "end": "2026-09-17"
   },
   "pages": {
+    "/posts/harry-potter": [
+      {
+        "query": "ハリーポッター 配信終了",
+        "clicks": 3,
+        "impressions": 40,
+        "position": 8.2
+      },
+      {
+        "query": "ハリーポッター サブスク いつまで",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 9.5
+      },
+      {
+        "query": "netflix ハリーポッター 配信終了",
+        "clicks": 0,
+        "impressions": 4,
+        "position": 10.3
+      },
+      {
+        "query": "ハリポタ ネトフリ 配信 終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      },
+      {
+        "query": "ハリーポッター サブスク",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 101
+      }
+    ],
+    "/category/leaving/netflix": [
+      {
+        "query": "五 等 分 の花嫁 netflix 配信 終了",
+        "clicks": 1,
+        "impressions": 184,
+        "position": 10.1
+      },
+      {
+        "query": "五等分の花嫁 netflix 配信終了",
+        "clicks": 0,
+        "impressions": 39,
+        "position": 10.1
+      },
+      {
+        "query": "netflix 五等分の花嫁 配信終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 10
+      }
+    ],
+    "/category/leaving/u-next": [
+      {
+        "query": "u-next 配信終了 一覧",
+        "clicks": 1,
+        "impressions": 2,
+        "position": 2
+      },
+      {
+        "query": "u-next 仮面ライダー 終了",
+        "clicks": 0,
+        "impressions": 22,
+        "position": 8.2
+      },
+      {
+        "query": "u-next ウルトラマン 配信終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 22
+      }
+    ],
     "/posts/2026-09-upcoming-prime-video-western": [
       {
         "query": "プライムビデオ 2026年9月",
         "clicks": 1,
         "impressions": 1,
         "position": 21
+      },
+      {
+        "query": "アマプラ バイオハザード",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 17
+      },
+      {
+        "query": "アマプラ 9 月 2026",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 17
       }
     ],
     "/posts/conan-movies": [
       {
         "query": "u-next コナン 配信終了",
         "clicks": 1,
+        "impressions": 7,
+        "position": 9.6
+      },
+      {
+        "query": "コナン配信終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 5
+      }
+    ],
+    "/posts/ultraman": [
+      {
+        "query": "u-next ウルトラマン 配信終了",
+        "clicks": 1,
+        "impressions": 20,
+        "position": 8.2
+      },
+      {
+        "query": "hulu ウルトラマン 配信終了",
+        "clicks": 0,
+        "impressions": 5,
+        "position": 5.2
+      },
+      {
+        "query": "amazonプライム ウルトラマン 終了",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 9
+      },
+      {
+        "query": "hulu ウルトラマン 配信 終了",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 4
+      }
+    ],
+    "/works/10534": [
+      {
+        "query": "からかい上手の高木さん ネット フリックス 配信終了",
+        "clicks": 1,
+        "impressions": 5,
+        "position": 5
+      },
+      {
+        "query": "からかい上手の高木さん netflix",
+        "clicks": 0,
         "impressions": 1,
         "position": 11
       }
     ],
-    "/category/leaving/netflix": [
+    "/works/5003": [
       {
-        "query": "五等分の花嫁 netflix 配信終了",
+        "query": "運命の女 配信",
+        "clicks": 1,
+        "impressions": 1,
+        "position": 26
+      }
+    ],
+    "/works/8255": [
+      {
+        "query": "暴走特急 配信",
+        "clicks": 1,
+        "impressions": 2,
+        "position": 11
+      }
+    ],
+    "/archive/2026-09/prime-video": [
+      {
+        "query": "amazonプライムビデオ 2026年9月",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 1
+      },
+      {
+        "query": "prime video 9月",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 26
+      }
+    ],
+    "/category/leaving": [
+      {
+        "query": "u-next 配信終了 一覧",
         "clicks": 0,
         "impressions": 1,
         "position": 7
       }
     ],
-    "/leaving/netflix": [
+    "/category/leaving/disney-plus": [
       {
-        "query": "デスノート配信終了",
+        "query": "ディズニープラス 見放題終了",
+        "clicks": 0,
+        "impressions": 8,
+        "position": 22
+      },
+      {
+        "query": "ディズニープラス 配信終了 カレンダー",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 8
+      }
+    ],
+    "/category/leaving/prime-video": [
+      {
+        "query": "アマプラ 終了",
         "clicks": 0,
         "impressions": 1,
-        "position": 10
+        "position": 68
+      },
+      {
+        "query": "アマプラ配信終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 60
+      }
+    ],
+    "/leaving/netflix": [
+      {
+        "query": "netflix ハリーポッター 配信終了",
+        "clicks": 0,
+        "impressions": 5,
+        "position": 10.2
+      },
+      {
+        "query": "五 等 分 の花嫁 netflix 配信 終了",
+        "clicks": 0,
+        "impressions": 5,
+        "position": 9
+      },
+      {
+        "query": "netflix 仮面ライダー 終了",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 9.7
+      },
+      {
+        "query": "ネトフリ 五等分の花嫁 配信終了",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 7.5
       },
       {
         "query": "ネトフリ五等分の花嫁 配信終了",
         "clicks": 0,
+        "impressions": 2,
+        "position": 8
+      }
+    ],
+    "/leaving/prime-video": [
+      {
+        "query": "amazonプライム 見放題終了",
+        "clicks": 0,
         "impressions": 1,
-        "position": 7
+        "position": 57
+      },
+      {
+        "query": "amazonプライム見放題終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 56
+      },
+      {
+        "query": "アマプラ 終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 63
+      },
+      {
+        "query": "アマプラ配信終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 54
+      }
+    ],
+    "/person/e8a449f78c": [
+      {
+        "query": "こだま 監督",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 20
+      }
+    ],
+    "/posts/2026-08-arrivals-japanese": [
+      {
+        "query": "石岡タロー どこで 見れる",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 29
+      }
+    ],
+    "/posts/jurassic-park": [
+      {
+        "query": "ジュラシックパーク 配信",
+        "clicks": 0,
+        "impressions": 9,
+        "position": 70.2
+      }
+    ],
+    "/posts/kamen-rider": [
+      {
+        "query": "u-next 仮面ライダー 終了",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 7.5
+      },
+      {
+        "query": "仮面ライダーゼッツ アマプラ いつまで",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 7.5
+      }
+    ],
+    "/posts/mission-impossible": [
+      {
+        "query": "ミッションインポッシブル サブスク",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 82
+      }
+    ],
+    "/works/10450": [
+      {
+        "query": "ラスト ホリデイ netflix",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 9.3
+      },
+      {
+        "query": "ラストホリデイ 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 12
+      }
+    ],
+    "/works/105029": [
+      {
+        "query": "失楽園 netflix",
+        "clicks": 0,
+        "impressions": 23,
+        "position": 9.7
+      }
+    ],
+    "/works/118": [
+      {
+        "query": "シャッターアイランド amazonプライム",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 10.8
+      },
+      {
+        "query": "シャッターアイランド アマプラ",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 15.3
+      },
+      {
+        "query": "シャッターアイランド プライムビデオ",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 12
+      },
+      {
+        "query": "シャッター アイランド amazon プライム",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/131459": [
+      {
+        "query": "恋愛の抜けたロマンスアマゾンプライム",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 7.5
       }
     ],
     "/works/142": [
@@ -49,30 +383,198 @@
         "clicks": 0,
         "impressions": 3,
         "position": 12
+      },
+      {
+        "query": "アメリカンビューティー netflix",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 12
+      },
+      {
+        "query": "アメリカン・ビューティー 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/1428": [
+      {
+        "query": "28週後 配信",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 18.5
+      }
+    ],
+    "/works/14281": [
+      {
+        "query": "ネットフリックス リコリスリコイル",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 8.8
+      },
+      {
+        "query": "netflix リコリスリコイル",
+        "clicks": 0,
+        "impressions": 5,
+        "position": 9.8
+      },
+      {
+        "query": "リコリス リコイル ネトフリ 配信終了",
+        "clicks": 0,
+        "impressions": 5,
+        "position": 11
+      },
+      {
+        "query": "リコリスリコイル ネットフリックス",
+        "clicks": 0,
+        "impressions": 4,
+        "position": 9
+      },
+      {
+        "query": "リコリスリコイル ネトフリ",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 7.7
       }
     ],
     "/works/16353": [
       {
         "query": "その 女 諜報 員 アレックス どこで 見れる",
         "clicks": 0,
-        "impressions": 1,
+        "impressions": 2,
         "position": 11
+      }
+    ],
+    "/works/182": [
+      {
+        "query": "レザボア ドッグス 配信",
+        "clicks": 0,
+        "impressions": 7,
+        "position": 11.3
+      },
+      {
+        "query": "レザボアドッグス 配信",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 11.5
+      },
+      {
+        "query": "レザボア・ドッグス 配信",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 11.5
+      }
+    ],
+    "/works/2035": [
+      {
+        "query": "ny 式 ハッピー セラピー 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 10
       }
     ],
     "/works/2059": [
       {
         "query": "ミザリー 配信",
         "clicks": 0,
+        "impressions": 4,
+        "position": 11
+      }
+    ],
+    "/works/20968": [
+      {
+        "query": "あひるの空 ネトフリ",
+        "clicks": 0,
         "impressions": 1,
-        "position": 10
+        "position": 11
+      }
+    ],
+    "/works/2124": [
+      {
+        "query": "ノースマン 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 9
+      }
+    ],
+    "/works/21814": [
+      {
+        "query": "ドラゴンボール 超 いつまで",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/222964": [
+      {
+        "query": "川 っ ぺり ムコリッタ ネット フリックス",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 9
+      }
+    ],
+    "/works/2294": [
+      {
+        "query": "キムさんのコンビニ netflix 見れ ない",
+        "clicks": 0,
+        "impressions": 18,
+        "position": 4.6
+      }
+    ],
+    "/works/2327": [
+      {
+        "query": "ショコラ 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 17
+      }
+    ],
+    "/works/25449": [
+      {
+        "query": "焼きたてジャぱん ネトフリ",
+        "clicks": 0,
+        "impressions": 7,
+        "position": 8.3
+      }
+    ],
+    "/works/27671": [
+      {
+        "query": "泣く男 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/277": [
+      {
+        "query": "12人の怒れる男 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 19
+      }
+    ],
+    "/works/282": [
+      {
+        "query": "ハリーポッター賢者の石いつまで",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 11
+      }
+    ],
+    "/works/2956537": [
+      {
+        "query": "バイオハザード デスアイランド amazonプライム",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 16
       }
     ],
     "/works/305": [
       {
         "query": "スパイダーマン:ノー ウェイ ホーム 配信 終了",
         "clicks": 0,
-        "impressions": 1,
-        "position": 6
+        "impressions": 4,
+        "position": 6.3
       }
     ],
     "/works/35212": [
@@ -81,6 +583,114 @@
         "clicks": 0,
         "impressions": 1,
         "position": 12
+      },
+      {
+        "query": "シークレットミッション サブスク",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/36059": [
+      {
+        "query": "ハローゴースト 配信",
+        "clicks": 0,
+        "impressions": 4,
+        "position": 13
+      }
+    ],
+    "/works/3909": [
+      {
+        "query": "アンドリュー ndr114 netflix",
+        "clicks": 0,
+        "impressions": 9,
+        "position": 7.1
+      },
+      {
+        "query": "アンドリュー 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 23
+      }
+    ],
+    "/works/39128": [
+      {
+        "query": "swat アンダー シージ 続編",
+        "clicks": 0,
+        "impressions": 5,
+        "position": 10.4
+      }
+    ],
+    "/works/4029331": [
+      {
+        "query": "オッペン ハイマー アマプラ いつまで",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/406": [
+      {
+        "query": "アメイジングスパイダーマン ネトフリ",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 8.7
+      }
+    ],
+    "/works/4107": [
+      {
+        "query": "真夜中 のカーボーイ 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 10
+      },
+      {
+        "query": "真夜中のカーボーイ 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 16
+      }
+    ],
+    "/works/42382": [
+      {
+        "query": "kcia 南山の部長たち 配信",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 9.8
+      }
+    ],
+    "/works/424": [
+      {
+        "query": "トランスフォーマー いつから",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 55
+      }
+    ],
+    "/works/428": [
+      {
+        "query": "ハリーポッター ネトフリ いつまで",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 10.3
+      },
+      {
+        "query": "ネトフリ ハリーポッター いつまで",
+        "clicks": 0,
+        "impressions": 5,
+        "position": 10.6
+      },
+      {
+        "query": "netflix ハリーポッター 配信終了",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 10
+      },
+      {
+        "query": "ハリーポッター netflix いつまで",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 10
       }
     ],
     "/works/4352": [
@@ -91,26 +701,62 @@
         "position": 11
       }
     ],
+    "/works/4443": [
+      {
+        "query": "フィフティ シェイズ ダーカー 配信",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 11
+      }
+    ],
+    "/works/446": [
+      {
+        "query": "ハリーポッター netflix いつまで",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 10
+      },
+      {
+        "query": "ハリーポッター ネトフリ いつまで",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 10
+      }
+    ],
     "/works/4901": [
+      {
+        "query": "マッシブタレント 配信",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 12.7
+      },
       {
         "query": "マッシブ タレント 配信",
         "clicks": 0,
         "impressions": 1,
         "position": 12
+      }
+    ],
+    "/works/5182": [
+      {
+        "query": "クーデター 映画 どこで 見れる",
+        "clicks": 0,
+        "impressions": 18,
+        "position": 9.9
       },
       {
-        "query": "マッシブタレント 配信",
+        "query": "クーデター 映画 配信",
         "clicks": 0,
-        "impressions": 1,
-        "position": 12
+        "impressions": 9,
+        "position": 9.7
       }
     ],
     "/works/5346": [
       {
         "query": "スリザー 配信",
         "clicks": 0,
-        "impressions": 7,
-        "position": 10.7
+        "impressions": 12,
+        "position": 10.6
       },
       {
         "query": "スリザー 映画 配信",
@@ -119,25 +765,213 @@
         "position": 15.3
       }
     ],
+    "/works/536": [
+      {
+        "query": "ハリーポッター netflix いつまで",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 10
+      },
+      {
+        "query": "ハリーポッター ネトフリ いつまで",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 9
+      }
+    ],
+    "/works/548": [
+      {
+        "query": "ハリーポッター netflix いつまで",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 10
+      },
+      {
+        "query": "ネトフリ ハリーポッター いつまで",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 11
+      },
+      {
+        "query": "ハリーポッター ネトフリ いつまで",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 10.3
+      },
+      {
+        "query": "ネトフリ ハリポタ いつまで",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 11
+      },
+      {
+        "query": "netflix ハリーポッター 配信終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 10
+      }
+    ],
+    "/works/607": [
+      {
+        "query": "アメリカン ゴッズ 配信",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 9.5
+      }
+    ],
     "/works/6216": [
       {
         "query": "チャーリーと14人のキッズ 配信",
         "clicks": 0,
-        "impressions": 3,
-        "position": 9
+        "impressions": 11,
+        "position": 8.8
+      }
+    ],
+    "/works/6293": [
+      {
+        "query": "ウィッカーマン ネトフリ",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 8
+      }
+    ],
+    "/works/6841": [
+      {
+        "query": "ザ ハッスル netflix",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/7001": [
+      {
+        "query": "秒速5センチメートル 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 55
+      },
+      {
+        "query": "秒速5センチメートルネトフリ",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 49
+      }
+    ],
+    "/works/7080": [
+      {
+        "query": "オッド タクシー アマプラ いつまで",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 3
+      }
+    ],
+    "/works/72594": [
+      {
+        "query": "彼女は嘘を愛しすぎてる どこで見れる",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 32
       }
     ],
     "/works/8487": [
       {
         "query": "言の葉の庭 配信",
         "clicks": 0,
-        "impressions": 2,
-        "position": 27
+        "impressions": 8,
+        "position": 32.6
+      }
+    ],
+    "/works/8847025": [
+      {
+        "query": "じいさんばあさん若返る ネトフリ",
+        "clicks": 0,
+        "impressions": 11,
+        "position": 7.3
+      }
+    ],
+    "/works/8860253": [
+      {
+        "query": "野生の島のロズ いつまで",
+        "clicks": 0,
+        "impressions": 8,
+        "position": 6.1
+      }
+    ],
+    "/works/8933": [
+      {
+        "query": "天気の子 アマプラ いつまで",
+        "clicks": 0,
+        "impressions": 6,
+        "position": 10.5
+      },
+      {
+        "query": "天気の子 配信",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 78
+      },
+      {
+        "query": "アマプラ 天気の子",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 39
+      }
+    ],
+    "/works/92377": [
+      {
+        "query": "五 等 分 の花嫁 netflix 配信 終了",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
       }
     ],
     "/works/9279": [
       {
         "query": "キラークラウン サービス 終了",
+        "clicks": 0,
+        "impressions": 16,
+        "position": 7.3
+      }
+    ],
+    "/works/92824": [
+      {
+        "query": "人間の時間 netflix",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 12
+      }
+    ],
+    "/works/99009": [
+      {
+        "query": "野火 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 21
+      }
+    ],
+    "/works/995": [
+      {
+        "query": "マイボディガード 配信",
+        "clicks": 0,
+        "impressions": 1,
+        "position": 11
+      }
+    ],
+    "/works/999": [
+      {
+        "query": "サイン 映画 配信",
+        "clicks": 0,
+        "impressions": 4,
+        "position": 12.5
+      },
+      {
+        "query": "サイン 配信",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 12
+      },
+      {
+        "query": "サイン 映画 どこで 見れる",
         "clicks": 0,
         "impressions": 1,
         "position": 8
