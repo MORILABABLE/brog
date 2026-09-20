@@ -2,7 +2,7 @@
 import Thumb from './Thumb.astro'
 import { CATEGORIES, EVERGREEN_BADGE } from '../config'
 import { serviceImage } from '../lib/images'
-import { calendarThumb, evergreenTitle, type EvergreenPage } from '../lib/evergreen'
+import { evergreenTitle, type EvergreenPage } from '../lib/evergreen'
 
 interface Props {
   page: EvergreenPage
@@ -15,11 +15,11 @@ interface Props {
 const { page, count, dataAsOf } = Astro.props
 const cat = CATEGORIES[page.category]
 /*
- * ★ 絵は**そのカレンダーの今月の作品のポスター**（2026-09-17・lib/evergreen.ts の `calendarThumb`）。
- *   無い月だけ従来の汎用画像に戻る。左の枠（LeftRail.astro）と同じ選び方。
+ * ★ 絵は **`src/assets/services/<キー>.png` に固定**（2026-09-20・運用者の指定）。
+ *   左の枠（CalendarCards.astro）・トップの棚（TopCalendar.astro）と同じ絵。
+ *   **作品のポスターはもう使わない。** 理由は CalendarCards.astro に書いてある。
  */
-const poster = calendarThumb(page.category, page.thumbKey)
-const thumb = poster ? undefined : serviceImage(page.thumbKey)
+const thumb = serviceImage(page.thumbKey)
 
 /**
  * 常設ページを、記事カード（PostCard）と**同じ体裁**で1枚ずつ出す。
@@ -42,7 +42,7 @@ const thumb = poster ? undefined : serviceImage(page.thumbKey)
 ---
 
 <article class="card">
-  <Thumb image={thumb} src={poster} category={page.category} size={72} initial={page.label.charAt(0)} />
+  <Thumb image={thumb} category={page.category} size={72} initial={page.label.charAt(0)} />
 
   <div class="main">
     <div class="meta">

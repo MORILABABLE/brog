@@ -1,7 +1,7 @@
 ---
 import Thumb from './Thumb.astro'
 import { EVERGREEN_BADGE } from '../config'
-import { CALENDAR_CARDS, calendarThumb } from '../lib/evergreen'
+import { CALENDAR_CARDS } from '../lib/evergreen'
 import { serviceImage } from '../lib/images'
 
 interface Props {
@@ -37,11 +37,19 @@ const { current = '' } = Astro.props
     CALENDAR_CARDS.map((p) => {
       const isCurrent = p.href === current
       /*
-       * ★ **カードの絵は、そのカレンダーの今月の作品のポスター**（2026-09-17・運用者の指定）。
-       *   選び方は lib/evergreen.ts の `calendarThumb`（今月の早い日付のアニメ → 無ければ全ジャンル）。
-       *   ポスターが1枚も無い月だけ、従来の汎用画像（src/assets/services/<キー>）に戻る。
+       * ★ **カードの絵は `src/assets/services/<キー>.png` に固定**（2026-09-20・運用者の指定）。
+       *   カレンダーの升目に英字でサービス名を組んだ絵（描くのは scripts/service-cards.mjs）。
+       *   3社ぶんあるので、`serviceImage` は必ず当たる。
+       *
+       * ■ 作品のポスターはもう使わない（2026-09-17 の指定を倒した）
+       *   それまでは `calendarThumb` が選んだ今月の作品のポスターを出し、
+       *   1枚も無い月だけ汎用画像に戻していた。やめた理由は2つ:
+       *     ・**ポスターは提供元も許諾を出せない**（docs/PARTNERSHIPS.md 3-1）。
+       *       作品の行の隣に出すのと違い、ここでは1作品がサービス全体を代表する
+       *       **飾り**になるので、引用としての筋が立たない
+       *     ・月ごとに中身が変わるため、「カレンダーへの入口」の目印にならなかった
+       *   ★ 戻すなら `calendarThumb`（lib/evergreen.ts）を呼び直すだけでよい。関数は残してある。
        */
-      const poster = calendarThumb(p.category, p.thumbKey)
       /*
        * ★ **更新日（`【2026年9月14日更新】`）は外した**（2026-09-15）。
        *   2026-08-25 に「いつ時点の一覧か」を伝えるために入れたものだが、
@@ -61,8 +69,7 @@ const { current = '' } = Astro.props
               画像が無いときのタイルもカテゴリ色にそろう（それが Thumb の設計）。
           */}
           <Thumb
-            image={poster ? undefined : serviceImage(p.thumbKey)}
-            src={poster}
+            image={serviceImage(p.thumbKey)}
             category={p.category}
             size={60}
             initial={p.label.charAt(0)}

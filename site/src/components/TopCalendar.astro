@@ -1,9 +1,7 @@
 ---
-import { existsSync } from 'node:fs'
-import { join } from 'node:path'
 import Thumb from './Thumb.astro'
 import { EVERGREEN_BADGE } from '../config'
-import { CALENDAR_CARDS, calendarThumb } from '../lib/evergreen'
+import { CALENDAR_CARDS } from '../lib/evergreen'
 import { serviceImage } from '../lib/images'
 
 /**
@@ -19,31 +17,22 @@ import { serviceImage } from '../lib/images'
  *   **運用者が意図していたのは、ほかの棚と同じ形のカード**だった。形を変えるときはほかの棚と揃えること。
  *
  * ■ 絵
- * 選び方は左の枠と同じ（lib/evergreen.ts の `calendarThumb`：今月の早い日付のアニメ → 無ければ全ジャンル）。
- * ★ 棚のカードは132pxあるので、**作品ページ用の大きいポスター（480×720）があればそちらを使う。**
- *   小さいサムネイル（96×144）では引き伸ばしになる。3枚だけで、しかもトップの狭い画面だけなので重さは許容する。
- *   ポスターが1枚も無い月は、従来の汎用画像（src/assets/services/<キー>）。
+ * **`src/assets/services/<キー>.png` に固定**（2026-09-20・運用者の指定）。左の枠と同じ絵。
+ * カレンダーの升目に英字でサービス名を組んである（描くのは scripts/service-cards.mjs）。
+ * ★ 棚のカードは132pxあり、ここが**字がいちばん読める場所**。60px の左の枠でも読めることは
+ *   実寸に縮めて確かめてある（src/assets/services/README.md の「確かめ方」）。
+ *
+ * ★ **作品のポスターはもう使わない**（2026-09-17 の指定を 2026-09-20 に倒した）。
+ *   理由は CalendarCards.astro に書いてある（権利と、月ごとに絵が変わって目印にならないこと）。
+ *   このファイルには `largePoster()` という関数もあった。132px に対して
+ *   小さいサムネイル（96×144）では引き伸ばしになるので、作品ページ用の大きいポスター
+ *   （480×720）がファイルとしてあればそちらへ差し替える、というもの。
+ *   ポスターをやめたので消した。**戻すなら git から拾うこと**（消す前の版は 2026-09-20 以前）。
  *
  * ■ 1200px 以上では出さない
  * SeriesShelf.astro と同じしきい値（styles/global.css の `.layout` の裏返し）。**片方だけ動かさないこと。**
  */
-/**
- * 大きいポスター（`public/posters/<作品ID>.webp`）があればそのパス。**ファイルの有無で決める。**
- * ★ 作品ページ（lib/works.ts の `poster`）経由で引かないこと。作品ページを作らない作品でも
- *   ポスターのファイルはある（実測: Disney+ の「マイホームヒーロー」）。
- * ★ ビルドは site/ で走るが、念のため直上からも探す（lib/works.ts の `findUpPublic` と同じ事情）。
- */
-function largePoster(thumb: string | undefined): string | undefined {
-  const id = thumb?.match(/\/thumbs\/([^/]+)\.webp$/)?.[1]
-  if (!id) return undefined
-  const dirs = [join(process.cwd(), 'public', 'posters'), join(process.cwd(), 'site', 'public', 'posters')]
-  return dirs.some((dir) => existsSync(join(dir, `${id}.webp`))) ? `/posters/${id}.webp` : undefined
-}
-
-const cards = CALENDAR_CARDS.map((p) => {
-  const thumb = calendarThumb(p.category, p.thumbKey)
-  return { ...p, poster: largePoster(thumb) ?? thumb }
-})
+const cards = CALENDAR_CARDS
 ---
 
 <nav class="shelf" aria-label="配信カレンダー">
@@ -60,12 +49,7 @@ const cards = CALENDAR_CARDS.map((p) => {
       cards.map((c) => (
         <li>
           <a class="card" href={c.href}>
-            <Thumb
-              image={c.poster ? undefined : serviceImage(c.thumbKey)}
-              src={c.poster}
-              category={c.category}
-              size={132}
-            />
+            <Thumb image={serviceImage(c.thumbKey)} category={c.category} size={132} />
             {/*
               左の枠のカードと同じ名乗り（CalendarCards.astro）。
               ★ 「カレンダー」のバッジは**外した**（2026-09-19・運用者の指定）。
