@@ -101,6 +101,17 @@ const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'] as const
 function spoken(iso: string): string {
   return `${Number(iso.slice(5, 7))}月${Number(iso.slice(8, 10))}日`
 }
+
+/** 升目の行き先（`#leaving-2026-09-30`）。`prefix` は `#` 込みで渡ってくる。 */
+const hrefOf = (kind: CalendarKind, iso: string) => `${prefixOf.get(kind) ?? ''}${iso}`
+/**
+ * 行き先の**見出しの id**（`leaving-2026-09-30`）。`#` を外しただけ。
+ *
+ * ★ 絞り込み（components/CalendarFilter.astro）が印に焼き込んだこれを読んで、
+ *   その日の見えている行を引く。**印が2つある日でも1つの日でも同じ道**になるよう、
+ *   リンクの href ではなく**印そのもの**に持たせている。
+ */
+const targetOf = (kind: CalendarKind, iso: string) => hrefOf(kind, iso).replace(/^#/, '')
 ---
 
 <section class="calendar" aria-label="配信カレンダー">
@@ -209,59 +220,49 @@ function spoken(iso: string): string {
                     const cls = ['cell', 'is-hit', d.thumb ? 'has-img' : 'no-img']
 
                     /*
-                     * 1種類だけの日（実データはほぼこれ。これからの種類は未来、過去の種類は過去にしか出ない）。
-                     * **升目まるごとをリンクにする。** 指で押す的が升目いっぱいになる。
+                     * 点いている日。**種類が1つでも2つでも、升目まるごとが1本のリンク。**
+                     * 指で押す的が升目いっぱい（実測 60×80px）になる。
+                     *
+                     * ★ 🔴 **2種類ある日を `<span>` に戻さないこと**（2026-09-20 に直した不具合）。
+                     *   それまでは「行き先が2つあるので升目そのものはリンクにしない」として
+                     *   `<span>` で描き、**印の小さな丸2つ（実測 24×16px）だけ**をリンクにしていた。
+                     *   読者は升目（日付の数字・ポスター）を押すので、**押しても何も起きない日**になる。
+                     *   実測（2026-09-20・/arrivals/netflix）では、点いている24日のうち**11日がこれ**だった
+                     *   （/arrivals/prime-video も7日）。「日にちを押しても展開されない」の正体。
+                     * ★ **行き先を1つに絞ってよい理由。** 日付めくり（DayPager.astro）は
+                     *   `[data-day]` を丸ごと出すので、どちらの見出しへ飛んでも
+                     *   **その日の表は2つとも画面に出る**。違うのは着地の高さだけ。
+                     *   だから ORDER で先に来るほう（＝その日の先頭の表）へ送れば足りる。
+                     * ★ 印（`.mark`）は**リンクをやめて、ただの丸に戻した**。
+                     *   リンクの中にリンクは置けないため。本数と色はそのまま残る。
                      */
-                    if (hits.length === 1) {
-                      const k = hits[0]!.kind
-                      const n = d.counts[k]!
-                      return (
-                        <td>
-                          <a
-                            class:list={[...cls, KIND[k].cls]}
-                            data-date={d.iso}
-                            href={`${prefixOf.get(k)}${d.iso}`}
-                            aria-label={`${spoken(d.iso)} ${KIND[k].spoken}${n}本の一覧へ移動`}
-                          >
-                            {img}
-                            <span class="num">{d.day}</span>
-                            <span class="marks" aria-hidden="true">
-                              <span class:list={['mark', KIND[k].cls]} data-kind={k}>
-                                <span class="chip">{KIND[k].chip}</span>
-                                <span class="n">{n}</span>
-                              </span>
-                            </span>
-                          </a>
-                        </td>
-                      )
-                    }
-
-                    /*
-                     * 2種類ある日（きょうに「終了した」と「終了する」が重なるなど）。
-                     * **行き先が2つあるので升目そのものはリンクにしない**
-                     * （リンクの中にリンクは置けない）。印を過去 → これからの順に縦に積む。
-                     */
+                    const lead = hits[0]!.kind
                     return (
                       <td>
-                        <span class:list={[...cls, 'is-multi', KIND[hits[0]!.kind].cls]} data-date={d.iso}>
+                        <a
+                          class:list={[...cls, hits.length > 1 && 'is-multi', KIND[lead].cls]}
+                          data-date={d.iso}
+                          href={hrefOf(lead, d.iso)}
+                          aria-label={`${spoken(d.iso)} ${hits
+                            .map(({ kind: k }) => `${KIND[k].spoken}${d.counts[k]}本`)
+                            .join('・')}の一覧へ移動`}
+                        >
                           {img}
                           <span class="num">{d.day}</span>
-                          <span class="marks">
+                          {/* 読み上げは上の aria-label が担うので、印は絵として扱う */}
+                          <span class="marks" aria-hidden="true">
                             {hits.map(({ kind: k }) => (
-                              <a
+                              <span
                                 class:list={['mark', KIND[k].cls]}
                                 data-kind={k}
-                                href={`${prefixOf.get(k)}${d.iso}`}
-                                aria-label={`${spoken(d.iso)} ${KIND[k].spoken}${d.counts[k]}本の一覧へ移動`}
+                                data-target={targetOf(k, d.iso)}
                               >
-                                <span class="chip" aria-hidden="true">
-                                  {KIND[k].chip}
-                                </span>
-                                <span class="n" aria-hidden="true">{d.counts[k]}</span>
-                              </a>
+                                <span class="chip">{KIND[k].chip}</span>
+                                <span class="n">{d.counts[k]}</span>
+                              </span>
                             ))}
                           </span>
-                        </span>
+                        </a>
                       </td>
                     )
                   })}
@@ -551,8 +552,12 @@ function spoken(iso: string): string {
   .cell.is-hit .num {
     font-weight: 700;
   }
-  a.cell:hover,
-  .is-multi:hover {
+  /*
+   * ★ 点いている升目は**すべて `a.cell`**（2026-09-20）。2種類ある日だけ `<span>` だった
+   *   ころの `.is-multi:hover` / `.mark:focus-visible` は要らなくなった。
+   *   `.is-multi` は「印が2つ縦に積まれる日」の印として残してある（見た目の指定は持たない）。
+   */
+  a.cell:hover {
     transform: translateY(-2px);
     border-color: var(--accent);
     box-shadow: 0 4px 10px rgb(0 0 0 / 0.28);
@@ -560,8 +565,7 @@ function spoken(iso: string): string {
   a.cell:active {
     transform: translateY(0);
   }
-  a.cell:focus-visible,
-  .mark:focus-visible {
+  a.cell:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 1px;
   }
@@ -622,7 +626,6 @@ function spoken(iso: string): string {
     line-height: 1.5;
     /* 「終」「1」「4」で折り返させない */
     white-space: nowrap;
-    text-decoration: none;
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
   }
 

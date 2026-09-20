@@ -161,26 +161,30 @@ const GROUPS = [
         if (id) visibleByDay.set(id, visible)
       }
 
-      // 4. 升目。行き先の見出しの id から、その日の見えている行を引く
+      /*
+       * 4. 升目。**印（`.mark`）に焼き込んである行き先の見出しの id** から、
+       *    その日の見えている行を引く（EventCalendar.astro の `data-target`）。
+       *
+       * ★ 升目のリンクの `href` からは引かないこと（2026-09-20）。
+       *   2種類ある日は**升目が1本のリンクで、行き先は先頭の種類の1つだけ**なので、
+       *   href から引くと**もう片方の種類の本数が数から落ちる**。
+       *   印は種類のぶんだけ並んでいるので、そちらが正しい数え先になる。
+       * ★ 点いている升目は必ず `a`（EventCalendar.astro の🔴）。分岐は要らない。
+       */
       for (const cell of document.querySelectorAll<HTMLElement>('[data-cal] .cell.is-hit')) {
-        const links = cell.matches('a')
-          ? [cell as HTMLAnchorElement]
-          : Array.from(cell.querySelectorAll<HTMLAnchorElement>('a.mark'))
         let total = 0
         const candidates: HTMLElement[] = []
-        for (const a of links) {
-          const visible = visibleByDay.get((a.getAttribute('href') ?? '').slice(1)) ?? []
+        for (const mark of cell.querySelectorAll<HTMLElement>('.mark')) {
+          const visible = visibleByDay.get(mark.dataset.target ?? '') ?? []
           total += visible.length
           candidates.push(...visible)
-          const mark = a.matches('.mark') ? a : a.querySelector<HTMLElement>('.mark')
-          if (mark) setNum(mark, '.n', visible.length)
-          if (a !== cell) a.hidden = visible.length === 0
+          setNum(mark, '.n', visible.length)
+          // 0本になった種類の印は引っ込める（全部0なら下の `is-filtered` が升目ごと消す）
+          mark.hidden = visible.length === 0
         }
         cell.classList.toggle('is-filtered', total === 0)
-        if (cell.matches('a')) {
-          if (total === 0) cell.setAttribute('tabindex', '-1')
-          else cell.removeAttribute('tabindex')
-        }
+        if (total === 0) cell.setAttribute('tabindex', '-1')
+        else cell.removeAttribute('tabindex')
         setPoster(cell, candidates)
       }
 
