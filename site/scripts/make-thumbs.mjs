@@ -37,6 +37,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { PosterCache, isPlaceholder, expiryOf, loadManifest, saveManifest } from './posters.mjs'
 import { GENRE_ART, genreKeyOf, genreSvg, genreThumbName } from './genre-art.mjs'
+import { workCoverName, workCoverSvg } from './work-cover.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..')
@@ -188,6 +189,17 @@ function worksToRender(events) {
     if (!Number.isFinite(at)) continue
     if (e.kind === 'expiring' && LEAVING_SERVICES.includes(e.service) && at >= now) take(e.work)
     if (e.kind === 'new' && ARRIVALS_SERVICES.includes(e.service) && at >= since) take(e.work)
+    /*
+     * ★ 告知（配信開始予定）。**2026-09-20 に足した。ここだけ抜けていた。**
+     *   `/arrivals/<サービス>` はずっと告知を表に出していたのに、この一覧に
+     *   `upcoming` の枝が無く、**その行には絵が1枚も用意されていなかった。**
+     *   同日に events-data.ts の `upcomingEvents` が開始日を過ぎた告知も出すようにして
+     *   対象が 11件 → 69件（Prime）に増え、表で目に見えるようになって気づいた。
+     *   冒頭の「必ず両方直す」はこのこと。
+     * ★ サービスで絞らない。告知を出すのは `CALENDAR_SERVICES` の全社で、
+     *   ここで絞ると増えた社の行だけ絵が欠ける。
+     */
+    if (e.kind === 'upcoming' && at >= since) take(e.work)
   }
 
   // 記事の表に出てくる作品。邦題でも原題でも引けるようにしておく。
@@ -308,22 +320,46 @@ const usedWorks = {}
 let made = 0
 let madePosters = 0
 let fellBack = 0
+let madeCovers = 0
+
+/**
+ * ポスターの代わりに置く、**その作品だけの表紙**を書き出す。
+ *
+ * ★ ファイル名は `cover-<ID>.webp`。**ポスター（`<ID>.webp`）と混ぜない。**
+ *   混ぜると `src/lib/work-links.ts` の `isPosterThumb` が
+ *   「本物のポスターがある」と誤って答え、升目とカードの絵が
+ *   生成した表紙で埋まる（あそこはポスターのある作品を選ぶ場所）。
+ * ★ **サービスを問わず作る。** 第三者の画像を1枚も使っていないので、
+ *   API由来のポスターを付けられない U-NEXT の作品にも付けてよい。
+ */
+async function writeCover(w) {
+  fellBack++
+  const name = workCoverName(String(w.id))
+  keep.add(name)
+  const svg = workCoverSvg(w.localizedTitle ?? w.title, w.genres, THUMB.w, THUMB.h)
+  writeFileSync(join(outDir, name), await sharp(Buffer.from(svg)).webp({ quality: 82 }).toBuffer())
+  madeCovers++
+}
 
 await mapLimit(works, CONCURRENCY, async (w) => {
   const id = String(w.id)
   const title = w.localizedTitle ?? w.title
   const url = w.posterUrl
 
-  // ポスターが無い／題名を書いただけの代替画像 → ジャンル汎用画像に任せる
+  /*
+   * ポスターが無い／題名を書いただけの代替画像 → **その作品だけの表紙を描く**
+   * （2026-09-20。それまではジャンルごとに1枚の同じ絵に落ちていた）。
+   * 理由と版の決め方は scripts/work-cover.mjs の冒頭。
+   */
   if (!posters || !url || isPlaceholder(url)) {
-    fellBack++
+    await writeCover(w)
     return
   }
 
   const buf = await posters.poster(url, THUMB.w, THUMB.h, { label: title })
   if (!buf) {
-    // 取れなかった。表示側が genre-<key>.webp に落ちるので、ここは何もしない。
-    fellBack++
+    // 取れなかった（署名切れ・CDN障害）。ここも作品ごとの表紙に落とす。
+    await writeCover(w)
     return
   }
 
@@ -346,9 +382,10 @@ const removed = prune(outDir, keep)
 const removedPosters = prune(posterOutDir, keepPosters)
 
 console.log(
-  `作品サムネイル: ${made}枚（対象 ${works.length}作品 / ジャンル汎用に落ちたもの ${fellBack}件）` +
+  `作品サムネイル: ${made}枚（対象 ${works.length}作品 / ポスターが無く表紙を描いたもの ${fellBack}件）` +
     (removed ? ` / 不要になった ${removed}枚を削除` : ''),
 )
+console.log(`作品ごとの表紙: ${madeCovers}枚`)
 console.log(
   `作品ページのポスター: ${madePosters}枚（対象 ${pageIds.size}作品）` +
     (removedPosters ? ` / 不要になった ${removedPosters}枚を削除` : ''),

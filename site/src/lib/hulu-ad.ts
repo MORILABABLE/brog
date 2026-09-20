@@ -84,7 +84,8 @@ const IMPRESSION = AFB_IMPRESSION_BUILD ? (import.meta.env.PUBLIC_AFB_HULU_IMP ?
  *
  * 🔴 **画像を自前のドメインに再ホストしないこと。** 落とした瞬間に
  *   「管理画面に反映されている画像」ではなくなるうえ、差し替えにも追随できない。
- *   当サイトは作品ポスターを再ホストしているが（許諾済み）、**これは別物。**
+ *   当サイトは作品ポスターを再ホストしているが（API規約上は可・著作権の許諾ではない）、
+ *   **これは別物。**
  */
 const BANNER = import.meta.env.PUBLIC_AFB_HULU_BANNER ?? ''
 

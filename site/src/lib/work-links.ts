@@ -26,7 +26,7 @@
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { genreKeyOf, genreThumbName } from '../../scripts/genre-art.mjs'
+import { genreKeyOf, genreThumbName, workCoverName } from '../../scripts/genre-art.mjs'
 import { isPublishable } from './excluded'
 import { fillJapaneseTitle } from './work-title'
 import { adoptedStockWorks } from './availability'
@@ -204,10 +204,10 @@ function availableThumbs(): Set<string> {
  * 作品ポスターを**絶対に付けてはいけない**サービス。
  *
  * ★ 当サイトが持つポスターは配信API（Movie of the Night）から取得したもので、
- *   **そのAPIが扱うカタログの作品に対して**再ホストの許諾を得ている
+ *   **そのAPIが扱うカタログの作品に対して**規約上みとめられた再ホストである
  *   （docs/APPEARANCE.md 11節）。
  *   U-NEXT は自前収集（メニューを実ブラウザで読む）で、APIのカタログではない。
- *   そこへAPI由来のポスターを結びつけて出すのは、許諾の範囲外になりうる。
+ *   そこへAPI由来のポスターを結びつけて出すのは、その範囲の外になる。
  *
  * ★ U-NEXT の作品はそもそも `posterUrl` を持たない（実測 723件すべて）ので、
  *   通常はジャンル別の汎用画像に落ちる。**問題は同じ題名の別作品**で、
@@ -232,6 +232,19 @@ export function resolveThumb(work: RawWork, service?: string): string | undefine
     return `${THUMB_BASE}/${poster}`
   }
 
+  /*
+   * ★ **その作品だけの表紙**（2026-09-20）。ポスターが無い作品はここに落ちる。
+   *   ポスターと違い、**サービスで弾かない**（`NO_POSTER_SERVICES` を見ない）。
+   *   中身は題名と図形だけで第三者の画像を含まないので、U-NEXT の作品にも付けてよい。
+   *   版の決め方は scripts/work-cover.mjs の冒頭。
+   */
+  const cover = workCoverName(String(work.id))
+  if (files.has(cover)) return `${THUMB_BASE}/${cover}`
+
+  /*
+   * ジャンルごとに1枚の汎用画像。**いまここへ来るのは、表紙を描き損ねた作品だけ。**
+   * （make-thumbs.mjs は全作品ぶんの表紙を書く）
+   */
   const generic = genreThumbName(genreKeyOf(work.genres))
   return files.has(generic) ? `${THUMB_BASE}/${generic}` : undefined
 }
@@ -241,8 +254,18 @@ export function resolveThumb(work: RawWork, service?: string): string | undefine
  * 同じ題名の作品が2つあるときに、どちらを表に残すかの判定に使う（`put`）。
  */
 export function isPosterThumb(thumb?: string): boolean {
+  if (!thumb) return false
   // 汎用画像は `genre-*.webp`（`scripts/genre-art.mjs` の `genreThumbName`）
-  return !!thumb && !thumb.startsWith(`${THUMB_BASE}/genre-`)
+  if (thumb.startsWith(`${THUMB_BASE}/genre-`)) return false
+  /*
+   * ★ **その作品だけの表紙（`cover-*.webp`）も「ポスター」ではない**（2026-09-20）。
+   *   作品ごとに絵は違うが、中身は題名の冒頭3文字で、**作品の見た目を伝えてはいない。**
+   *   ここが true を返すと、升目（lib/evergreen.ts の `posterOf`）とカードの絵が
+   *   文字だけのタイルで埋まる。あそこは「その日を1枚で思い浮かべられる作品」を
+   *   選ぶ場所なので、選ぶ対象は本物のポスターに限る。
+   */
+  if (thumb.startsWith(`${THUMB_BASE}/cover-`)) return false
+  return true
 }
 
 // --- サービス名 ---------------------------------------------------------------

@@ -255,12 +255,27 @@ function sparqlString(value: string): string {
  * ■ 何のためにあるか
  * 配信各社の月次告知には作品名しか無い（→ pipeline/sources/announcement.ts）。
  * IMDb ID さえ分かれば Streaming Availability API の `/shows/{imdbId}` を引けて、
- * **記事の画像を従来と同じ許諾済みの経路で用意できる。**
+ * **記事の画像を従来と同じ経路で用意できる。**
  *
- * ■ 別名（skos:altLabel）は引かない
- * 引くと当たる数は増えるが、副題違い・シリーズ名との混同で
- * **別作品のポスターを載せる**危険が上がる。画像は間違えると記事の信用に直結し、
- * 落としても代替（ジャンル別の自前タイル）があるので、正確さを優先する。
+ * ■ 別名（skos:altLabel）も引く（2026-09-20 に方針を変えた）
+ * それまでは正式ラベルだけを引いていた。理由は「副題違い・シリーズ名との混同で
+ * **別作品のポスターを載せる**危険が上がる」。**危険の見立ては正しいが、
+ * 落ちる量を測っていなかった。**
+ *
+ * 実測（2026-09-20・画像の無い告知63件）:
+ *   正式ラベルだけ  … 「テネット」が引けない。Wikidata の ja 正式ラベルは
+ *                      **「TENET テネット」**で、告知の表記と1文字も一致しない。
+ *                      作品自体は配信APIにポスター付きで在り、Prime Video にも在る。
+ *   別名も引く      … `tt6723592 (2020) film` に**正しく**解決した。
+ *
+ * ★ **安全網は元から在って、ここではない。** 別名で候補が増えても、
+ *   採用までに `announced-works.ts` の2段が挟まる —
+ *     `matchesType()` … 告知の区分（映画／シリーズ）と instance of が合うものだけ
+ *     `pickMatch()`   … **1件に絞れなければ採らない**（候補は人に委ねる）
+ *   同日の実測で、Wikipedia 経由の候補（曖昧さ回避ページ・楽曲・漫画）は
+ *   この2段が全部弾いた。**増やしてよいのは候補であって、採用ではない。**
+ * ★ 上積みは**数件規模**。別名を足しても大半は当たらない
+ *   （告知に多い韓中ドラマ・配信独占の新作は Wikidata に項目自体が無い）。
  *
  * ■ 同名は素直に複数返す
  * 「ダンケルク」は1964年の映画と2017年の映画の両方が返る。
@@ -278,7 +293,7 @@ export async function resolveImdbIdsByLabel(
     const values = group.map((t) => `"${sparqlString(t)}"@${lang}`).join(' ')
     const sparql = `SELECT ?label ?imdb ?type ?year WHERE {
   VALUES ?label { ${values} }
-  ?item rdfs:label ?label .
+  { ?item rdfs:label ?label } UNION { ?item skos:altLabel ?label }
   ?item wdt:${P_IMDB} ?imdb .
   FILTER(STRSTARTS(?imdb, "tt"))
   OPTIONAL { ?item wdt:P31 ?class . ?class rdfs:label ?type . FILTER(LANG(?type) = "en") }

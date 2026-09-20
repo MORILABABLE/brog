@@ -36,7 +36,9 @@
  *
  * ■ 作品ポスターについて
  * 配信API(Movie of the Night)の返すポスターを**ビルド時に取得**し、
- * 自分のドメインから配信している。再ホストは提供元に照会して許諾済み。
+ * 自分のドメインから配信している。再ホストは**API規約上は可**（提供元に照会・2026-08-25）。
+ * ★ これは規約上の可否であって、ポスターの著作権の許諾ではない（現行規約5節。
+ *   提供元は許諾を出す立場に無いと明記している）。**「許諾済み」と書き戻さないこと。**
  * 経緯・取り直しの手順は posters.mjs の冒頭と docs/APPEARANCE.md の10〜11節。
  *
  * **作中キャプチャ（本編の場面写真）は使えない。** 著作権があり、
@@ -83,7 +85,6 @@
  * 節を並べ替えても参照が壊れないようにするため。
  */
 import sharp from 'sharp'
-import opentype from 'opentype.js'
 import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -97,7 +98,8 @@ import {
   saveManifest,
 } from './posters.mjs'
 import { FALLBACK_GENRE, genreKeyOf, genreMotif, genreSvg } from './genre-art.mjs'
-import { createSafeText, missingReport } from './font-safe.mjs'
+import { missingReport } from './font-safe.mjs'
+import { ellipsize, safeText, textPath, textWidth, wrap } from './type.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..')
@@ -179,17 +181,7 @@ const TILE = {
   yearY: 648,
 }
 
-/** make-cards.mjs と同じ同梱フォント（SIL OFL 1.1 / scripts/fonts/OFL.txt） */
-const font = {
-  bold: opentype.parse(readFileSync(join(here, 'fonts', 'ZenKakuGothicNew-Bold.ttf')).buffer),
-  regular: opentype.parse(readFileSync(join(here, 'fonts', 'ZenKakuGothicNew-Regular.ttf')).buffer),
-}
-/**
- * 同梱フォントに無い文字を、描ける文字に置き換える。
- * **測るときと描くときの両方に掛けている**（片方だけだと幅がずれて枠からはみ出す）。
- * 理由と実測は scripts/font-safe.mjs の冒頭。
- */
-const safeText = createSafeText(font)
+/* フォントと文字描画は scripts/type.mjs に寄せた（2026-09-20）。ここに写しを戻さないこと。 */
 
 
 /**
@@ -237,92 +229,6 @@ const NO_LINE_START = '、。，．・：；！？」』）］｝〉》”’ー
  * 残りが見出し本文に居座って同じ日付が2回出る。
  */
 const DATE_PREFIX = /^\d{1,2}月\d{1,2}日(?:\s*[・、,／/〜～―—-]\s*(?:\d{1,2}月)?\d{1,2}日)*/
-
-function textPath(weight, text, x, y, size) {
-  const f = font[weight]
-  const path = new opentype.Path()
-  let cx = x
-  for (const ch of [...safeText(text)]) {
-    const g = f.charToGlyph(ch)
-    path.extend(g.getPath(cx, y, size))
-    cx += (g.advanceWidth / f.unitsPerEm) * size
-  }
-  roundCommands(path)
-  return { d: path.toPathData(2), width: cx - x }
-}
-
-/**
- * 座標を小数2桁に丸めてから toPathData() に渡す。**外すと文字が黒い塊になる。**
- * 理由は make-cards.mjs の同名関数に書いてある（opentype.js 2.0.0 の roundDecimal が
- * 小数部を指数表記の文字列にしてしまい NaN を返す）。直すときは両方直すこと。
- */
-function roundCommands(path) {
-  for (const c of path.commands) {
-    for (const k of ['x', 'y', 'x1', 'y1', 'x2', 'y2']) {
-      if (k in c) c[k] = Math.round(c[k] * 100) / 100
-    }
-  }
-}
-
-function textWidth(weight, text, size) {
-  const f = font[weight]
-  let w = 0
-  for (const ch of [...safeText(text)]) w += (f.charToGlyph(ch).advanceWidth / f.unitsPerEm) * size
-  return w
-}
-
-/**
- * 英数字。**この連なりの途中では改行しない。**
- *
- * 1文字ずつ折ると「モーニング娘｡ コンサートツアー200 / 6春」のように
- * 数字が割れる（実測）。日本語は1文字で折ってよいが、英数字は語として読むので、
- * 割れると読み手が一度つまずく。
- */
-const WORD_CHAR = /[0-9A-Za-z]/
-
-function wrap(weight, text, size, maxWidth, maxLines) {
-  /*
-   * ★ **ここで一度だけ置き換える。** 折り返しの判定に NO_LINE_START を使うので、
-   *   行頭に来てはいけない記号（`〜` など）を**置き換えた後の姿で**見る必要がある。
-   *   置き換え前の `～`(U+FF5E) のまま判定すると、行頭に来てしまう。
-   */
-  text = safeText(text)
-  const lines = []
-  let line = ''
-  for (const ch of [...text]) {
-    if (line !== '' && textWidth(weight, line + ch, size) > maxWidth && !NO_LINE_START.includes(ch)) {
-      let head = line
-      let carry = ch
-      /*
-       * 行末が英数字の連なりで、次の文字も英数字なら、**連なりごと次の行へ送る。**
-       * ただし送り先でも収まらない長さ（長い英字列）なら送っても解決しないので
-       * そのまま折る。行の全部が連なりのときも折る
-       * （送ると行が空になり、先へ進めなくなる）。
-       */
-      if (WORD_CHAR.test(ch)) {
-        const run = /[0-9A-Za-z]+$/.exec(head)?.[0]
-        if (run && run.length < head.length && textWidth(weight, run + ch, size) <= maxWidth) {
-          head = head.slice(0, -run.length)
-          carry = run + ch
-        }
-      }
-      lines.push(head)
-      line = carry
-      if (lines.length === maxLines) return lines
-    } else {
-      line += ch
-    }
-  }
-  if (line && lines.length < maxLines) lines.push(line)
-  return lines
-}
-
-function ellipsize(weight, text, size, maxWidth) {
-  if (textWidth(weight, text, size) <= maxWidth) return text
-  let s = text
-  while (s.length > 1 && textWidth(weight, s + '…', size) > maxWidth) s = s.slice(0, -1)
-  return s + '…'
-}
 
 // --- 収集データ（公開年とジャンルを引くため） -----------------------------
 

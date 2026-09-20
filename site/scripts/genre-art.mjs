@@ -125,6 +125,20 @@ export function genreThumbName(key) {
   return `genre-${GENRE_BY_KEY.has(key) ? key : FALLBACK_GENRE}.webp`
 }
 
+/**
+ * **その作品だけの表紙**のファイル名（`scripts/work-cover.mjs` が描くもの）。
+ *
+ * ★ **名前の規則だけをここに置いている。** 描く側（work-cover.mjs）はフォントを読むので、
+ *   Astro 側（src/lib/work-links.ts）から読み込むと**ビルドが壊れる** —
+ *   バンドルされて `dist/.prerender/chunks/` へ移った先から
+ *   `fonts/…ttf` を相対で探しに行って ENOENT になる（2026-09-20 に実際に踏んだ。
+ *   同じ罠が src/lib/events-data.ts の冒頭にも書いてある）。
+ *   このファイルは依存が無く両側から読めるので、名前はここに置く。
+ */
+export function workCoverName(id) {
+  return `cover-${id}.webp`
+}
+
 // --- 絵柄 -------------------------------------------------------------------
 
 /**
