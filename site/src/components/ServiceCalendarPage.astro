@@ -15,6 +15,7 @@ import {
   ARRIVALS_WINDOW_DAYS,
   calendarPastStart,
   groupByDate,
+  upcomingAheadCount,
   upcomingSources,
   type WorkRow,
 } from '../lib/events-data'
@@ -82,6 +83,13 @@ const { direction, service, label, posts } = Astro.props
 
 const content = calendarContent(direction, service)
 const futureWorks: WorkRow[] = content.future?.works ?? []
+/*
+ * 「これから」の本数。**`futureWorks.length` と同じではない**（2026-09-20）。
+ * 配信開始予定には、開始日を過ぎたのに配信APIが新着として拾えていない作品が混じる
+ * （理由は lib/events-data.ts の `upcomingEvents`）。説明文の「始まる予定◯本」は
+ * **まだ日付が来ていないものだけ**を数えないと、本数が実際より多く読める。
+ */
+const ahead = direction === 'arrivals' ? upcomingAheadCount(service) : futureWorks.length
 const pastWorks: WorkRow[] = content.past.works
 const since = calendarPastStart()
 const isPrime = service === 'prime-video'
@@ -216,8 +224,8 @@ const description =
       : futureWorks.length > 0
         ? `${label}で見放題配信が終了する予定の作品${futureWorks.length}本（最も近い終了日は${formatDate(nearest!.at)}）と、${formatDate(since)}以降に終了した作品${pastWorks.length}本を、日付ごとに確認できます。`
         : `${label}で見放題配信が終了する予定の作品と、${formatDate(since)}以降に終了した作品${pastWorks.length}本を、日付ごとに確認できます。現在、終了予定として取得できている作品はありません。`
-    : futureWorks.length > 0
-      ? `${label}で見放題配信が始まる予定の作品${futureWorks.length}本と、直近${ARRIVALS_WINDOW_DAYS}日間に見放題になった作品${pastWorks.length}本を、日付ごとに確認できます。`
+    : ahead > 0
+      ? `${label}で見放題配信が始まる予定の作品${ahead}本と、直近${ARRIVALS_WINDOW_DAYS}日間に見放題になった作品${pastWorks.length}本を、日付ごとに確認できます。`
       : `${label}で直近${ARRIVALS_WINDOW_DAYS}日間に見放題になった作品${pastWorks.length}本を、日付ごとに確認できます。`
 
 /*

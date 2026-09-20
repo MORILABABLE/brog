@@ -19,6 +19,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { isPublishable } from './excluded'
+import { normalizeForSearch } from './normalize'
 import { fillJapaneseTitle } from './work-title'
 import { workGenre } from './work-genre'
 import type { GenreSlug } from '../config'
@@ -466,31 +467,109 @@ export function loadEnded(service: string): WorkListData {
 }
 
 /**
- * 指定サービスで**見放題配信が始まる予定**の作品を、配信開始日の近い順に返す。
+ * 告知の作品が、配信APIの `new` として**すでに新着の表に出ているか**。
+ *
+ * 見るのは強いID（imdbId）が先、無ければ題名。題名のならし方は作品検索と同じ
+ * （`normalizeForSearch`。**片方だけ変えないこと**）。
+ *
+ * ★ **見るのは新着の表に出ている60日ぶんだけ**（`ARRIVALS_WINDOW_DAYS`）。
+ *   全期間を見ると、**昔いちど配信されて消えた作品**の `new` が残っているせいで、
+ *   同じ作品の「再配信の告知」を消してしまう。ここが答えるのは
+ *   「いま新着の表に**出ているか**」であって「過去に出たことがあるか」ではない。
+ *
+ * ★ **題名で突き合わせている。** `pipeline/sources/announced-works.ts` は
+ *   題名での突き合わせを禁じているが、あれと**目的が違う**。
+ *   あちらが突き合わせるのは「どのポスターを載せるか」で、外すと**別作品の絵が載る**
+ *   ＝ 記事が誤情報になる。ここで突き合わせるのは「もう新着に出ているから省くか」で、
+ *   外したときに起きるのは**同じ作品が2行に見える**ことだけ。
+ *   天秤の傾きが逆なので、あちらの「間違えるくらいなら載せない」を持ち込まない。
+ */
+function apiConfirmed(service: string): (w: RawWork) => boolean {
+  const since = Date.now() - ARRIVALS_WINDOW_DAYS * 86400000
+  const imdbIds = new Set<string>()
+  const titles = new Set<string>()
+  for (const e of readAll()) {
+    if (e.kind !== 'new' || e.service !== service || !e.at) continue
+    if (Date.parse(e.at) < since) continue
+    const id = e.work.meta?.imdbId
+    if (typeof id === 'string' && id) imdbIds.add(id)
+    // 原語表記も入れる。APIの邦題が付かない作品は英題のまま `new` に並ぶ
+    for (const t of [e.work.title, e.work.localizedTitle, e.work.originalTitle]) {
+      if (t) titles.add(normalizeForSearch(t))
+    }
+  }
+  return (w) => {
+    const id = w.meta?.imdbId
+    if (typeof id === 'string' && id && imdbIds.has(id)) return true
+    return [w.title, w.localizedTitle].some((t) => t && titles.has(normalizeForSearch(t)))
+  }
+}
+
+/**
+ * 告知から取り込んだ「見放題配信が始まる（始まった）予定」のイベント。
+ * **`loadUpcoming` と `upcomingSources` が同じものを見るための1か所。**
  *
  * ■ 出どころは各社の告知（docs/ANNOUNCEMENTS.md）
  * 配信APIの `upcoming` は日本では0件なので、`collect:announce` が各社の
  * 翌月ラインナップの告知から取り込んだ `kind: "upcoming"` だけを読む。
  * **取っているのは作品名・日付・区分の事実だけ**（紹介文と画像は取っていない）。
  *
- * ★ **きょう以降だけ。** 開始日を過ぎたものは、配信APIが `new` として拾えば新着の表に出る。
- *   過ぎた予定を残すと「始まる予定」と「始まった」が同じ作品で2行になる。
+ * ■ 2026-09-20: 開始日を過ぎた告知を**捨てるのをやめた**
+ * それまでは「きょう以降だけ」で、理由はこう書いてあった —
+ * 「開始日を過ぎたものは、配信APIが `new` として拾えば新着の表に出る。
+ *   過ぎた予定を残すと『始まる予定』と『始まった』が同じ作品で2行になる」。
+ * **前半が事実と違っていた。** 実測（2026-09-20）:
+ *
+ *   開始日を過ぎた告知 139件（直近60日）のうち、配信APIが `new` で拾えていたのは 49件。
+ *   残り **90件は、告知の表からも新着の表からも消えていた**
+ *   （Prime Video 58件・Netflix 32件）。
+ *
+ * 消えるのは**開始日の当日**で、読者がその作品を探す日そのもの。
+ * 実例: 「チェンソーマン レゼ篇」（Prime Video 独占・9月19日開始）は
+ * 9月19日まで升目に出ていて、**9月20日に消えた。** APIはこの作品を返していない。
+ *
+ * ★ 2行問題は「捨てる」ではなく「**APIが拾ったものだけ省く**」で解く（`apiConfirmed`）。
+ * ★ **省くのは開始日を過ぎたものだけ。** これからの告知は今までどおり素通しする。
+ *   未来の行を題名の取り違えで消す危険を作らないため。
+ * ★ 過去にさかのぼる幅は新着の表と同じ60日（`ARRIVALS_WINDOW_DAYS`）。
+ *   `/arrivals/<サービス>` の2つの表が**同じ範囲**を指すようにそろえてある。
  * ★ 告知は月末にまとめて出る（Prime Video は前月末・Netflix は随時）。
  *   **月の後半は翌月ぶんがまだ無く、件数が少ないのが正常。**
  * ★ 日付の無い告知（「近日」など）は載せない。升目に置けない。
  */
-export function loadUpcoming(service: string): WorkListData {
+function upcomingEvents(service: string): RawEvent[] {
+  const since = Date.now() - ARRIVALS_WINDOW_DAYS * 86400000
   const today = jstTodayStart()
   const events = readAll().filter(
-    (e) => e.kind === 'upcoming' && e.service === service && e.at && Date.parse(e.at) >= today,
+    (e) => e.kind === 'upcoming' && e.service === service && e.at && Date.parse(e.at) >= since,
   )
-  const latest = latestPerWork(events)
+  const confirmed = apiConfirmed(service)
+  return latestPerWork(events).filter((e) => Date.parse(e.at!) >= today || !confirmed(e.work))
+}
+
+/**
+ * 指定サービスで**見放題配信が始まる予定**の作品を、配信開始日の近い順に返す。
+ * 範囲と絞り込みの決まりは `upcomingEvents` の上に1つだけ書いてある。
+ *
+ * ★ 返す中には**開始日を過ぎたものが混じる**（APIが新着として拾えていない作品）。
+ *   ページの見出しの言葉は「配信開始予定」のままでよい —
+ *   告知された予定であることは、日付を過ぎても変わらない。
+ *   **「配信中」と書かないこと**（components/ServiceCalendarPage.astro の決まり）。
+ */
+export function loadUpcoming(service: string): WorkListData {
+  const latest = upcomingEvents(service)
   return {
     works: latest
       .map(toRow)
       .sort((a, b) => a.at.getTime() - b.at.getTime() || a.title.localeCompare(b.title, 'ja')),
     dataAsOf: asOf(latest),
   }
+}
+
+/** そのうち**まだ開始日が来ていない**本数。ページの説明文が「始まる予定◯本」と書くのに使う。 */
+export function upcomingAheadCount(service: string): number {
+  const today = jstTodayStart()
+  return upcomingEvents(service).filter((e) => Date.parse(e.at!) >= today).length
 }
 
 /**
@@ -506,13 +585,14 @@ const ANNOUNCEMENT_PAGES: Record<string, { publisher: string; url: string }> = {
 /**
  * 配信開始予定の出典（告知のページ）。**ページの「出典」に並べる。**
  * 同じ告知から何件取り込んでいても1行にする。
+ *
+ * ★ **表に出しているのと同じイベントから拾う**（`upcomingEvents`）。
+ *   別の絞り込みを書くと、載っている作品の出どころが「出典」に出ない日ができる。
  */
 export function upcomingSources(service: string): { publisher: string; url: string }[] {
-  const today = jstTodayStart()
   const seen = new Map<string, string>()
   let withoutUrl = false
-  for (const e of readAll()) {
-    if (e.kind !== 'upcoming' || e.service !== service || !e.at || Date.parse(e.at) < today) continue
+  for (const e of upcomingEvents(service)) {
     const url = e.work.meta?.['announcementUrl']
     const publisher = e.work.meta?.['publisher']
     if (typeof url !== 'string') {

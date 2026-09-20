@@ -106,10 +106,18 @@ export async function loadPins(): Promise<Record<string, string>> {
   }
 }
 
-function keyOf(e: ChangeEvent): string {
+/**
+ * `works` の見出し（`サービス|邦題|年`）。
+ *
+ * ★ **この組み立てを他所に書き写さないこと。** `announce:recheck` も同じ記録を引くので、
+ *   規則が2か所に割れると「引き直したのに記録が更新されない」という静かな食い違いになる。
+ */
+export function announcedWorkKey(e: ChangeEvent): string {
   const year = e.work.year ?? ''
   return `${e.service}|${e.work.localizedTitle ?? e.work.title}|${year}`
 }
+
+const keyOf = announcedWorkKey
 
 /**
  * Wikidata の instance of が、告知の区分（映画／それ以外）と合うか。
@@ -269,13 +277,27 @@ export async function resolveAnnouncedWorks(
     }
     log(`Wikidata に ${needQuery.length}件（言い換えを含めて${labels.size}通り）を問い合わせます…`)
     let found = new Map<string, LabelMatch[]>()
+    /*
+     * 問い合わせ自体が通ったか。**「聞いたが無かった」と「聞けなかった」を分ける。**
+     *
+     * ★ ここを分けずに落ちたまま先へ進むと、**記録が毒される**（2026-09-20 に修正）。
+     *   下で `imdbId: null, checkedAt: 今` を書くので、Wikidata が502を返しただけの日に
+     *   「確認済み・該当なし」が刻まれ、**そこから30日は引き直されなくなる。**
+     *   実際に 2026-09-20 の `announce:recheck --dry-run` で502を踏み、
+     *   7件が「Wikidataに無し」と報告された（本当は1件も聞けていない）。
+     *   引き直しを毎日走らせるようにしたぶん、踏む機会も毎日ある。
+     */
+    let queried = true
     try {
       found = await resolveImdbIdsByLabel([...labels], opts.lang)
     } catch (err) {
       // Wikidata が落ちていても取り込み自体は続ける（画像が無いだけ）
+      queried = false
       log(`  Wikidata に問い合わせできませんでした: ${(err as Error).message}`)
+      log('  記録は残しません（次回そのまま引き直します）')
     }
-    for (const e of needQuery) {
+    // ★ 聞けなかったときは1件も記録しない（`queried`）。次回そのまま引き直す
+    if (queried) for (const e of needQuery) {
       const title = e.work.localizedTitle ?? e.work.title
       const showType = e.work.type === 'movie' ? ('movie' as const) : ('series' as const)
       const anime = /アニメ/.test(String(e.work.meta.category ?? ''))

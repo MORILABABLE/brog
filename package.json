@@ -30,6 +30,7 @@
     "unext:ng": "tsx pipeline/cli/unext-ng.ts",
     "check:ads": "tsx pipeline/cli/check-ads.ts",
     "check:unext": "tsx pipeline/cli/check-ads.ts",
+    "announce:recheck": "tsx pipeline/cli/recheck-announced.ts",
     "backfill:images": "tsx pipeline/cli/backfill-images.ts",
     "stock": "tsx pipeline/cli/upcoming-stock.ts",
     "retire": "tsx pipeline/cli/retire.ts",

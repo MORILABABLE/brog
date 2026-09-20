@@ -134,14 +134,49 @@ function normalizeLabel(label: string): string {
 
 type Binding = Record<string, { value?: string } | undefined>
 
-async function runBindings(sparql: string): Promise<Binding[]> {
-  const res = await fetch(`${ENDPOINT}?format=json&query=${encodeURIComponent(sparql)}`, {
-    headers: { 'User-Agent': USER_AGENT, accept: 'application/sparql-results+json' },
-  })
-  if (!res.ok) throw new Error(`Wikidata ${res.status} ${res.statusText}`)
+/**
+ * 引き下がる前に何回まで試すか（初回を含む）。
+ *
+ * ■ なぜ要るか（2026-09-20 追加）
+ * WDQS は**公開の共有エンドポイント**で、混んでいると 429（Too Many Requests）や
+ * 502 を返す。**実測**: 2026-09-20 に `announce:recheck` を続けて叩いたところ、
+ * 3回中2回が 502 / 429 で落ちた。
+ *
+ * ここは Wikidata への問い合わせが**全部通る1か所**なので、落ちたときの影響が広い。
+ * 束は40件ずつなので、1回の失敗で**40件ぶんの解決がまるごと落ちる。**
+ * 呼び出し側（enrich・collect:announce・announce:recheck）はどれも例外を握りつぶして
+ * 「解決できなかった」として先へ進むので、**失敗は静かな欠測になる。**
+ * 1回の短い待ちで拾えるものまで落とさない。
+ *
+ * ★ 増やしすぎないこと。相手は無料の公共サービスで、こちらが粘るほど負荷をかける。
+ */
+const MAX_ATTEMPTS = 3
+/** 再試行の待ち（ミリ秒）。回を追うごとに伸ばす。`Retry-After` があればそちらを優先 */
+const RETRY_BASE_MS = 1_500
 
-  const json = (await res.json()) as { results?: { bindings?: Binding[] } }
-  return json.results?.bindings ?? []
+/** 待てば直る見込みのある応答か。4xx は待っても直らない（429 だけは別） */
+function retriable(status: number): boolean {
+  return status === 429 || status >= 500
+}
+
+async function runBindings(sparql: string): Promise<Binding[]> {
+  const url = `${ENDPOINT}?format=json&query=${encodeURIComponent(sparql)}`
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': USER_AGENT, accept: 'application/sparql-results+json' },
+    })
+    if (res.ok) {
+      const json = (await res.json()) as { results?: { bindings?: Binding[] } }
+      return json.results?.bindings ?? []
+    }
+    if (attempt >= MAX_ATTEMPTS || !retriable(res.status)) {
+      throw new Error(`Wikidata ${res.status} ${res.statusText}`)
+    }
+    // 相手が待ち時間を指定していればそれに従う（429 で返ることがある）
+    const after = Number(res.headers.get('retry-after'))
+    const waitMs = Number.isFinite(after) && after > 0 ? after * 1_000 : RETRY_BASE_MS * attempt
+    await new Promise((r) => setTimeout(r, waitMs))
+  }
 }
 
 async function runQuery(sparql: string): Promise<Map<string, string>> {
