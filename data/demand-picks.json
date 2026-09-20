@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-19T01:11:05.408Z",
-  "asOf": "2026-09-19",
+  "generatedAt": "2026-09-20T01:11:03.819Z",
+  "asOf": "2026-09-20",
   "note": "npm run demand -- --picks が書く。手で編集しない。需要の数字は入れない（並び順だけが需要を反映する）。読む側は site/src/lib/demand-picks.ts。",
   "picks": [
     {
@@ -17,7 +17,7 @@
         "2026-09-special-anime-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -36,7 +36,7 @@
         "2026-09-upcoming-prime-video-western"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -50,7 +50,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -64,7 +64,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -81,7 +81,7 @@
         "kamen-rider"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -99,7 +99,7 @@
         "2026-09-special-japanese-anime-u-next"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -115,7 +115,20 @@
         "2026-08-leaving"
       ],
       "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
+    },
+    {
+      "workIds": [
+        "1051"
+      ],
+      "title": "ナイト ミュージアム",
+      "answer": "where",
+      "services": [
+        "apple-tv"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -132,7 +145,7 @@
         "2026-08-arrivals-prime-video"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -148,7 +161,7 @@
         "2026-08-leaving"
       ],
       "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -163,7 +176,7 @@
         "2026-08-arrivals-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -178,7 +191,7 @@
         "kamen-rider"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -191,7 +204,20 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
+    },
+    {
+      "workIds": [
+        "SID0187711"
+      ],
+      "title": "室井慎次　生き続ける者",
+      "answer": "where",
+      "services": [
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -207,7 +233,7 @@
         "2026-08-arrivals-prime-video"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -223,46 +249,7 @@
         "2026-08-arrivals-prime-video"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
-    },
-    {
-      "workIds": [
-        "SID0187711"
-      ],
-      "title": "室井慎次　生き続ける者",
-      "answer": "where",
-      "services": [
-        "u-next"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
-    },
-    {
-      "workIds": [
-        "15983"
-      ],
-      "title": "本好きの下剋上",
-      "answer": "where",
-      "services": [
-        "netflix"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
-    },
-    {
-      "workIds": [
-        "4039143"
-      ],
-      "title": "どうする家康",
-      "answer": "where",
-      "services": [
-        "netflix"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -275,7 +262,51 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
+    },
+    {
+      "workIds": [
+        "15983"
+      ],
+      "title": "本好きの下剋上",
+      "answer": "where",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-20"
+    },
+    {
+      "workIds": [
+        "4039143"
+      ],
+      "title": "どうする家康",
+      "answer": "where",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-20"
+    },
+    {
+      "workIds": [
+        "ann-03a428b6ce",
+        "1481"
+      ],
+      "title": "バイオハザード",
+      "answer": "where",
+      "services": [
+        "prime-video"
+      ],
+      "covered": [
+        "2026-09-arrivals-prime-video",
+        "2026-09-upcoming-prime-video-western",
+        "resident-evil"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -291,7 +322,7 @@
         "2026-08-ended"
       ],
       "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -304,7 +335,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -320,7 +351,7 @@
         "2026-08-arrivals-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     },
     {
       "workIds": [
@@ -337,44 +368,8 @@
         "2026-09-upcoming-prime-video-western"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19"
-    },
-    {
-      "workIds": [
-        "168462"
-      ],
-      "title": "容疑者 室井慎次",
-      "answer": "where",
-      "services": [
-        "prime-video"
-      ],
-      "covered": [
-        "2026-08-arrivals-prime-video"
-      ],
-      "firstSeen": "2026-09-19",
-      "lastSeen": "2026-09-19"
-    },
-    {
-      "workIds": [
-        "25942288",
-        "87976",
-        "SID0099619"
-      ],
-      "title": "ONE PIECE STAMPEDE",
-      "answer": "where",
-      "services": [
-        "netflix",
-        "u-next"
-      ],
-      "covered": [
-        "2026-08-arrivals-anime",
-        "2026-08-arrivals-netflix",
-        "2026-08-leaving-u-next",
-        "2026-09-leaving-netflix"
-      ],
-      "firstSeen": "2026-09-19",
-      "lastSeen": "2026-09-19"
+      "lastSeen": "2026-09-20"
     }
   ],
-  "notifiedSignature": "ONE PIECE"
+  "notifiedSignature": "ONE PIECE|SPEED"
 }
