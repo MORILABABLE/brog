@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-16T04:33:52.168Z",
+  "updatedAt": "2026-09-21T22:33:52.153Z",
   "works": {
     "102": {
       "fetchedAt": "2026-09-13T14:23:26.113Z",
@@ -71,7 +71,7 @@
       "services": []
     },
     "194": {
-      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -90,10 +90,11 @@
           ],
           "link": "https://www.netflix.com/title/60002360"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "218": {
-      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -118,10 +119,11 @@
           ],
           "link": "https://www.netflix.com/title/70120085"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "219": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "apple-tv",
@@ -145,10 +147,11 @@
           ],
           "link": "https://www.netflix.com/title/1032625"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "282": {
-      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "netflix",
@@ -173,10 +176,11 @@
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0JXM9K5QSXG0X1O6M4CHGIYACB?ref_=atv_dp"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "287": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "netflix",
@@ -185,7 +189,8 @@
           ],
           "link": "https://www.netflix.com/title/80113701"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "350": {
       "fetchedAt": "2026-09-15T03:22:16.937Z",
@@ -230,7 +235,7 @@
       ]
     },
     "406": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -264,7 +269,8 @@
           ],
           "link": "https://www.netflix.com/title/70208599"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "417": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -280,7 +286,7 @@
       ]
     },
     "420": {
-      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "apple-tv",
@@ -306,7 +312,8 @@
           ],
           "link": "https://www.netflix.com/title/80029196"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "424": {
       "fetchedAt": "2026-09-06T12:43:50.477Z",
@@ -331,7 +338,7 @@
       ]
     },
     "428": {
-      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "netflix",
@@ -349,10 +356,11 @@
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0R9T1YYWU54G4KKG8BIWWK2STE?ref_=atv_dp"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "429": {
-      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "netflix",
@@ -372,15 +380,16 @@
         {
           "service": "apple-tv",
           "types": [
-            "buy",
-            "rent"
+            "rent",
+            "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-prisoner-of-azkaban/umc.cmc.1uwqg0s65yo3lzxz96krkieoq?playableId=tvs.sbd.9001%3A397683999"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "446": {
-      "fetchedAt": "2026-09-08T14:21:08.862Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "netflix",
@@ -406,10 +415,41 @@
           ],
           "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-goblet-of-fire/umc.cmc.24y16k16f8dxl4o2e8ho0lc1t?playableId=tvs.sbd.9001%3A399549256"
         }
+      ],
+      "via": "changes"
+    },
+    "456": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/ted/umc.cmc.43kjuat076h7rboqtl9s6bx3o?playableId=tvs.sbd.9001%3A590363749"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0JC7Q52H579GVV0GBNBJWVJIMT?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70218756"
+        }
       ]
     },
     "491": {
-      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -435,10 +475,11 @@
           ],
           "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-order-of-the-phoenix/umc.cmc.37a9axm70raoztdprh6fimsth?playableId=tvs.sbd.9001%3A399510878"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "536": {
-      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -463,10 +504,11 @@
           ],
           "link": "https://www.netflix.com/title/70115887"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "548": {
-      "fetchedAt": "2026-09-06T10:51:17.400Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "netflix",
@@ -492,7 +534,8 @@
           ],
           "link": "https://tv.apple.com/jp/movie/harry-potter-and-the-half-blood-prince/umc.cmc.4pxzxmpprsj02d4cf8g5jve3b?playableId=tvs.sbd.9001%3A395594526"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "596": {
       "fetchedAt": "2026-09-13T14:23:26.113Z",
@@ -535,6 +578,44 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/tenet/umc.cmc.198i48vdau0mtd8gtsdxjtz9w?playableId=tvs.sbd.9001%3A1538251548"
+        }
+      ]
+    },
+    "627": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription",
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0SKP17B2AIFO9RIIUD9L45J05U?ref_=atv_dp"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-c21c733a-18f4-4cdc-b1e8-1ff6b996c0a3"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-amazing-spider-man-2/umc.cmc.66rooktnzrc8dnl6k671mxn5z?playableId=tvs.sbd.9001%3A855462482"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70293702"
         }
       ]
     },
@@ -582,7 +663,7 @@
       ]
     },
     "677": {
-      "fetchedAt": "2026-09-08T14:21:08.862Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -608,7 +689,8 @@
           ],
           "link": "https://www.netflix.com/title/80111501"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "746": {
       "fetchedAt": "2026-09-15T03:22:16.937Z",
@@ -675,7 +757,7 @@
       ]
     },
     "821": {
-      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "netflix",
@@ -692,7 +774,8 @@
           ],
           "link": "https://tv.apple.com/jp/movie/the-lost-world-jurassic-park/umc.cmc.5xslhktwkaz87xpal96im60ey?playableId=tvs.sbd.9001%3A573679659"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "851": {
       "fetchedAt": "2026-09-06T12:43:50.477Z",
@@ -782,7 +865,7 @@
       ]
     },
     "995": {
-      "fetchedAt": "2026-09-10T05:45:02.097Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "apple-tv",
@@ -791,15 +874,9 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/man-on-fire/umc.cmc.2wem1n2410lpz2iichralb5er?playableId=tvs.sbd.9001%3A1278611424"
-        },
-        {
-          "service": "netflix",
-          "types": [
-            "subscription"
-          ],
-          "link": "https://www.netflix.com/title/60034560"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "1023": {
       "fetchedAt": "2026-09-06T12:42:56.838Z",
@@ -872,7 +949,7 @@
       ]
     },
     "1184": {
-      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "apple-tv",
@@ -889,10 +966,11 @@
           ],
           "link": "https://www.netflix.com/title/60004473"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "1205": {
-      "fetchedAt": "2026-09-08T12:42:35.675Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "apple-tv",
@@ -918,7 +996,8 @@
           ],
           "link": "https://www.netflix.com/title/80228280"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "1220": {
       "fetchedAt": "2026-09-06T12:43:50.477Z",
@@ -942,8 +1021,22 @@
         }
       ]
     },
+    "1345": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/lady-bird/umc.cmc.f3kclpn70i0yz3sh6yw52lmw?playableId=tvs.sbd.9001%3A1420492117"
+        }
+      ]
+    },
     "1379": {
-      "fetchedAt": "2026-09-08T14:21:08.862Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "apple-tv",
@@ -960,7 +1053,8 @@
           ],
           "link": "https://www.netflix.com/title/80997275"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "1481": {
       "fetchedAt": "2026-09-06T12:44:09.271Z",
@@ -985,6 +1079,21 @@
         }
       ]
     },
+    "1503": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0I5LXKR1T03D0NBRW7XS8YVQW3?ref_=atv_dp"
+        }
+      ]
+    },
     "1711": {
       "fetchedAt": "2026-09-13T14:23:26.113Z",
       "services": [
@@ -994,6 +1103,101 @@
             "subscription"
           ],
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.bd3bb3ec-1f99-4558-ad2e-95d6c3350db3"
+        }
+      ]
+    },
+    "1899": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-invisible-man/umc.cmc.1h37616f3p8vezgas1pt59r0y?playableId=tvs.sbd.9001%3A1535080706"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.f0b81ff6-2e8a-d3ca-b55b-9e1687286615"
+        }
+      ]
+    },
+    "1986": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0M5G3TUPLVWDBB1ZO6D3J4T227?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/daredevil/umc.cmc.scnz0l8oax9qwrmj1szgoath?playableId=tvs.sbd.9001%3A987155734"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60026123"
+        }
+      ]
+    },
+    "2035": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60027583"
+        }
+      ]
+    },
+    "2081": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/ted-2/umc.cmc.3eucx5za3k31vu2it0l4xfxer?playableId=tvs.sbd.9001%3A1056375893"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80031715"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0OSAJS3JUR5028LFOVNXDCENFB?ref_=atv_dp"
         }
       ]
     },
@@ -1208,7 +1412,7 @@
       ]
     },
     "3217": {
-      "fetchedAt": "2026-09-08T14:21:08.862Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "apple-tv",
@@ -1225,14 +1429,36 @@
           ],
           "link": "https://www.netflix.com/title/81516447"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "3232": {
       "fetchedAt": "2026-09-16T04:33:40.533Z",
       "services": []
     },
+    "3478": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LCOF4AHZJ9ZN2ZXO54BRA0ZO5?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60000893"
+        }
+      ]
+    },
     "3909": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "netflix",
@@ -1241,7 +1467,8 @@
           ],
           "link": "https://www.netflix.com/title/60000453"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "3976": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -1260,6 +1487,26 @@
       "fetchedAt": "2026-09-16T04:33:40.533Z",
       "services": []
     },
+    "4363": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-2f6d138f-90f5-445e-a5d4-0484ef5b5b40"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81569754"
+        }
+      ]
+    },
     "4443": {
       "fetchedAt": "2026-09-16T04:33:40.533Z",
       "services": [
@@ -1270,6 +1517,36 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/fifty-shades-darker/umc.cmc.2fz05ph5k9mphoxw9669wbon0?playableId=tvs.sbd.9001%3A1266459281"
+        }
+      ]
+    },
+    "4618": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/year-one/umc.cmc.6eu7ntyrapyeq5ak1rfvzofq8?playableId=tvs.sbd.9001%3A401481933"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0IMN0DG201K8K19YD1C205Y5FZ?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70112729"
         }
       ]
     },
@@ -1347,6 +1624,27 @@
       "fetchedAt": "2026-09-16T04:33:40.533Z",
       "services": []
     },
+    "5362": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/trolls/umc.cmc.5qinqhkcqoqxnklgq44cuyfw7?playableId=tvs.sbd.9001%3A1338636114"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80108182"
+        }
+      ]
+    },
     "5639": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -1356,6 +1654,41 @@
             "subscription"
           ],
           "link": "https://curiositystream.com/video/237"
+        }
+      ]
+    },
+    "5726": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70021647"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "buy"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.7cb9b141-64d6-9a00-46de-db1f7c592f49"
+        }
+      ]
+    },
+    "5861": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70222859"
         }
       ]
     },
@@ -1373,9 +1706,111 @@
         }
       ]
     },
+    "6020": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0O2PTZI94LLHZUB4MBA6TUPKNB?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60022417"
+        }
+      ]
+    },
     "6216": {
       "fetchedAt": "2026-09-16T04:33:40.533Z",
       "services": []
+    },
+    "6222": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0KYZNOFEDPBY0V4T17PBL58L8M?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60034553"
+        }
+      ]
+    },
+    "6293": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-wicker-man/umc.cmc.6zzbt19b89z6y50tytpuu1c6i?playableId=tvs.sbd.9001%3A493837393"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0SGAFF2VP6P2I8809UEY8MT2WE?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70048301"
+        }
+      ]
+    },
+    "6841": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81209142"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-hustle/umc.cmc.xin7ygtkeuagxbywvuv329or?playableId=tvs.sbd.9001%3A1460029690"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "buy"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.b0a00a7f-9e6d-4d35-90cc-58a7a9c47288"
+        }
+      ]
     },
     "7082": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -1398,6 +1833,55 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/80218108"
+        }
+      ]
+    },
+    "7400": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0QOHSFLNPLNU6HK9N9YL5R5567?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/952082"
+        }
+      ]
+    },
+    "7788": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80024233"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/hot-pursuit/umc.cmc.30g4z38m5rad5zxyl8040nt5h?playableId=tvs.sbd.9001%3A1031967726"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0QN8A6FNTL2JGDLDB0ED0CN1MR?ref_=atv_dp"
         }
       ]
     },
@@ -1480,6 +1964,19 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/81144534"
+        }
+      ]
+    },
+    "8748": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/1008461"
         }
       ]
     },
@@ -1676,7 +2173,7 @@
       ]
     },
     "10534": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -1693,7 +2190,8 @@
           ],
           "link": "https://www.netflix.com/title/80228274"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "10877": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -1707,6 +2205,60 @@
         }
       ]
     },
+    "10995": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81067760"
+        }
+      ]
+    },
+    "11472": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/let-him-go/umc.cmc.7bjqrig5n0trf0l2mlqqayujm?playableId=tvs.sbd.9001%3A1540178448"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80997419"
+        }
+      ]
+    },
+    "11663": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.bae2ef22-1f5b-4b46-aec3-8ea03d937397"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-29e66a7a-9670-4850-9574-aa5e4d3d5857"
+        }
+      ]
+    },
     "11675": {
       "fetchedAt": "2026-09-10T05:45:02.097Z",
       "services": [
@@ -1717,6 +2269,40 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/big-mommas-like-father-like-son/umc.cmc.3p2swxivn855qz9bs926fu8ti?playableId=tvs.sbd.9001%3A452508833"
+        }
+      ]
+    },
+    "11853": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70044592"
+        }
+      ]
+    },
+    "11918": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0JT9J9NHWGD4UJM6WVMLKRPZMI?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/19580286"
         }
       ]
     },
@@ -1769,6 +2355,27 @@
         "localizedTitle": "機動戦士ガンダム 鉄血のオルフェンズ"
       }
     },
+    "12412": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0JTYMRNPO3EE4NTCRY2973G2LU?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70048296"
+        }
+      ]
+    },
     "12750": {
       "fetchedAt": "2026-09-14T13:39:16.137Z",
       "services": [
@@ -1809,8 +2416,51 @@
         "localizedTitle": "機動戦士ガンダム 第08MS小隊"
       }
     },
+    "12791": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0OJW14SWOKVRZ3SRDCOB4A1BUB?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/trolls-world-tour/umc.cmc.62fsjaqyqgrlkhopd2kxkdn4a?playableId=tvs.sbd.9001%3A1542820439"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81198527"
+        }
+      ]
+    },
+    "12913": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70053467"
+        }
+      ]
+    },
     "14281": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -1828,6 +2478,20 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/81620000"
+        }
+      ],
+      "via": "changes"
+    },
+    "14681": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80103318"
         }
       ]
     },
@@ -2015,6 +2679,27 @@
         }
       ]
     },
+    "16374": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/grandma/umc.cmc.mviuq8ve9fxqt8nt7oma0teh?playableId=tvs.sbd.9001%3A1074165156"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80038198"
+        }
+      ]
+    },
     "16493": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
       "services": [
@@ -2050,6 +2735,27 @@
             "rent"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0Q11CUYYT21W7X3DCPJ7T9CCBE"
+        }
+      ]
+    },
+    "18234": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/30-days-of-night-dark-days/umc.cmc.6w0vbxuee285shvkabvm7obec?playableId=tvs.sbd.9001%3A428853657"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70130727"
         }
       ]
     },
@@ -2092,6 +2798,64 @@
             "rent"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0RVZBZ0YMWUV96VGED2XJ2G1QC"
+        }
+      ]
+    },
+    "18768": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-bronze/umc.cmc.749gpcifnhwbzolfn7lm9ynu5?playableId=tvs.sbd.9001%3A1194917848"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80036656"
+        }
+      ]
+    },
+    "18895": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/downhill/umc.cmc.6d0ao7yotof2fmdvv4mv6hc3r?playableId=tvs.sbd.9001%3A1497406123"
+        }
+      ]
+    },
+    "19144": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/in-fabric/umc.cmc.r3do2n8xq5dwa5dwofnmdjjk?playableId=tvs.sbd.9001%3A1549945691"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0KTBO4LCNHHE3EVJ1QWY0LPWSS?ref_=atv_dp"
         }
       ]
     },
@@ -2212,6 +2976,27 @@
         }
       ]
     },
+    "22097": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70048609"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/region/fe/detail/0ST7XV25NC2N9CGPN792JCOIR3?ref_=atv_dp"
+        }
+      ]
+    },
     "22464": {
       "fetchedAt": "2026-09-11T12:49:01.122Z",
       "services": [
@@ -2309,6 +3094,26 @@
         }
       ]
     },
+    "23655": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.814dbbf3-f0de-43d4-bbc6-5776309f5b9c"
+        },
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-0e0b5655-5049-4989-992a-6df871def376"
+        }
+      ]
+    },
     "23656": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -2343,6 +3148,19 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/81781638"
+        }
+      ]
+    },
+    "24948": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80106138"
         }
       ]
     },
@@ -2392,6 +3210,27 @@
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": []
     },
+    "30701": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/joe-dirt-2-beautiful-loser/umc.cmc.7b8nzkw29ptkzdp0tj0tbiprm?playableId=tvs.sbd.9001%3A1070129318"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80075917"
+        }
+      ]
+    },
     "31012": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -2415,6 +3254,19 @@
             "subscription"
           ],
           "link": "https://www.disneyplus.com/browse/entity-d0a51ddd-6c83-436c-b05e-2a1579f9042d"
+        }
+      ]
+    },
+    "32223": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81300162"
         }
       ]
     },
@@ -2467,6 +3319,19 @@
         "localizedTitle": "機動戦士ガンダム 水星の魔女"
       }
     },
+    "34254": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/60020762"
+        }
+      ]
+    },
     "35178": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -2477,6 +3342,41 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/on-the-milky-road/umc.cmc.2usknkwmih8wmdrx1c51kzvwz?playableId=tvs.sbd.9001%3A1383389470"
+        }
+      ]
+    },
+    "35516": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70038033"
+        }
+      ]
+    },
+    "36882": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70005176"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy",
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0OASG8ZOBISNDT2RLSRP80CXXC?ref_=atv_dp"
         }
       ]
     },
@@ -2551,8 +3451,21 @@
         }
       ]
     },
+    "39078": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70102745"
+        }
+      ]
+    },
     "39128": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "apple-tv",
@@ -2577,7 +3490,8 @@
           ],
           "link": "https://www.netflix.com/title/81086887"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "40037": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -2697,6 +3611,19 @@
         }
       ]
     },
+    "47769": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70079159"
+        }
+      ]
+    },
     "47979": {
       "fetchedAt": "2026-09-14T13:39:16.137Z",
       "services": [
@@ -2765,6 +3692,19 @@
             "rent"
           ],
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.a47d00e2-4cf3-41b1-9ec8-a6f211bfa5d0"
+        }
+      ]
+    },
+    "50982": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81415957"
         }
       ]
     },
@@ -3029,6 +3969,26 @@
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
     },
+    "65840": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80203171"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RTBTKAFQUDOLKR5C57Y8BGUT3"
+        }
+      ]
+    },
     "65879": {
       "fetchedAt": "2026-09-06T12:38:20.506Z",
       "services": [
@@ -3146,6 +4106,19 @@
     "69447": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
+    },
+    "69631": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-3c2cadad-c34e-4441-9a69-bb184090ba0f"
+        }
+      ]
     },
     "69907": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
@@ -3340,6 +4313,40 @@
         }
       ]
     },
+    "80390": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0NYGDPPLY27830Q02HG7ICGIH8?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80082755"
+        }
+      ]
+    },
+    "81482": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81343009"
+        }
+      ]
+    },
     "81631": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -3355,6 +4362,19 @@
     "90266": {
       "fetchedAt": "2026-09-06T14:06:39.468Z",
       "services": []
+    },
+    "92021": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/70120073"
+        }
+      ]
     },
     "92377": {
       "fetchedAt": "2026-09-10T12:48:47.918Z",
@@ -3442,8 +4462,34 @@
         }
       ]
     },
+    "99568": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-7f37e187-feec-4741-91cc-8037be3cd27b"
+        }
+      ]
+    },
+    "100430": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-6094b187-a57b-4edc-8666-8687df7b9656"
+        }
+      ]
+    },
     "105029": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "apple-tv",
@@ -3468,7 +4514,8 @@
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0QKIDI7NSLFLVJGEFAH88HFRGA?ref_=atv_dp"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "105548": {
       "fetchedAt": "2026-09-14T13:39:16.137Z",
@@ -3619,6 +4666,19 @@
         "localizedTitle": "クレヨンしんちゃん 暗黒タマタマ大追跡"
       }
     },
+    "108267": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81479739"
+        }
+      ]
+    },
     "108329": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -3628,6 +4688,19 @@
             "subscription"
           ],
           "link": "https://www.disneyplus.com/browse/entity-b23fa426-18ff-4f66-8d21-804abb494bd0"
+        }
+      ]
+    },
+    "109860": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-8e6c4088-4a74-45ef-aca8-bba491a35849"
         }
       ]
     },
@@ -3641,6 +4714,32 @@
             "rent"
           ],
           "link": "https://tv.apple.com/jp/movie/namiya/umc.cmc.1wkqaadq6n5yorrh6dhus2qk9?playableId=tvs.sbd.9001%3A1450504319"
+        }
+      ]
+    },
+    "111810": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81452147"
+        }
+      ]
+    },
+    "112156": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81497301"
         }
       ]
     },
@@ -4020,6 +5119,19 @@
         },
         "localizedTitle": "クレヨンしんちゃん 謎メキ!花の天カス学園"
       }
+    },
+    "133790": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-2d99495f-858f-4dc7-8faa-ba0da4262620"
+        }
+      ]
     },
     "134509": {
       "fetchedAt": "2026-09-14T13:39:16.137Z",
@@ -4434,6 +5546,19 @@
         "localizedTitle": "クレヨンしんちゃん 襲来!! 宇宙人シリリ"
       }
     },
+    "145381": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-fe2196c1-60b7-479a-af13-b7ae7203d206"
+        }
+      ]
+    },
     "145387": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
       "services": [
@@ -4521,6 +5646,19 @@
         },
         "localizedTitle": "クレヨンしんちゃん 激突! ラクガキングダムとほぼ四人の勇者"
       }
+    },
+    "147422": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-2c8630c9-2e89-4d80-a35e-82ce213a8a38"
+        }
+      ]
     },
     "149463": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
@@ -4742,6 +5880,19 @@
             "buy"
           ],
           "link": "https://tv.apple.com/jp/movie/kingdom-of-swords/umc.cmc.1gxxc4qmvji2qs2zd9jj3dk2x?playableId=tvs.sbd.9001%3A1481621106"
+        }
+      ]
+    },
+    "160670": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81335232"
         }
       ]
     },
@@ -5052,6 +6203,19 @@
         "localizedTitle": "クレヨンしんちゃん オタケベ!カスカベ野生王国"
       }
     },
+    "190315": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-9fe63fee-8c1a-4db3-b6b2-07f54a185f0f"
+        }
+      ]
+    },
     "192837": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
       "services": [
@@ -5213,6 +6377,35 @@
         }
       }
     },
+    "222964": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81918786"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "addon",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0M8Y2Q26SH3VF3TRJFDIJD8MXF?ref_=atv_dp"
+        },
+        {
+          "service": "apple-tv",
+          "types": [
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/riverside-mukolitta/umc.cmc.c5zh9jaoufq4mqfg2gsapqgv?playableId=tvs.sbd.9001%3A1664794721"
+        }
+      ]
+    },
     "227395": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -5285,6 +6478,58 @@
         }
       ]
     },
+    "247586": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81397731"
+        }
+      ]
+    },
+    "248852": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-819fe258-6af5-4b82-beda-ac60472adea3"
+        }
+      ]
+    },
+    "250070": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-486468d2-6a46-4d23-8c27-52f1225cb65a"
+        }
+      ]
+    },
+    "252345": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-172ca7b3-d7bb-4a28-a945-5e653f9e7270"
+        }
+      ]
+    },
     "254649": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -5332,6 +6577,19 @@
         }
       ]
     },
+    "265605": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-a952b634-546d-4d37-87e9-4c158b46a96d"
+        }
+      ]
+    },
     "268411": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -5371,6 +6629,19 @@
         }
       ]
     },
+    "294172": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80126646"
+        }
+      ]
+    },
     "307234": {
       "fetchedAt": "2026-09-07T07:12:36.783Z",
       "services": [
@@ -5383,6 +6654,54 @@
             "rent"
           ],
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.d568ac05-662a-4337-b55c-f6152a516dbd"
+        }
+      ]
+    },
+    "307655": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "rent",
+            "buy"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.bab780c1-f7f2-46a1-93e0-1a575f38da4a"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/83066626"
+        }
+      ]
+    },
+    "321516": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81435728"
+        }
+      ]
+    },
+    "330864": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-ee149527-427b-4d55-8c5f-dd1868d78a4a"
         }
       ]
     },
@@ -5438,6 +6757,32 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/82118667"
+        }
+      ]
+    },
+    "380726": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-e51bbcc9-9541-4d50-9920-12abd53baa2e"
+        }
+      ]
+    },
+    "804302": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81950731"
         }
       ]
     },
@@ -5553,6 +6898,40 @@
         }
       ]
     },
+    "2095174": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/wonderwall/umc.cmc.6f2hzh7shi95b7rd1s0ibzdzj?playableId=tvs.sbd.9001%3A1522007643"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81281007"
+        }
+      ]
+    },
+    "2113017": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-facee731-c52f-4c6e-bd95-e9249f426c09"
+        }
+      ]
+    },
     "2455153": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -5574,6 +6953,26 @@
     "3213585": {
       "fetchedAt": "2026-09-10T05:45:02.097Z",
       "services": []
+    },
+    "3532495": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0HJG0C1A1LETA6EDBRMQLXIMBR"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81705343"
+        }
+      ]
     },
     "3533143": {
       "fetchedAt": "2026-09-08T12:34:17.910Z",
@@ -5617,7 +7016,7 @@
       }
     },
     "4029331": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -5634,7 +7033,8 @@
           ],
           "link": "https://www.netflix.com/title/81602830"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "4398675": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
@@ -5687,6 +7087,20 @@
         },
         "localizedTitle": "しん次元! クレヨンしんちゃん THE MOVIE 超能力大決戦 〜とべとべ手巻き寿司〜"
       }
+    },
+    "4783007": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0FGT8IC8F5NA57WU6FDTWXH8XU?ref_=atv_dp"
+        }
+      ]
     },
     "4795443": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -5772,9 +7186,43 @@
         "localizedTitle": "クレヨンしんちゃん 超時空!嵐を呼ぶオラの花嫁"
       }
     },
+    "5027411": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/the-blind/umc.cmc.50iq26imzcokz878y23klhjst?playableId=tvs.sbd.9001%3A1742696707"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81760222"
+        }
+      ]
+    },
     "5318881": {
       "fetchedAt": "2026-09-10T05:45:02.097Z",
       "services": []
+    },
+    "5459300": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-3a9d9a49-74e6-4801-9952-42818c24fc4a"
+        }
+      ]
     },
     "5459447": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -5813,6 +7261,19 @@
         }
       ]
     },
+    "5460816": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-d3577538-e67d-41c6-84f6-cd7fc568d12b"
+        }
+      ]
+    },
     "5461237": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -5822,6 +7283,88 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/81322750"
+        }
+      ]
+    },
+    "5475501": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81437809"
+        }
+      ]
+    },
+    "5758866": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-f6de1523-e642-4675-9fd8-ae519c54ae4c"
+        }
+      ]
+    },
+    "6074859": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LKTKI9WMTE8BZ4LMGQFDVPJYT?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81767867"
+        }
+      ]
+    },
+    "6412432": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0HRGWN3Z1WSYMZDX3W7LKWRS5J?ref_=atv_dp"
+        }
+      ]
+    },
+    "6413024": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "buy"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LBM8G8MU6G3XL090OSS8IBBT7?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81767865"
         }
       ]
     },
@@ -5877,6 +7420,68 @@
         },
         "localizedTitle": "機動戦士ガンダムSEED FREEDOM"
       }
+    },
+    "7523156": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0IQ6UW40XQTLVVZS7CCE5BVJFQ?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81725541"
+        }
+      ]
+    },
+    "7529084": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0OM7MFDYVTIFM3VEYX1XTM8WBL?ref_=atv_dp"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81762621"
+        }
+      ]
+    },
+    "7539981": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0KQNZHJRQF066QWYNI8WDMOIJU"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/80203650"
+        }
+      ]
     },
     "7551786": {
       "fetchedAt": "2026-09-07T07:12:36.783Z",
@@ -6000,6 +7605,54 @@
         }
       ]
     },
+    "8874515": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-3c4b8aad-fe5c-4e66-af80-938941d04e5a"
+        }
+      ]
+    },
+    "8947547": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-9d5bbed5-ddfc-4e65-8ed5-78dc23ea4380"
+        }
+      ]
+    },
+    "8954824": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81952362"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "buy",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.c3fe4c70-a2f4-4f32-8306-3613baeac4a7"
+        }
+      ]
+    },
     "8954854": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -6085,8 +7738,113 @@
         }
       ]
     },
+    "9684734": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0RVCNYGF62CWVK6O4TJPHXQ8ER"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81909528"
+        }
+      ]
+    },
+    "9821561": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81904844"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "free"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0TQUG2H7K16NHWV5RRH2159FH0"
+        }
+      ]
+    },
+    "9822257": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "free"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0PF2XSLOPYYCOFSWXDQW5ATT0X"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81566401"
+        }
+      ]
+    },
+    "9883798": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81904957"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "rent",
+            "free"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0JX0M530HYRPWNNW0RRIEECZVT"
+        }
+      ]
+    },
+    "9883810": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81910093"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0OSIBEQ3KBYY9DBMK4EGC1Y1MD"
+        }
+      ]
+    },
     "9883828": {
-      "fetchedAt": "2026-09-10T05:50:52.436Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "prime-video",
@@ -6103,7 +7861,8 @@
           ],
           "link": "https://www.netflix.com/title/81904829"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "9883830": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -6114,6 +7873,19 @@
             "subscription"
           ],
           "link": "https://www.zee5.com/global/tv-shows/details/loop-11-47/0-6-4z5577119"
+        }
+      ]
+    },
+    "10246233": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-540d5550-da69-48c2-a57f-edc00f1be6f9"
         }
       ]
     },
@@ -6165,6 +7937,27 @@
         },
         "localizedTitle": "機動戦士ガンダムユニコーン RE:0096"
       }
+    },
+    "12719870": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81944802"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "subscription"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0FSARCXVK4KI1RW4B3HHJQWG3F"
+        }
+      ]
     },
     "14625987": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -6224,7 +8017,7 @@
       ]
     },
     "14626092": {
-      "fetchedAt": "2026-09-16T04:33:40.533Z",
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
       "services": [
         {
           "service": "netflix",
@@ -6249,7 +8042,8 @@
           ],
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.5f678828-13ba-4d3f-ae1a-b2c6fdeea642"
         }
-      ]
+      ],
+      "via": "changes"
     },
     "14626096": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -6270,6 +8064,19 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/82082897"
+        }
+      ]
+    },
+    "15815451": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-07370ec4-8b8c-438c-b69b-a4d5719baca0"
         }
       ]
     },
@@ -6344,6 +8151,26 @@
         "localizedTitle": "機動戦士Gundam GQuuuuuuX"
       }
     },
+    "18434377": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-9a5ffe4d-3c70-4d43-8a12-b8e32c3b9863"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82081315"
+        }
+      ]
+    },
     "18533337": {
       "fetchedAt": "2026-09-08T12:42:01.459Z",
       "services": [
@@ -6376,9 +8203,69 @@
         }
       ]
     },
+    "18823194": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-bbd94eee-bfd9-4ab6-acf6-7c216bfea01b"
+        }
+      ]
+    },
     "18863480": {
       "fetchedAt": "2026-09-06T14:20:57.152Z",
       "services": []
+    },
+    "18918339": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "buy",
+            "rent"
+          ],
+          "link": "https://tv.apple.com/jp/movie/%E8%A1%9D%E5%8B%95/umc.cmc.236avz80w4jmmawco3oiej7v2?playableId=tvs.sbd.9001%3A1627712556"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/83066639"
+        }
+      ]
+    },
+    "19033585": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-fd23bdb2-54c4-4caf-867b-35d0a1cac2e9"
+        }
+      ]
+    },
+    "19076646": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-6804a68a-2082-4e2f-bccf-02d0d31a9f7b"
+        }
+      ]
     },
     "19259366": {
       "fetchedAt": "2026-09-10T13:17:50.732Z",
@@ -6432,6 +8319,48 @@
             "addon"
           ],
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.89ed2586-33c8-40a6-9657-4c9f57cef8a0"
+        }
+      ]
+    },
+    "19815175": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "rent",
+            "addon",
+            "free"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0U31ZP9J91US7549M6LRZFBX3J"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82994692"
+        }
+      ]
+    },
+    "19827681": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-6f459881-0a4b-4d58-8188-37ad24040ee2"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82081970"
         }
       ]
     },
@@ -6557,6 +8486,19 @@
       "fetchedAt": "2026-09-10T05:45:02.097Z",
       "services": []
     },
+    "20611097": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-63ec23e8-3096-491c-9c6f-9f857883e738"
+        }
+      ]
+    },
     "20618623": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -6574,6 +8516,132 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/82079402"
+        }
+      ]
+    },
+    "20619997": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-be35a7c3-f054-49b9-83fc-a35cc8a972d1"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "subscription",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0TOLR3PUFITLZK2W39MDPL7EN5"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82081998"
+        }
+      ]
+    },
+    "21137807": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "subscription",
+            "addon",
+            "rent"
+          ],
+          "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.bfd8a64f-4d5f-43e6-960e-b915682bd4d8"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82081985"
+        }
+      ]
+    },
+    "22310741": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-e5ffe34b-d23d-4d2e-a9f5-91279a266e1c"
+        }
+      ]
+    },
+    "23194409": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82758520"
+        }
+      ]
+    },
+    "23352780": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-1c9958ec-c134-4da8-91c4-35103762e48d"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "free",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0K1CYFB2LG93VPWOKBRPEUNUQG"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82153100"
+        }
+      ]
+    },
+    "23352958": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "prime-video",
+          "types": [
+            "addon"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0LHUOK9PLV6X1B3FLJB462TF1H"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/83068256"
         }
       ]
     },
@@ -6628,6 +8696,19 @@
             "buy"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0U512I7W0JVD3SQ6O9NCSWO9AS?ref_=atv_dp"
+        }
+      ]
+    },
+    "24594178": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-1ccbabd7-69b0-4788-83d2-7ce03928d3a7"
         }
       ]
     },
@@ -6709,9 +8790,87 @@
         }
       ]
     },
+    "24604781": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82117324"
+        }
+      ]
+    },
+    "24607713": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81942257"
+        }
+      ]
+    },
+    "24859130": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-ccbe8c9f-d17f-4abf-bc69-d828ca2ce561"
+        }
+      ]
+    },
+    "24973404": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-ce23eaed-d60d-472f-aa32-294619e7f438"
+        }
+      ]
+    },
     "24973699": {
       "fetchedAt": "2026-09-10T05:45:02.097Z",
       "services": []
+    },
+    "24974021": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-aae2ba8d-84cc-4364-9216-9dc3a501e5c2"
+        }
+      ]
+    },
+    "24974570": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-2b22bb70-d83a-42dd-b228-8aec5087453a"
+        }
+      ]
     },
     "24975881": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
@@ -6725,9 +8884,432 @@
         }
       ]
     },
+    "24977208": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/83128258"
+        }
+      ]
+    },
+    "24977507": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-32a3847b-f12c-491a-97b7-ce4e7d9de10f"
+        }
+      ]
+    },
+    "25030415": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-87118c00-3d49-4df5-a655-279484dedd60"
+        }
+      ]
+    },
+    "25245598": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81776971"
+        }
+      ]
+    },
+    "25370366": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/83001420"
+        }
+      ]
+    },
     "25370420": {
       "fetchedAt": "2026-09-10T05:45:02.097Z",
       "services": []
+    },
+    "25370703": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-7a748bd1-ea73-4686-bdcb-fc86d86158d8"
+        }
+      ]
+    },
+    "25483413": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81615976"
+        }
+      ]
+    },
+    "25665592": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-f7c4db43-d715-4a4f-8d8e-b7238b4e89fd"
+        }
+      ]
+    },
+    "25666310": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-e31f11de-c9c2-43e2-8c82-cc1f9981d20c"
+        }
+      ]
+    },
+    "25803738": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81603806"
+        }
+      ]
+    },
+    "25861615": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82761909"
+        }
+      ]
+    },
+    "25865098": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-e25cdc34-ec97-44d1-9350-c0654a8f4162"
+        }
+      ]
+    },
+    "25870075": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82117023"
+        }
+      ]
+    },
+    "25875172": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-a56af1e9-58d3-45dc-b260-669b73517936"
+        }
+      ]
+    },
+    "25879751": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-fd5fdf6e-fd1d-4555-9507-b6b5d8186b52"
+        }
+      ]
+    },
+    "25887277": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-b254f12d-f131-43d1-b8e3-5a7d4e8391c3"
+        },
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81520381"
+        }
+      ]
+    },
+    "25909939": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-e385fcca-7819-495c-b4a4-c4054cdc6414"
+        }
+      ]
+    },
+    "25911477": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-e65a1e33-efa3-4c7a-b77b-1b0abac272c6"
+        }
+      ]
+    },
+    "25984436": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82811466"
+        }
+      ]
+    },
+    "26029645": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-6447a767-6ad5-449a-a716-649eb3629639"
+        }
+      ]
+    },
+    "26517282": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81970928"
+        }
+      ]
+    },
+    "26517499": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81911390"
+        }
+      ]
+    },
+    "26596763": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-77fa109a-7f84-4e84-8a1c-f48cee4a5671"
+        }
+      ]
+    },
+    "26597092": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-bafb5cb7-91e5-4b20-85bb-6cf6b5fe2a00"
+        }
+      ]
+    },
+    "26597764": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-22cedaf1-0ddd-4830-bb3f-aa313633fdfb"
+        }
+      ]
+    },
+    "26597894": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81726799"
+        }
+      ]
+    },
+    "26597924": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-28bb36cb-1ec8-4ef6-8fc3-17fbdd6bf387"
+        }
+      ]
+    },
+    "26597990": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82068293"
+        }
+      ]
+    },
+    "26598206": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82635638"
+        }
+      ]
+    },
+    "26598319": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-ea75b7fe-5d0d-42f2-9bdf-2eaaeec9eb72"
+        }
+      ]
+    },
+    "26604019": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-f0f8f73d-8c68-4bce-8a1e-84a7aefc5e31"
+        }
+      ]
+    },
+    "26605393": {
+      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81734814"
+        }
+      ]
     }
   }
 }
