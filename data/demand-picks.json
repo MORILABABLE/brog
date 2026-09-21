@@ -1,8 +1,22 @@
 {
-  "generatedAt": "2026-09-20T01:11:03.819Z",
-  "asOf": "2026-09-20",
+  "generatedAt": "2026-09-21T01:07:17.252Z",
+  "asOf": "2026-09-21",
   "note": "npm run demand -- --picks が書く。手で編集しない。需要の数字は入れない（並び順だけが需要を反映する）。読む側は site/src/lib/demand-picks.ts。",
   "picks": [
+    {
+      "workIds": [
+        "SID0187038"
+      ],
+      "title": "ブラタモリ",
+      "answer": "until",
+      "deadline": "2026-09-21T14:59:00.000Z",
+      "services": [
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
     {
       "workIds": [
         "14281"
@@ -17,7 +31,7 @@
         "2026-09-special-anime-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
+      "lastSeen": "2026-09-21"
     },
     {
       "workIds": [
@@ -36,7 +50,24 @@
         "2026-09-upcoming-prime-video-western"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "194"
+      ],
+      "title": "ジュラシック・パーク",
+      "answer": "until",
+      "deadline": "2026-09-29T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [
+        "2026-09-leaving-netflix",
+        "jurassic-park"
+      ],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
     },
     {
       "workIds": [
@@ -50,7 +81,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
+      "lastSeen": "2026-09-21"
     },
     {
       "workIds": [
@@ -64,7 +95,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
+      "lastSeen": "2026-09-21"
     },
     {
       "workIds": [
@@ -81,7 +112,69 @@
         "kamen-rider"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "3909"
+      ],
+      "title": "アンドリューNDR114",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [
+        "2026-09-leaving-netflix"
+      ],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "10534"
+      ],
+      "title": "からかい上手の高木さん",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [
+        "2026-09-special-anime-netflix"
+      ],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "406"
+      ],
+      "title": "アメイジング・スパイダーマン",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [
+        "2026-09-leaving-netflix"
+      ],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "39128"
+      ],
+      "title": "S.W.A.T. アンダーシージ",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
     },
     {
       "workIds": [
@@ -99,276 +192,181 @@
         "2026-09-special-japanese-anime-u-next"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
+      "lastSeen": "2026-09-21"
     },
     {
       "workIds": [
-        "136"
+        "2035"
       ],
-      "title": "タイタニック",
+      "title": "N.Y.式ハッピー・セラピー",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "222964"
+      ],
+      "title": "川っぺりムコリッタ",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "6293"
+      ],
+      "title": "ウィッカーマン",
+      "answer": "until",
+      "deadline": "2026-09-30T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "6841"
+      ],
+      "title": "ザ・ハッスル",
+      "answer": "until",
+      "deadline": "2026-10-02T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "7539981"
+      ],
+      "title": "美味しんぼ",
+      "answer": "until",
+      "deadline": "2026-10-05T14:59:59.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "5981"
+      ],
+      "title": "五等分の花嫁",
       "answer": "ended",
-      "endedAt": "2026-08-16T14:43:23.000Z",
+      "endedAt": "2026-09-09T21:22:34.000Z",
       "services": [
-        "prime-video"
+        "netflix"
       ],
       "covered": [
-        "2026-08-leaving"
+        "2026-08-leaving-u-next",
+        "2026-09-leaving-netflix"
       ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-20"
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
     },
     {
       "workIds": [
-        "1051"
+        "2294"
       ],
-      "title": "ナイト ミュージアム",
-      "answer": "where",
-      "services": [
-        "apple-tv"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "4038536"
-      ],
-      "title": "VIVANT",
-      "answer": "where",
-      "services": [
-        "disney-plus",
-        "prime-video"
-      ],
-      "covered": [
-        "2026-08-arrivals-japanese",
-        "2026-08-arrivals-prime-video"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "63173"
-      ],
-      "title": "それでもボクはやってない",
+      "title": "キムさんのコンビニ",
       "answer": "ended",
-      "endedAt": "2026-08-14T15:07:39.000Z",
-      "services": [
-        "netflix"
-      ],
-      "covered": [
-        "2026-08-leaving"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "5293"
-      ],
-      "title": "ワールド・トレード・センター",
-      "answer": "where",
-      "services": [
-        "netflix"
-      ],
-      "covered": [
-        "2026-08-arrivals-netflix"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "SID0305797"
-      ],
-      "title": "仮面ライダーマイス",
-      "answer": "where",
-      "services": [
-        "u-next"
-      ],
-      "covered": [
-        "kamen-rider"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "SID0315739"
-      ],
-      "title": "犬神家の一族",
-      "answer": "where",
-      "services": [
-        "u-next"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "SID0187711"
-      ],
-      "title": "室井慎次　生き続ける者",
-      "answer": "where",
-      "services": [
-        "u-next"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "24862561"
-      ],
-      "title": "黄泉のツガイ",
-      "answer": "where",
-      "services": [
-        "prime-video"
-      ],
-      "covered": [
-        "2026-08-arrivals-anime",
-        "2026-08-arrivals-prime-video"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "3871"
-      ],
-      "title": "魔法少女まどか☆マギカ",
-      "answer": "where",
-      "services": [
-        "prime-video"
-      ],
-      "covered": [
-        "2026-08-arrivals-anime",
-        "2026-08-arrivals-prime-video"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "SID0187710"
-      ],
-      "title": "室井慎次　敗れざる者",
-      "answer": "where",
-      "services": [
-        "u-next"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "15983"
-      ],
-      "title": "本好きの下剋上",
-      "answer": "where",
+      "endedAt": "2026-08-12T16:02:24.000Z",
       "services": [
         "netflix"
       ],
       "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
     },
     {
       "workIds": [
-        "4039143"
+        "9279"
       ],
-      "title": "どうする家康",
-      "answer": "where",
-      "services": [
-        "netflix"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "ann-03a428b6ce",
-        "1481"
-      ],
-      "title": "バイオハザード",
-      "answer": "where",
-      "services": [
-        "prime-video"
-      ],
-      "covered": [
-        "2026-09-arrivals-prime-video",
-        "2026-09-upcoming-prime-video-western",
-        "resident-evil"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "520"
-      ],
-      "title": "HUNTER×HUNTER",
+      "title": "キラークラウン",
       "answer": "ended",
-      "endedAt": "2026-08-13T19:19:02.000Z",
+      "endedAt": "2026-08-14T03:32:07.000Z",
       "services": [
-        "disney-plus"
-      ],
-      "covered": [
-        "2026-08-ended"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "SID0317260"
-      ],
-      "title": "税金で買った本",
-      "answer": "where",
-      "services": [
-        "u-next"
+        "prime-video"
       ],
       "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
     },
     {
       "workIds": [
-        "26120718"
+        "118"
       ],
-      "title": "ブラックトリック〜裁きを操る弁護人〜",
-      "answer": "where",
-      "services": [
-        "netflix"
-      ],
-      "covered": [
-        "2026-08-arrivals-japanese",
-        "2026-08-arrivals-netflix"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
-    },
-    {
-      "workIds": [
-        "ann-1d3a1f79b6",
-        "86"
-      ],
-      "title": "インターステラー",
-      "answer": "where",
+      "title": "シャッター アイランド",
+      "answer": "ended",
+      "endedAt": "2026-09-16T15:00:00.000Z",
       "services": [
         "prime-video"
       ],
       "covered": [
-        "2026-09-arrivals-prime-video",
-        "2026-09-upcoming-prime-video-western"
+        "2026-09-leaving-prime-video"
       ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-20"
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "182"
+      ],
+      "title": "レザボア・ドッグス",
+      "answer": "ended",
+      "endedAt": "2026-08-02T22:19:16.000Z",
+      "services": [
+        "prime-video"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "6216",
+        "SID0062978"
+      ],
+      "title": "チャーリーと14人のキッズ",
+      "answer": "where",
+      "services": [
+        "netflix",
+        "u-next"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
+    },
+    {
+      "workIds": [
+        "8847025"
+      ],
+      "title": "じいさんばあさん若返る",
+      "answer": "ended",
+      "endedAt": "2026-08-12T15:59:57.000Z",
+      "services": [
+        "netflix"
+      ],
+      "covered": [],
+      "firstSeen": "2026-09-21",
+      "lastSeen": "2026-09-21"
     }
   ],
   "notifiedSignature": "ONE PIECE|SPEED"
