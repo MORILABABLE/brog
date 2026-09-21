@@ -1,6 +1,21 @@
 ---
 import { SITE, ATTRIBUTION, AFFILIATE } from '../config'
 const year = new Date().getFullYear()
+
+/**
+ * ウォッチリストの入口を出すか。**2026-09-21 から出していない**（運用者の指定）。
+ *
+ * ★（気になる）を作品ページで止めたので（`pages/works/[id].astro` の `SHOW_STAR`）、
+ * ★を1本も持っていない読者がここを押すと
+ * 「まだ1本も入っていません。作品ページを開いて…」という、
+ * **もう存在しない操作の案内**に着く。
+ *
+ * ★ **行は消さない。**★を戻すときは、ここも一緒に true に戻す
+ *   （★だけ戻すと、狭い画面の読者は戻る入口を持たない。下の注意書きのとおり）。
+ * ★ ヘッダーの入口（Header.astro）は**★を持つ読者にだけ出る**ので触っていない。
+ *   すでに★を付けた読者は、そちらから今までどおり `/watchlist` に行ける。
+ */
+const SHOW_WATCHLIST_LINK = false
 ---
 
 <footer>
@@ -38,8 +53,10 @@ const year = new Date().getFullYear()
           **全ページから1クリックで届く必要がある**（ヘッダーにも置いてある）。
           ページ自体は noindex（読者ごとに中身が違う）だが、
           リンクは `follow` のままでよい — 隠す理由は評価ではなく中身の無さ。
+        ★ **2026-09-21 から出していない**（上の `SHOW_WATCHLIST_LINK`）。
+          ★を止めたので、新しい読者には押せる中身が無い。行は残してある。
       */}
-      <a href="/watchlist">ウォッチリスト</a>
+      {SHOW_WATCHLIST_LINK && <a href="/watchlist">ウォッチリスト</a>}
       <a href="/about">運営者情報</a>
       <a href="/privacy">プライバシーポリシー</a>
       <a href="/contact">お問い合わせ</a>
