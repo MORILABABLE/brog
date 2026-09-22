@@ -2,10 +2,11 @@
   "asia-drama": {
     "label": "韓流・アジア",
     "startedAt": "2026-09-18T00:10:11.779Z",
-    "nextPage": 2,
-    "entries": 30,
-    "pages": 139,
-    "results": 4167
+    "nextPage": 1,
+    "entries": 4054,
+    "pages": 140,
+    "results": 4172,
+    "completedAt": "2026-09-22T00:40:32.116Z"
   },
   "houga": {
     "label": "邦画",
@@ -24,6 +25,14 @@
     "pages": 56,
     "results": 1680,
     "completedAt": "2026-09-07T12:17:20.797Z"
+  },
+  "kokunai-drama": {
+    "label": "国内ドラマ",
+    "startedAt": "2026-09-22T00:40:32.117Z",
+    "nextPage": 112,
+    "entries": 3177,
+    "pages": 139,
+    "results": 4162
   },
   "youga": {
     "label": "洋画",
