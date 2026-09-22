@@ -3,7 +3,9 @@ import { getCollection } from 'astro:content'
 import { ARCHIVE, SITE, CATEGORY_HUBS, SERVICE_HUBS } from '../config'
 import { archiveMonths } from '../lib/archive'
 import PostSearch from './PostSearch.astro'
+import BookmarkIcon from './BookmarkIcon.astro'
 import { hubServiceHref } from '../lib/evergreen'
+import { resumedWorkIds } from '../lib/works'
 
 /**
  * ★ メニューは CATEGORIES ではなく **CATEGORY_HUBS** から作る。
@@ -57,6 +59,11 @@ import { hubServiceHref } from '../lib/evergreen'
  *
  *   ★ 4つ目を「監督・出演者」（6文字）から「月別まとめ」（5文字）に替えたので、
  *     この見積りより**狭くなっている**。余裕は増える方向。
+ *
+ *   ★ **行の右端にブックマークの💭（幅34px）が常に出る**（2026-09-22）。
+ *     実測（2026-09-22）ではメニューは3つ（312px）で、検索窓の右に約110pxの空きがあった。
+ *     💭 を足しても1行に収まる。**メニューを足すときは💭のぶんも数えること。**
+ *     スマホ（47rem 未満）は1行目がサイト名・検索窓・💭 で、360px 未満だけ間隔を詰めてある（末尾の @media）。
 
 /**
  * **記事が1本も無いハブはメニューに出さない**（2026-08-31）。
@@ -89,6 +96,16 @@ const hubs = CATEGORY_HUBS.filter((h) =>
  */
 const months = archiveMonths(posts)
 const menuMonths = months.slice(0, ARCHIVE.menuMonths)
+
+/**
+ * 配信再開の作品ID（空白区切り）。**💭 の数字を赤くするかどうか**をブラウザ側で決めるのに使う。
+ *
+ * ★ 読者のブックマークはブラウザにしか無いので、ビルドでは決められない。
+ *   そこで「再開した作品の一覧」だけを全ページに持たせ、突き合わせはスクリプトがする。
+ *   索引（`/watchlist.json`・約42KB）を全ページで読みに行かないための形（追加の通信なし）。
+ * ★ 集合は一覧の「配信再開」と同じ関数（`lib/works.ts` の `resumedWorkIds()`）。
+ */
+const resumedIds = resumedWorkIds().join(' ')
 ---
 
 <header>
@@ -145,26 +162,50 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
           </details>
         )
       }
-      {/*
-        ★ **ウォッチリスト（2026-09-18 追加）。★を1本でも付けた読者にだけ出す。**
-
-        ■ なぜ条件付きなのか
-        ★を付けていない読者（＝ほぼ全員）には空のページへの入口でしかなく、
-        ヘッダーの幅を1枠ぶん食うだけになる。**入れた人にだけ常設の入口**にする。
-        入れていない読者にも**フッターには常に出ている**ので、辿れなくはない。
-
-        ★ **最後に置くこと。** 現れたときに他の項目を押し下げないため
-          （出るのは★を持つ読者だけなので、その人には毎回同じ位置に見える）。
-
-        ★ docs/GROWTH.md 3-6 の「一覧ページと記事ページにスクリプトを増やさない」の
-          例外にあたる。**新しい script タグは足していない** — 下のメニュー開閉の
-          スクリプトに数行足しただけで、追加の通信も描画待ちも無い。
-          **ここを独立した <script> に切り出さないこと。**
-      */}
-      <a class="plain watch-link" href="/watchlist" hidden>ウォッチリスト<span class="count"></span></a>
     </nav>
     {/* JavaScript が動かない環境では、この枠ごと出ない */}
     <PostSearch />
+    {/*
+      ★ **ブックマーク（💭＋件数）。💭 は全員に常に出し、数字は1件以上のときだけ付ける**
+        （2026-09-22・運用者の指定）。それまではメニューの末尾に「ウォッチリスト 3」と文字で、
+        入れた読者にだけ出していた。
+
+      ■ なぜヘッダーの右端なのか
+      「スマホでもPCでも常に見える」が要件。ヘッダーは sticky なので、ここに置けば
+      スクロールしても画面上端に残る。**画面下は置かない** — 将来 AdSense のアンカー広告と
+      追従枠（FollowBar.astro）が使う場所で、重なる。
+      `margin-left: auto` で行の右端に寄せる。スマホではサイト名・検索窓と同じ1行目の右端になる。
+
+      ■ なぜ0件でも出すのか
+      **機能を見つけてもらう入口**を兼ねる。押した先の一覧は、0件のときは
+      「作品ページを開いて「☆ 気になる」を押すと、ここに並びます」と使い方を案内する（pages/watchlist.astro）。
+      ★ 数字（`.count`）だけを出し分ける。**0件で「0」を出さないこと** — 通知の丸が常に付いていると、
+        読者は数字を見なくなる（一覧のタブ見出しで「0件」を出さないのと同じ理由）。
+      ★ `hidden` は数字の側に付けてある。JSが動かない環境でも💭 は出て、数字だけが出ない。
+
+      ■ 数字の色（2026-09-22・運用者の指定。通販サイトのカートの数字と同じ考え方）
+        通常 … 青（`--header-link`）
+        入れた作品に**配信再開**が1本でもある … **赤**
+      ★ 赤は「一覧を開けば知らせがある」の合図。一覧の側では再開の行を緑で先頭に出す
+        （赤は一覧では「終了7日前」の色なので、同じ赤を再開の行に使わない）。
+      ★ 色だけで伝えないこと。赤のときは読み上げ名に「配信再開◯件」を足す。
+
+      ★ docs/GROWTH.md 3-6 の「一覧ページと記事ページにスクリプトを増やさない」の
+        例外にあたる。**新しい script タグは足していない** — 下のメニュー開閉の
+        スクリプトに数行足しただけで、追加の通信も描画待ちも無い。
+        **ここを独立した <script> に切り出さないこと。**
+      ★ 読み上げ名（aria-label）はスクリプトが件数込みで入れる。絵と数字だけでは意味が伝わらない。
+    */}
+    <a
+      class="bookmark-link"
+      href="/watchlist"
+      title="ブックマーク"
+      aria-label="ブックマーク"
+      data-resumed={resumedIds}
+    >
+      <BookmarkIcon size={24} />
+      <span class="count" hidden></span>
+    </a>
   </div>
 </header>
 
@@ -184,28 +225,53 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
   }
 
   /**
-   * ウォッチリストの入口。**★を1本でも持っている読者にだけ出す。**
+   * ブックマークの入口の件数。**💭 は常に出ていて、ここは数字だけを出し分ける**（1件以上のとき）。
    *
    * ★ 鍵は components/WatchStar.astro / pages/watchlist.astro と同じもの。
    *   ここでは**件数を数えるだけ**で、書き込みは一切しない。
-   * ★ 読めない環境（プライベートウィンドウ等）では出さない。
+   * ★ 読めない環境（プライベートウィンドウ等）では0件として扱う（数字が出ないだけ）。
    *   try/catch を外さないこと — ここで例外が出るとメニュー開閉ごと巻き添えになる。
+   * ★ **押した瞬間に数を合わせる。** 作品ページの「☆ 気になる」と一覧の「外す」が
+   *   `mhr-watchlist-change` を投げる。別のタブでの変更は `storage` で届く。
+   * ★ **入れた作品に配信再開があれば数字を赤くする。** 再開した作品のIDは
+   *   ビルド時に `data-resumed` に入れてある（上の注記）。
    */
-  try {
-    const raw = localStorage.getItem('mhr-watchlist-v1')
-    const store = raw ? (JSON.parse(raw) as unknown) : null
-    const count =
-      store && typeof store === 'object' && !Array.isArray(store) ? Object.keys(store).length : 0
-    if (count > 0) {
-      const link = document.querySelector<HTMLElement>('.watch-link')
-      if (link) {
-        link.querySelector('.count')!.textContent = String(count)
-        link.hidden = false
-      }
+  const WATCH_KEY = 'mhr-watchlist-v1'
+  const bookmark = document.querySelector<HTMLElement>('.bookmark-link')
+  const resumedSet = new Set((bookmark?.dataset['resumed'] ?? '').split(' ').filter(Boolean))
+
+  function paintBookmark() {
+    if (!bookmark) return
+    let ids: string[] = []
+    try {
+      const raw = localStorage.getItem(WATCH_KEY)
+      const store = raw ? (JSON.parse(raw) as unknown) : null
+      ids = store && typeof store === 'object' && !Array.isArray(store) ? Object.keys(store) : []
+    } catch {
+      // 数字を出さないだけ。一覧側が「このブラウザでは保存できません」と案内する
     }
-  } catch {
-    // 出さないだけ。フッターの入口は常に出ている
+    const count = ids.length
+    const resumed = ids.filter((id) => resumedSet.has(id)).length
+    const badge = bookmark.querySelector<HTMLElement>('.count')!
+    // ★ 丸の中に入るのは2桁まで。3桁は「99+」に丸める（丸が横に伸びて検索窓を押し出さないように）
+    badge.textContent = count > 99 ? '99+' : String(count)
+    badge.hidden = count === 0
+    badge.dataset['tone'] = resumed > 0 ? 'resumed' : 'normal'
+    bookmark.setAttribute(
+      'aria-label',
+      count === 0
+        ? 'ブックマーク'
+        : resumed > 0
+          ? `ブックマーク（${count}件・配信再開${resumed}件）`
+          : `ブックマーク（${count}件）`,
+    )
   }
+
+  paintBookmark()
+  window.addEventListener('mhr-watchlist-change', paintBookmark)
+  window.addEventListener('storage', (ev) => {
+    if (ev.key === null || ev.key === WATCH_KEY) paintBookmark()
+  })
 
   // 外を押したら閉じる。開いたままだと本文が読めない。
   document.addEventListener('click', (ev) => {
@@ -290,31 +356,71 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
   }
 
   /*
-   * ウォッチリストの入口（★を持つ読者にだけ出る。上のスクリプト）。
-   * ★ `[hidden]` を明示的に打ち消せる形にしておくこと。
-   *   素で `display: inline-flex` を書くと、ブラウザ既定の
-   *   `[hidden] { display: none }` に打ち勝って hidden のまま見えてしまう
-   *   （FollowBar.astro で同じ穴を踏んでいる）。この2つはセット。
+   * ブックマークの入口（💭 は常時。件数の丸は1件以上のときだけ・上のスクリプト）。
+   * ★ **行の右端**（`margin-left: auto`）。広い画面では本文カードの右端と揃い、
+   *   スマホでは1行目（サイト名・検索窓）の右端に来る。メニューは 47rem 未満で2行目へ回る（下の @media）。
    */
-  .watch-link {
+  .bookmark-link {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    margin-left: auto;
+    /*
+     * 指で押す範囲。絵は24pxだが、押せる枠は上下に余白を取る。
+     * ★ 右の余白は件数の丸を載せる場所。左を詰めて、絵を丸に隠されにくくする。
+     */
+    padding: 0.25rem 0.5rem 0.25rem 0.15rem;
+    border-radius: 8px;
+    color: var(--header-text);
+    text-decoration: none;
   }
-  .watch-link[hidden] {
-    display: none;
+  .bookmark-link:hover {
+    color: var(--header-link);
   }
-  /* 件数。文字色だけだと数字か語尾か分からないので、小さな丸で囲う */
+  .bookmark-link:focus-visible {
+    outline: 2px solid var(--header-link);
+    outline-offset: 1px;
+  }
+  /* 絵は子の部品（BookmarkIcon.astro）が描くので :global で降りる */
+  .bookmark-link :global(svg) {
+    display: block;
+  }
+  /*
+   * 件数。**絵の右肩に重ねる丸**（通知の数字と同じ置き方）。
+   * 文字色だけだと絵の一部に見えるので、明るい丸に紺の数字で抜く。
+   */
   .count {
-    min-width: 1.15rem;
-    padding: 0 0.3rem;
+    position: absolute;
+    top: -0.1rem;
+    right: -0.25rem;
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding: 0 0.22rem;
+    border: 1.5px solid var(--header-bg);
     border-radius: 999px;
     background: var(--header-link);
     color: #0b1220;
-    font-size: 0.72rem;
+    font-size: 0.66rem;
     font-weight: 700;
-    line-height: 1.5;
+    line-height: calc(1.05rem - 3px);
     text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  /*
+   * ★ 0件で数字を消す行。**上の `.count` に `display` を足すなら、この行を消さないこと。**
+   *   素で `display: ...` を書くと既定の `[hidden] { display: none }` に打ち勝ち、
+   *   0件でも「0」の丸が出る（FollowBar.astro で同じ穴を踏んでいる）。この2つはセット。
+   */
+  .count[hidden] {
+    display: none;
+  }
+  /*
+   * 配信再開がある読者の数字（上のスクリプトの `data-tone`）。**通販サイトのカートの赤。**
+   * ★ ヘッダーは明暗どちらの表示でも紺なので、色は固定値でよい（白文字とのコントラスト比 4.6:1）。
+   */
+  .count[data-tone='resumed'] {
+    background: #d93025;
+    color: #fff;
   }
 
   /* --- 押すと開くメニュー --- */
@@ -439,6 +545,18 @@ const menuMonths = months.slice(0, ARCHIVE.menuMonths)
       left: 0;
       right: 0;
       min-width: 0;
+    }
+  }
+
+  /*
+   * ★ 幅 360px 未満（iPhone SE 初代など）。サイト名・検索窓・💭 が1行目に入りきらず、
+   *   **💭 だけが2行目に落ちた**（2026-09-22 実測・320px）。間隔を詰め、検索窓を少し細くする
+   *   （検索窓の側は PostSearch.astro の同じ幅の @media）。**2つはセット。**
+   *   内訳（320px・中身は約283px）: サイト名123 ＋ 間隔10 ＋ 検索窓96 ＋ 間隔10 ＋ 💭34 ＝ 273
+   */
+  @media (max-width: 22.4rem) {
+    .inner {
+      column-gap: 0.6rem;
     }
   }
 </style>

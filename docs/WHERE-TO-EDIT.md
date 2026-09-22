@@ -217,11 +217,13 @@ frontmatter の `draft` を `true` にする。**ファイルは残り、いつ�
                               升目側の leavingPrefix / arrivalsPrefix と同じ文字列にする。
                               **片方だけ変えるとリンクが死ぬ**
                             対象サービス   → site/src/lib/events-data.ts の CALENDAR_SERVICES
-    ウォッチリスト        → site/src/pages/watchlist.astro（noindex・2026-09-18）
-                            作品ページの★   → site/src/components/WatchStar.astro
-                            作品の索引      → site/src/pages/watchlist.json.ts
+    ブックマーク          → site/src/pages/watchlist.astro（noindex・2026-09-18。09-22 に「ウォッチリスト」から改名）
+                            作品ページの「☆ 気になる」 → site/src/components/WatchStar.astro
+                            「配信再開時はお知らせ」を出す作品 → site/src/lib/works.ts の promisesResume()
+                            配信再開の判定  → site/src/lib/works.ts の resumedOn()
+                            作品の索引      → site/src/pages/watchlist.json.ts（5番目の要素が配信再開）
                             ヘッダーの入口   → site/src/components/Header.astro
-                                            （★を持つ読者にだけ出る。件数つき）
+                                            （💭 は常時・件数は1件以上のときだけ。絵は BookmarkIcon.astro）
                             フッターの入口   → site/src/components/Footer.astro
                             ★ 保存の鍵 `mhr-watchlist-v1` と形は**上の3か所で同じもの**。
                               片方だけ変えると保存済みの★が読めなくなる

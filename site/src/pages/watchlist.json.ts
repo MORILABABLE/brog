@@ -1,9 +1,9 @@
-import { publishableWorkPages } from '../lib/works'
+import { publishableWorkPages, resumedOn } from '../lib/works'
 import { isoDate } from '../utils/date'
 import type { APIContext } from 'astro'
 
 /**
- * ウォッチリスト（`/watchlist`）が読む作品の索引。**このサイト唯一のデータ配信口。**
+ * ブックマーク一覧（`/watchlist`・2026-09-22 まで「ウォッチリスト」）が読む作品の索引。**このサイト唯一のデータ配信口。**
  *
  * ■ なぜ必要か
  * ★は `localStorage` に**作品IDと、付けた時点の写し**を持つ（docs/GROWTH.md 3-6）。
@@ -21,6 +21,10 @@ import type { APIContext } from 'astro'
  *     [1] サービス名（`services[0]` ＝ **最も行動が要る**サービスのラベル）
  *     [2] 日付 `YYYY-MM-DD`（終了予定日 / 終了日 / 配信開始日。状態で意味が変わる）
  *     [3] 状態（`WorkState`。leaving / passed / ended / started）
+ *     [4] **配信再開**（あるときだけ・2026-09-22）… `[サービス名, 日付, 'log' | 'stock']`
+ *         見放題の終了を観測したあとで観られる先が見つかった作品（`lib/works.ts` の `resumedOn()`）。
+ *         作品ページの「※配信再開時はブックマーク一覧でお知らせします」を守るための値で、
+ *         **ここを外すと、その約束だけが残る。** 無い作品は4要素のまま（全体を膨らませない）。
  *
  * ★ **ポスターを入れていない。** 索引が作品ページと同じ数（約680件）あるので、
  *   URL を1本足すだけで全体が数倍になる。絵は `/posters/<ID>.webp` という
@@ -36,14 +40,17 @@ import type { APIContext } from 'astro'
 export async function GET(_context: APIContext) {
   const works = publishableWorkPages()
 
-  const index: Record<string, [string, string, string, string]> = {}
+  const index: Record<string, [string, string, string, string, [string, string, string]?]> = {}
   for (const w of works) {
     // ★ `services[0]` は「最も行動が要るサービス」に並べ替えた先頭（lib/works.ts）。
     //   作品ページの見出しが根拠にしているのと同じ1件を使う。
     //   ここを別の選び方にすると、作品ページと一覧で日付が食い違う。
     const head = w.services[0]
     if (!head) continue
-    index[w.id] = [w.title, head.label, isoDate(head.at), head.state]
+    const resumed = resumedOn(w)
+    index[w.id] = resumed
+      ? [w.title, head.label, isoDate(head.at), head.state, [resumed.label, isoDate(resumed.at), resumed.via]]
+      : [w.title, head.label, isoDate(head.at), head.state]
   }
 
   return new Response(

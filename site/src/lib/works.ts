@@ -613,6 +613,110 @@ export function passedNote(check: PassedCheck | undefined): string {
     : `${d}時点で見放題の対象ではなくなっていました。`
 }
 
+// --- ブックマーク（作品ページの「☆ 気になる」・2026-09-22）--------------------------
+
+/*
+ * ■ 何を約束しているか
+ * 作品ページの「☆ 気になる」は全作品で押せる（components/WatchStar.astro）。
+ * そのうち次の2通りでだけ、押す前から
+ * 「※配信再開時はブックマーク一覧でお知らせします」と添える（運用者の指定・2026-09-22）。
+ *
+ *   A. 見放題の終了日がこれから来る（`leaving` の行がある）
+ *   B. 見放題の終了を観測済みで、把握しているサービスのどこにも見放題が無い
+ *
+ * ★ **約束したら、一覧で守る。** 守る側は下の `resumedOn()` →
+ *   `/watchlist.json` の5番目の要素 → `pages/watchlist.astro` の「配信再開」。
+ *   **どれか1つを外すと、案内だけ出して知らせない形になる。**
+ * ★ B の「把握しているサービス」は、作品ページに出している根拠と同じ集合
+ *   （状態行 ＋ 在庫の行 `stockAnswer()`）。ページに「見放題で配信中」が出ているのに
+ *   「再開したらお知らせ」と並べると、同じページの中で話が食い違う。
+ *   **「ほかでは観られません」とは書かない**（在庫の注記のとおり、調べていない社がある）。
+ */
+
+/** 在庫台帳でも確かめた「終わった」の日付。まだ終わっていない・終わったと言えない行は `undefined` */
+function overAt(w: WorkPage, s: WorkServiceState, now: number): Date | undefined {
+  if (s.state === 'ended') return s.at
+  if (s.state === 'passed' && passedCheck(w, s, now)?.result === 'lapsed') return s.at
+  return undefined
+}
+
+/** 「※配信再開時はブックマーク一覧でお知らせします」を添えるか（上の A / B）。 */
+export function promisesResume(w: WorkPage, now = Date.now()): boolean {
+  // A. 終了日がこれから来る
+  if (w.services.some((s) => s.state === 'leaving')) return true
+  // B. どの行も終わっていて、ページのどこにも見放題の行き先が無い
+  //    ★ `passed` の未確認（延長かもしれない）は「終わった」に数えない
+  return (
+    w.services.length > 0 &&
+    w.services.every((s) => overAt(w, s, now) !== undefined) &&
+    stockAnswer(w, now) === undefined &&
+    resumedOn(w, now) === undefined
+  )
+}
+
+/** 見放題の終了を観測したあとで、観られる先が見つかったこと。 */
+export interface Resumed {
+  label: string
+  /** 根拠の日付。`log` は配信開始日、`stock` は在庫を取った日 */
+  at: Date
+  /**
+   * `log`   … 変化ログで、終わったあとに見放題配信の開始を観測した
+   * `stock` … 在庫台帳で、終わったあと（余裕を取って）に見放題を確かめた
+   * ★ **言い回しを分けること。** `log` は「開始を確認」まで、`stock` は「◯日時点で対象でした」まで。
+   *   どちらも「配信中」とは言わない（`WorkState` の注記）。
+   */
+  via: 'log' | 'stock'
+}
+
+/**
+ * 見放題が終わった作品に、**そのあとで**観られる先が見つかったか（ブックマーク一覧の「配信再開」）。
+ *
+ * ★ 「終わった」は変化ログの `removed` と、在庫で確かめた `passed`（`lapsed`）だけ。
+ *   `passed` の未確認は数えない（大半は延長だった・`passedCheck()` の注記）。
+ * ★ **根拠の日付が終わった日より後のものだけ。** 前からずっと別の社にあった作品を
+ *   「再開」と呼ばない。在庫台帳は `passedCheck()` と同じ余裕（2日）を取る。
+ * ★ 在庫台帳は**行の無い社か、終わった行の社**だけを見る。配信開始・終了予定の行が
+ *   ある社はページと一覧にもう出ていて、それを「再開」と言い直すと話が二重になる。
+ */
+export function resumedOn(w: WorkPage, now = Date.now()): Resumed | undefined {
+  const ends = [
+    ...w.history.filter((h) => h.kind === 'removed').map((h) => h.at.getTime()),
+    ...w.services.flatMap((s) => overAt(w, s, now)?.getTime() ?? []),
+  ]
+  if (ends.length === 0) return undefined
+  const lastEnd = Math.max(...ends)
+
+  const started = w.services
+    .filter((s) => s.state === 'started' && s.at.getTime() > lastEnd)
+    .sort((a, b) => a.at.getTime() - b.at.getTime())[0]
+  if (started) return { label: started.label, at: started.at, via: 'log' }
+
+  const found = marksFor(w.id, [w.title], now)
+  if (!found) return undefined
+  if (found.fetchedAt.getTime() < lastEnd + PASSED_CHECK_MARGIN_DAYS * 86_400_000) return undefined
+  for (const { key, label } of API_SERVICES) {
+    const row = w.services.find((s) => s.service === key)
+    if (row && overAt(w, row, now) === undefined) continue
+    if (found.marks.get(key) === 'subscription') return { label, at: found.fetchedAt, via: 'stock' }
+  }
+  return undefined
+}
+
+let resumedIds: string[] | null = null
+
+/**
+ * 配信再開の作品ID（`resumedOn()` が値を返す掲載作品）。**ヘッダーの💭の数字を赤くする**のに使う。
+ *
+ * ★ 一覧（`/watchlist.json` の5番目）と**同じ関数・同じ集合**から作ること。
+ *   ずれると「数字は赤いのに一覧に配信再開が無い」が起きる。
+ * ★ 全ページのヘッダーに埋め込む値なので、1回だけ計算する（2026-09-22 時点で22件・約110バイト）。
+ *   数百件に育ってページが重くなるようなら、小さな JSON に切り出してヘッダーから読む形に変える。
+ */
+export function resumedWorkIds(): string[] {
+  if (!resumedIds) resumedIds = publishableWorkPages().filter((w) => resumedOn(w)).map((w) => w.id)
+  return resumedIds
+}
+
 /**
  * 見出しに入れる日付。**今年なら年を落として「9月29日」にする。**
  *
@@ -1303,6 +1407,7 @@ export function resetWorkPages(): void {
   posterFiles = null
   observedSince = null
   relatedIndex = null
+  resumedIds = null
 }
 
 // --- 関連リンク（内部リンクの受け皿）------------------------------------------

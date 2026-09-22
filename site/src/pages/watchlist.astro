@@ -1,9 +1,20 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { SITE } from '../config'
 
 /**
- * ウォッチリスト。**★を付けた作品を、終了日の近い順に並べる。**
+ * ブックマーク（2026-09-22 まで「ウォッチリスト」）。
+ * **作品ページで「☆ 気になる」を押した作品を、終了日の近い順に並べる。**
+ *
+ * ★ **URL は `/watchlist` のまま**（改名前に保存した読者の入口と、保存の鍵を変えないため）。
+ *   入口はフッターの「ブックマーク」と、全ページのヘッダーの💭（Header.astro・1件以上で件数が付く）。
+ *   ★ 💭 は0件の読者にも出ているので、**0件の案内（`data-when="empty"`）が機能の紹介を兼ねる。**
+ *
+ * ■ 配信再開のお知らせ（2026-09-22）
+ * 作品ページは、終了が近い作品と「終わっていて観られる先が無い」作品に
+ * 「※配信再開時はブックマーク一覧でお知らせします」と約束している（components/WatchStar.astro）。
+ * **その約束を守るのがこのページ。** 索引（`/watchlist.json`）の5番目の要素に
+ * 再開の根拠が入っている作品は、**いちばん上に「配信再開」として出す。**
+ * 判定は `lib/works.ts` の `resumedOn()`。ここで作り直さないこと。
  *
  * ■ なぜこのページを作ったか
  * 実測（docs/FUNNEL.md 9-4）で、**ブックマーク経由の再訪は28日で0件**。
@@ -11,7 +22,7 @@ import { SITE } from '../config'
  * 「消える前に、気づける。」を機能として成立させる面がこれ（docs/GROWTH.md 3-6）。
  *
  * ■ 中身はサーバから来ない
- * ★は読者の `localStorage` にしか無い。**このHTMLは空の器**で、
+ * 保存は読者の `localStorage` にしか無い。**このHTMLは空の器**で、
  * 中身はブラウザ側で組み立てる。日付は `/watchlist.json`（索引）の
  * **新しい方で必ず上書きする** — 終了予定日は後から動くため。
  *
@@ -22,30 +33,30 @@ import { SITE } from '../config'
  * ★ **JS はこのページと `components/WatchStar.astro` に閉じ込める。**
  *   一覧ページと記事ページにスクリプトを増やさないこと（docs/GROWTH.md 3-6）。
  */
-const title = 'ウォッチリスト'
+const title = 'ブックマーク'
 const description =
-  '★を付けた作品の見放題終了日を、近い順にまとめて確認できます。保存はお使いのブラウザの中だけで行われます。'
+  '作品ページで「☆ 気になる」を押した作品の見放題終了日を、近い順にまとめて確認できます。配信が再開した作品もここでお知らせします。保存はお使いのブラウザの中だけで行われます。'
 ---
 
-<BaseLayout title={`${title}｜${SITE.name}`} description={description} noindex>
+{/*
+  ★ `title` には**ページ名だけ**を渡す。サイト名は BaseLayout が付ける。
+    以前は `${title}｜${SITE.name}` を渡していて、<title> にサイト名が2回並んでいた
+    （下のスクリプトが見出しを上書きしていたので、JSが動く環境では気づけなかった）。
+*/}
+<BaseLayout title={title} description={description} noindex>
   <nav class="breadcrumb" aria-label="パンくず">
     <a href="/">ホーム</a> ›
   </nav>
 
   <h1>{title}</h1>
 
-  <p class="lead">
-    作品ページの<strong>「★ 気になる」</strong>で入れた作品を、終了日の近い順に並べます。
-    <strong>終了7日前から赤く</strong>なります。
-  </p>
-
   {/*
-    ★ **このページ自体をブックマークしてもらうのが目的。**
-      ★を付けても戻る手段が無ければ、実測（9-4）の「Direct の再訪0件」は動かない。
+    ★ **このページに戻ってきてもらうのが目的。**
+      入れても戻る手段が無ければ、実測（9-4）の「Direct の再訪0件」は動かない。
+    ★ 文言は運用者の指定（2026-09-22）。それまで置いていた説明文
+      （並び順・赤の意味・💭 の場所）は外した。並びと色は一覧そのものが見せている。
   */}
-  <p class="bookmark">
-    このページを<strong>ブックマーク</strong>しておくと、いつでもここから確認できます。
-  </p>
+  <p class="bookmark">見放題再開時に一覧が随時更新されます。ブックマークをしてご活用ください</p>
 
   {/*
     器だけ置く。**3つの状態を最初からHTMLに持たせ、JSは出し分けるだけ**にしてある。
@@ -55,7 +66,7 @@ const description =
     <p class="note" data-when="loading">読み込み中…</p>
 
     <p class="note" data-when="empty">
-      まだ1本も入っていません。作品ページを開いて<strong>「★ 気になる」</strong>を押すと、ここに並びます。
+      まだ1本も入っていません。作品ページを開いて<strong>「☆ 気になる」</strong>を押すと、ここに並びます。
       <br />
       <a href="/leaving/netflix">Netflixで終了予定の作品を見る</a> ／
       <a href="/leaving/prime-video">Amazon Prime Videoで終了予定の作品を見る</a>
@@ -63,12 +74,23 @@ const description =
 
     {/*
       ★ **「保存できない」と「1本も無い」を必ず分ける。**
-        プライベートウィンドウでは★そのものが出ないので、
+        プライベートウィンドウでは「☆ 気になる」そのものが出ないので、
         ここで「空です」と言うと読者は自分が消したのだと思う。
     */}
     <p class="note" data-when="blocked">
-      このブラウザではウォッチリストを保存できません。
+      このブラウザではブックマークを保存できません。
       プライベートウィンドウや、サイトデータを保存しない設定になっていないかご確認ください。
+    </p>
+
+    {/*
+      配信再開のお知らせ（2026-09-22）。**1件以上あるときだけ**スクリプトが出す。
+      ★ `data-when` を付けないこと。付けると下の出し分けの `display: block` が
+        `hidden` に勝ち、0件でも出る。
+      ★ ヘッダーの💭の数字が赤いときに読者が探すのがこれ。一覧の先頭の緑の行と対になる。
+    */}
+    <p class="resumed-banner" hidden>
+      <span class="banner-tag">配信再開</span>
+      お知らせが<strong><span data-resumed-count></span>件</strong>あります。いちばん上に並べています。
     </p>
 
     <ul class="items" data-when="ready"></ul>
@@ -79,21 +101,26 @@ const description =
 
 <script>
   /**
-   * ★の読み出しと描画。
+   * ブックマークの読み出しと描画。
    *
    * ★ 鍵と保存の形は `components/WatchStar.astro` と**同じもの**。
-   *   片方だけ変えると保存済みの★が読めなくなる。必ず一緒に直すこと。
+   *   片方だけ変えると保存済みの作品が読めなくなる。必ず一緒に直すこと。
    */
   const KEY = 'mhr-watchlist-v1'
+  /** 保存を変えたら投げる。ヘッダーの💭がこれを聞いて件数を塗り直す */
+  const CHANGED = 'mhr-watchlist-change'
 
   /** 保存の形。`[題名, サービス名, 日付, 状態, 追加日時]` */
   type Item = [string, string, string, string, number]
-  /** 索引の形（`pages/watchlist.json.ts`）。`[題名, サービス名, 日付, 状態]` */
-  type IndexRow = [string, string, string, string]
+  /** 配信再開の根拠（索引の5番目）。`[サービス名, 日付, 'log' | 'stock']` */
+  type Resumed = [string, string, string]
+  /** 索引の形（`pages/watchlist.json.ts`）。`[題名, サービス名, 日付, 状態, 配信再開?]` */
+  type IndexRow = [string, string, string, string, Resumed?]
 
   const root = document.getElementById('watchlist')!
   const list = root.querySelector<HTMLUListElement>('.items')!
   const asOfLine = root.querySelector<HTMLElement>('.asof')!
+  const banner = root.querySelector<HTMLElement>('.resumed-banner')!
 
   function read(): Record<string, Item> | null {
     try {
@@ -114,6 +141,7 @@ const description =
       if (!cur) return
       delete cur[id]
       localStorage.setItem(KEY, JSON.stringify(cur))
+      window.dispatchEvent(new Event(CHANGED))
     } catch {
       // 消せなくても描画側はもう消している。次の読み込みで戻るだけ
     }
@@ -158,6 +186,17 @@ const description =
     return { text: formatDate(date), level: '' }
   }
 
+  /**
+   * 配信再開の言い回し。**根拠で言い分ける**（`lib/works.ts` の `Resumed`）。
+   * ★ どちらも「配信中」と言い切らない。変化ログは「開始を確認」まで、
+   *   在庫台帳は「◯日時点で対象でした」まで（作品ページと同じ線引き）。
+   */
+  function resumedPhrase([service, date, via]: Resumed): string {
+    return via === 'stock'
+      ? `${formatDate(date)}時点で${service}の見放題の対象でした`
+      : `${formatDate(date)}に${service}で見放題配信の開始を確認`
+  }
+
   function show(state: 'loading' | 'empty' | 'blocked' | 'ready') {
     root.dataset['state'] = state
   }
@@ -194,7 +233,9 @@ const description =
         const fresh = index[id]
         // ★ 索引にあれば**必ず索引を採る**。終了予定日は後から動く
         const [title, service, date, state] = fresh ?? saved
-        return { id, title, service, date, state, days: daysUntil(date, today) }
+        // ★ 再開の根拠は索引にしか無い（保存した写しには持たせていない）
+        const resumed = fresh?.[4]
+        return { id, title, service, date, state, resumed, days: daysUntil(date, today) }
       })
       /*
        * 並び。**「まだ間に合うもの」が先、「もう終わったもの」が後。**
@@ -204,11 +245,17 @@ const description =
        *   読者がこの面に来る用は「次に何が消えるか」なので、
        *   過ぎたものは下に送る。
        *
+       *   ⓪ 配信再開 … **いちばん上**（作品ページで約束した「お知らせ」がこれ。2026-09-22）
        *   ① これから終了するもの … 近い順（あと1日 → あと5日 → …）
        *   ② 過ぎた・終了した・配信開始 … 新しい順（最近のできごとが上）
        * ★ 日付が読めない行は最後（索引にも写しにも無い壊れた値）。
        */
       .sort((a, b) => {
+        if (Boolean(a.resumed) !== Boolean(b.resumed)) return a.resumed ? -1 : 1
+        if (a.resumed && b.resumed) {
+          // 再開どうしは新しい知らせが上
+          return b.resumed[1].localeCompare(a.resumed[1]) || a.title.localeCompare(b.title, 'ja')
+        }
         const rank = (d: number) => (Number.isNaN(d) ? 2 : d >= 0 ? 0 : 1)
         const ra = rank(a.days)
         const rb = rank(b.days)
@@ -223,7 +270,9 @@ const description =
         const { text, level } = phrase(r.state, r.date, r.days)
         const li = document.createElement('li')
         li.className = 'item'
-        if (level) li.dataset['level'] = level
+        // ★ 再開した行は赤（終了間近）にしない。急がせる知らせではない
+        if (r.resumed) li.dataset['level'] = 'resumed'
+        else if (level) li.dataset['level'] = level
 
         /*
          * ポスターはIDから組み立てる（索引に入れると全体が数倍になる）。
@@ -250,18 +299,38 @@ const description =
         meta.className = 'meta'
         meta.textContent = `${r.service}｜${text}`
 
-        body.append(a, meta)
+        /*
+         * ★ 再開の知らせは**元の行の上に別の1行で**出す。元の「◯日に終了しました」は消さない
+         *   （どのサービスで終わって、どこで戻ったのかを両方読めるように）。
+         *   「配信再開」の札は文字で書く（色だけで伝えない）。
+         */
+        if (r.resumed) {
+          const news = document.createElement('p')
+          news.className = 'news'
+          const tag = document.createElement('span')
+          tag.className = 'tag'
+          tag.textContent = '配信再開'
+          news.append(tag, resumedPhrase(r.resumed))
+          body.append(a, news, meta)
+        } else {
+          body.append(a, meta)
+        }
 
         const del = document.createElement('button')
         del.className = 'remove'
         del.type = 'button'
         del.textContent = '外す'
-        del.setAttribute('aria-label', `${r.title} をウォッチリストから外す`)
+        del.setAttribute('aria-label', `${r.title} をブックマークから外す`)
         del.addEventListener('click', () => {
           remove(r.id)
           li.remove()
-          if (list.children.length === 0) show('empty')
-          else title_(rows.filter((x) => x.id !== r.id))
+          /*
+           * ★ 残りは `live` で持つ。`rows.filter(x => x.id !== r.id)` だと、
+           *   2本目を外したときに1本目が数に戻ってくる（見出しと知らせの件数がずれる）。
+           */
+          live = live.filter((x) => x.id !== r.id)
+          if (live.length === 0) show('empty')
+          summarize(live)
         })
 
         li.append(img, body, del)
@@ -271,40 +340,49 @@ const description =
 
     asOfLine.textContent = asOf
       ? `配信情報は ${formatDate(asOf)} 時点のものです。終了予定日は変更されることがあります。`
-      : '配信情報を取得できませんでした。★を付けた時点の内容を表示しています。'
+      : '配信情報を取得できませんでした。「気になる」を押した時点の内容を表示しています。'
 
     show('ready')
-    title_(rows)
+    live = rows
+    summarize(rows)
   }
 
+  /** いま画面に残っている行（「外す」で減る）。見出しと知らせの件数はこれから数える */
+  let live: { id: string; days: number; state: string; resumed?: Resumed }[] = []
+
   /**
-   * ★ **タブの見出しに「あと何件が今週終了」を出す**（2026-09-18）。
+   * ★ **タブの見出しに「配信再開◯件」「あと何件が今週終了」を出す**（2026-09-18・再開は 09-22）。
    *
    * このサイトが読者に通知を送る手段はこれしかない（メールもプッシュも持たない）。
-   * ブックマークから開いたとき・タブを開いたままのときに、
-   * **一覧を読まなくても急ぎがあるか分かる**のが狙い。
+   * ブラウザのブックマークから開いたとき・タブを開いたままのときに、
+   * **一覧を読まなくても知らせがあるか分かる**のが狙い。
    *
    * ★ 件数が0なら素の見出しに戻すこと。「0件」と出し続けると
    *   読者はこの数字を見なくなる。
+   * ★ 素の見出しはページが持っている `<title>` を使う（サイト名をここに書き写さない）。
+   * ★ 一覧の上の「配信再開のお知らせ」の件数もここで合わせる（同じ数を2か所で数えない）。
    */
-  function title_(rows: { days: number; state: string }[]) {
+  const baseTitle = document.title
+  function summarize(rows: { days: number; state: string; resumed?: Resumed }[]) {
+    const resumed = rows.filter((r) => r.resumed).length
+    banner.querySelector('[data-resumed-count]')!.textContent = String(resumed)
+    banner.hidden = resumed === 0
     const soon = rows.filter(
-      (r) => r.state === 'leaving' && !Number.isNaN(r.days) && r.days >= 0 && r.days <= 7,
+      (r) =>
+        !r.resumed && r.state === 'leaving' && !Number.isNaN(r.days) && r.days >= 0 && r.days <= 7,
     ).length
-    const base = 'ウォッチリスト｜見放題レーダー'
-    document.title = soon > 0 ? `【あと${soon}件】${base}` : base
+    const marks = [resumed > 0 ? `配信再開${resumed}件` : '', soon > 0 ? `あと${soon}件` : '']
+      .filter(Boolean)
+      .join('・')
+    document.title = marks ? `【${marks}】${baseTitle}` : baseTitle
   }
 
   void render()
 </script>
 
 <style>
-  .lead {
-    margin: 0.4rem 0 0.9rem;
-    line-height: 1.9;
-  }
   .bookmark {
-    margin: 0 0 1.4rem;
+    margin: 0.4rem 0 1.4rem;
     padding: 0.7rem 0.9rem;
     border-left: 3px solid var(--accent);
     background: var(--bg-subtle);
@@ -413,6 +491,72 @@ const description =
   }
   .items :global(.item[data-level='past'] .title) {
     color: var(--text-muted);
+  }
+
+  /*
+   * 配信再開（2026-09-22）。**作品ページで約束した「お知らせ」がこの行。**
+   *
+   * ★ **緑**（`--cal-new`。カレンダーの「新」と同じ色）。赤は一覧では「終了7日前」、
+   *   青は画面のリンクの色なので、どちらとも取り違えない色にする。
+   *   急がせる知らせではなく「観られるようになった」知らせ。
+   * ★ 行の左に太い帯・塗り・札の3つで見せる。**色だけで伝えない** — 「配信再開」の札が文字で付いている。
+   * ★ 帯は `box-shadow` で描く。`border-left` にすると行の中身が右へずれ、他の行とポスターの位置が揃わない。
+   */
+  .items :global(.item[data-level='resumed']) {
+    background: color-mix(in srgb, var(--cal-new) 10%, var(--bg));
+    box-shadow: inset 5px 0 0 var(--cal-new);
+  }
+  .items :global(.item[data-level='resumed'] .title) {
+    font-size: 1rem;
+  }
+  .items :global(.news) {
+    margin: 0.3rem 0 0.1rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--cal-new);
+  }
+  .items :global(.tag) {
+    display: inline-block;
+    margin-right: 0.45rem;
+    padding: 0.05rem 0.55rem;
+    border-radius: 999px;
+    background: var(--cal-new);
+    /* 塗りの上の文字。明るい表示では白、暗い表示では地の色（global.css の --cal-on） */
+    color: var(--cal-on);
+    font-size: 0.74rem;
+    line-height: 1.6;
+    vertical-align: 0.05em;
+  }
+
+  /* 一覧の上のお知らせ。行と同じ緑でそろえ、ヘッダーの赤い数字から辿った読者がすぐ見つけられるようにする */
+  .resumed-banner {
+    margin: 0 0 0.8rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--cal-new) 45%, var(--bg));
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--cal-new) 10%, var(--bg));
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .resumed-banner[hidden] {
+    display: none;
+  }
+  .resumed-banner strong {
+    color: var(--cal-new);
+  }
+  .banner-tag {
+    display: inline-block;
+    margin-right: 0.4rem;
+    padding: 0.05rem 0.55rem;
+    border-radius: 999px;
+    background: var(--cal-new);
+    color: var(--cal-on);
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.6;
+    vertical-align: 0.05em;
   }
 
   .items :global(.remove) {

@@ -198,6 +198,18 @@ const index = posts
     flex: 0 1 7.5rem;
     min-width: 6.5rem;
   }
+  /*
+   * ★ 幅 360px 未満では少し細くする（2026-09-22）。ヘッダーの右端に
+   *   ブックマークの💭が出る読者で、💭 だけが2行目に落ちたため。
+   *   Header.astro の同じ幅の @media（間隔を詰める側）と**セット**。
+   *   6rem でも「記事を探す」（約85px）は欠けない。
+   */
+  @media (max-width: 22.4rem) {
+    .post-search {
+      flex-basis: 6rem;
+      min-width: 6rem;
+    }
+  }
   input {
     width: 100%;
     padding: 0.3rem 0.65rem;

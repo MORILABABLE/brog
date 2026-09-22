@@ -1,15 +1,27 @@
 ---
 import { isoDate } from '../utils/date'
+import { promisesResume } from '../lib/works'
 import type { WorkPage } from '../lib/works'
 
 /**
- * 作品ページの★。**ウォッチリスト（`/watchlist`）に入れる唯一の入口。**
+ * 作品ページの「☆ 気になる」。**ブックマーク一覧（`/watchlist`）に入れる唯一の入口。**
  *
  * ■ 何のための機能か
  * 実測（docs/FUNNEL.md 9-4）で、**ブックマーク経由の再訪は28日で0件**だった。
  * 再訪26件は全部が再検索で、**URLを覚えて戻ってきた読者は1人もいない。**
  * サイトのタグライン「消える前に、気づける。」に対して、
  * **気づかせる仕掛けがこれまで1つも無かった。**
+ *
+ * ■ 2026-09-22 から全作品で押せる（運用者の指定）
+ * 9-21 に一度止めた。そのときの約束は「終了日が近づいたときに気づける」の1つだけで、
+ * 終了日がこれから来る作品は678件中84件しか無かったため。
+ * 戻すにあたって**約束を2つに分けた。**
+ *   - 押すこと自体 … どの作品でも「気になる作品を手元に控える」ためにできる
+ *   - 「※配信再開時はブックマーク一覧でお知らせします」… **約束できる作品にだけ**添える
+ *     （終了日がこれから来る／終わっていて、把握している社のどこにも見放題が無い）。
+ *     判定は `lib/works.ts` の `promisesResume()`、守る側は同じファイルの `resumedOn()`。
+ * 押したあとは、どの作品でも「トップページの「ブックマーク」タブで一覧を確認できます」に変わる
+ * （文言は運用者の指定。フッターの「ブックマーク」とヘッダーの💭が一覧への入口）。
  *
  * ■ 読者の情報をこちら側に持たない
  * 保存先は `localStorage` だけ。サーバも cookie も使わない（docs/GROWTH.md 3-6）。
@@ -21,34 +33,18 @@ import type { WorkPage } from '../lib/works'
  *
  * ★ **`localStorage` は読めないことがある**（プライベートウィンドウ、
  *   サイトデータの拒否、iOS の設定）。**必ず try/catch で包み、
- *   読めなければ★を出さない**（押しても保存されない★のほうが害が大きい）。
+ *   読めなければボタンも案内も出さない**（押しても保存されないボタンと、
+ *   守れない「お知らせします」のほうが害が大きい）。
  *
  * ■ JS をここと `/watchlist` に閉じ込める
  * サイトは基本 JS ゼロで作られている（docs/GROWTH.md 3-6）。
  * **一覧ページと記事ページにスクリプトを増やさないこと。**
  * この部品は作品ページからしか呼ばない。
  *
- * ■ **2026-09-21 から出していない**（`pages/works/[id].astro` の `SHOW_STAR`・運用者の指定）
- * ★が読者に約束しているのは「**終了日が近づいたときに気づける**」の1つだけ。
- * ところが掲載している作品ページ678件のうち、
- * **終了日がこれから来るのは84件（leaving）しかない。**
- *   ended 519 ／ passed 40 ／ leaving 84 ／ started 35（2026-09-20 の `/watchlist.json`）
- * つまり **4分の3の作品ページでは、★を押しても近づく終了日が無い。**
- * 「終了しました」と書いた真下で、他サービスの逃げ先も無い作品に
- * 「終了日が近づいたときに気づけます」と案内していたことになる。
- * 実測でもブックマーク経由の再訪は0件（上の 9-4）で、止めて失うものが無い。
- *
- * ★ **止めるフラグはこの部品の中に置かないこと**（`pages/works/[id].astro` 側にある）。
+ * ★ **止めるフラグはこの部品の中に置かないこと**（`pages/works/[id].astro` の `SHOW_STAR`）。
  *   ここで `{ false && ... }` にしても**下の `<script>` は678ページに残る** — 実測した。
  *   Astro はテンプレートの `<script>` を**描画の条件と無関係に**そのページへ入れるので、
  *   JS まで消すには**呼び出しごと止める**しかない。
- *   確認は `grep -l mhr-watchlist-v1 dist/works/*.html | wc -l` が **0**（ヘッダーの
- *   件数表示は別物で、そちらは全ページに残る）。
- *
- * ★ **戻すときも全作品に出さないこと。** 出すなら `head.state === 'leaving'`
- *   （＝終了日がこれから来る84件）に絞る。
- *   `/watchlist` ページと `/watchlist.json`、ヘッダー・フッターの入口はそのまま残してある
- *   （既に★を付けた読者の保存は消えない。ヘッダーの入口は★を持つ読者にだけ出る）。
  */
 interface Props {
   work: WorkPage
@@ -58,34 +54,36 @@ const { work: w } = Astro.props
 const head = w.services[0]
 
 /*
- * ★ 状態の分からない作品には★を出さない。
- *   ウォッチリストは「いつ消えるか」を並べる面なので、
+ * ★ 状態の分からない作品には出さない。
+ *   ブックマーク一覧は「いつ消えるか」を並べる面なので、
  *   日付を持たない行を入れると並び順が決まらない。
  */
 const snapshot = head
   ? JSON.stringify([w.title, head.label, isoDate(head.at), head.state])
   : null
+
+const promise = snapshot ? promisesResume(w) : false
 ---
 
 {
   snapshot && (
     /*
-      ★ `hidden` を付けたまま出す。**JSが動く環境でだけ見せる。**
-        押しても何も起きない★が残るより、出ないほうがよい
-        （FollowBar.astro と同じ判断）。
+      ★ `hidden` を付けたまま出す。**JSが動いて保存できる環境でだけ見せる。**
+        押しても何も起きないボタンが残るより、出ないほうがよい
+        （FollowBar.astro と同じ判断）。「お知らせします」も同じ枠に入れてあるので一緒に隠れる。
     */
     <div class="watch" data-work-id={w.id} data-snapshot={snapshot} hidden>
       <button class="star" type="button" aria-pressed="false">
-        <span class="mark" aria-hidden="true">★</span>
+        <span class="mark" aria-hidden="true">☆</span>
         <span class="label">気になる</span>
       </button>
       {/*
-        ★を付けた直後にだけ出る案内。**ここが今回いちばん効かせたい1行。**
-        ★だけ付けて帰ると、読者はこのサイトに戻る手段を持たないまま終わる。
+        押す前と押したあとで入れ替わる1行。**両方をHTMLに書いておき、JSは出し分けるだけ。**
+        ★ 押す前の行は約束できる作品にだけある（上の `promise`）。無い作品では押す前は何も出ない。
       */}
-      <p class="hint" hidden>
-        <a href="/watchlist">ウォッチリスト</a>に入れました。
-        <strong>このページをブックマーク</strong>しておくと、終了日が近づいたときに気づけます。
+      {promise && <p class="note" data-when="off">※配信再開時はブックマーク一覧でお知らせします</p>}
+      <p class="note" data-when="on" hidden>
+        トップページの「<a href="/watchlist">ブックマーク</a>」タブで一覧を確認できます
       </p>
     </div>
   )
@@ -93,10 +91,13 @@ const snapshot = head
 
 <script>
   /**
-   * ★の保存と解除。**このファイルと `/watchlist` 以外に同じ読み書きを書かないこと。**
-   * 鍵と形を変えるときは両方を必ず一緒に直す（片方だけだと保存済みの★が消える）。
+   * 保存と解除。**このファイルと `/watchlist` 以外に同じ読み書きを書かないこと。**
+   * 鍵と形を変えるときは両方を必ず一緒に直す（片方だけだと保存済みの作品が消える）。
+   * ヘッダーは件数を数えるだけ（components/Header.astro）。
    */
   const KEY = 'mhr-watchlist-v1'
+  /** 保存を変えたら投げる。ヘッダーの💭がこれを聞いて件数を塗り直す */
+  const CHANGED = 'mhr-watchlist-change'
 
   /** 保存の形。`{ "<作品ID>": [題名, サービス名, 日付, 状態, 追加日時] }` */
   type Item = [string, string, string, string, number]
@@ -104,7 +105,7 @@ const snapshot = head
 
   /**
    * ★ **読めないことがある。** 読めなければ「空」ではなく **null** を返す。
-   *   空と区別できないと、読めない環境で★を押したときに
+   *   空と区別できないと、読めない環境で押したときに
    *   「保存できたように見えて消える」状態になる。
    */
   function read(): Store | null {
@@ -139,11 +140,19 @@ const snapshot = head
     const id = box.dataset['workId']!
     const snapshot = JSON.parse(box.dataset['snapshot']!) as [string, string, string, string]
     const button = box.querySelector<HTMLButtonElement>('.star')!
-    const hint = box.querySelector<HTMLElement>('.hint')!
+    const mark = button.querySelector<HTMLElement>('.mark')!
+    const notes = Array.from(box.querySelectorAll<HTMLElement>('.note'))
 
+    /*
+     * ★ 押したかどうかは**☆/★の字形と塗りの両方**で見せる（色だけに頼らない）。
+     *   文言（気になる）は変えない — 押した読者に「何を押したか」が分からなくなるため。
+     * ★ 案内の行は状態に合わせて入れ替える。外したら押す前の行に戻す
+     *   （押したあとの「一覧を確認できます」を、外した読者に出し続けない）。
+     */
     const paint = (on: boolean) => {
       button.setAttribute('aria-pressed', String(on))
-      button.querySelector('.label')!.textContent = on ? 'ウォッチリスト中' : '気になる'
+      mark.textContent = on ? '★' : '☆'
+      for (const n of notes) n.hidden = n.dataset['when'] !== (on ? 'on' : 'off')
     }
 
     paint(id in store)
@@ -160,18 +169,21 @@ const snapshot = head
       }
       if (!write(current)) return
       paint(!on)
-      /*
-       * 案内は**付けたときだけ**出す。外したときに出すと、
-       * 消そうとしている読者にブックマークを勧めることになる。
-       * ★ 一度出したら消さない（出入りさせると読者の邪魔になる）。
-       */
-      if (!on) hint.hidden = false
+      window.dispatchEvent(new Event(CHANGED))
     })
   }
 </script>
 
 <style>
+  /*
+   * ボタンと案内を1行に並べ、入らなければ案内が下へ折り返す
+   * （広い画面では横並び、スマホでは2行）。
+   */
   .watch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.8rem;
     margin: 0.9rem 0 0;
   }
   .watch[hidden] {
@@ -181,12 +193,12 @@ const snapshot = head
   .star {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 0.9rem;
+    gap: 0.35rem;
+    padding: 0.45rem 0.95rem;
     border: 1px solid var(--border);
     border-radius: 999px;
     background: var(--bg);
-    color: var(--text-muted);
+    color: var(--text);
     font-size: 0.86rem;
     font-weight: 700;
     line-height: 1.3;
@@ -197,7 +209,7 @@ const snapshot = head
     color: var(--accent);
   }
   /*
-   * 押された状態。**色だけで区別しない** — ★の塗りと文言の両方が変わる
+   * 押された状態。**色だけで区別しない** — ☆→★ の字形も変わる
    * （色覚特性と、モノクロ表示の両方への配慮）。
    */
   .star[aria-pressed='true'] {
@@ -207,22 +219,19 @@ const snapshot = head
   }
   .mark {
     font-size: 1rem;
+    color: var(--accent);
   }
-  .star[aria-pressed='false'] .mark {
-    /* 未選択は輪郭だけの★に見せる。字形を変えずに濃さで差を付ける */
-    opacity: 0.45;
+  .star[aria-pressed='true'] .mark {
+    color: #fff;
   }
 
-  .hint {
-    margin: 0.6rem 0 0;
-    padding: 0.6rem 0.8rem;
-    border-left: 3px solid var(--accent);
-    background: var(--bg-subtle);
-    font-size: 0.82rem;
-    line-height: 1.7;
-    color: var(--text);
+  .note {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-muted);
   }
-  .hint[hidden] {
+  .note[hidden] {
     display: none;
   }
 </style>
