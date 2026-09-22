@@ -1,22 +1,8 @@
 {
-  "generatedAt": "2026-09-21T01:07:17.252Z",
-  "asOf": "2026-09-21",
+  "generatedAt": "2026-09-22T01:37:04.353Z",
+  "asOf": "2026-09-22",
   "note": "npm run demand -- --picks が書く。手で編集しない。需要の数字は入れない（並び順だけが需要を反映する）。読む側は site/src/lib/demand-picks.ts。",
   "picks": [
-    {
-      "workIds": [
-        "SID0187038"
-      ],
-      "title": "ブラタモリ",
-      "answer": "until",
-      "deadline": "2026-09-21T14:59:00.000Z",
-      "services": [
-        "u-next"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
-    },
     {
       "workIds": [
         "14281"
@@ -31,7 +17,7 @@
         "2026-09-special-anime-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -50,7 +36,7 @@
         "2026-09-upcoming-prime-video-western"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -67,7 +53,7 @@
         "jurassic-park"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -81,7 +67,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -95,7 +81,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -112,7 +98,7 @@
         "kamen-rider"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -128,7 +114,7 @@
         "2026-09-leaving-netflix"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -144,7 +130,7 @@
         "2026-09-special-anime-netflix"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -160,7 +146,7 @@
         "2026-09-leaving-netflix"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -174,7 +160,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -192,7 +178,7 @@
         "2026-09-special-japanese-anime-u-next"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -206,7 +192,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -220,7 +206,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -234,7 +220,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -248,7 +234,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -262,7 +248,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -279,7 +265,7 @@
         "2026-09-leaving-netflix"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -293,7 +279,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -307,7 +293,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -323,7 +309,7 @@
         "2026-09-leaving-prime-video"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -337,7 +323,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -352,7 +338,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
     },
     {
       "workIds": [
@@ -366,7 +352,23 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-21"
+      "lastSeen": "2026-09-22"
+    },
+    {
+      "workIds": [
+        "8933"
+      ],
+      "title": "天気の子",
+      "answer": "ended",
+      "endedAt": "2026-08-13T09:43:14.000Z",
+      "services": [
+        "disney-plus"
+      ],
+      "covered": [
+        "2026-08-ended"
+      ],
+      "firstSeen": "2026-09-22",
+      "lastSeen": "2026-09-22"
     }
   ],
   "notifiedSignature": "ONE PIECE|SPEED"
