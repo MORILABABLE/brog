@@ -1314,17 +1314,20 @@ tr.is-search-current > *:first-child {
 }
 
 /*
- * カレンダーへの導線。**画像つき作品リンクと同じフィールドの見た目**にそろえる
- * （2026-09-19・運用者の指定）。塗りのボタンにはしない
- * （`.next-step-article` と同じ判断で、広告と見分けが付かなくなるため）。
+ * カレンダーへの導線（`plugins/rehype-section-ads.ts` の `calendarBlock`）。
+ * **トップの「配信カレンダー」の棚と同じ絵＋タイトル**（2026-09-22・運用者の指定）。
+ * 塗りのボタンにはしない（`.next-step-article` と同じ判断で、広告と見分けが付かなくなるため）。
+ *
+ * ★ 絵の枠は `.next-step-thumb`（記事カードと同じ 72px・8px の角丸）に揃えてある。
+ *   絵が無いときも同じ大きさの色のタイルを出す（枠の高さを変えない）。
  */
 .prose .section-calendar {
   margin: 1rem 0 1.4rem;
 }
 .prose .section-calendar-link {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.8rem;
+  align-items: center;
   padding: 0.7rem 0.9rem;
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
@@ -1336,10 +1339,44 @@ tr.is-search-current > *:first-child {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
+.prose .section-calendar-thumb {
+  flex: none;
+  display: block;
+  width: 72px;
+  height: 72px;
+  /* 絵の地が白いので、枠線で地の色から切り分ける */
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg);
+}
+.prose .section-calendar-thumb[data-category='leaving']:empty {
+  background: var(--cat-leaving-bg);
+}
+.prose .section-calendar-thumb[data-category='arrivals']:empty {
+  background: var(--cat-arrivals-bg);
+}
+.prose .section-calendar-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* ★ 本文の img に付く既定の余白・角丸を打ち消す（枠の側が角丸を持つ） */
+  margin: 0;
+  border-radius: 0;
+}
+/* ★ 題が長いので、絵の右は縮められるようにする（min-width:0 が無いと溢れる） */
+.prose .section-calendar-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
 .prose .section-calendar-label {
   color: var(--accent);
   font-size: 0.95rem;
   font-weight: 700;
+  line-height: 1.5;
 }
 .prose .section-calendar-note {
   color: var(--text-muted);

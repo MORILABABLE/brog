@@ -11,7 +11,7 @@
     "sections": "node scripts/make-sections.mjs",
     "shorts": "node scripts/make-shorts.mjs",
     "posters:purge": "node scripts/purge-posters.mjs",
-    "prebuild": "node scripts/make-cards.mjs && node scripts/make-sections.mjs && node scripts/make-thumbs.mjs",
+    "prebuild": "node scripts/make-cards.mjs && node scripts/make-sections.mjs && node scripts/make-thumbs.mjs && node scripts/calendar-thumbs.mjs",
     "build": "astro build",
     "build:watch": "node scripts/watch-build.mjs",
     "preview": "astro preview",

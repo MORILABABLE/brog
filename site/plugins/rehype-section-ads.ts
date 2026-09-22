@@ -71,7 +71,8 @@
  */
 import { huluNgHitsIn } from '../src/lib/hulu-ng.ts'
 import { SERVICE_BY_LABEL } from '../src/lib/work-links.ts'
-import { hasCalendar } from '../src/lib/events-data.ts'
+import { CALENDAR_SERVICES, hasCalendar } from '../src/lib/events-data.ts'
+import { evergreenTitleBase } from '../src/lib/evergreen.ts'
 import { postBySlug } from '../src/lib/post-index.ts'
 import { primeTrialUrl } from '../src/lib/affiliate.ts'
 import { primeAdWithTag, type PrimeAdInput } from '../src/lib/prime-ad.ts'
@@ -340,24 +341,47 @@ function mainService(tables: Node[]): string | undefined {
 }
 
 /**
- * 配信カレンダーへの導線。**画像つき作品リンクと同じ見た目の枠**にする
- * （2026-09-19・運用者の指定）。
+ * 配信カレンダーへの導線。**トップの「配信カレンダー」の棚と同じ絵＋タイトル**のカードにする
+ * （2026-09-22・運用者の指定。それまでは文字だけの枠だった）。
+ *
+ * ■ 絵とタイトルはトップの棚（`components/TopCalendar.astro`）と**同じ出どころ**
+ *   絵      … `src/assets/services/<キー>.png` を縮めた `/calendar-thumbs/<キー>.webp`
+ *             （`scripts/calendar-thumbs.mjs`・prebuild。rehype が組むHTMLは
+ *             Astro の画像処理を通らないので、小さい版を public に置いている）
+ *   タイトル … `evergreenTitleBase()`（行き先の見出しと同じ1か所）
+ * ★ **作品のポスターや、カレンダー画面のスクリーンショットは使わない。**
+ *   升目に並ぶポスターは提供元も許諾を出せない（`scripts/service-cards.mjs` 冒頭）。
+ * ★ 絵が無ければ（prebuild を通さない手元のビルドなど）**色のタイルだけ出す。**
+ *   壊れた画像のアイコンを出さない。
  *
  * ★ **行き先は記事と同じ軸。** 終了予定の記事から新着カレンダーへ送ると、
  *   読者が探していたものと違うページに着く。
+ * ★ サービス名は記事のタグではなく**カレンダーの側の名前**（`CALENDAR_SERVICES`）を使う。
+ *   タグの書き方に引きずられて、行き先の見出しと名前がずれないように。
  */
 function calendarBlock(direction: 'leaving' | 'arrivals', service: string, label: string): Node {
-  const verb = direction === 'leaving' ? '終了予定' : '新着'
+  const name = CALENDAR_SERVICES.find((s) => s.key === service)?.label ?? label
+  const src = `/calendar-thumbs/${service}.webp`
+  const thumb = el(
+    'span',
+    { className: ['section-calendar-thumb'], 'data-category': direction },
+    publicImageSize(src)
+      ? [el('img', { src, alt: '', width: 72, height: 72, loading: 'lazy', decoding: 'async' })]
+      : [],
+  )
   return el('div', { className: ['section-calendar'] }, [
     el(
       'a',
       { href: `/${direction}/${service}`, className: ['section-calendar-link'] },
       [
-        el('span', { className: ['section-calendar-label'] }, [
-          text(`${label}の見放題${verb}カレンダー`),
-        ]),
-        el('span', { className: ['section-calendar-note'] }, [
-          text('日付ごとに全作品を見る'),
+        thumb,
+        el('span', { className: ['section-calendar-body'] }, [
+          el('span', { className: ['section-calendar-label'] }, [
+            text(evergreenTitleBase(direction, service, name)),
+          ]),
+          el('span', { className: ['section-calendar-note'] }, [
+            text('日付ごとに全作品を見る'),
+          ]),
         ]),
       ],
     ),

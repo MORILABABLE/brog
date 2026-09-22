@@ -27,7 +27,8 @@ import {
   serviceCtaLabel,
   serviceUrl,
   stateBadge,
-  stateSentence,
+  statusRows,
+  statusSentence,
   noticeAsOf,
   stockAnswer,
   seriesArticleFor,
@@ -206,7 +207,13 @@ const cover =
   coverTarget && coverUrl
     ? { url: coverUrl, rel: relFor(coverUrl), name: `「${w.title}」を${coverTarget.label}` }
     : undefined
-const coverRow = cover ? w.services.findIndex((s) => s.service === 'prime-video') : -1
+/*
+ * 配信状況の行。**見放題が終わった社が2つ以上あれば1行にまとめてある**（2026-09-22・`statusRows()`）。
+ * ★ ポスターを置く行も**まとめたあとの行**で探す。`w.services` の添字で探すと、
+ *   まとめて行が減ったぶん、別の社の行にポスターが付く。
+ */
+const rows = statusRows(w)
+const coverRow = cover ? rows.findIndex((r) => r.services.some((s) => s.service === 'prime-video')) : -1
 const sideCover = w.poster && coverRow < 0 ? w.poster : undefined
 
 /*
@@ -420,7 +427,9 @@ const jsonLd = {
     <div class="status-rows">
     <ul class="states">
       {
-        w.services.map((s, i) => {
+        rows.map((row, i) => {
+          // まとめた行（2社以上が終了済み）では、代表の社（いちばん遅く終わった社）でバッジとボタンを決める
+          const s = row.head
           /*
            * ★ 終了予定日を過ぎた（`passed`）行だけ、在庫台帳で確かめた結果を使う（2026-09-17）。
            *   バッジは確かめた結果で言い分け、状態行の文はそのまま残して、
@@ -435,9 +444,19 @@ const jsonLd = {
               <span class="badge" data-category={badge.category}>
                 {badge.label}
               </span>
+              {/*
+                ★ まとめた行は「NetflixとDisney+では2026年9月4日までに…」（運用者の指定の言い方）。
+                  3社以上は「A、BとC」。1社の行は従来どおり「Netflixで…」。
+              */}
               <span class="line">
-                <strong>{s.label}</strong>で
-                <time datetime={isoDate(s.at)}>{stateSentence(s)}</time>
+                {row.services.map((x, j) => (
+                  <>
+                    {j > 0 && (j === row.services.length - 1 ? 'と' : '、')}
+                    <strong>{x.label}</strong>
+                  </>
+                ))}
+                {row.services.length > 1 ? 'では' : 'で'}
+                <time datetime={isoDate(s.at)}>{statusSentence(row)}</time>
                 {s.state === 'passed' && <span class="check">{passedNote(check)}</span>}
               </span>
               {/*

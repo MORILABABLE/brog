@@ -15,6 +15,8 @@ public/thumbs/
 # 作品ページ（/works/<ID>）に出すポスター。同じスクリプトが同時に書き出す。
 # ★ thumbs と同じく取得物。**git に入れないこと**（.image-cache の注意書きと同じ理由）。
 public/posters/
+# 記事の中の配信カレンダーのカードの絵（scripts/calendar-thumbs.mjs・src/assets/services から縮めた生成物）。
+public/calendar-thumbs/
 
 # ビルド時に取得した作品ポスターの原本（scripts/posters.mjs）。
 # 手元で同じ画像を何度も落とさないためだけの置き場。消しても動く。

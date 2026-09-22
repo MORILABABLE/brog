@@ -212,6 +212,56 @@ export function stateSentence(s: WorkServiceState): string {
 }
 
 /**
+ * 作品ページの配信状況の1行。**見放題が終わった社が2つ以上あれば1行にまとめる**
+ * （2026-09-22・運用者の指定）。
+ *
+ * ■ なぜまとめるか
+ * `/works/43425`（名探偵コナン ベイカー街の亡霊）は
+ *   終了済み｜Netflixで2026年9月1日に見放題配信が終了しました｜Prime Videoでレンタル・購入を探す
+ *   終了済み｜Disney+で2026年9月4日に見放題配信が終了しました｜Prime Videoでレンタル・購入を探す
+ * と、**同じ答え（もう見放題では観られない）と同じボタンが2段**並んでいた
+ * （2026-09-22 時点で27ページ）。読者の知りたいことは「どこも終わったか」で、社ごとの日付は下の「配信の記録」が持っている。
+ *
+ * ★ まとめるのは `ended` だけ。`passed` は社ごとに在庫で確かめた結果（`passedCheck()`）が違い、
+ *   `leaving` / `started` はまだ社ごとに行動が違う。
+ * ★ 並びは `w.services` のまま。まとめた行は、最初の終了済みの行の位置に置く。
+ */
+export interface StatusRow {
+  /** この行が言っているサービス。まとめた行では2つ以上 */
+  services: WorkServiceState[]
+  /**
+   * 行の代表。バッジ・ボタン・`<time>` の元になる。
+   * まとめた行では**いちばん遅く終わった社**（文の「◯日までに」の日付と揃える）。
+   */
+  head: WorkServiceState
+}
+
+export function statusRows(w: WorkPage): StatusRow[] {
+  const ended = w.services.filter((s) => s.state === 'ended')
+  if (ended.length < 2) return w.services.map((s) => ({ services: [s], head: s }))
+
+  const latest = ended.reduce((a, b) => (b.at.getTime() > a.at.getTime() ? b : a))
+  const rows: StatusRow[] = []
+  for (const s of w.services) {
+    if (s.state !== 'ended') rows.push({ services: [s], head: s })
+    else if (s === ended[0]) rows.push({ services: ended, head: latest })
+  }
+  return rows
+}
+
+/**
+ * `statusRows()` の1行の文。1社なら `stateSentence()` と同じ。
+ * まとめた行は、終わった日が揃っていれば「◯日に」、ずれていれば**遅いほうの日付で「◯日までに」**。
+ * ★ 日付を2つ並べないこと（まとめた意味が無くなる）。社ごとの日付は「配信の記録」の表にある。
+ */
+export function statusSentence(row: StatusRow): string {
+  if (row.services.length === 1) return stateSentence(row.head)
+  const d = formatDate(row.head.at)
+  const sameDay = row.services.every((s) => isoDate(s.at) === isoDate(row.head.at))
+  return sameDay ? `${d}に見放題配信が終了しました` : `${d}までに見放題配信が終了しました`
+}
+
+/**
  * 見出し（h1 と `<title>` の両方）。**作品名だけにしない。**
  *
  * ■ 型
