@@ -1,6 +1,6 @@
 {
   "note": "告知の邦題から特定した作品。npm run collect:announce が書く。手で編集しない（手で決めたいものは data/announcement-pins.json）。",
-  "updatedAt": "2026-09-22T22:55:53.607Z",
+  "updatedAt": "2026-09-23T22:56:25.775Z",
   "works": {
     "netflix|Blippi|": {
       "title": "Blippi",
