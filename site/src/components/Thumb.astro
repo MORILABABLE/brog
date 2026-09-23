@@ -19,9 +19,16 @@ interface Props {
   radius?: number
   /** 画像が無いときにタイルへ置く1文字。省略可 */
   initial?: string
+  /**
+   * 左上の角に斜めにかける帯の文字（例: `NEW`）。省略すれば帯は出ない。
+   *
+   * ★ **短い語だけ。** 45度に傾けた帯の幅はタイルの対角線までしか無く、
+   *   4文字を超えると 60px のタイルで潰れる（`--thumb-size` から字送りを決めている）。
+   */
+  ribbon?: string
 }
 
-const { image, src, category, size = 72, radius = 10, initial } = Astro.props
+const { image, src, category, size = 72, radius = 10, initial, ribbon } = Astro.props
 
 /**
  * カードの左に置く正方形サムネイル。
@@ -49,16 +56,62 @@ const { image, src, category, size = 72, radius = 10, initial } = Astro.props
       </span>
     )
   }
+  {ribbon && <span class="ribbon">{ribbon}</span>}
 </span>
 
 <style>
   .thumb {
     flex: none;
+    /* 帯を角に重ねるための基準。overflow:hidden が角丸の外へはみ出した分を切る */
+    position: relative;
     display: block;
     width: var(--thumb-size);
     height: var(--thumb-size);
     border-radius: var(--thumb-radius);
     overflow: hidden;
+  }
+  /*
+   * 左上の角を斜めに切る帯（2026-09-24 追加）。
+   *
+   * ★ **寸法は全部 `--thumb-size` から出す。** このタイルは 60 / 72 / 132px の
+   *   3通りで使われていて、px で書くと小さい枠だけ文字が潰れる。
+   * ★ **角だけを覆う。** 画像の中心（人物の顔・題字）に帯をかけない
+   *   （運用者の指定・2026-09-24）。`work-cover-design` と同じ理由で、
+   *   48×72 のような小さい絵ほど中心を隠すと何の作品か分からなくなる。
+   * ★ 帯は `.thumb` の overflow で切られるので、左右に余分に伸ばして角から角へ通す。
+   */
+  /*
+   * ★ **この4つの値は連動している。1つだけ動かさないこと**（2026-09-24 に3回調整）。
+   *
+   *     帯の中心X = left + width/2      帯の中心Y = top + (font-size × line-height)/2
+   *
+   *   中心を角（0,0）へ寄せるほど三角形らしくなるが、**帯の上に載る文字の幅も
+   *   同じだけ狭くなる**。寄せるなら font-size も一緒に下げる。
+   *
+   *   実際に踏んだ順: top:13%/left:-32%/0.16em → 頭の N が角丸に食われた
+   *                 → 内側へ逃がしたら帯が大きすぎた
+   *                 → 角へ寄せ直し、font-size を 0.16 → 0.105 に下げていまの値
+   *
+   * ★ width が 100% を超えているのは、**帯の両端を必ずタイルの外へ出す**ため。
+   *   足りないと角を切り終わる前に帯が途切れ、切り口が見える。
+   * ★ 変えたら 72px（記事カード）で必ず目で見ること。数値だけでは文字の切れが分からない。
+   */
+  .ribbon {
+    position: absolute;
+    top: 5.4%;
+    left: -44.5%;
+    width: 115%;
+    transform: rotate(-45deg);
+    text-align: center;
+    background: var(--ribbon-new-bg);
+    color: var(--ribbon-new-fg);
+    font-size: calc(var(--thumb-size) * 0.105);
+    font-weight: 800;
+    line-height: 1.45;
+    letter-spacing: 0.05em;
+    /* テープらしく見せる薄い影。帯の下辺にだけ出る */
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+    pointer-events: none;
   }
   .img {
     width: 100%;

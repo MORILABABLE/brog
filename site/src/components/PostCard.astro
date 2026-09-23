@@ -2,7 +2,7 @@
 import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
 import { genreBadges } from '../lib/genres'
-import { formatDate, isoDate } from '../utils/date'
+import { formatDate, isNew, isoDate } from '../utils/date'
 import type { CollectionEntry } from 'astro:content'
 
 interface Props {
@@ -41,7 +41,17 @@ const genres = genreBadges(post.data)
 ---
 
 <article class="card">
-  <Thumb src={post.data.heroImage} category={post.data.category} size={72} />
+  {/*
+    ★ 公開（書き直しを含む）から3日以内は、絵の角に「NEW」の帯を出す（2026-09-24）。
+      判定は utils/date.ts の isNew。**見ているのは pubDate だけ**で、
+      `--apply` が書き直しのたびに振り直すので、新規と更新を1つの条件で拾える。
+  */}
+  <Thumb
+    src={post.data.heroImage}
+    category={post.data.category}
+    size={72}
+    ribbon={isNew(post.data.pubDate) ? 'NEW' : undefined}
+  />
 
   <div class="main">
     <div class="meta">
