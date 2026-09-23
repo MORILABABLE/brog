@@ -1009,6 +1009,64 @@ export function styleIssues(md: string): VerifyIssue[] {
 const MAX_SECTIONS = 3
 
 /**
+ * その記事で許される `##` の数（`templates/writing.md` 0節）。
+ *
+ * **既定は3**（小段落2つ＋まとめ）。`--extra-section` が付いた記事だけ4になる。
+ *
+ *     ## 小段落1  … 中心の2〜3作
+ *     ## 小段落2  … 単独で立つシリーズ    ← --extra-section のときだけ
+ *     ## 小段落3  … 残り全件
+ *     ## まとめ
+ *
+ * ★ **フラグは運用者の承諾の記録。** 素材が多く（40件以上）、その中に
+ *   単独で節に立つシリーズ（10作以上）があるときだけ、書き手が運用者に聞き、
+ *   承諾が出たら付ける。**書き手が自分で決めてよいものではない**ので、
+ *   フラグの無い記事で `##` が3つあれば error で止める。
+ *
+ * ★ `base` は記事タイプ側の事情による上書き（配信開始記事の「これから配信開始予定」）。
+ *   承諾はそれにも1つ足す。
+ */
+export function sectionLimit(ctx: { extraSection?: boolean }, base = MAX_SECTIONS): number {
+  return ctx.extraSection ? base + 1 : base
+}
+
+/**
+ * 節の数の指示（プロンプトに入れる1文）。`--extra-section` の有無で言うことが変わる。
+ *
+ * ★ **承諾が出ている回に「2つだけ」と言い続けてはいけない。** 書き手はプロンプトの
+ *   指示を優先するので、フラグを付けても記事が2節のまま出てくる。
+ */
+export function sectionCountLine(ctx: { extraSection?: boolean }): string {
+  return ctx.extraSection
+    ? '**「##」の節は3つ作ってください（＋まとめ）。** ' +
+        '運用者が**大きなシリーズのぶんを1つ増やすこと**を承諾しています（--extra-section）。'
+    : '**「##」の節は2つだけ作ってください（＋まとめ）。**'
+}
+
+/**
+ * 節を増やしてよいかどうかの注意書き（プロンプトに入れる）。
+ *
+ * 承諾が出ていない回にだけ出す。**出し方が「増やすな」ではなく「見つけたら聞け」**
+ * なのが大事で、黙って畳むと大きなシリーズが表の1ブロックに消える
+ * （2026-09-23・Disney+ でコナン22作の解説が丸ごと落ちた）。
+ */
+export function extraSectionNote(ctx: { extraSection?: boolean }, itemCount: number): string {
+  if (ctx.extraSection) {
+    return (
+      '   ★ **増やせるのは1つだけです。** 増やした節も表→解説の順と解説の上限は同じ。\n' +
+      '     シリーズが2つあっても、節にするのは大きいほうだけにしてください。'
+    )
+  }
+  if (itemCount < 40) return ''
+  return (
+    '   ★ **素材の中に、単独で節に立つ大きなシリーズ（同じシリーズで10作以上）がありますか。**\n' +
+    '     あるなら**記事を書く前に運用者に伝えて、節を1つ増やしてよいか聞いてください**\n' +
+    '     （シリーズ名・作品数・素材の総数を添える）。承諾が出たら --extra-section を付け直します。\n' +
+    '     **自分の判断で3つ目の節を作ってはいけません**（品質ゲートが error で止めます）。'
+  )
+}
+
+/**
  * **廃止した節**（2026-09-19）。残っていたら公開を止める。
  *
  * | 廃止した節 | 何が代わりに答えているか |
@@ -1123,6 +1181,9 @@ export interface StructureOptions {
    *   これは**まだ観られない作品を開始済みと混ぜない**ための節（`arrivals-upcoming-intro`）。
    *   同じ表に混ぜると読者が「今すぐ観られる」と誤解する。
    *   **見栄えの都合で増やさないこと。**
+   *
+   * ★ これとは別に、`--extra-section`（運用者の承諾）で1つ増える経路がある。
+   *   記事タイプ側では `sectionLimit(ctx)` を使う（下の関数）。
    */
   maxSections?: number
   /**
@@ -1170,7 +1231,10 @@ export function structureIssues(md: string, opts: StructureOptions): VerifyIssue
       `「##」の節が${sections.length}個あります。**${maxSections}つ**に収めてください` +
         `（templates/writing.md）。\n` +
         `      現在: ${sections.map((s) => clip(s.heading, 18)).join(' / ')}\n` +
-        '      中心の2〜3作を1つ目に、残り全件の表を2つ目にまとめます。',
+        '      中心の2〜3作を1つ目に、残り全件の表を2つ目にまとめます。\n' +
+        '      ★ 単独で節に立つ大きなシリーズ（10作以上）があるなら、節を1つ増やせます。\n' +
+        '        ただし勝手に増やさず運用者に確認し、承諾が出たら\n' +
+        '        --emit に --extra-section を付け直してください（writing.md 0節）。',
     )
   }
 

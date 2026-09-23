@@ -98,6 +98,18 @@ export interface ArticleContext {
    * 宣言していない記事タイプでは空。
    */
   flags?: Readonly<Record<string, string>>
+  /**
+   * `--extra-section` が付いているか。**運用者が「小段落を1つ増やしてよい」と承諾した印**
+   * （`templates/writing.md` 0節の例外）。
+   *
+   * 素材が多く、その中に単独で節に立つシリーズがあるときだけ `##` を3つにしてよい。
+   * **線引きは機械が決められない**ので、書き手が運用者に聞き、
+   * 承諾が出たらこのフラグを付け直す。**フラグが承諾の記録そのもの。**
+   *
+   * ★ 付いていない記事で `##` が3つあれば、それは聞かずに増やしたということ。
+   *   `article-types/shared.ts` の `structureIssues()` が error で止める。
+   */
+  extraSection?: boolean
 }
 
 /**

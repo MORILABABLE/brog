@@ -47,6 +47,7 @@ import {
   serviceLabels,
   serviceNames,
   shortScriptSection,
+  sectionLimit,
   structureIssues,
   titleIssues,
   variantKey,
@@ -402,7 +403,7 @@ ${OUTPUT_FORMAT}`
        */
       ...structureIssues(md, {
         maxSectionProse: SECTION_PROSE_LIMIT,
-        maxSections: hasUpcoming ? 4 : 3,
+        maxSections: sectionLimit(ctx, hasUpcoming ? 4 : 3),
         tableOnlyHeading: /配信開始予定/,
       }),
     ]

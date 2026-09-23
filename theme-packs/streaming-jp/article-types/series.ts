@@ -97,6 +97,9 @@ import {
   serviceLabels,
   styleIssues,
   SECTION_PROSE_LIMIT_SERIES,
+  sectionCountLine,
+  extraSectionNote,
+  sectionLimit,
   structureIssues,
   titleIssues,
   UNAVAILABLE_CLAIM,
@@ -1155,15 +1158,19 @@ ${resolved.attributions.join('\n\n')}
 ${OUTPUT_FORMAT}`
 
     const tasks = [
-      `**「##」の節は2つだけ作ってください（＋まとめ）。** 記事全体の形は次で固定です。
+      `${sectionCountLine(ctx)} 記事全体の形は次で固定です。
 
    \`\`\`
    リード（見出しなし・固定文言の1組だけ）
    ## 小段落1  中心の2〜3作   … 表 → 解説（最大${SECTION_PROSE_LIMIT_SERIES}字）
-   ## 小段落2  残りの全${items.length}件 … 表 → 掲載範囲の断り → 軽い言及
+   ${ctx.extraSection
+     ? `## 小段落2  大きなシリーズ  … 表 → 解説（最大${SECTION_PROSE_LIMIT_SERIES}字）
+   ## 小段落3  残りの全件     … 表 → 軽い言及`
+     : `## 小段落2  残りの全${items.length}件 … 表 → 掲載範囲の断り → 軽い言及`}
    ## まとめ
    \`\`\`
 
+${extraSectionNote(ctx, items.length)}
    ★ **シリーズ記事だけ解説の上限が${SECTION_PROSE_LIMIT_SERIES}字**です（月次・特報は1,000字）。
      **表に載せる作品数に制限はありません。**
    ★ **「他のサービスで探す」「対象作品リスト」の節は作りません**（2026-09-19 に廃止）。
@@ -1434,7 +1441,7 @@ ${tasks.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
        * ★ **シリーズだけ解説の上限が1,500字**（月次・特報は1,000字）。
        *   1つの主題を1本で引き受ける保存版なので、表の作品数にも制限を置いていない。
        */
-      ...structureIssues(md, { maxSectionProse: SECTION_PROSE_LIMIT_SERIES }),
+      ...structureIssues(md, { maxSectionProse: SECTION_PROSE_LIMIT_SERIES, maxSections: sectionLimit(ctx) }),
     ]
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })

@@ -160,6 +160,18 @@ function arg(name: string): string | undefined {
 }
 const flag = (name: string) => process.argv.includes(`--${name}`)
 
+/**
+ * `--extra-section`：**小段落を1つ増やしてよいという運用者の承諾**
+ * （`templates/writing.md` 0節の例外）。
+ *
+ * 素材が多く、その中に単独で節に立つシリーズがあるときだけ `##` を3つにしてよい。
+ * **書き手が自分で決めてよいものではない**ので、フラグを承諾の記録として使う。
+ *
+ * ★ `--apply` は別プロセスなので、`--emit` の値を下書きに保存して復元する
+ *   （フラグの付け直しを忘れると、書いた記事が節の数で弾かれる）。
+ */
+let extraSection = flag('extra-section')
+
 /** --apply のときに素材を復元するための保存内容 */
 interface DraftContext {
   typeId: string
@@ -173,6 +185,11 @@ interface DraftContext {
    * ★ これが無いと `--apply` で主題もスラッグも復元できず、別の記事が書き出される。
    */
   flags?: Record<string, string>
+  /**
+   * `--emit` に `--extra-section` が付いていたか（運用者が小段落を1つ増やすことを承諾した印）。
+   * ★ これが無いと `--apply` で承諾が失われ、書いた記事が節の数で弾かれる。
+   */
+  extraSection?: boolean
   items: ChangeEvent[]
 }
 
@@ -387,7 +404,7 @@ async function finalize(
     process.exit(1)
   }
 
-  const ctx = { theme, now, targetMonth, variant: recipe.variant, flags: recipe.flags }
+  const ctx = { theme, now, targetMonth, variant: recipe.variant, flags: recipe.flags, extraSection }
   const slug = type.slug(ctx)
   const issues = [
     ...verifyArticle({
@@ -596,6 +613,9 @@ async function applyDraft(theme: Theme): Promise<void> {
   // ★ フラグも復元する。無いまま進むと、特報が主題もURLも失った別記事になる。
   const flags = draft.flags ?? {}
   assertRequiredFlags(type, flags)
+  // ★ 小段落を増やす承諾も復元する（--apply に付け直さなくてよい）。
+  //   コマンドラインで明示された場合はそちらを優先する。
+  extraSection = extraSection || (draft.extraSection ?? false)
 
   console.log(
     `下書きを適用します（${recipeLabel({ type, variant })} / 対象 ${targetMonth} / ` +
@@ -761,6 +781,8 @@ ${shortSection ? `\n---\n\n${shortSection}\n` : ''}`
         // ★ 特報の --topic / --slug はここに保存しないと --apply で失われ、
         //   主題の無いタイトルと違うURLの記事が書き出される。
         flags: recipe.flags ? { ...recipe.flags } : undefined,
+        // ★ 小段落を増やす承諾も同じ理由で保存する（--apply でフラグを付け直さずに済む）
+        extraSection: extraSection || undefined,
         items,
       } satisfies DraftContext,
       null,
@@ -1308,7 +1330,7 @@ async function registerArticle(
   }
   const recipe = pickRecipe(types)
   const { type } = recipe
-  const ctx = { theme, now, targetMonth, variant: recipe.variant, flags: recipe.flags }
+  const ctx = { theme, now, targetMonth, variant: recipe.variant, flags: recipe.flags, extraSection }
   const slug = type.slug(ctx)
 
   const post = (await readPublishedPosts(POSTS_DIR)).find((p) => p.slug === slug)
@@ -1485,7 +1507,7 @@ async function main(): Promise<void> {
   const recipe = pickRecipe(types)
   const { type } = recipe
 
-  const ctx = { theme, now, targetMonth, variant: recipe.variant, flags: recipe.flags }
+  const ctx = { theme, now, targetMonth, variant: recipe.variant, flags: recipe.flags, extraSection }
   const events = await readAllEvents()
   const ledger = await loadLedger()
   const items = type.select(events, ledger, ctx)

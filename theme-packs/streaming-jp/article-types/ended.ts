@@ -62,6 +62,9 @@ import {
   sectionsOf,
   SECTION_PROSE_LIMIT,
   serviceLabels,
+  sectionCountLine,
+  extraSectionNote,
+  sectionLimit,
   structureIssues,
   titleIssues,
   variantKey,
@@ -253,14 +256,22 @@ ${rows.join('\n\n')}
 1. **もう観られない作品であることを、絶対に取り違えないこと。**
    「お見逃しなく」「今のうちに」「観ておきましょう」「配信中です」は使用禁止です。
    終了は必ず過去形（「終了しました」）で書いてください。
-2. **「##」の節は2つだけ作ってください（＋まとめ）。** 記事全体の形は次で固定です。
+2. ${sectionCountLine(ctx)} 記事全体の形は次で固定です。
 
    \`\`\`
    リード（見出しなし・固定文言の1組だけ）
-   ## 小段落1  中心の2〜3作   … 表 → 解説（最大${SECTION_PROSE_LIMIT}字）
-   ## 小段落2  残りの全${items.length}件 … 表 → 軽い言及
+   ## 小段落1  中心の2〜3作   … 表 → 解説（最大${SECTION_PROSE_LIMIT}字）${
+     ctx.extraSection
+       ? `
+   ## 小段落2  大きなシリーズ  … 表 → 解説（最大${SECTION_PROSE_LIMIT}字）
+   ## 小段落3  残りの全件     … 表 → 軽い言及`
+       : `
+   ## 小段落2  残りの全${items.length}件 … 表 → 軽い言及`
+   }
    ## まとめ
    \`\`\`
+
+${extraSectionNote(ctx, items.length)}
 
    ★ **「他のサービスで探す」「全終了作品リスト」の節は作りません**（2026-09-19 に廃止）。
      終了後どこで観られるかは、**表の各行の下にサイトが出します。**
@@ -348,7 +359,7 @@ ${rows.join('\n\n')}
     const issues: VerifyIssue[] = [
       ...styleIssues(md),
       // 記事の骨格（小段落2つ＋まとめ・廃止した節・解説の字数）
-      ...structureIssues(md, { maxSectionProse: SECTION_PROSE_LIMIT }),
+      ...structureIssues(md, { maxSectionProse: SECTION_PROSE_LIMIT, maxSections: sectionLimit(ctx) }),
     ]
     const err = (message: string) => issues.push({ level: 'error', message })
     const warn = (message: string) => issues.push({ level: 'warn', message })
