@@ -1,6 +1,6 @@
 {
   "note": "その時点の在庫（/shows/search/filters の streamingOptions.jp）。npm run availability が書く。手で編集しない。★ subscription だけが見放題。addon は別料金。★ fetchedAt から14日を過ぎたものは使わない（pipeline/core/availability.ts）。",
-  "updatedAt": "2026-09-21T22:33:52.153Z",
+  "updatedAt": "2026-09-24T22:20:01.772Z",
   "works": {
     "102": {
       "fetchedAt": "2026-09-13T14:23:26.113Z",
@@ -71,7 +71,7 @@
       "services": []
     },
     "194": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "prime-video",
@@ -94,7 +94,7 @@
       "via": "changes"
     },
     "218": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "prime-video",
@@ -123,7 +123,7 @@
       "via": "changes"
     },
     "219": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "apple-tv",
@@ -151,7 +151,7 @@
       "via": "changes"
     },
     "282": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "netflix",
@@ -180,7 +180,7 @@
       "via": "changes"
     },
     "287": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "netflix",
@@ -235,7 +235,7 @@
       ]
     },
     "406": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "prime-video",
@@ -286,7 +286,7 @@
       ]
     },
     "420": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "apple-tv",
@@ -338,7 +338,7 @@
       ]
     },
     "428": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "netflix",
@@ -360,7 +360,7 @@
       "via": "changes"
     },
     "429": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "netflix",
@@ -389,7 +389,7 @@
       "via": "changes"
     },
     "446": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "netflix",
@@ -449,7 +449,7 @@
       ]
     },
     "491": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "prime-video",
@@ -479,7 +479,7 @@
       "via": "changes"
     },
     "536": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "prime-video",
@@ -508,7 +508,7 @@
       "via": "changes"
     },
     "548": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "netflix",
@@ -582,7 +582,7 @@
       ]
     },
     "627": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -663,7 +663,7 @@
       ]
     },
     "677": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "prime-video",
@@ -757,7 +757,7 @@
       ]
     },
     "821": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "netflix",
@@ -949,7 +949,7 @@
       ]
     },
     "1184": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "apple-tv",
@@ -970,7 +970,7 @@
       "via": "changes"
     },
     "1205": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "apple-tv",
@@ -1036,7 +1036,7 @@
       ]
     },
     "1379": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "apple-tv",
@@ -1159,7 +1159,7 @@
       ]
     },
     "2035": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1354,6 +1354,28 @@
         }
       ]
     },
+    "2718": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/8179125"
+        },
+        {
+          "service": "prime-video",
+          "types": [
+            "addon",
+            "buy",
+            "rent"
+          ],
+          "link": "https://www.amazon.co.jp/gp/video/detail/0KSD64ACKYO61ASK0FC7RALQZQ?ref_=atv_dp"
+        }
+      ]
+    },
     "2814": {
       "fetchedAt": "2026-09-10T05:45:02.097Z",
       "services": [
@@ -1412,7 +1434,7 @@
       ]
     },
     "3217": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "apple-tv",
@@ -1437,7 +1459,7 @@
       "services": []
     },
     "3478": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1458,7 +1480,7 @@
       ]
     },
     "3909": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "netflix",
@@ -1488,7 +1510,7 @@
       "services": []
     },
     "4363": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1521,7 +1543,7 @@
       ]
     },
     "4618": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1625,7 +1647,7 @@
       "services": []
     },
     "5362": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1658,7 +1680,7 @@
       ]
     },
     "5726": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1707,7 +1729,7 @@
       ]
     },
     "6020": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1717,13 +1739,6 @@
             "rent"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0O2PTZI94LLHZUB4MBA6TUPKNB?ref_=atv_dp"
-        },
-        {
-          "service": "netflix",
-          "types": [
-            "subscription"
-          ],
-          "link": "https://www.netflix.com/title/60022417"
         }
       ]
     },
@@ -1753,7 +1768,7 @@
       ]
     },
     "6293": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1783,7 +1798,7 @@
       ]
     },
     "6841": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1837,7 +1852,7 @@
       ]
     },
     "7400": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -1968,7 +1983,7 @@
       ]
     },
     "8748": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2173,7 +2188,7 @@
       ]
     },
     "10534": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "prime-video",
@@ -2206,7 +2221,7 @@
       ]
     },
     "10995": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2219,7 +2234,7 @@
       ]
     },
     "11472": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2273,7 +2288,7 @@
       ]
     },
     "11853": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2286,7 +2301,7 @@
       ]
     },
     "11918": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2356,7 +2371,7 @@
       }
     },
     "12412": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2417,7 +2432,7 @@
       }
     },
     "12791": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2447,7 +2462,7 @@
       ]
     },
     "12913": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2483,7 +2498,7 @@
       "via": "changes"
     },
     "14681": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2680,7 +2695,7 @@
       ]
     },
     "16374": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2739,7 +2754,7 @@
       ]
     },
     "18234": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2802,7 +2817,7 @@
       ]
     },
     "18768": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -2977,7 +2992,7 @@
       ]
     },
     "22097": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -3152,7 +3167,7 @@
       ]
     },
     "24948": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -3211,7 +3226,7 @@
       "services": []
     },
     "30701": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -3320,7 +3335,7 @@
       }
     },
     "34254": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -3346,7 +3361,7 @@
       ]
     },
     "35516": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -3359,7 +3374,7 @@
       ]
     },
     "36882": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -3452,7 +3467,7 @@
       ]
     },
     "39078": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -3465,7 +3480,7 @@
       ]
     },
     "39128": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "apple-tv",
@@ -3612,7 +3627,7 @@
       ]
     },
     "47769": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -3696,7 +3711,7 @@
       ]
     },
     "50982": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -3874,6 +3889,19 @@
         "localizedTitle": "機動戦士ガンダム"
       }
     },
+    "61859": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/82722428"
+        }
+      ]
+    },
     "62203": {
       "fetchedAt": "2026-09-10T05:50:52.436Z",
       "services": [
@@ -3970,7 +3998,7 @@
       "services": []
     },
     "65840": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -4130,6 +4158,19 @@
             "rent"
           ],
           "link": "https://app.primevideo.com/detail?gti=amzn1.dv.gti.e13101f2-0c27-4a03-9ce2-540d4af7cb70"
+        }
+      ]
+    },
+    "73514": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81620219"
         }
       ]
     },
@@ -4314,7 +4355,7 @@
       ]
     },
     "80390": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -4364,7 +4405,7 @@
       "services": []
     },
     "92021": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -4489,7 +4530,7 @@
       ]
     },
     "105029": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "apple-tv",
@@ -4667,7 +4708,7 @@
       }
     },
     "108267": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -4718,7 +4759,7 @@
       ]
     },
     "111810": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -4731,7 +4772,7 @@
       ]
     },
     "112156": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -5884,7 +5925,7 @@
       ]
     },
     "160670": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -6378,7 +6419,7 @@
       }
     },
     "222964": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -6479,7 +6520,7 @@
       ]
     },
     "247586": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -6630,7 +6671,7 @@
       ]
     },
     "294172": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -6680,7 +6721,7 @@
       ]
     },
     "321516": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -6774,7 +6815,7 @@
       ]
     },
     "804302": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -6955,7 +6996,7 @@
       "services": []
     },
     "3532495": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7016,7 +7057,7 @@
       }
     },
     "4029331": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "prime-video",
@@ -7089,7 +7130,7 @@
       }
     },
     "4783007": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7187,7 +7228,7 @@
       }
     },
     "5027411": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7287,7 +7328,7 @@
       ]
     },
     "5475501": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7313,7 +7354,7 @@
       ]
     },
     "6074859": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7334,7 +7375,7 @@
       ]
     },
     "6412432": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7348,7 +7389,7 @@
       ]
     },
     "6413024": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7422,7 +7463,7 @@
       }
     },
     "7523156": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7443,7 +7484,7 @@
       ]
     },
     "7529084": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7464,7 +7505,7 @@
       ]
     },
     "7539981": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7739,7 +7780,7 @@
       ]
     },
     "9684734": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7759,16 +7800,9 @@
       ]
     },
     "9821561": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
-        {
-          "service": "netflix",
-          "types": [
-            "subscription"
-          ],
-          "link": "https://www.netflix.com/title/81904844"
-        },
         {
           "service": "prime-video",
           "types": [
@@ -7781,7 +7815,7 @@
       ]
     },
     "9822257": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7802,7 +7836,7 @@
       ]
     },
     "9883798": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7824,7 +7858,7 @@
       ]
     },
     "9883810": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -7844,7 +7878,7 @@
       ]
     },
     "9883828": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "services": [
         {
           "service": "prime-video",
@@ -7873,6 +7907,19 @@
             "subscription"
           ],
           "link": "https://www.zee5.com/global/tv-shows/details/loop-11-47/0-6-4z5577119"
+        }
+      ]
+    },
+    "9883838": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81946384"
         }
       ]
     },
@@ -7939,7 +7986,7 @@
       }
     },
     "12719870": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -8152,7 +8199,7 @@
       }
     },
     "18434377": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -8345,7 +8392,7 @@
       ]
     },
     "19827681": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -8373,6 +8420,19 @@
             "subscription"
           ],
           "link": "https://www.disneyplus.com/browse/entity-15bf811a-809c-4c25-966e-b599abfe0f59"
+        }
+      ]
+    },
+    "19851690": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-ab6f04bc-2fec-4441-9294-08a3b0e6589a"
         }
       ]
     },
@@ -8520,7 +8580,7 @@
       ]
     },
     "20619997": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -8538,18 +8598,11 @@
             "rent"
           ],
           "link": "https://www.amazon.co.jp/gp/video/detail/0TOLR3PUFITLZK2W39MDPL7EN5"
-        },
-        {
-          "service": "netflix",
-          "types": [
-            "subscription"
-          ],
-          "link": "https://www.netflix.com/title/82081998"
         }
       ]
     },
     "21137807": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -8584,7 +8637,7 @@
       ]
     },
     "23194409": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -8597,7 +8650,7 @@
       ]
     },
     "23352780": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -8791,7 +8844,7 @@
       ]
     },
     "24604781": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -8804,7 +8857,7 @@
       ]
     },
     "24607713": {
-      "fetchedAt": "2026-09-21T22:33:52.152Z",
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
       "via": "changes",
       "services": [
         {
@@ -8936,6 +8989,19 @@
         }
       ]
     },
+    "25369728": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "apple-tv",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://tv.apple.com/jp/show/brothers/umc.cmc.17g1y5mzqp92sc0ge1c0hdorg"
+        }
+      ]
+    },
     "25370366": {
       "fetchedAt": "2026-09-21T22:33:52.152Z",
       "via": "changes",
@@ -8963,6 +9029,19 @@
             "subscription"
           ],
           "link": "https://www.disneyplus.com/browse/entity-7a748bd1-ea73-4686-bdcb-fc86d86158d8"
+        }
+      ]
+    },
+    "25483143": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81730492"
         }
       ]
     },
@@ -9181,6 +9260,32 @@
         }
       ]
     },
+    "26518031": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81905636"
+        }
+      ]
+    },
+    "26518149": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81738522"
+        }
+      ]
+    },
     "26596763": {
       "fetchedAt": "2026-09-21T22:33:52.152Z",
       "via": "changes",
@@ -9285,6 +9390,19 @@
         }
       ]
     },
+    "26598817": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "netflix",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.netflix.com/title/81762865"
+        }
+      ]
+    },
     "26604019": {
       "fetchedAt": "2026-09-21T22:33:52.152Z",
       "via": "changes",
@@ -9308,6 +9426,32 @@
             "subscription"
           ],
           "link": "https://www.netflix.com/title/81734814"
+        }
+      ]
+    },
+    "26606245": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-c70a88a1-a775-4c90-85ad-6ea273f40035"
+        }
+      ]
+    },
+    "26635625": {
+      "fetchedAt": "2026-09-24T22:20:01.771Z",
+      "via": "changes",
+      "services": [
+        {
+          "service": "disney-plus",
+          "types": [
+            "subscription"
+          ],
+          "link": "https://www.disneyplus.com/browse/entity-c7f9e84e-52c0-480e-b511-584e0c5b9e6c"
         }
       ]
     }
