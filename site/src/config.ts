@@ -583,6 +583,11 @@ export const AMAZON_TAGS: AmazonTags = {
    * ★ **未設定なら既定のIDに落ちる**（`tagFor`）。
    */
   fallback: import.meta.env.PUBLIC_AMAZON_TAG_FALLBACK ?? '',
+  /**
+   * トップページ最下部のバナー（components/AmazonBanner.astro の `to="storefront"`・2026-09-24）。
+   * ★ **未設定なら既定のIDに落ちる**（`tagFor`）。
+   */
+  top: import.meta.env.PUBLIC_AMAZON_TAG_TOP ?? '',
 }
 
 /** その枠のトラッキングid。未設定の枠は既定に落ちる。 */

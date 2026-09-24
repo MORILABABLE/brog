@@ -2910,5 +2910,6 @@ OK  titles.join('\n')
 |---|---|---|
 | `calendar` | 配信カレンダー6枚 | `PUBLIC_AMAZON_TAG_CALENDAR`（未設定なら既定IDに落ちる） |
 | `fallback` | 作品ページで afb が出せない面 129枚 | `PUBLIC_AMAZON_TAG_FALLBACK`（同上） |
+| `top` | トップページ最下部（記事一覧の下）。**行き先は Prime Video のトップ**（無料体験の専用リンクではない。2026-09-24） | `PUBLIC_AMAZON_TAG_TOP`（同上） |
 
 afb 側も `id1=calendar` / `id1=work` で分かれる（11-4）。

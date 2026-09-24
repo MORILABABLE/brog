@@ -1,6 +1,6 @@
 ---
 import { amazonTagFor } from '../config'
-import { primeTrialUrl, relFor, type AmazonSlot } from '../lib/affiliate'
+import { primeTrialUrl, primeVideoStorefrontUrl, relFor, type AmazonSlot } from '../lib/affiliate'
 import { publicImageSize } from '../lib/image-size'
 
 interface Props {
@@ -11,9 +11,15 @@ interface Props {
    *   コンポーネントごと出力から消える。UnextCta.astro の注意書きと同じ罠）。
    */
   spot: AmazonSlot
+  /**
+   * 行き先。**省略すると無料体験の専用リンク**（下の🔴）。
+   * `'storefront'` は Prime Video のトップ（ストアフロント）で、トラッキングidは**枠ごとのもの**（`spot`）を使う。
+   * ★ いま `'storefront'` を使っているのはトップページ最下部だけ（2026-09-24・運用者の指定）。
+   */
+  to?: 'trial' | 'storefront'
 }
 
-const { spot } = Astro.props
+const { spot, to = 'trial' } = Astro.props
 
 /**
  * Amazon Prime Video のバナー。
@@ -21,6 +27,7 @@ const { spot } = Astro.props
  * ■ 出ている場所（2026-09-19 時点）
  *   配信カレンダー（升目と日付めくりのあいだ）… `CalendarBanner.astro`（枠名 `calendar`）
  *   作品ページ（afb の枠が出せない面）        … `AfbCta.astro`（枠名 `fallback`）
+ *   トップページ（記事一覧の下）              … `pages/index.astro`（枠名 `top`・行き先は Prime Video のトップ。2026-09-24）
  *
  * ■ 原稿は2枚。**狭い画面だけ差し替える**（2026-09-19・運用者の指定）
  *
@@ -97,8 +104,17 @@ const sp = spSrc ? publicImageSize(spSrc) : null
  *   **枠の区別は `data-slot`（GA4側）が持つ**ので、どの面で踏まれたかは読める。
  * ★ **`primeVideoStorefrontUrl` に戻さないこと。** 戻すときは、なぜ固定報酬を
  *   捨ててよいのかをここに書くこと。
+ *
+ * ■ 例外: `to="storefront"`（トップページ最下部だけ・2026-09-24・運用者の指定）
+ * 以前ここにあった `AmazonCta`（テキスト枠。Prime Video の売り場トップへ `cta` のIDで送っていた）を
+ * このバナーに差し替えたもの。**行き先は運用者の指定で Prime Video のトップ**のまま。
+ * 使うのは運用者から渡された1本（`primeVideoStorefrontUrl`。`benefitId=default` 付き）。
+ * 無料体験の500円はこの枠では出ない（専用リンクではないため）。取るなら `to` を外すだけでよい。
  */
-const href = primeTrialUrl(amazonTagFor('prime'))
+const href =
+  to === 'storefront'
+    ? primeVideoStorefrontUrl(amazonTagFor(spot))
+    : primeTrialUrl(amazonTagFor('prime'))
 ---
 
 {

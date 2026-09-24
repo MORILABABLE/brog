@@ -108,6 +108,11 @@ export const AMAZON_SLOTS = [
   // ★ `work` と混ぜないこと。あちらは状態行のボタンで、こちらは本文CTAの位置のバナー。
   //   「afb が出せない面をバナーで埋めたら踏まれたか」は、この枠だけが答えられる。
   'fallback',
+  // トップページ最下部のバナー（pages/index.astro。2026-09-24）。**行き先は Prime Video のトップ**。
+  // ★ `cta` と混ぜないこと。以前はここに `AmazonCta`（テキスト枠）があり `cta` で数えていたが、
+  //   形が変わったので、同じIDにすると差し替えが効いたかどうかが読めない。
+  // ★ rehype プラグインは出さないので astro.config.mjs 側には要らない。
+  'top',
 ] as const
 
 export type AmazonSlot = (typeof AMAZON_SLOTS)[number]
@@ -236,11 +241,12 @@ export function primeTrialUrl(tag: string): string {
  * ★ `primeTrialUrl`（`/amazonprime`）とは**別物**。あちらは無料体験の紹介（固定報酬）専用リンクで、
  *   Amazon 公式が「そのURLを経由した場合のみ」と明記している。**混ぜて使わない。**
  *
- * ⛔ **2026-09-19 現在、この関数を使っている場所は無い**（運用者の指定でバナーの行き先を
+ * ⛔ **カレンダー・作品ページのバナーでは使わない**（2026-09-19・運用者の指定でバナーの行き先を
  *   `primeTrialUrl` に切り替えた。`components/AmazonBanner.astro` の🔴）。
  *   ストアフロントへの紹介料は**表の作品名のリンクがすでに担っている**ので、
  *   バナーの枠を同じ役割に使うと固定報酬を捨てることになる。
- *   **消していないのは、運用者から渡された1本だから。** 戻すときはこの1本を使う。
+ * ★ **2026-09-24 からトップページ最下部のバナー（枠名 `top`）だけがこれを使う**（運用者の指定。
+ *   `AmazonBanner` の `to="storefront"`）。
  */
 export function primeVideoStorefrontUrl(tag: string): string {
   const u = new URL('https://www.amazon.co.jp/gp/video/storefront')

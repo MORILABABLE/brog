@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import PostCard from '../components/PostCard.astro'
 import AffiliateNotice from '../components/AffiliateNotice.astro'
-import AmazonCta from '../components/AmazonCta.astro'
+import AmazonBanner from '../components/AmazonBanner.astro'
 import SeriesShelf from '../components/SeriesShelf.astro'
 import DemandShelf from '../components/DemandShelf.astro'
 import TopCalendar from '../components/TopCalendar.astro'
@@ -142,8 +142,10 @@ const latest = posts.slice(0, LATEST)
     記事一覧の下に置く。一覧より上に広告導線を出すと、
     サイトの用（配信終了の把握）より先に広告が来ることになる。
     AdSense の審査でも「主目的がコンテンツであること」を見られる。
+    ★ 2026-09-24 にテキスト枠（`AmazonCta`）からバナーに差し替えた（運用者の指定）。
+      行き先は Prime Video のトップ（`to="storefront"`）。理由と例外扱いは `AmazonBanner.astro` の🔴。
   */}
-  <AmazonCta />
+  <AmazonBanner spot="top" to="storefront" />
 </BaseLayout>
 
 <style>
