@@ -19,7 +19,7 @@ heroImage: '/heroes/gundam.webp'
 
 ## Amazon Prime Videoで見放題配信中の11本
 
-[![機動戦士ガンダム 閃光のハサウェイ キルケーの魔女](/sections/posters/gundam-2fa38bb1-1.webp)](https://www.amazon.co.jp/s?k=%E6%A9%9F%E5%8B%95%E6%88%A6%E5%A3%AB%E3%82%AC%E3%83%B3%E3%83%80%E3%83%A0%20%E9%96%83%E5%85%89%E3%81%AE%E3%83%8F%E3%82%B5%E3%82%A6%E3%82%A7%E3%82%A4%20%E3%82%AD%E3%83%AB%E3%82%B1%E3%83%BC%E3%81%AE%E9%AD%94%E5%A5%B3&i=instant-video) [![機動戦士ガンダム 閃光のハサウェイ（2021年）](/sections/posters/gundam-2fa38bb1-2.webp)](https://www.amazon.co.jp/s?k=%E6%A9%9F%E5%8B%95%E6%88%A6%E5%A3%AB%E3%82%AC%E3%83%B3%E3%83%80%E3%83%A0%20%E9%96%83%E5%85%89%E3%81%AE%E3%83%8F%E3%82%B5%E3%82%A6%E3%82%A7%E3%82%A4&i=instant-video)
+[![機動戦士ガンダム 閃光のハサウェイ キルケーの魔女（2026年）](/sections/posters/gundam-2fa38bb1-1.webp)](https://www.amazon.co.jp/s?k=%E6%A9%9F%E5%8B%95%E6%88%A6%E5%A3%AB%E3%82%AC%E3%83%B3%E3%83%80%E3%83%A0%20%E9%96%83%E5%85%89%E3%81%AE%E3%83%8F%E3%82%B5%E3%82%A6%E3%82%A7%E3%82%A4%20%E3%82%AD%E3%83%AB%E3%82%B1%E3%83%BC%E3%81%AE%E9%AD%94%E5%A5%B3&i=instant-video) [![機動戦士ガンダム 閃光のハサウェイ（2021年）](/sections/posters/gundam-2fa38bb1-2.webp)](https://www.amazon.co.jp/s?k=%E6%A9%9F%E5%8B%95%E6%88%A6%E5%A3%AB%E3%82%AC%E3%83%B3%E3%83%80%E3%83%A0%20%E9%96%83%E5%85%89%E3%81%AE%E3%83%8F%E3%82%B5%E3%82%A6%E3%82%A7%E3%82%A4&i=instant-video)
 | 終了日 | 作品 | 状態 | 出演者 | サービス |
 | --- | --- | --- | --- | --- |
 | — | 機動戦士ガンダム 閃光のハサウェイ キルケーの魔女 | 見放題配信中 | — | Amazon Prime Video |

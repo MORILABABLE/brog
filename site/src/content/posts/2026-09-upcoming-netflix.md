@@ -20,7 +20,7 @@ Netflixで9月に見放題配信が始まる予定の作品をまとめました
 
 ## 9月1日から9月4日に配信開始予定の9本
 
-![9月1日から9月4日に配信開始予定の9本。ジェントルメン、ガーンダーリー: 暗闇の追跡者（2026年）ほか7作](/sections/2026-09-upcoming-netflix-14afb9ef.jpg)
+[![ガーンダーリー: 暗闇の追跡者（2026年）](/sections/posters/2026-09-upcoming-netflix-14afb9ef-1.webp)](https://www.amazon.co.jp/s?k=%E3%82%AC%E3%83%BC%E3%83%B3%E3%83%80%E3%83%BC%E3%83%AA%E3%83%BC%3A%20%E6%9A%97%E9%97%87%E3%81%AE%E8%BF%BD%E8%B7%A1%E8%80%85&i=instant-video)
 | 日付 | 作品 | 評価 | サービス |
 | --- | --- | --- | --- |
 | 9月1日 | Untold: レイチェル・ガン 論争のブレイキン | — | Netflix |

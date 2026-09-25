@@ -89,6 +89,14 @@
       "writtenAt": "2026-09-10"
     },
     {
+      "slug": "2026-10-leaving-netflix",
+      "typeId": "leaving",
+      "variantKey": "netflix",
+      "targetMonth": "2026-10",
+      "category": "leaving",
+      "writtenAt": "2026-09-25"
+    },
+    {
       "slug": "conan-movies",
       "typeId": "series",
       "targetMonth": "2026-09",
@@ -233,5 +241,5 @@
       "writtenAt": "2026-09-15"
     }
   ],
-  "updatedAt": "2026-09-23T14:57:39.431Z"
+  "updatedAt": "2026-09-25T10:26:04.064Z"
 }

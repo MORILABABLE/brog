@@ -8,8 +8,9 @@
  *
  * ■ 出力は2種類ある
  *
- *   ポスターが揃った節 … `public/sections/posters/<節>-1.webp` … **絵だけ**。
- *                        枠も日付も見出しも描かない。導線リンクで包んで挿す
+ *   ポスターが取れた節 … `public/sections/posters/<節>-1.webp` … **絵だけ**。
+ *                        枠も日付も見出しも描かない。導線リンクで包んで挿す。
+ *                        **取れなかった作品は外す**（生成ポスターと混ぜない。2026-09-25）
  *   ポスターが無い節   … `public/sections/tiles/<節>-1.webp` … **自前で描く生成ポスター**。
  *                        ジャンルの色と絵柄に作品名を組んだもの。下記
  *   どちらも作れない節 … `public/sections/<節>.jpg` … 従来の枠つきカード
@@ -245,6 +246,22 @@ function loadWorkMeta() {
   const years = new Map()
   const genres = new Map()
   if (!existsSync(dir)) return { years, genres }
+  /*
+   * ★ **原題でも引けるようにする**（2026-09-25 追加）。posters.mjs の `imageFor` と同じ形。
+   *
+   *   記事の表に出る題名は、邦題が無ければ `originalTitle` を充てたあとのもの
+   *   （src/lib/work-title.ts の `fillJapaneseTitle`）。ここが `localizedTitle ?? title`
+   *   しか鍵にしていないと、邦題を持たない作品は**英題でしか引けない。**
+   *
+   *     実測（2026-09-25・Netflix 10月終了予定）
+   *       美味しんぼ  title: Oishinbo ／ localizedTitle: （無し）／ originalTitle: 美味しんぼ
+   *       → 年もジャンルも引けず、同じ節の相方がポスターを失ったとき
+   *         **生成ポスターにも落ちられず、節がまるごと文字だけになった**
+   *
+   * ★ **規則は写さない。** かなの判定は work-title.ts だけが持つ。ここは鍵を増やすだけで、
+   *   **空いている鍵にだけ足す**（邦題を持つ作品の鍵を原題で奪わない）。
+   */
+  const pending = []
   for (const f of readdirSync(dir).filter((f) => f.endsWith('.jsonl'))) {
     for (const line of readFileSync(join(dir, f), 'utf8').trim().split('\n')) {
       if (!line) continue
@@ -253,7 +270,17 @@ function loadWorkMeta() {
       if (!title) continue
       if (e.work.year && !years.has(title)) years.set(title, e.work.year)
       if (e.work.genres?.length && !genres.has(title)) genres.set(title, e.work.genres)
+      const original = e.work.originalTitle
+      if (original) {
+        for (const key of new Set([original, original.replace(/ {2,}/g, ' ').trim()])) {
+          if (key && key !== title) pending.push({ key, work: e.work })
+        }
+      }
     }
+  }
+  for (const { key, work } of pending) {
+    if (work.year && !years.has(key)) years.set(key, work.year)
+    if (work.genres?.length && !genres.has(key)) genres.set(key, work.genres)
   }
   /*
    * ★ **在庫から採用した作品ぶんも入れる**（2026-09-10 追加）。
@@ -1032,32 +1059,45 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
   const heroBlocks = dateSections.length > 0 ? dateSections : workTables(md)
   if (sections.length === 0 && heroBlocks.length === 0) continue
 
-  /** 節ごとの挿し込む1行。生成の結果（ポスターが揃ったか）で形が変わる。 */
+  /** 節ごとの挿し込む1行。生成の結果（ポスターが取れたか）で形が変わる。 */
   const refs = new Map()
 
   for (const s of sections) {
     const shown = pickHighlights(s)
 
     /*
-     * ポスターは**その節の全員ぶん揃ったときだけ**使う。
-     * 1枚だけ欠けた状態で並べると、片方だけ絵という中途半端な見た目になる。
-     * 揃わない節は文字だけの版に戻す（情報量は変わらない）。
+     * ポスターは**取れた作品のぶんだけ**出す（2026-09-25・運用者の指定）。
+     *
+     * ★ それまでは「節の全員ぶん揃ったときだけ」で、1作でも欠けると
+     *   **節の全員が生成ポスターに落ちていた。** 本物のポスターがある作品まで
+     *   題名と図形だけの絵に置き換わり、並べると見栄えが悪い。
+     *
+     *     実測（2026-09-25・Netflix 10月終了予定）
+     *       美味しんぼ（ポスターあり）＋ あたしンち（画像の取り違えで掲載停止）
+     *       → 2枚とも生成ポスターになり、美味しんぼの絵が節から消えた
+     *
+     * ★ 欠けた作品は**生成ポスターで埋めずに外す。** 本物と生成を並べない。
+     *   1枚も取れなかった節だけが下の生成ポスターに進む。
+     * ★ `artWorks` は `arts` と同じ並び。ファイル名の番号（`posterNameFor`）も
+     *   ビルド時の作り直し（`keepAlive`）も、外したあとの並びで数える。
      */
     let arts = []
+    let artWorks = []
     if (posters) {
-      arts = await Promise.all(
+      const got = await Promise.all(
         shown.map((w) => {
           const src = imageFor(w.title)
           return src ? posters.poster(src.url, POSTER.w, POSTER.h, { label: w.title }) : null
         }),
       )
-      if (!(arts.length > 0 && arts.every(Boolean))) arts = []
+      artWorks = shown.filter((_, i) => got[i])
+      arts = got.filter(Boolean)
     }
 
     /*
-     * ポスターが無い節を**生成ポスター**に落とせるか。
-     * **節の全員ぶんジャンルが引けるときだけ**使う。ポスターの版と同じ規律で、
-     * 1枚だけ欠けた中途半端な並びを作らない。
+     * ポスターが1枚も無い節を**生成ポスター**に落とせるか。
+     * **節の全員ぶんジャンルが引けるときだけ**使う。1枚だけ欠けた中途半端な並びを作らない
+     * （ポスターの版は欠けた作品を外せば済むが、生成ポスターしか無い節で外すと絵が減るだけになる）。
      *
      * 引けないのは、表の作品名が収集ログのどれとも一致しないとき（人が記事を
      * 手直しして題名が変わった、など）。その節は従来どおり文字だけのカードに戻る。
@@ -1084,9 +1124,9 @@ for (const file of readdirSync(postsDir).filter((f) => f.endsWith('.md'))) {
       for (const [i, buf] of arts.entries()) {
         const name = posterNameFor(slug, s.heading, i)
         writeFileSync(join(posterDir, name), buf)
-        const label = labelFor(shown[i].title, years)
+        const label = labelFor(artWorks[i].title, years)
         // 導線リンク。トラッキングIDはビルド時に rehype-affiliate が付ける。
-        links.push(`[![${label}](/sections/posters/${name})](${posterLink(shown[i].title)})`)
+        links.push(`[![${label}](/sections/posters/${name})](${posterLink(artWorks[i].title)})`)
         madePaths.push(`/sections/posters/${name}`)
         images++
       }
