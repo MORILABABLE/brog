@@ -8,10 +8,15 @@ import SeriesShelf from '../components/SeriesShelf.astro'
 import DemandShelf from '../components/DemandShelf.astro'
 import TopCalendar from '../components/TopCalendar.astro'
 import { SITE } from '../config'
+import { byFirstPublishedDesc } from '../utils/date'
 
-const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-)
+/*
+ * ★ **初回公開日の新しい順**（2026-09-25・運用者の指定）。それまでは `pubDate` 順で、
+ *   `--apply` が書き直しのたびに `pubDate` を振り直すため、**書き直しただけの記事が
+ *   新しく書いた記事より上に出ていた**（9月23日は5本とも書き直しで、全部が一番上に並んだ）。
+ *   書き直した記事は、初めて出た日の位置にとどまる。判定は utils/date.ts の `firstPublished`。
+ */
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(byFirstPublishedDesc)
 
 /**
  * トップに出す記事の数（2026-09-13 追加）。
@@ -119,8 +124,9 @@ const latest = posts.slice(0, LATEST)
         */}
         <p class="list-title" aria-hidden="true">最新記事</p>
         <div role="feed" aria-label="最新記事">
+          {/* 並びが初回公開日なので、カードの日付もそれに揃える（`firstDate`） */}
           {latest.map((post) => (
-            <PostCard post={post} />
+            <PostCard post={post} firstDate />
           ))}
         </div>
         {/*

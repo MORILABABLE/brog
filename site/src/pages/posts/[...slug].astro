@@ -5,7 +5,7 @@ import AdSlot from '../../components/AdSlot.astro'
 import AffiliateNotice from '../../components/AffiliateNotice.astro'
 import { CATEGORIES, SERVICE_HUBS, hubFor } from '../../config'
 import { genreBadges } from '../../lib/genres'
-import { formatDate, isoDate } from '../../utils/date'
+import { firstPublished, formatDate, isoDate, lastModified } from '../../utils/date'
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft)
@@ -32,6 +32,18 @@ const genres = genreBadges(post.data)
  */
 const hub = hubFor(post.data.category)
 /*
+ * 公開日と更新日（2026-09-25）。画面の「公開／更新」と構造化データの
+ * `datePublished` / `dateModified` に**同じ値**を渡す。
+ *
+ * ★ それまでは公開日に `pubDate` を出していた。`--apply` が書き直しのたびに振り直すので、
+ *   8月31日に出た記事が「9月23日公開」を名乗っていた（transformers）。
+ *   Google は `datePublished` に**初めて公開した日**を求めている。
+ * ★ 同じ日に書き直しただけなら「更新」は出さない（公開日と同じ日付が2つ並ぶだけになる）。
+ */
+const published = firstPublished(post.data)
+const modified = lastModified(post.data)
+const wasModified = isoDate(modified) !== isoDate(published)
+/*
  * ★ **広告の判定はこのファイルから消えた**（2026-09-19 のテンプレ改修）。
  *   枠が本文の中に移ったので、掲載NGの判定も出し分けも
  *   `plugins/rehype-section-ads.ts` が持っている。
@@ -50,8 +62,8 @@ const hub = hubFor(post.data.category)
 <BaseLayout
   title={post.data.title}
   description={post.data.description}
-  publishedAt={post.data.pubDate}
-  updatedAt={post.data.updatedDate}
+  publishedAt={published}
+  updatedAt={modified}
   ogImagePath={`/cards/${post.id}.jpg`}
 >
   <article>
@@ -85,11 +97,11 @@ const hub = hubFor(post.data.category)
       <span class="badge" data-category={cat.slug}>{cat.label}</span>
       {/* 何を観る話かが、本文を読む前に分かるようにする */}
       {genres.map((label) => <span class="badge genre">{label}</span>)}
-      <time datetime={isoDate(post.data.pubDate)}>公開 {formatDate(post.data.pubDate)}</time>
+      <time datetime={isoDate(published)}>公開 {formatDate(published)}</time>
       {
-        post.data.updatedDate && (
-          <time datetime={isoDate(post.data.updatedDate)}>
-            更新 {formatDate(post.data.updatedDate)}
+        wasModified && (
+          <time datetime={isoDate(modified)}>
+            更新 {formatDate(modified)}
           </time>
         )
       }

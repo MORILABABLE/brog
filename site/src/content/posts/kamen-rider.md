@@ -2,6 +2,7 @@
 title: '【保存版】「仮面ライダー」シリーズの見放題配信中の作品39本【9月15日更新】｜マイス配信開始、ゼッツは終了へ'
 description: '最新作『仮面ライダーマイス』がU-NEXTで配信開始。Amazon Prime Videoには『シン・仮面ライダー』ほか36本が見放題で配信中です。『仮面ライダーゼッツ』は9月30日に見放題配信が終了予定です。'
 pubDate: 2026-09-15
+firstPubDate: 2026-09-07
 category: 'arrivals'
 genres: ['japanese']
 genreDetail: 'アクション'

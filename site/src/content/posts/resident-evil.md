@@ -2,6 +2,7 @@
 title: '【保存版】「バイオハザード」シリーズの見放題配信中の作品8本【9月10日更新】｜実写6作とフルCGのヴェンデッタ・デスアイランド'
 description: '「バイオハザード」シリーズは9月7日時点で8本がAmazon Prime Videoの見放題で配信中です。実写映画6作に加えて、フルCG映画の「ヴェンデッタ」「デスアイランド」も見放題に入りました。終了日は公表されていません。'
 pubDate: 2026-09-06
+firstPubDate: 2026-09-05
 updatedDate: 2026-09-10
 category: 'arrivals'
 genres: ['western']

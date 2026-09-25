@@ -6,6 +6,7 @@ import Thumb from './Thumb.astro'
 import { amazonTagFor, CATEGORIES, FOLLOW_ADS_ENABLED } from '../config'
 import { amazonVideoSearchUrl, withAmazonTag } from '../lib/affiliate'
 import { ctaQueryFor } from '../lib/page-intent'
+import { byFirstPublishedDesc } from '../utils/date'
 
 /**
  * 本文の右の余白に置く追従枠。上から4ブロック。
@@ -73,8 +74,13 @@ import { ctaQueryFor } from '../lib/page-intent'
  */
 const RECENT_POSTS = 5
 
+/*
+ * ★ **トップの「最新記事」と同じ並び**（初回公開日の新しい順・2026-09-25）。
+ *   広い画面ではトップにこの枠と本文の一覧が並んで出るので、片方だけ `pubDate` 順だと
+ *   同じ名前の2つの一覧が別の順番になる。
+ */
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .sort(byFirstPublishedDesc)
   .slice(0, RECENT_POSTS)
 
 /** 現在地の判定にだけ使う。**項目の出し分けには使わない。** */

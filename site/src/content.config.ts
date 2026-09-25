@@ -12,7 +12,17 @@ const posts = defineCollection({
   schema: z.object({
     title: z.string().min(10),
     description: z.string().min(30).max(160),
+    /** 最後に書き出した日。`--apply` が書き直しのたびにその日へ振り直す */
     pubDate: z.coerce.date(),
+    /**
+     * 初回公開日。**書き直した記事だけが持つ**（2026-09-25 追加・運用者の指定）。
+     *
+     * ★ トップの「最新記事」の並びと「NEW」の帯はこちらを見る（utils/date.ts の `firstPublished`）。
+     *   `pubDate` で並べていたころは、書き直した記事が新しく書いた記事より上に出ていた。
+     * ★ パイプラインが前の版の値を引き継いで書く（pipeline/cli/write.ts の `finalize`）。
+     *   手で消すと、その記事は書き直した日に新しく出た記事として並び直す。
+     */
+    firstPubDate: z.coerce.date().optional(),
     updatedDate: z.coerce.date().optional(),
     // pipeline/core/article.ts の Category と揃えること
     category: z.enum(['leaving', 'arrivals', 'ranking', 'ended']),

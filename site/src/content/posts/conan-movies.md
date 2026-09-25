@@ -2,6 +2,7 @@
 title: '【保存版】「名探偵コナン」劇場版シリーズはどこで見れる？見放題配信が終了した作品32本【9月6日更新】｜劇場版＋特別編'
 description: '「名探偵コナン」劇場版シリーズはU-NEXT・Netflix・Disney+での見放題配信を終了しました。32本すべての終了日と、9月6日時点でDisney+の見放題にある作品を表にまとめています。'
 pubDate: 2026-09-06
+firstPubDate: 2026-08-30
 category: 'ended'
 genres: ['anime']
 genreDetail: 'アドベンチャー'

@@ -2,7 +2,7 @@
 import Thumb from './Thumb.astro'
 import { CATEGORIES } from '../config'
 import { genreBadges } from '../lib/genres'
-import { formatDate, isNew, isoDate } from '../utils/date'
+import { firstPublished, formatDate, isNew, isoDate } from '../utils/date'
 import type { CollectionEntry } from 'astro:content'
 
 interface Props {
@@ -15,8 +15,16 @@ interface Props {
    *   h2 の節の中に h2 のカードが並ぶと、読み上げの見出しの木が崩れる。
    */
   headingLevel?: 2 | 3
+  /**
+   * 日付に**初回公開日**を出す（2026-09-25 追加）。既定は `pubDate`（最後に書き出した日）。
+   *
+   * ★ 並びと日付を揃えるためのもの。**初回公開日で並べる一覧（トップ）だけが渡す。**
+   *   `pubDate` で並べる一覧（カテゴリ・月別まとめなど）で渡すと、日付が前後して見える。
+   *   書き直した日は題名の【◯月◯日更新】が持っているので、ここに2つ並べない。
+   */
+  firstDate?: boolean
 }
-const { post, headingLevel = 2 } = Astro.props
+const { post, headingLevel = 2, firstDate = false } = Astro.props
 /* 動的なタグ名は**大文字で始まる変数**にしないと Astro が要素として書き出さない（WorkTable.astro と同じ） */
 const Heading = headingLevel === 3 ? 'h3' : 'h2'
 const cat = CATEGORIES[post.data.category]
@@ -26,6 +34,8 @@ const cat = CATEGORIES[post.data.category]
  * 収集データと突き合わなかった記事では空になり、バッジごと出ない。
  */
 const genres = genreBadges(post.data)
+const published = firstPublished(post.data)
+const shownDate = firstDate ? published : post.data.pubDate
 
 /**
  * 記事カード。
@@ -42,15 +52,15 @@ const genres = genreBadges(post.data)
 
 <article class="card">
   {/*
-    ★ 公開（書き直しを含む）から3日以内は、絵の角に「NEW」の帯を出す（2026-09-24）。
-      判定は utils/date.ts の isNew。**見ているのは pubDate だけ**で、
-      `--apply` が書き直しのたびに振り直すので、新規と更新を1つの条件で拾える。
+    ★ 初回公開から3日以内は、絵の角に「NEW」の帯を出す（2026-09-24）。
+      判定は utils/date.ts の isNew。**書き直しただけの記事には出さない**（2026-09-25・運用者の指定）。
+      見ているのは初回公開日（`firstPublished`）で、`pubDate` ではない。
   */}
   <Thumb
     src={post.data.heroImage}
     category={post.data.category}
     size={72}
-    ribbon={isNew(post.data.pubDate) ? 'NEW' : undefined}
+    ribbon={isNew(published) ? 'NEW' : undefined}
   />
 
   <div class="main">
@@ -58,7 +68,7 @@ const genres = genreBadges(post.data)
       {/* data-category で色が変わる。配色は styles/global.css の :root。 */}
       <span class="badge" data-category={cat.slug}>{cat.label}</span>
       {genres.map((label) => <span class="badge genre">{label}</span>)}
-      <time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time>
+      <time datetime={isoDate(shownDate)}>{formatDate(shownDate)}</time>
     </div>
     <Heading class="title"><a href={`/posts/${post.id}`}>{post.data.title}</a></Heading>
     <p class="desc">{post.data.description}</p>

@@ -2,6 +2,7 @@
 title: '【2026年9月】Netflixでアニメ13本が見放題配信終了予定【9月23日更新】｜リコリス・リコイルが終了'
 description: '「リコリス・リコイル」「その着せ替え人形は恋をする」「からかい上手の高木さん」など、アニメ13本がNetflixで9月23日から9月30日にかけて見放題配信を終了します。'
 pubDate: 2026-09-23
+firstPubDate: 2026-09-17
 category: 'leaving'
 genres: ['anime']
 genreDetail: 'コメディ'

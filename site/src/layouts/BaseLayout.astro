@@ -13,8 +13,9 @@ import '../styles/global.css'
 interface Props {
   title: string
   description: string
-  /** 記事ページなら published 日時（JSON-LD 用） */
+  /** 記事ページなら**初回公開日**（JSON-LD の `datePublished`）。書き直した日を渡さないこと */
   publishedAt?: Date
+  /** 最後に直した日（JSON-LD の `dateModified`）。省略時は `publishedAt` */
   updatedAt?: Date
   /** 検索結果に出したくないページ（お問い合わせ等）は true */
   noindex?: boolean

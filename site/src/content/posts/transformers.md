@@ -2,6 +2,7 @@
 title: '【保存版】「トランスフォーマー」実写映画シリーズはどこで見れる？見放題配信が終了した作品5本【9月23日更新】｜マイケル・ベイの5作'
 description: '「トランスフォーマー」実写映画シリーズ5本の見放題配信は、Disney+とAmazon Prime Videoのいずれでも終了しました。マイケル・ベイが監督した第1作から第5作までの配信状況を表にまとめています。'
 pubDate: 2026-09-23
+firstPubDate: 2026-08-31
 category: 'ended'
 genres: ['western']
 genreDetail: 'アクション'

@@ -437,6 +437,14 @@ async function finalize(
   // 特報のようにカテゴリが実行時に決まる記事タイプがある（ArticleType.categoryOf）
   const category = type.categoryOf?.(ctx, items) ?? type.category
   const { genres, detail } = await articleGenres(recipe, items, theme)
+  /*
+   * ★ **書き直しなら、前の版の初回公開日を引き継ぐ**（2026-09-25 追加）。
+   *   `pubDate` は下の `now` で振り直すので、ここで拾わないと最初に出た日が消え、
+   *   サイトのトップで**書き直しただけの記事が新着として一番上に出る**（site/src/utils/date.ts）。
+   * ★ 下書き（`draft: true`）は前の版と数えない。読者に届いていないので、
+   *   公開すればその日が初回公開日になる（`--emit` が土台にしないのと同じ理由）。
+   */
+  const previous = (await readPublishedPosts(POSTS_DIR)).find((p) => p.slug === slug && !p.draft)
   const md = buildMarkdown({
     parsed,
     category,
@@ -446,6 +454,7 @@ async function finalize(
     sources: sourcesFor(items),
     dataAsOf: now,
     pubDate: now,
+    firstPubDate: previous?.firstPubDate || undefined,
     offsetMinutes: theme.utc_offset_minutes,
   })
 

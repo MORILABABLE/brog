@@ -469,6 +469,13 @@ export interface BuildOptions {
   /** 配信情報の基準日 */
   dataAsOf: Date
   pubDate: Date
+  /**
+   * 初回公開日（`YYYY-MM-DD`）。**書き直すときだけ渡す**（前の版の値を引き継ぐ）。
+   *
+   * ★ `pubDate` と同じ日なら行を出さない。行があること＝書き直した記事、と読めるようにしておく。
+   *   サイトはこの日でトップの並びと NEW の帯を決める（site/src/utils/date.ts の `firstPublished`）。
+   */
+  firstPubDate?: string
   offsetMinutes: number
 }
 
@@ -478,11 +485,13 @@ function yamlString(v: string): string {
 }
 
 export function buildMarkdown(o: BuildOptions): string {
+  const pubDate = formatIsoDate(o.pubDate.toISOString(), o.offsetMinutes)
   const fm = [
     '---',
     `title: ${yamlString(o.parsed.title)}`,
     `description: ${yamlString(o.parsed.description)}`,
-    `pubDate: ${formatIsoDate(o.pubDate.toISOString(), o.offsetMinutes)}`,
+    `pubDate: ${pubDate}`,
+    ...(o.firstPubDate && o.firstPubDate !== pubDate ? [`firstPubDate: ${o.firstPubDate}`] : []),
     `category: '${o.category}'`,
     // 数えられなかった記事では行ごと消える（サイト側は optional）
     ...(o.genres?.length ? [`genres: [${o.genres.map((g) => `'${g}'`).join(', ')}]`] : []),

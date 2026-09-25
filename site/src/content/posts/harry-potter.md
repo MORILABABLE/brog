@@ -2,6 +2,7 @@
 title: '【保存版】「ハリー・ポッター」シリーズの見放題配信が終了予定の作品11本【9月8日更新】｜終了後もPrime Video'
 description: '「ハリー・ポッター」シリーズ11本がNetflixで9月30日に見放題配信を終了します。うち9本は9月8日時点でAmazon Prime Videoの見放題にもあり、終了後も続けて観られます。'
 pubDate: 2026-09-08
+firstPubDate: 2026-09-01
 category: 'leaving'
 genres: ['western']
 genreDetail: 'アドベンチャー'

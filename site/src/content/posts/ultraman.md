@@ -2,6 +2,7 @@
 title: '【保存版】「ウルトラマン」シリーズはどこで見れる？見放題配信が終了した作品13本【9月15日更新】｜タロウ・レオとギンガ'
 description: '「ウルトラマン」シリーズは、対象13本のうち12本の見放題配信が終了しました。U-NEXTの9本とAmazon Prime Videoの3本が対象で、2026年の『ウルトラマンテオ』は見放題で配信中です。'
 pubDate: 2026-09-15
+firstPubDate: 2026-08-31
 category: 'ended'
 genres: ['japanese', 'anime']
 tags: ['Amazon Prime Video', 'U-NEXT', '配信終了', 'シリーズ']

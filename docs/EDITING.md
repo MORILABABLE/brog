@@ -53,7 +53,8 @@ site/src/content/posts/2026-08-leaving.md
 ---
 title: '【2026年8月】…'          ← 記事タイトル（変更可）
 description: '…'                 ← 検索結果の説明文（30〜160字）
-pubDate: 2026-08-09              ← 公開日（YYYY-MM-DD）
+pubDate: 2026-08-09              ← 最後に書き出した日（YYYY-MM-DD）。書き直すたびに振り直される
+firstPubDate: 2026-08-01         ← 初回公開日。書き直した記事にだけある。トップの並びと「NEW」はこの日で決まる
 category: 'leaving'              ← leaving / arrivals / ranking のいずれか
 tags: ['Netflix', '配信終了']
 sources:                          ← 出典。消さないこと（API利用規約上の義務）

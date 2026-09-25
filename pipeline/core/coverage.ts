@@ -79,6 +79,13 @@ export interface PublishedPost {
    *   `pubDate` ではないのは、記事の日付ではなく**素材の基準日**が知りたいため。
    */
   dataAsOf: string
+  /**
+   * 初回公開日（`YYYY-MM-DD`）。frontmatter の `firstPubDate`、無ければ `pubDate`。取れなければ空文字。
+   *
+   * ★ 書き直すときに引き継ぐ値（`cli/write.ts` の `finalize`）。
+   *   `pubDate` は書き直しのたびに振り直すので、それだけでは最初に出た日が消える。
+   */
+  firstPubDate: string
   /** 下書き（`draft: true`）はまだ読者に届いていないので、載っていると数えない */
   draft: boolean
 }
@@ -131,6 +138,10 @@ export async function readPublishedPosts(dir: string): Promise<PublishedPost[]> 
       body: m?.[2] ?? raw,
       // 引用符の有無はどちらもありうる（`buildMarkdown` は裸で書く）
       dataAsOf: front.match(/^dataAsOf:\s*['"]?(\d{4}-\d{2}-\d{2})/m)?.[1] ?? '',
+      firstPubDate:
+        front.match(/^firstPubDate:\s*['"]?(\d{4}-\d{2}-\d{2})/m)?.[1] ??
+        front.match(/^pubDate:\s*['"]?(\d{4}-\d{2}-\d{2})/m)?.[1] ??
+        '',
       draft: /^draft:\s*true\s*$/m.test(front),
     })
   }
