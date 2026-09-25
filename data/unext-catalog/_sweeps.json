@@ -1,4 +1,12 @@
 {
+  "anime": {
+    "label": "アニメ",
+    "startedAt": "2026-09-25T00:17:01.930Z",
+    "nextPage": 223,
+    "entries": 6019,
+    "pages": 278,
+    "results": 8329
+  },
   "asia-drama": {
     "label": "韓流・アジア",
     "startedAt": "2026-09-18T00:10:11.779Z",
@@ -29,10 +37,11 @@
   "kokunai-drama": {
     "label": "国内ドラマ",
     "startedAt": "2026-09-22T00:40:32.117Z",
-    "nextPage": 112,
-    "entries": 3177,
+    "nextPage": 1,
+    "entries": 4007,
     "pages": 139,
-    "results": 4162
+    "results": 4165,
+    "completedAt": "2026-09-25T00:17:01.926Z"
   },
   "youga": {
     "label": "洋画",
