@@ -1,0 +1,57 @@
+name: indexnow
+
+# 更新したページを IndexNow で Bing などへ知らせる。中身は pipeline/cli/indexnow.ts の冒頭。
+#
+# ■ なぜ要るか（2026-09-26 追加）
+# 9/23 に Google の表示が約9割消えたとき、Bing と AI（ChatGPT など）経由は減らなかった。
+# Google 以外の入口を太くするため、変わったページをその日のうちに Bing へ届ける。
+#
+# ■ data/ に何も書かない。秘密情報も要らない（鍵は公開してよい決まり）
+# だから collect 系の `concurrency: group: collect` には入れない。
+
+on:
+  schedule:
+    # 毎日 09:52 JST (= 00:52 UTC)
+    #
+    # ★ その日のボットのコミット（collect 04:07 ／ announce 05:11 ／ demand 08:13 JST など）が
+    #   Cloudflare で公開されたあとに走らせる。サイトマップは**本番のもの**を読むので、
+    #   公開前に走ると前日の <lastmod> しか見えない（翌日の実行が前日ぶんとして拾う）。
+    # ★ 分を :00 / :30 に置かないこと（queries.yml の★と同じ。開始が大きく遅れる）。
+    - cron: '52 0 * * *'
+  workflow_dispatch:
+    inputs:
+      all:
+        description: 'true にするとサイトマップの全URLを送る（初回・大きく作り替えたとき）'
+        default: 'false'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+
+jobs:
+  indexnow:
+    runs-on: ubuntu-latest
+    # 実測の所要は1分未満（サイトマップを読んで1回 POST するだけ）
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: 更新したページを送る
+        env:
+          ALL: ${{ inputs.all || 'false' }}
+        run: |
+          if [ "$ALL" = "true" ]; then
+            npm run indexnow -- --all
+          else
+            npm run indexnow
+          fi

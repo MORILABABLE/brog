@@ -207,6 +207,9 @@ curl -sI https://mihoudairader.com/_astro/<いまのCSSのファイル名>.css |
 | 終了済みの見出しを問い（「どこで見れる？」）から事実の形へ | `workHeadline()` の `ended` |
 | 作品ページの「他のサービスで探す」を止めた（sponsored 1ページ 5.9本 → 2.9本） | `site/src/config.ts` の `WORK_FIND_ENABLED` |
 | 表示の急落を毎日判定して Issue で知らせる | `npm run search-watch`・`.github/workflows/search-watch.yml` |
+| 更新したページを毎日 IndexNow で Bing などへ送る（Google 以外の入口。Bing と AI 経由は崖でも減らなかった） | `npm run indexnow`・`.github/workflows/indexnow.yml`・鍵は `site/public/<KEY>.txt` |
+
+★ Bing Webmaster Tools への登録は**運用者が画面で行う**（Search Console からのインポートで所有確認とサイトマップが引き継がれる）。IndexNow で送った URL は Bing Webmaster Tools の「IndexNow」の画面で確かめられる。
 
 サイトマップは 800件 → 約320件（作品ページ 678 → 198）。
 

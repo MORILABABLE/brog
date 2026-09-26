@@ -31,7 +31,8 @@
  *
  * ■ A の行き先は2択（この順）
  *   1. **その作品群をまとめた保存版**（`seriesRefFor`。月次記事 → シリーズ記事）
- *   2. **同じサービスの最新の月次記事**（`latestMonthlyPost`。シリーズ記事 → 月次記事）
+ *   2. **同じサービスの月次記事**（`monthlyPostFor`。シリーズ記事 → 月次記事）。
+ *      `leaving` は表の終了日の月を選び、行き先に載っている他の作品を名乗る（`monthlyLink` の■）
  * 1で自分自身しか当たらない記事（＝シリーズ記事そのもの）が2へ落ちる。
  * **月次 ⇄ 保存版**で相互に送り合う形になり、どちらの読者にも
  * 「その記事には絶対に載っていないもの」が次に出る。
@@ -61,7 +62,9 @@
  */
 import { SERVICE_BY_LABEL } from '../src/lib/work-links.ts'
 import { seriesRefFor } from '../src/lib/series-for-work.ts'
-import { latestMonthlyPost, postBySlug } from '../src/lib/post-index.ts'
+import { monthlyPostFor, postBySlug, postTableRows } from '../src/lib/post-index.ts'
+import type { IndexedPost } from '../src/lib/post-index.ts'
+import { isoDate } from '../src/utils/date.ts'
 
 interface Node {
   type: string
@@ -118,6 +121,21 @@ const MIN_WATCH_KNOWN = 10
  *   ハリー・ポッター／ジュラシック・パーク／007）。
  */
 const MAX_ARTICLE_LINKS = 3
+
+/**
+ * B で並べるサービスの上限。**2社**（2026-09-26・運用者の指定）。
+ *
+ * ■ なぜ1社から増やしたか
+ * `/posts/harry-potter` は題で「終了後もPrime Video」と約束しているのに、
+ * B は○が1本多い U-NEXT（11本中10本）だけを出し、Prime Video（9本）を名乗っていなかった。
+ * **Netflix を離れる読者にとってはどちらも実際の答え**で、片方だけだと題と本文が食い違う。
+ * ★ 並びは○の多い順のまま（`watchBlock` の★。紹介料の順にしない）。
+ * ★ 3社以上にしない。1文が長くなり、「1か所に1つ」から離れすぎる（docs/DESIGN.md 5節）。
+ */
+const MAX_WATCH_SERVICES = 2
+
+/** 「次に読む」で名乗る作品の数。375px で2行に収まる数 */
+const NAMED_TITLES = 2
 
 function text(value: string): Node {
   return { type: 'text', value }
@@ -333,8 +351,14 @@ function watchBlock(
     )
     .sort((a, b) => b.rows - a.rows || (a.href ? -1 : 1))
 
+  /*
+   * ★ **いちばん○の多い社にリンクが無ければ、何も出さない**（2社目だけを出すと、
+   *   より多く観られる社を伏せて少ないほうを勧めることになる）。
+   *   2社目はリンクがあるときだけ足す。
+   */
   const top = others[0]
   if (!top || !top.href) return undefined
+  const shown = [top, ...others.slice(1, MAX_WATCH_SERVICES).filter((w) => w.href)]
 
   /*
    * ★ **並びを紹介料の高い順にしない**（docs/AFFILIATE.md 7節）。
@@ -358,19 +382,24 @@ function watchBlock(
      */
     children: [
       text(`紹介する${workCount}本のうち`),
-      { type: 'element', tagName: 'b', children: [text(`${top.rows}本`)] },
-      text(`は${top.label}でも見放題配信中です。`),
-      {
+      // 「10本はU-NEXT、9本はAmazon Prime Video」
+      ...shown.flatMap((w, i) => [
+        ...(i > 0 ? [text('、')] : []),
+        { type: 'element', tagName: 'b', children: [text(`${w.rows}本`)] },
+        text(`は${w.label}`),
+      ]),
+      text('でも見放題配信中です。'),
+      ...shown.map((w) => ({
         type: 'element',
         tagName: 'a',
         properties: {
-          href: top.href,
+          href: w.href,
           className: ['next-watch-link'],
           // rel と tag= は後段（rehype-affiliate）が付ける
           target: '_blank',
         },
-        children: [text(`${top.label}で観る`)],
-      },
+        children: [text(`${w.label}で観る`)],
+      })),
     ],
   }
 }
@@ -417,17 +446,79 @@ function seriesLink(titles: string[], selfSlug: string, used: Set<string>): Node
 }
 
 /**
- * A その2。**同じサービスの最新の月次記事**へ（保存版 → 月次記事）。
+ * 表の `9月30日` を `2026-09-30` にする。**表には年が無い**ので、その記事の公開日の年で読む。
+ * ★ 12月の記事に1月の日付が載ることがある。公開日より半年以上前に見える日付は翌年とみなす。
+ * ★ ビルドの日の年で読まないこと。古い記事の `8月14日` が、翌年には「これから」に見える。
+ */
+function isoOf(monthDay: string, anchor: string): string | undefined {
+  const m = /^(\d{1,2})月(\d{1,2})日$/.exec(monthDay)
+  if (!m || !/^\d{4}-\d{2}-\d{2}$/.test(anchor)) return undefined
+  const year = Number(anchor.slice(0, 4))
+  const iso = `${year}-${m[1]!.padStart(2, '0')}-${m[2]!.padStart(2, '0')}`
+  return Date.parse(iso) < Date.parse(anchor) - 183 * 86_400_000 ? `${year + 1}${iso.slice(4)}` : iso
+}
+
+/**
+ * 行き先の月次記事に載っている、**この記事に無い・これから終わる**作品を、終わる日の近い順に。
+ *
+ * ★ 名乗る2本は**シリーズを1本ずつ**にする（`seriesRefFor`）。近い順に取るだけだと
+ *   「ジュラシック・パーク／ロスト・ワールド」のように同じシリーズで埋まる。
+ * ★ 数（「ほか◯本」）は重複を落とした**作品の数**。月次記事は節別の表と全件リストに同じ作品が出る。
+ * @returns 名乗る作品と、それ以外の本数。これから終わるものが無ければ undefined
+ */
+function upcomingElsewhere(
+  dest: IndexedPost,
+  exclude: Set<string>,
+  today: string,
+): { named: { title: string; date: string }[]; rest: number } | undefined {
+  const rows: { title: string; date: string; iso: string }[] = []
+  const seen = new Set<string>()
+  for (const r of postTableRows(dest.slug)) {
+    const iso = isoOf(r.date, dest.pubDate)
+    if (!iso || iso < today || exclude.has(r.title) || seen.has(r.title)) continue
+    seen.add(r.title)
+    rows.push({ ...r, iso })
+  }
+  if (rows.length === 0) return undefined
+  // 同じ日の中では表の順（sort は安定）
+  rows.sort((a, b) => a.iso.localeCompare(b.iso))
+
+  const named: { title: string; date: string }[] = []
+  const series = new Set<string>()
+  for (const r of rows) {
+    const key = seriesRefFor(r.title)?.slug ?? r.title
+    if (series.has(key)) continue
+    series.add(key)
+    named.push({ title: r.title, date: r.date })
+    if (named.length >= NAMED_TITLES) break
+  }
+  return { named, rest: rows.length - named.length }
+}
+
+/**
+ * A その2。**同じサービスの月次記事**へ（保存版 → 月次記事）。
  *
  * ★ **保存版に載っていないものへ送る。** 保存版は主題が1つに閉じているので、
  *   「同じ月に同じサービスで終わる他の作品」はどうやっても載らない。
  * ★ **最初の表でしか使わない。** 記事ぜんぶに1本あればよい落とし先で、
  *   節ごとに出すと同じリンクが並ぶ。
+ *
+ * ■ 行き先の月と名乗り（2026-09-26 変更）
+ * `/posts/harry-potter` の「次に読む」は、9/15〜9/25（39訪問）も、翌月の記事へ移った 9/25 以降も
+ * **1回も押されなかった。** 原因は行き先と名乗りの2つ。
+ *   - 9/15〜9/25 … 9月の月次記事。**題「…｜ハリー・ポッター7作が終了」がそのまま出て**、
+ *                   いま読んだ話の繰り返しに見えた
+ *   - 9/25〜      … 最新の月（10月）の記事「…美味しんぼとあたしンち」。読者の関心と無関係
+ * だから `leaving` では
+ *   1. 行き先は**この記事の、いちばん近いこれからの終了日の月**の月次記事（無ければ最新の月）
+ *   2. 名乗りは行き先の題ではなく、**そこに載っていてこの記事に無い作品**
+ *      （「ほかに9月にNetflixで終わる作品／マダム・ウェブ（9月27日）、…ほか10本」）
+ * 名乗れる作品が無い（行き先の日付が全部過ぎている）ときは、今までどおり題を出す。
+ * ★ `arrivals` / `ended` は今までどおり（「これから終わる」が言えない）。
  */
 function monthlyLink(
   ownServices: Map<string, number>,
-  selfSlug: string,
-  category: string,
+  self: IndexedPost,
   used: Set<string>,
 ): Node | undefined {
   /*
@@ -436,17 +527,33 @@ function monthlyLink(
    *   記事の主題と違うサービスの月次記事へ送ることになる。
    */
   const service = [...ownServices.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
-  if (!service || !category) return undefined
-  const monthly = latestMonthlyPost(service, category, selfSlug)
+  if (!service || !self.category) return undefined
+
+  const leaving = self.category === 'leaving'
+  const today = isoDate(new Date())
+  const own = postTableRows(self.slug)
+  const nextEnd = own
+    .map((r) => isoOf(r.date, self.pubDate))
+    .filter((d): d is string => !!d && d >= today)
+    .sort()[0]
+
+  const monthly = monthlyPostFor(service, self.category, self.slug, leaving ? nextEnd?.slice(0, 7) : undefined)
   if (!monthly || used.has(monthly.slug)) return undefined
   used.add(monthly.slug)
-  return articleLink(
-    monthly.slug,
-    monthly.title,
-    '次に読む',
-    monthly.heroImage,
-    monthly.category,
-  )
+
+  const others = leaving ? upcomingElsewhere(monthly, new Set(own.map((r) => r.title)), today) : undefined
+  if (others) {
+    const month = Number(monthly.slug.slice(5, 7))
+    const names = others.named.map((w) => `${w.title}（${w.date}）`).join('、')
+    return articleLink(
+      monthly.slug,
+      others.rest > 0 ? `${names}ほか${others.rest}本` : names,
+      `ほかに${month}月に${service}で終わる作品`,
+      monthly.heroImage,
+      monthly.category,
+    )
+  }
+  return articleLink(monthly.slug, monthly.title, '次に読む', monthly.heroImage, monthly.category)
 }
 
 /**
@@ -573,7 +680,7 @@ export function rehypeNextStep() {
         const node =
           seriesLink(titles, post.slug, used) ??
           // ★ 落とし先（月次記事）は**最初の表だけ**。節ごとに出すと同じリンクが並ぶ
-          (i === 0 ? monthlyLink(ownServices, post.slug, post.category, used) : undefined)
+          (i === 0 ? monthlyLink(ownServices, post, used) : undefined)
         if (node) plans.push({ table, node })
       }
     }

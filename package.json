@@ -13,6 +13,7 @@
     "queries": "tsx pipeline/cli/queries.ts",
     "analytics": "tsx pipeline/cli/analytics.ts",
     "search-watch": "tsx pipeline/cli/search-watch.ts",
+    "indexnow": "tsx pipeline/cli/indexnow.ts",
     "demand": "tsx pipeline/cli/demand.ts",
     "afb": "tsx pipeline/cli/afb.ts",
     "notify": "tsx pipeline/cli/notify.ts",

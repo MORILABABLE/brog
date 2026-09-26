@@ -135,21 +135,115 @@ export function latestMonthlyPost(
    */
   const newest = monthly.map((p) => p.slug.slice(0, 7)).sort().at(-1)
   if (!newest) return undefined
+  return monthlyIn(monthly, newest, service, category, exclude)
+}
 
+function monthlyIn(
+  monthly: IndexedPost[],
+  month: string,
+  service: string,
+  category: string,
+  exclude: string,
+): IndexedPost | undefined {
   return monthly
     .filter(
       (p) =>
         p.slug !== exclude &&
-        p.slug.startsWith(newest) &&
+        p.slug.startsWith(month) &&
         p.category === category &&
         p.tags.includes(service),
     )
     /*
-     * ★ 同じ月に複数あるときは**新しく書かれたほう**。
+     * ★ **その月・そのサービスの全体の記事（`2026-09-leaving-netflix`）を特報より先に。**
+     *   特報（`2026-09-special-anime-netflix`）はジャンルが1つに閉じていて、
+     *   保存版の読者（ハリー・ポッター）をアニメの一覧へ送ることになる（2026-09-26 に実際そうなった）。
+     * ★ 同じ扱いの中で複数あるときは**新しく書かれたほう**。
      *   slug の辞書順で選ぶと `2026-09-upcoming-…` が `2026-09-arrivals-…` に
      *   勝つだけで、意味のある順序にならない。
      */
-    .sort((a, b) => b.pubDate.localeCompare(a.pubDate) || b.slug.localeCompare(a.slug))[0]
+    .sort(
+      (a, b) =>
+        Number(b.slug.startsWith(`${month}-${category}-`)) -
+          Number(a.slug.startsWith(`${month}-${category}-`)) ||
+        b.pubDate.localeCompare(a.pubDate) ||
+        b.slug.localeCompare(a.slug),
+    )[0]
+}
+
+/**
+ * `month`（`2026-09`）の月次記事。**無ければ最新の月**（`latestMonthlyPost`）。
+ *
+ * ■ なぜ月を選べるようにしたか（2026-09-26）
+ * 保存版の「次に読む」が、**翌月の月次記事が出た日に翌月へ移っていた。**
+ * `/posts/harry-potter`（Netflix で 9/30 に終了）は 9/25 から
+ * 「【2026年10月】…美味しんぼとあたしンち」を指し、読者が次に知りたい
+ * 「ほかに9月中に消える作品」から外れた。
+ *
+ * ★ 月は呼び出し側が**記事の表の日付からビルドのたびに決める**。焼き込まない
+ *   （上の「月は指定しない」と同じ理由。保存版は同じURLを書き直し続ける）。
+ */
+export function monthlyPostFor(
+  service: string,
+  category: string,
+  exclude: string,
+  month: string | undefined,
+): IndexedPost | undefined {
+  if (month) {
+    const monthly = allPosts().filter((p) => MONTHLY_SLUG.test(p.slug))
+    const hit = monthlyIn(monthly, month, service, category, exclude)
+    if (hit) return hit
+  }
+  return latestMonthlyPost(service, category, exclude)
+}
+
+/** 記事の表の1行。日付は表に書かれたまま（`9月30日`。年は無い） */
+export interface PostTableRow {
+  date: string
+  title: string
+}
+
+/**
+ * 記事の表の行（日付と作品名）を Markdown から読む。
+ *
+ * ★ 使うのは `rehype-next-step.ts` の「次に読む」だけ。**行き先の記事に実際に載っている作品**を
+ *   名乗るためで、読者が押した先で同じ名前を見つけられる（別の台帳を引くと食い違いうる）。
+ * ★ 列は見出しで探す。「作品」の列と、「日」で終わる見出しの列（終了日・配信開始日）。
+ *   記事タイプで列の数が違う（`rehype-next-step.ts` の `readTables` と同じ事情）。
+ * ★ 同じ作品が節別の表と全件リストの両方に出る。**重複はそのまま返す**（呼び出し側で落とす）。
+ */
+export function postTableRows(slug: string): PostTableRow[] {
+  const dir = postsDir()
+  if (!dir) return []
+  let raw: string
+  try {
+    raw = readFileSync(join(dir, `${slug}.md`), 'utf8')
+  } catch {
+    return []
+  }
+
+  const out: PostTableRow[] = []
+  let dateCol = -1
+  let titleCol = -1
+  let inTable = false
+  for (const line of raw.split('\n')) {
+    if (!line.startsWith('|')) {
+      inTable = false
+      continue
+    }
+    const cells = line.split('|').slice(1, -1).map((c) => c.trim())
+    if (!inTable) {
+      // 表の1行目は見出し
+      inTable = true
+      titleCol = cells.indexOf('作品')
+      dateCol = cells.findIndex((c) => c.endsWith('日'))
+      continue
+    }
+    if (titleCol < 0 || dateCol < 0) continue
+    const date = cells[dateCol] ?? ''
+    const title = cells[titleCol] ?? ''
+    if (/^\d{1,2}月\d{1,2}日$/.test(date) && title) out.push({ date, title })
+  }
+  return out
 }
 
 /** slug から1本引く */
