@@ -26,6 +26,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { GENRE_ART } from '../../scripts/genre-art.mjs'
 import type { CategorySlug, GenreSlug } from '../config'
+import { WORK_FIND_ENABLED } from '../config'
 import {
   API_SERVICES,
   LABEL_BY_SERVICE,
@@ -293,6 +294,13 @@ export function statusSentence(row: StatusRow): string {
  *   **どの状態でも「読者の問い＋観測した事実」の形が崩れないようにしてある。**
  *   変更前は `passed` が「いつまで見られる？」のまま日付だけ過去になり、
  *   30枚が「答えが古い見出し」になっていた（docs/FUNNEL.md 3節）。
+ *
+ * ■ `ended` だけは問いをやめた（2026-09-26・運用者の指定）
+ * 2026-09-23 に Google の表示が約9割消えた（アルゴリズムによる評価。手動による対策は無し）。
+ * `ended` の「どこで見れる？」は、**答えが「終わりました」と他社の検索リンクしか無い**
+ * のに問いで誘う形で、大量生成の誘導ページに読まれやすい。事実の形に戻す。
+ * 上の CTR の差（9.9% と 2.9%）を捨てることになるのは承知のうえ。
+ * 索引に残す終了済みは `data/work-index-keep.json` の作品だけ（`workIndexable()`）。
  */
 let ambiguous: Set<string> | null = null
 
@@ -342,9 +350,9 @@ export function workHeadline(w: WorkPage): string {
     // 予定日は過ぎたが、終了は観測していない。**断定しない問いにする。**
     case 'passed':
       return `「${workLabel(w)}」はまだ見られる？${head.label}の見放題終了予定日は${d}`
-    // もう見放題では観られない。**読者の問いは「じゃあどこで」に移っている。**
+    // もう見放題では観られない。**問いにしない**（上の「■ `ended` だけは問いをやめた」）。
     case 'ended':
-      return `「${workLabel(w)}」はどこで見れる？${head.label}の見放題は${d}に終了`
+      return `「${workLabel(w)}」の${head.label}見放題配信は${d}に終了`
     // 開始を観測しただけ。「配信中」とは言えないので、観測した事実だけを置く。
     case 'started':
       return `「${workLabel(w)}」はどこで見れる？${head.label}が${d}に見放題配信を開始`
@@ -373,6 +381,8 @@ export function workHeadline(w: WorkPage): string {
  *   答えを持っていないときの逃げ口上で、**実際の答えが言える面ではそちらを先に出す。**
  *   全角120字を越えると、肝心の社名が検索結果で切れる。
  * ★ 社の区切りは「・」（画面の「他のサービスで探す」と同じ house style）。
+ * ★ **「他のサービスで探す」を止めているあいだは「探し方」を名乗らない**（`WORK_FIND_ENABLED`）。
+ *   画面に無いものを検索結果で約束しない。
  */
 export function workDescription(w: WorkPage): string {
   const head = w.services[0]!
@@ -381,11 +391,13 @@ export function workDescription(w: WorkPage): string {
 
   if (stock) {
     const names = stock.services.map((s) => s.label).join('・')
-    return `${lead}${names}では見放題で配信中です。ほかのサービスでの探し方もまとめています。`
+    const tail = WORK_FIND_ENABLED ? 'ほかのサービスでの探し方もまとめています。' : ''
+    return `${lead}${names}では見放題で配信中です。${tail}`
   }
 
   const rest = w.services.length > 1 ? `他${w.services.length - 1}サービスの状況と、` : ''
-  return `${lead}${rest}他のサービスでの探し方と、レンタル・購入で観る方法をまとめています。`
+  const find = WORK_FIND_ENABLED ? '他のサービスでの探し方と、' : ''
+  return `${lead}${rest}${find}レンタル・購入で観る方法をまとめています。`
 }
 
 /**
@@ -1405,6 +1417,50 @@ export function isWorkPagePublishable(w: WorkPage): boolean {
   const namesPeople = w.directors.length > 0 || w.cast.length > 0
   // ★ 「人の名前」は緩めない。**どちらの入口でも要る**（上の表の2段目）。
   return (tellsEndDate || seriesFeatured().has(w.id)) && namesPeople
+}
+
+// --- 検索結果に出すか（2026-09-26 追加）---------------------------------------
+
+/**
+ * 終了済みの作品ページを、**検索の実績が無ければ `noindex,follow` にする**か。
+ *
+ * ■ なぜ（2026-09-26・運用者の指定）
+ * 2026-09-23 17時（JST）に Google の表示が約9割消えた。手動による対策は無く、
+ * アルゴリズムによる評価（経緯は `data/work-index-keep.json` の why）。
+ * 作品ページ678枚のうち527枚が終了済みで、実績（クリック1回以上か表示10回以上）が
+ * あったのは47枚だけ。残りは大量生成の誘導ページに読まれやすいだけで、読者を連れてきていない。
+ *
+ * ★ **ページは消さない。** サイト内のリンクからは今までどおり開け、`follow` なのでリンクの評価も通る。
+ *   サイトマップからは prune-sitemap が自動で外す（astro.config は触らない）。
+ * ★ 止めるときはここを false にする。台帳の出し入れは `data/work-index-keep.json` の howto。
+ */
+export const NOINDEX_ENDED_WITHOUT_DEMAND = true
+
+let indexKeep: Set<string> | null | undefined
+
+/** 台帳の作品ID。**読めなければ null**（＝この判定を使わない）。 */
+function indexKeepIds(): Set<string> | null {
+  if (indexKeep !== undefined) return indexKeep
+  const path = findData('work-index-keep.json')
+  try {
+    const parsed = path
+      ? (JSON.parse(readFileSync(path, 'utf8')) as { works?: { id?: unknown }[] })
+      : undefined
+    indexKeep = parsed?.works ? new Set(parsed.works.map((w) => String(w.id ?? ''))) : null
+  } catch {
+    indexKeep = null
+  }
+  // ★ 台帳が無いときは**全部を索引に残す側へ倒す**。空の台帳として読むと、
+  //   実績のある47枚まで noindex になる。ビルドは止めないが、ログには残す。
+  if (!indexKeep) console.warn('[works] data/work-index-keep.json が読めません。終了済みも全部 index のままにします')
+  return indexKeep
+}
+
+/** その作品ページを検索結果に出すか。false なら `noindex,follow`。 */
+export function workIndexable(w: WorkPage): boolean {
+  if (!NOINDEX_ENDED_WITHOUT_DEMAND || w.state !== 'ended') return true
+  const keep = indexKeepIds()
+  return !keep || keep.has(w.id)
 }
 
 // --- 公開する口 ---------------------------------------------------------------

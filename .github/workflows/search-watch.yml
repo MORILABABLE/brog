@@ -1,0 +1,72 @@
+name: search-watch
+
+# Google 検索の表示が急に落ちていないかを毎日見て、落ちたら Issue で知らせる。
+# 判定と Issue の動きは pipeline/cli/search-watch.ts の冒頭。
+#
+# ■ なぜ要るか（2026-09-26 追加）
+# 2026-09-23 17時（JST）に Google の表示が約9割消え、**気づいたのは3日後**だった。
+# queries.yml は週1回・28日窓の集計で、崖は見えない。
+#
+# ■ data/ に何も書かない
+# 読むのは Search Console だけ、書くのは Issue だけ。だから collect 系の
+# `concurrency: group: collect` には入れない（入れると data/ を書くジョブを待たせるだけ）。
+
+on:
+  schedule:
+    # 毎日 09:37 JST (= 00:37 UTC)
+    #
+    # ★ **分を :00 / :30 に置かないこと**（queries.yml の★と同じ。開始が87〜123分遅れる実測がある）。
+    # ★ GSC が前日ぶんを「揃った」とするのは米国太平洋時間の翌日以降なので、朝の1回で足りる。
+    - cron: '37 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # 監視 Issue を立てる・追記する・閉じるために要る。
+  issues: write
+
+concurrency:
+  group: search-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    # 実測の所要は1分未満（Search Console に1回問い合わせるだけ）。
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: 必要なシークレットを確認
+        env:
+          KEY: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::GSC_SERVICE_ACCOUNT_JSON が登録されていません（queries.yml と同じシークレット）"
+            exit 1
+          fi
+
+      - run: npm ci
+
+      # ★ 鍵は $RUNNER_TEMP に書く。**リポジトリの中に置かないこと**（queries.yml と同じ理由）。
+      - name: サービスアカウントの鍵を用意
+        env:
+          KEY: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: |
+          printf '%s' "$KEY" > "$RUNNER_TEMP/gsc.json"
+          chmod 600 "$RUNNER_TEMP/gsc.json"
+
+      - name: 表示の急落を判定する
+        env:
+          # プロパティの文字列は秘密ではない（queries.yml と同じ。URLプレフィックス プロパティ）。
+          GSC_SITE_URL: https://mihoudairader.com/
+          GSC_SERVICE_ACCOUNT: ${{ runner.temp }}/gsc.json
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 本文で @メンションするので、リポジトリの Watch 設定に関わらず届く（collect.yml と同じ）。
+          NOTIFY_MENTION: ${{ github.repository_owner }}
+        run: npm run search-watch

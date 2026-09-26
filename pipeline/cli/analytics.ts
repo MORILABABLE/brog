@@ -257,7 +257,7 @@ function productionHosts(siteUrl: string): string[] {
  */
 const SLOT_NOTE: Record<string, string> = {
   work: '作品ページの状態行のボタン',
-  find: '作品ページ「他のサービスで探す」（U-NEXT検索を含む・成果にはならない）',
+  find: '「他のサービスで探す」（記事末尾。作品ページの節は 2026-09-26 から出していない）',
   cta: '本文のCTA',
   bar: '画面下の追従枠（1200px未満）',
   rail: '右の追従枠（1200px以上）',

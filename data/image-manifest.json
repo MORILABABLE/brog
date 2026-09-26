@@ -1,6 +1,6 @@
 {
   "note": "サイトが実際に使っている作品画像の署名付きURL。npm run refresh:images が失効の近いものだけを取り直す。手で編集しない。",
-  "updatedAt": "2026-09-25T10:41:15.072Z",
+  "updatedAt": "2026-09-26T13:22:53.086Z",
   "works": {
     "74": {
       "id": "74",
@@ -9787,12 +9787,6 @@
       "title": "The Shards",
       "url": "https://cdn.movieofthenight.com/show/25369272/poster/vertical/en/480.jpg?Expires=1816340219&Signature=GVQLRdkBOPH1UbGB7ceeX8Tcpp6ltRr6uCqi77dFdYYZvfBUyOgYyJ6ExnEybjkxvuuYkuUJ0m1jkErM~ej3NQeQH6ZhJtYh62z3pqAKEs4MrNZWQUGot-VlGB1rPUwICSxDtKjsF8acHy02pS6IDGDhCSYwyMS5GPCzo~3yrUqmjFCx75ukFKOVWSVo8OS5Ficy-r2NRoO6boTBFG4WPe1RqVFnduV2AE7Y5wZsI1p~SCPtGI1uy7-tGYEdG~CqdHCAIXNcoSdbofjPjhCm0sJMJ2I-UU533Hz4QRi2E6BgOokRK~cgHdxKZo9BPiiRiApiJ4ecGVbh76st-utEhA__&Key-Pair-Id=KK4HN3OO4AT5R",
       "expiresAt": "2027-07-23T10:56:59.000Z"
-    },
-    "25369320": {
-      "id": "25369320",
-      "title": "Furious",
-      "url": "https://cdn.movieofthenight.com/show/25369320/poster/vertical/en/480.jpg?Expires=1814648901&Signature=ixPU6vtT6hAH7j998hx3b7bWI0r5n5ntg9KF7UVxqs7RySW5y5SONFO2RN298cWlkt1waMgwhreefDCvR0bI2cP~mSeZ0YjZ6hNCSopm-aB~MgLLyktLEZP8EKFMlXIry7mi2Rn-lJXiVvgJakPwIWuwst9ERSK6yWI3VIi7MD50IuAP45Liyg1qL7OvV713PllzHkYM88lM3PjH6IUnFeVAh-tVKL9oB7q~aVhSUYm2Ci38iQucQM~DxSMVFKEVE2q5G1NdjNCE1Kf95h1TfH~jwHiokyPMVKARxFB4qpfuBRIlR9Q-fF-btEJbjzkyUjin~mZ5eE1Uqgas0BJXQw__&Key-Pair-Id=KK4HN3OO4AT5R",
-      "expiresAt": "2027-07-03T21:08:21.000Z"
     },
     "25369742": {
       "id": "25369742",

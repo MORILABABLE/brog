@@ -1,0 +1,591 @@
+{
+  "note": "終了済み（見放題が終わった）の作品ページのうち、検索結果に残す作品。ここに無い終了済みの作品ページは noindex,follow になる（site/src/lib/works.ts の workIndexable()）。",
+  "why": [
+    "2026-09-23 17時（JST）に Google 検索の表示が約9割消えた。手動による対策は無く（2026-09-26 に Search Console で確認）、アルゴリズムによる評価。",
+    "作品ページ678枚のうち527枚が終了済みで、題は「どこで見れる？」なのに答えは「終了しました」と他社の検索リンクだった。大量生成の誘導ページと読まれやすい形なので、実績の無いものを索引から外す。",
+    "★ 残すのは、検索の実績（クリック1回以上か表示10回以上）があった作品だけ。実績は Search Console の2026-08-29〜09-22（崖の前）。",
+    "★ 状態を問わず載せてある。いま終了予定の作品も、終わった日にここで索引に残るかが決まるため。",
+    "★ 崖のあとの数字で作り直さないこと。表示がほぼ0なので、ほぼ全部が外れる。"
+  ],
+  "howto": [
+    "足す: works に { id, title } を1件足してビルドし直す。実績の数字は任意。",
+    "外す: 行を消す。そのページは次のビルドから noindex になり、サイトマップからも自動で外れる。",
+    "仕組みごと止める: site/src/lib/works.ts の NOINDEX_ENDED_WITHOUT_DEMAND を false にする。"
+  ],
+  "measured": {
+    "source": "Search Console（web・dataState all）",
+    "start": "2026-08-29",
+    "end": "2026-09-22",
+    "rule": "clicks >= 1 || impressions >= 10",
+    "madeAt": "2026-09-26"
+  },
+  "works": [
+    {
+      "id": "14626092",
+      "title": "SAKAMOTO DAYS",
+      "impressions": 211,
+      "clicks": 42,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "14281",
+      "title": "リコリス・リコイル",
+      "impressions": 100,
+      "clicks": 7,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "118",
+      "title": "シャッター アイランド",
+      "impressions": 82,
+      "clicks": 9,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "548",
+      "title": "ハリー・ポッターと謎のプリンス",
+      "impressions": 77,
+      "clicks": 2,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "10534",
+      "title": "からかい上手の高木さん",
+      "impressions": 74,
+      "clicks": 10,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "5182",
+      "title": "クーデター",
+      "impressions": 60,
+      "clicks": 3,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "92377",
+      "title": "映画 五等分の花嫁",
+      "impressions": 55,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "105029",
+      "title": "失楽園",
+      "impressions": 52,
+      "clicks": 0,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "428",
+      "title": "ハリー・ポッターと秘密の部屋",
+      "impressions": 51,
+      "clicks": 0,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "406",
+      "title": "アメイジング・スパイダーマン",
+      "impressions": 48,
+      "clicks": 1,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "3909",
+      "title": "アンドリューNDR114",
+      "impressions": 40,
+      "clicks": 1,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "8860253",
+      "title": "野生の島のロズ",
+      "impressions": 39,
+      "clicks": 2,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "21814",
+      "title": "ドラゴンボール超 スーパーヒーロー",
+      "impressions": 36,
+      "clicks": 5,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "287",
+      "title": "グッド・プレイス",
+      "impressions": 36,
+      "clicks": 4,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "5346",
+      "title": "スリザー",
+      "impressions": 31,
+      "clicks": 3,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "8860205",
+      "title": "スマイル2",
+      "impressions": 30,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "2294",
+      "title": "キムさんのコンビニ",
+      "impressions": 29,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "636",
+      "title": "グリーン・ブック",
+      "impressions": 27,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "6216",
+      "title": "チャーリーと14人のキッズ",
+      "impressions": 23,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "8847025",
+      "title": "じいさんばあさん若返る",
+      "impressions": 21,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "999",
+      "title": "サイン",
+      "impressions": 19,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "219",
+      "title": "ターミネーター",
+      "impressions": 18,
+      "clicks": 2,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "282",
+      "title": "ハリー・ポッターと賢者の石",
+      "impressions": 18,
+      "clicks": 1,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "4029331",
+      "title": "オッペンハイマー",
+      "impressions": 18,
+      "clicks": 0,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "9279",
+      "title": "キラークラウン",
+      "impressions": 18,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "81482",
+      "title": "アンジェリエナ",
+      "impressions": 17,
+      "clicks": 0,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "11190",
+      "title": "ボーンズ アンド オール",
+      "impressions": 16,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "182",
+      "title": "レザボア・ドッグス",
+      "impressions": 16,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "446",
+      "title": "ハリー・ポッターと炎のゴブレット",
+      "impressions": 16,
+      "clicks": 3,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "69199",
+      "title": "ザ・マジックアワー",
+      "impressions": 16,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "8933",
+      "title": "天気の子",
+      "impressions": 16,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "24604708",
+      "title": "しあわせは食べて寝て待て",
+      "impressions": 15,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "42382",
+      "title": "KCIA 南山の部長たち",
+      "impressions": 15,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "4807469",
+      "title": "パウ・パトロール ザ・マイティ・ムービー",
+      "impressions": 15,
+      "clicks": 2,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "627",
+      "title": "アメイジング・スパイダーマン2",
+      "impressions": 15,
+      "clicks": 0,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "10450",
+      "title": "ラスト・ホリデイ",
+      "impressions": 14,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "4443",
+      "title": "フィフティ・シェイズ・ダーカー",
+      "impressions": 14,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "20968",
+      "title": "あひるの空",
+      "impressions": 13,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "39128",
+      "title": "S.W.A.T. アンダーシージ",
+      "impressions": 13,
+      "clicks": 0,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "536",
+      "title": "ハリー・ポッターと死の秘宝 PART1",
+      "impressions": 13,
+      "clicks": 0,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "8561",
+      "title": "ありふれた職業で世界最強",
+      "impressions": 13,
+      "clicks": 0,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "9883798",
+      "title": "先輩はおとこのこ",
+      "impressions": 13,
+      "clicks": 0,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "20503",
+      "title": "ボスを守れ",
+      "impressions": 12,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "25449",
+      "title": "焼きたて!!ジャぱん",
+      "impressions": 12,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "3232",
+      "title": "あと1センチの恋",
+      "impressions": 12,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "142",
+      "title": "アメリカン・ビューティー",
+      "impressions": 11,
+      "clicks": 0,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "4064",
+      "title": "アリサ、ヒューマノイド",
+      "impressions": 11,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "4694",
+      "title": "マンマ・ミーア! ヒア・ウィー・ゴー",
+      "impressions": 11,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "105160",
+      "title": "HiGH&amp;LOW THE MOVIE",
+      "impressions": 10,
+      "clicks": 2,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "11020",
+      "title": "恋するジェネレーション",
+      "impressions": 10,
+      "clicks": 0,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "16353",
+      "title": "その女諜報員 アレックス",
+      "impressions": 10,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "3478",
+      "title": "インビジブル",
+      "impressions": 10,
+      "clicks": 1,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "65840",
+      "title": "あたしンち",
+      "impressions": 9,
+      "clicks": 1,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "1329",
+      "title": "アポロ13",
+      "impressions": 8,
+      "clicks": 1,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "3217",
+      "title": "ファンタスティック・ビースト:ザ・シークレット・オブ・ダンブルドア",
+      "impressions": 8,
+      "clicks": 1,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "72594",
+      "title": "カノジョは嘘を愛しすぎてる",
+      "impressions": 8,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "1379",
+      "title": "ファンタスティック・ビーストと黒い魔法使いの誕生",
+      "impressions": 7,
+      "clicks": 1,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "244702",
+      "title": "くれなずめ",
+      "impressions": 7,
+      "clicks": 2,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "36059",
+      "title": "ハロー!?ゴースト",
+      "impressions": 7,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "7111",
+      "title": "ラッキー・ガール",
+      "impressions": 7,
+      "clicks": 2,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "170051",
+      "title": "赤い糸",
+      "impressions": 6,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "218",
+      "title": "ハリー・ポッターと死の秘宝 PART2",
+      "impressions": 6,
+      "clicks": 1,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "79227",
+      "title": "悲しみよりもっと悲しい物語",
+      "impressions": 6,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "16696061",
+      "title": "プリンセッション・オーケストラ",
+      "impressions": 5,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "12719870",
+      "title": "トリリオンゲーム",
+      "impressions": 4,
+      "clicks": 1,
+      "stateAtMeasure": "leaving"
+    },
+    {
+      "id": "20928693",
+      "title": "まったく最近の探偵ときたら",
+      "impressions": 4,
+      "clicks": 2,
+      "stateAtMeasure": "passed"
+    },
+    {
+      "id": "2976",
+      "title": "ロッキー・ホラー・ショー",
+      "impressions": 4,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "2188",
+      "title": "未知との遭遇",
+      "impressions": 3,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "28724",
+      "title": "シルバー・スケート",
+      "impressions": 3,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "307",
+      "title": "キル・ビル Vol.2",
+      "impressions": 3,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "4786",
+      "title": "バイオハザード: ザ・ファイナル",
+      "impressions": 3,
+      "clicks": 2,
+      "stateAtMeasure": "started"
+    },
+    {
+      "id": "103008",
+      "title": "アダムス・ファミリー オリジナル版",
+      "impressions": 2,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "125443",
+      "title": "アマルフィ 女神の報酬",
+      "impressions": 2,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "16132",
+      "title": "Fame フェーム",
+      "impressions": 2,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "16253515",
+      "title": "善意の競争",
+      "impressions": 2,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "33633",
+      "title": "燃えよNINJA",
+      "impressions": 2,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "5003",
+      "title": "運命の女",
+      "impressions": 2,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "5234",
+      "title": "DOPE ドープ!!",
+      "impressions": 2,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "8255",
+      "title": "暴走特急",
+      "impressions": 2,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "13438",
+      "title": "ミート・イーター 猟理の達人",
+      "impressions": 1,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    },
+    {
+      "id": "14201",
+      "title": "タルーラ 〜彼女たちの事情〜",
+      "impressions": 1,
+      "clicks": 1,
+      "stateAtMeasure": "ended"
+    }
+  ]
+}

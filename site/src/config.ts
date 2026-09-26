@@ -430,6 +430,19 @@ export const ADSENSE_CLIENT = import.meta.env.PUBLIC_ADSENSE_CLIENT ?? ''
 export const FOLLOW_ADS_ENABLED = false
 
 /**
+ * 作品ページの「他のサービスで探す」（U-NEXT・Hulu・DMM TV・Amazon の検索リンク）を出すか。
+ *
+ * 2026-09-26: false（運用者の指定）。9/23 に Google の表示が約9割消えた対策の1つ
+ * （lib/works.ts の `NOINDEX_ENDED_WITHOUT_DEMAND`）。U-NEXT は afb が不合格、
+ * Hulu・DMM TV は未提携で、**成果にならない sponsored リンクが1ページ4本**あった。
+ *
+ * ★ 止まるのは**作品ページの節だけ**。記事末尾の同じ名前の節（plugins/rehype-find-links.ts）と
+ *   表のチップはそのまま。`ended` の記事ではあちらが中心なので、一緒に止めないこと。
+ * ★ meta description の「他のサービスでの探し方」もこのフラグで消える（`workDescription()`）。
+ */
+export const WORK_FIND_ENABLED = false
+
+/**
  * アフィリエイト。**どちらも未設定なら、広告表記も含めて一切描画されない。**
  *
  * 未設定のまま「PR」と表示するのは景品表示法上むしろ不正確なので、
