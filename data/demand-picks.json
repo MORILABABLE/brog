@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-25T01:31:59.144Z",
-  "asOf": "2026-09-25",
+  "generatedAt": "2026-09-26T01:35:17.769Z",
+  "asOf": "2026-09-26",
   "note": "npm run demand -- --picks が書く。手で編集しない。需要の数字は入れない（並び順だけが需要を反映する）。読む側は site/src/lib/demand-picks.ts。",
   "picks": [
     {
@@ -17,7 +17,7 @@
         "2026-09-special-anime-netflix"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -36,7 +36,7 @@
         "2026-09-upcoming-prime-video-western"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -53,7 +53,7 @@
         "jurassic-park"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -67,21 +67,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-25"
-    },
-    {
-      "workIds": [
-        "SID0031256"
-      ],
-      "title": "花子とアン",
-      "answer": "until",
-      "deadline": "2026-09-30T14:59:00.000Z",
-      "services": [
-        "u-next"
-      ],
-      "covered": [],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -98,7 +84,7 @@
         "kamen-rider"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -114,7 +100,7 @@
         "2026-09-leaving-netflix"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -130,7 +116,7 @@
         "2026-09-special-anime-netflix"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -146,7 +132,7 @@
         "2026-09-leaving-netflix"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -160,7 +146,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -174,7 +160,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -188,7 +174,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -202,7 +188,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -214,9 +200,11 @@
       "services": [
         "netflix"
       ],
-      "covered": [],
+      "covered": [
+        "2026-10-leaving-netflix"
+      ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -228,9 +216,11 @@
       "services": [
         "netflix"
       ],
-      "covered": [],
+      "covered": [
+        "2026-10-leaving-netflix"
+      ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -247,7 +237,7 @@
         "2026-09-leaving-netflix"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -261,7 +251,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -275,7 +265,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -291,7 +281,7 @@
         "2026-09-leaving-prime-video"
       ],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -305,7 +295,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -320,7 +310,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -334,7 +324,7 @@
       ],
       "covered": [],
       "firstSeen": "2026-09-21",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -350,7 +340,7 @@
         "2026-08-ended"
       ],
       "firstSeen": "2026-09-22",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
     },
     {
       "workIds": [
@@ -366,7 +356,23 @@
         "2026-08-ended"
       ],
       "firstSeen": "2026-09-24",
-      "lastSeen": "2026-09-25"
+      "lastSeen": "2026-09-26"
+    },
+    {
+      "workIds": [
+        "8860253"
+      ],
+      "title": "野生の島のロズ",
+      "answer": "where",
+      "services": [
+        "prime-video",
+        "netflix"
+      ],
+      "covered": [
+        "2026-09-leaving-prime-video"
+      ],
+      "firstSeen": "2026-09-26",
+      "lastSeen": "2026-09-26"
     }
   ],
   "notifiedSignature": "ONE PIECE|SPEED"
