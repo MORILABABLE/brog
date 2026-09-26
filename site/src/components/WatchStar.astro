@@ -25,7 +25,11 @@ import type { WorkPage } from '../lib/works'
  *
  * ■ 読者の情報をこちら側に持たない
  * 保存先は `localStorage` だけ。サーバも cookie も使わない（docs/GROWTH.md 3-6）。
- * 送信も集計もしないので、プライバシーポリシーに項目を足す必要はない。
+ * ★ **GA4 に送るのは「押した／外した」の回数だけ**（`watch_add` / `watch_remove`・2026-09-26 追加）。
+ *   作品IDも一覧の中身も送らない（どのページで押されたかは GA4 が全イベントに付けるページのURLで分かる）。
+ *   GA4 はプライバシーポリシーの「アクセス解析ツールについて」に書いてあり、項目を足す必要はない。
+ *   入れた理由: Web Push（終了前の通知）を作る前に、**何人が押しているか**を知るため。
+ *   保存が localStorage だけなので、それまで押した人数を知る手段が1つも無かった。
  *
  * ★ **保存するのは作品IDと、付けた時点の写し。**
  *   写しは `/watchlist.json` に無かったとき（掲載を外れた作品）の保険で、
@@ -170,6 +174,13 @@ const promise = snapshot ? promisesResume(w) : false
       if (!write(current)) return
       paint(!on)
       window.dispatchEvent(new Event(CHANGED))
+      /*
+       * ★ **保存できたときだけ送る**（上の `return` のあと）。送ってから失敗すると、押した数が水増しされる。
+       * ★ イベント名に `-` を使わない（GA4 は英数字と `_` だけ。BaseLayout の `aff_` と同じ）。
+       * ★ `gtag` は BaseLayout がグローバルに置く。開発環境では送信を止めてあるだけで関数はある。
+       */
+      const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag
+      gtag?.('event', on ? 'watch_remove' : 'watch_add')
     })
   }
 </script>

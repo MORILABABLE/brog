@@ -509,6 +509,16 @@ async function main(): Promise<void> {
         filter: { fieldName: 'eventName', stringFilter: { matchType: 'BEGINS_WITH', value: 'aff_' } },
       },
     })
+    /*
+     * 「☆ 気になる」（2026-09-26 追加・components/WatchStar.astro）。
+     * **保存が読者のブラウザにしか無いので、押した人数はここでしか分からない。**
+     * Web Push（終了前の通知）を作る価値があるかを決める数字。
+     */
+    const watch = await g(['eventName'], ['eventCount', 'totalUsers'], 10, {
+      dimensionFilter: {
+        filter: { fieldName: 'eventName', stringFilter: { matchType: 'BEGINS_WITH', value: 'watch_' } },
+      },
+    })
 
     console.log('')
     console.log(`■ サイト内（GA4・本番ホストのみ: ${hostList.join(' / ')}）`)
@@ -544,6 +554,17 @@ async function main(): Promise<void> {
         console.log(
           `  ${n(met(r, 0), 5)}回 ${pct(met(r, 0) / total).padStart(6)}  ${slot}  ${SLOT_NOTE[slot] ?? ''}`
         )
+      }
+    }
+
+    console.log('')
+    console.log('■ 「☆ 気になる」')
+    if (watch.length === 0) {
+      console.log('  まだ0件。計測を入れたのは 2026-09-26 で、それ以前は押した人数が分からない。')
+    } else {
+      for (const r of watch) {
+        const label = dim(r, 0) === 'watch_add' ? '押した' : dim(r, 0) === 'watch_remove' ? '外した' : dim(r, 0)
+        console.log(`  ${label} ${n(met(r, 0), 5)}回（${met(r, 1)}人）`)
       }
     }
 
@@ -810,6 +831,7 @@ async function main(): Promise<void> {
       clickDomains,
       landing,
       bySlot,
+      watch,
       flow,
       newVsReturning,
       returningByChannel,

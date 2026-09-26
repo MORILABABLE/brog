@@ -102,6 +102,8 @@ async function main(): Promise<void> {
     /*
      * 200 受け付けた ／ 202 受け付けた（鍵の確認はこれから。初回はこちらになる）
      * 400 形式の誤り ／ 403 鍵が合わない ／ 422 URLがこのホストのものではない ／ 429 送りすぎ
+     * ★ 403 でも本文が `SiteVerificationNotCompleted` なら**鍵は正しい。** 鍵のファイルを置いた直後は
+     *   向こうの確認が終わっておらず、こう返る（2026-09-26 の初回で実際に出た）。時間をおいて送り直せば通る。
      */
     if (res.status !== 200 && res.status !== 202) {
       throw new Error(`IndexNow が ${res.status}: ${(await res.text()).slice(0, 300)}`)
